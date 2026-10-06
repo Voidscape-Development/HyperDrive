@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'tsh_lang_settings';
+const STORAGE_KEY = 'hd_lang_settings';
 
 function load() {
   try {

@@ -1,7 +1,7 @@
 import {useSyncExternalStore} from "react";
 
 /*
- * Keeps count of the requests sent to TSH so the page can say whether the
+ * Keeps count of the requests sent to HyperDrive so the page can say whether the
  * changes made here have been saved.
  *
  * Status: "idle" (nothing sent yet), "saving", "saved" or "error" (the last

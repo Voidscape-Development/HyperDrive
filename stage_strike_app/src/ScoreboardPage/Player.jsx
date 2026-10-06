@@ -33,7 +33,7 @@ import {saveOnCommit, useAutoSaveForm} from "./useAutoSaveForm";
  */
 
 /**
- * @param {TSHPlayerDbEntry} player
+ * @param {HDPlayerDbEntry} player
  * @param {string} gameCodename
  * @param {number} count
  * @return {CharacterSelections}
@@ -65,23 +65,23 @@ function getMains(player, gameCodename, count) {
 }
 
 /**
- * @param {TSHCharacterSelections} tshChars
+ * @param {HDCharacterSelections} hdChars
  * @returns {CharacterSelections}
  */
-function charsFromTsh(tshChars) {
+function charsFromHd(hdChars) {
     const res = {};
-    for (const i in tshChars) {
+    for (const i in hdChars) {
         res[i] = {
             charIdx: i,
-            charName: tshChars[i].en_name ?? "",
-            // The skin picker's values are strings; TSH uses -1 for no skin
-            charSkin: tshChars[i].skin >= 0 ? String(tshChars[i].skin) : "",
+            charName: hdChars[i].en_name ?? "",
+            // The skin picker's values are strings; HyperDrive uses -1 for no skin
+            charSkin: hdChars[i].skin >= 0 ? String(hdChars[i].skin) : "",
         };
     }
     return res;
 }
 
-/** @param {TSHPlayerInfo} player */
+/** @param {HDPlayerInfo} player */
 const formFromPlayer = (player) => ({
     countryCode: player.country?.code ?? "",
     stateCode: player.state?.code ?? "",
@@ -90,34 +90,34 @@ const formFromPlayer = (player) => ({
     realName: player.real_name ?? "",
     twitter: player.twitter ?? "",
     pronoun: player.pronoun ?? "",
-    charSelections: charsFromTsh(player.character),
+    charSelections: charsFromHd(player.character),
 });
 
 /**
- * One player of a team. Changes are sent to TSH as they're made: text when
+ * One player of a team. Changes are sent to HyperDrive as they're made: text when
  * the field loses focus, Enter is pressed or typing stops for a moment, and
  * picks (a player from the database, a character, a country) right away.
  *
  * @param {Object} props
  * @param {number} props.scoreboardNumber
- * @param {string|number} props.tshTeamId
+ * @param {string|number} props.hdTeamId
  * @param {string} props.teamId
  * @param {string} props.teamKey
- * @param {TSHPlayerInfo} props.player
+ * @param {HDPlayerInfo} props.player
  * @param {boolean} props.defaultExpanded
  */
-export default function Player({scoreboardNumber, tshTeamId, teamId, teamKey, player, defaultExpanded = true}) {
+export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, player, defaultExpanded = true}) {
     const [expanded, setExpanded] = React.useState(defaultExpanded);
 
-    const gameCodename = useSelector((s) => s.tshState.tshState?.game?.codename);
-    /** @type TSHPlayerDb */ const playerDb = useSelector((s) => s.tshPlayers.players);
-    /** @type {TSHCharacterDb} */ const characters = useSelector((s) => s.tshCharacters.characters);
+    const gameCodename = useSelector((s) => s.hdState.hdState?.game?.codename);
+    /** @type HDPlayerDb */ const playerDb = useSelector((s) => s.hdPlayers.players);
+    /** @type {HDCharacterDb} */ const characters = useSelector((s) => s.hdCharacters.characters);
     const playerOptions = React.useMemo(() => Object.values(playerDb ?? {}), [playerDb]);
 
     const playerId = `${teamId}-p-${teamKey}`;
     const idBase = `team-${teamId}-player-${playerId}-`;
 
-    /** @returns {TSHPlayerInfo} */
+    /** @returns {HDPlayerInfo} */
     const payload = (form) => {
         /*
          * The fields here are slightly off... The API sends the scoreboard out with the real name in the
@@ -164,7 +164,7 @@ export default function Player({scoreboardNumber, tshTeamId, teamId, teamKey, pl
 
     const {values, setField, flush} = useAutoSaveForm(
         formFromPlayer(player),
-        (form) => api.updatePlayer(scoreboardNumber, tshTeamId, teamKey, payload(form)),
+        (form) => api.updatePlayer(scoreboardNumber, hdTeamId, teamKey, payload(form)),
     );
 
     const text = (field, label, props = {}) => (
@@ -180,7 +180,7 @@ export default function Player({scoreboardNumber, tshTeamId, teamId, teamKey, pl
 
     /**
      * @param {React.SyntheticEvent} event
-     * @param {TSHPlayerDbEntry|string|null} picked
+     * @param {HDPlayerDbEntry|string|null} picked
      */
     const onTagChanged = (event, picked) => {
         if (picked instanceof Object && picked.hasOwnProperty("gamerTag")) {
@@ -257,7 +257,7 @@ export default function Player({scoreboardNumber, tshTeamId, teamId, teamKey, pl
                                 value={values.name}
                                 isOptionEqualToValue={(option, value) =>
                                     (option?.gamerTag ?? option) === (value?.gamerTag ?? value)}
-                                getOptionLabel={(/** TSHPlayerDbEntry|string */ p) => p?.prefixed_tag ?? p ?? ""}
+                                getOptionLabel={(/** HDPlayerDbEntry|string */ p) => p?.prefixed_tag ?? p ?? ""}
                                 freeSolo={true}
                                 autoSelect={false}
                                 sx={{flex: 1}}

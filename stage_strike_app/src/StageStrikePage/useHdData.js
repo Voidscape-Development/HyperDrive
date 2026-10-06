@@ -2,7 +2,7 @@ import {useCallback, useEffect, useState} from "react";
 import {useSearchParams} from "react-router-dom";
 import websocketConnection from "../websocketConnection";
 
-const SCOREBOARD_KEY = "tsh_stage_strike_scoreboard";
+const SCOREBOARD_KEY = "hd_stage_strike_scoreboard";
 
 function readStoredScoreboard() {
   try {
@@ -43,8 +43,8 @@ export function useTeamParam() {
 }
 
 /**
- * TSH's stage strike data for a scoreboard: its ruleset, strike state,
- * players and set info. TSH sends it again whenever the strike changes.
+ * HyperDrive's stage strike data for a scoreboard: its ruleset, strike state,
+ * players and set info. HyperDrive sends it again whenever the strike changes.
  */
 export function useStrikeData(scoreboard, onScoreboardMissing) {
   const [data, setData] = useState(null);

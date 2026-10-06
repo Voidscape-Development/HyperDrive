@@ -1,22 +1,22 @@
 import {configureStore, combineReducers, Action} from '@reduxjs/toolkit'
 import {
-    tshCharactersSlice,
-    tshCountriesSlice,
-    tshGamesSlice,
-    tshPlayersSlice,
-    tshStateSlice,
+    hdCharactersSlice,
+    hdCountriesSlice,
+    hdGamesSlice,
+    hdPlayersSlice,
+    hdStateSlice,
     websocketInfoSlice
-} from './tshState';
+} from './hdState';
 import {selectedScoreboardSlice} from "./uiState";
 import {produce} from "immer";
 
-export const tshStore = configureStore({
+export const hdStore = configureStore({
     reducer: combineReducers({
-        tshState: tshStateSlice.reducer,
-        tshPlayers: tshPlayersSlice.reducer,
-        tshCharacters: tshCharactersSlice.reducer,
-        tshGames: tshGamesSlice.reducer,
-        tshCountries: tshCountriesSlice.reducer,
+        hdState: hdStateSlice.reducer,
+        hdPlayers: hdPlayersSlice.reducer,
+        hdCharacters: hdCharactersSlice.reducer,
+        hdGames: hdGamesSlice.reducer,
+        hdCountries: hdCountriesSlice.reducer,
         websocketInfo: websocketInfoSlice.reducer,
         selectedScoreboard: selectedScoreboardSlice.reducer,
     }),
@@ -25,24 +25,24 @@ export const tshStore = configureStore({
         stateSanitizer: function<S>(state: S, index) {
             return produce(state, (ds: any) => {
                 try {
-                    ds.tshPlayers = `<${objLen(ds.tshPlayers.players)} players>`;
-                    ds.tshCountries = `<${objLen(ds.tshCountries.value)} countries>`;
-                    for (let k in ds.tshCharacters.characters) {
-                        ds.tshCharacters.characters[k].skins = `<${objLen(ds.tshCharacters.characters[k].skins)} skins>`
+                    ds.hdPlayers = `<${objLen(ds.hdPlayers.players)} players>`;
+                    ds.hdCountries = `<${objLen(ds.hdCountries.value)} countries>`;
+                    for (let k in ds.hdCharacters.characters) {
+                        ds.hdCharacters.characters[k].skins = `<${objLen(ds.hdCharacters.characters[k].skins)} skins>`
                     }
-                    ds.tshState.tshState.bracket = "omitted";
-                    ds.tshState.tshState.player_list = "omitted";
+                    ds.hdState.hdState.bracket = "omitted";
+                    ds.hdState.hdState.player_list = "omitted";
                 } catch {}
             });
         },
         predicate: function<S, A extends Action>(state: S, action: A) {
-            return action.type !== 'tshState/maybeApplySavedDeltas';
+            return action.type !== 'hdState/maybeApplySavedDeltas';
         }
     },
 });
 
 const objLen = (o: any) => Object.keys(o).length;
 
-export type TshStore = typeof tshStore;
-export type ReduxState = ReturnType<TshStore['getState']>
-export type ReduxDispatch = TshStore['dispatch'];
+export type HdStore = typeof hdStore;
+export type ReduxState = ReturnType<HdStore['getState']>
+export type ReduxDispatch = HdStore['dispatch'];

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const TSH_BACKEND = `http://localhost:${env.TSH_PORT || '5500'}`;
+  const HYPERDRIVE_BACKEND = `http://localhost:${env.HYPERDRIVE_PORT || '5500'}`;
 
   // Paths served by HyperDrive's web server that the Vite dev server must proxy.
   // In production the app is served by HyperDrive on the same origin, so no proxy is needed.
@@ -55,7 +55,7 @@ export default defineConfig(({ mode }) => {
     PROXIED_PATHS.map(path => [
       path,
       {
-        target: TSH_BACKEND,
+        target: HYPERDRIVE_BACKEND,
         changeOrigin: true,
         ws: path === '/socket.io',
         configure: silenceECONNRESET,

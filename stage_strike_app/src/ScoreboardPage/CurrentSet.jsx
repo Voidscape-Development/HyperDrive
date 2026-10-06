@@ -65,8 +65,8 @@ function QuickActions({scoreboardNumber}) {
  * scrolling), quick actions, the set's details and both teams.
  */
 export default function CurrentSet({scoreboardNumber}) {
-    /** @type {TSHScoreInfo} */
-    const score = useSelector((state) => state.tshState.tshState?.score?.[scoreboardNumber]);
+    /** @type {HDScoreInfo} */
+    const score = useSelector((state) => state.hdState.hdState?.score?.[scoreboardNumber]);
 
     const hasTeams = !!score?.team && Object.keys(score.team).length >= 2;
     if (!hasTeams) {
@@ -84,7 +84,7 @@ export default function CurrentSet({scoreboardNumber}) {
                         <Team
                             key={`s-${scoreboardNumber}-t-${teamKey}`}
                             scoreboardNumber={scoreboardNumber}
-                            tshTeamId={teamKey}
+                            hdTeamId={teamKey}
                             team={score.team[teamKey]}
                         />
                     </Grid>

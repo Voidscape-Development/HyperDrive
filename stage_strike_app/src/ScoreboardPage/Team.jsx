@@ -15,19 +15,19 @@ const hexColor = (color) => (/^#[0-9a-f]{6}/i.test(color ?? "") ? color.slice(0,
  *
  * @param {Object} props
  * @param {number} props.scoreboardNumber
- * @param {string|number} props.tshTeamId 1 for the left side, 2 for the right
- * @param {TSHTeamInfo} props.team
+ * @param {string|number} props.hdTeamId 1 for the left side, 2 for the right
+ * @param {HDTeamInfo} props.team
  */
-export default function Team({scoreboardNumber, tshTeamId, team}) {
+export default function Team({scoreboardNumber, hdTeamId, team}) {
     const {values, setField, flush} = useAutoSaveForm(
         {name: team.teamName ?? "", color: hexColor(team.color)},
-        (v, changed) => api.teamInfo(scoreboardNumber, tshTeamId,
+        (v, changed) => api.teamInfo(scoreboardNumber, hdTeamId,
             Object.fromEntries(changed.map((k) => [k, v[k]]))),
         900,
     );
 
     const playerKeys = Object.keys(team.player ?? {}).sort((a, b) => Number(a) - Number(b));
-    const teamId = `s-${scoreboardNumber}-t-${tshTeamId}`;
+    const teamId = `s-${scoreboardNumber}-t-${hdTeamId}`;
 
     return (
         <Paper elevation={3} sx={{borderTop: `solid 4px ${team.color || 'transparent'}`, overflow: 'hidden'}}>
@@ -60,7 +60,7 @@ export default function Team({scoreboardNumber, tshTeamId, team}) {
                     control={
                         <Switch
                             checked={!!team.losers}
-                            onChange={(e) => api.teamInfo(scoreboardNumber, tshTeamId, {losers: e.target.checked}).catch(() => {})}
+                            onChange={(e) => api.teamInfo(scoreboardNumber, hdTeamId, {losers: e.target.checked}).catch(() => {})}
                         />
                     }
                     label={i18n.t("losers_bracket")}
@@ -70,7 +70,7 @@ export default function Team({scoreboardNumber, tshTeamId, team}) {
                         <Player
                             key={`${teamId}-p-${key}`}
                             scoreboardNumber={scoreboardNumber}
-                            tshTeamId={tshTeamId}
+                            hdTeamId={hdTeamId}
                             teamId={teamId}
                             teamKey={key}
                             player={team.player[key]}

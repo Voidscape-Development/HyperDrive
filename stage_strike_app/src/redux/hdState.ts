@@ -2,12 +2,12 @@ import {Action, createSlice, PayloadAction, WritableDraft} from '@reduxjs/toolki
 import {applyDeltas, combineDeltas} from "../stateDelta";
 import websocketConnection from "../websocketConnection";
 import {
-    TSHCountryDb,
-    TSHCharacterDb,
-    TSHCharacterDbEntry,
-    TSHPlayerDb,
-    TSHState,
-    TSHGamesDb, Delta
+    HDCountryDb,
+    HDCharacterDb,
+    HDCharacterDbEntry,
+    HDPlayerDb,
+    HDState,
+    HDGamesDb, Delta
 } from "../backendDataTypes";
 
 export type ReceivedDeltas = {
@@ -15,8 +15,8 @@ export type ReceivedDeltas = {
     delta: Delta[];
 };
 
-export type TSHStateMessage = {
-    state: TSHState;
+export type HDStateMessage = {
+    state: HDState;
     delta_index: number;
 }
 
@@ -39,23 +39,23 @@ export const websocketInfoSlice = createSlice({
     }
 });
 
-export type TshStateReduxState = {
-    tshState: TSHState;
+export type HdStateReduxState = {
+    hdState: HDState;
     stateDeltas: ReceivedDeltas[];
     maxAppliedDeltaIdx: number;
     initializing: boolean;
 };
 
-export const tshStateSlice = createSlice({
-    name: 'tshState',
+export const hdStateSlice = createSlice({
+    name: 'hdState',
     initialState: {
-        tshState: {} as TSHState,
+        hdState: {} as HDState,
         stateDeltas: [],
         maxAppliedDeltaIdx: -1,
         initializing: true,
-    } as TshStateReduxState,
+    } as HdStateReduxState,
     reducers: {
-        applySavedDeltas(state: WritableDraft<TshStateReduxState>, action: Action) {
+        applySavedDeltas(state: WritableDraft<HdStateReduxState>, action: Action) {
             let sortedDeltas = state.stateDeltas.toSorted((a, b) => a.delta_index - b.delta_index);
             const staleDeltas = sortedDeltas.filter((d) => d.delta_index < state.maxAppliedDeltaIdx);
             sortedDeltas = sortedDeltas.filter((d) => d.delta_index >= state.maxAppliedDeltaIdx);
@@ -67,7 +67,7 @@ export const tshStateSlice = createSlice({
             if (sortedDeltas.length > 0) {
                 for (let deltaSet of sortedDeltas) {
                     console.log("Applying deltas: ", combineDeltas(deltaSet.delta));
-                    applyDeltas(state.tshState, deltaSet.delta);
+                    applyDeltas(state.hdState, deltaSet.delta);
                 }
                 state.maxAppliedDeltaIdx = sortedDeltas[sortedDeltas.length-1].delta_index;
             }
@@ -76,7 +76,7 @@ export const tshStateSlice = createSlice({
             state.stateDeltas = [];
         },
 
-        addDeltas(state: TshStateReduxState, action: PayloadAction<ReceivedDeltas>){
+        addDeltas(state: HdStateReduxState, action: PayloadAction<ReceivedDeltas>){
             if (action.payload.delta_index < state.maxAppliedDeltaIdx) {
                 console.warn("Received out of order delta! Requesting new full state.");
                 websocketConnection.instance().emit("program_state", {});
@@ -85,8 +85,8 @@ export const tshStateSlice = createSlice({
             state.stateDeltas.push(action.payload);
         },
 
-        overwrite(state: TshStateReduxState, action: PayloadAction<TSHStateMessage>) {
-            state.tshState = action.payload.state;
+        overwrite(state: HdStateReduxState, action: PayloadAction<HDStateMessage>) {
+            state.hdState = action.payload.state;
             state.maxAppliedDeltaIdx = Math.max(action.payload.delta_index, state.maxAppliedDeltaIdx);
             state.stateDeltas = [];
             state.initializing = false;
@@ -98,14 +98,14 @@ export const tshStateSlice = createSlice({
     }
 })
 
-export const tshPlayersSlice = createSlice({
-    name: 'tshPlayers',
+export const hdPlayersSlice = createSlice({
+    name: 'hdPlayers',
     initialState: {
-        players: {} as TSHPlayerDb,
+        players: {} as HDPlayerDb,
         initializing: true,
     },
     reducers: {
-        overwrite(state, action: PayloadAction<TSHPlayerDb>) {
+        overwrite(state, action: PayloadAction<HDPlayerDb>) {
             state.players = action.payload;
             for (let k in state.players) {
                 state.players[k].prefixed_tag = k;
@@ -115,19 +115,19 @@ export const tshPlayersSlice = createSlice({
     }
 });
 
-export const tshCharactersSlice = createSlice({
-    name: 'tshCharacters',
+export const hdCharactersSlice = createSlice({
+    name: 'hdCharacters',
     initialState: {
-        characters: {} as TSHCharacterDb,
+        characters: {} as HDCharacterDb,
         initializing: true,
     },
     reducers: {
-        overwrite(state, action: PayloadAction<TSHCharacterDb>) {
+        overwrite(state, action: PayloadAction<HDCharacterDb>) {
             // We need our character list to be keyed by the en_name, because things like player mains are set
             // to the english name instead the localized name. We won't be able to do lookups if we don't
             // rearrange it like this.
-            const enChars: TSHCharacterDb = {};
-            Object.values(action.payload).forEach((char: TSHCharacterDbEntry) => {
+            const enChars: HDCharacterDb = {};
+            Object.values(action.payload).forEach((char: HDCharacterDbEntry) => {
                 enChars[char.en_name] = char;
             });
             console.log("Character data set", enChars);
@@ -137,14 +137,14 @@ export const tshCharactersSlice = createSlice({
     }
 });
 
-export const tshGamesSlice = createSlice({
-    name: 'tshGames',
+export const hdGamesSlice = createSlice({
+    name: 'hdGames',
     initialState: {
-        value: {} as TSHGamesDb,
+        value: {} as HDGamesDb,
         initializing: true
     },
     reducers: {
-        overwrite(state, action: PayloadAction<TSHGamesDb>) {
+        overwrite(state, action: PayloadAction<HDGamesDb>) {
             state.value = action.payload;
             for (let k in state.value) {
                 state.value[k].codename = k;
@@ -154,14 +154,14 @@ export const tshGamesSlice = createSlice({
     }
 });
 
-export const tshCountriesSlice = createSlice({
-    name: 'tshCountries',
+export const hdCountriesSlice = createSlice({
+    name: 'hdCountries',
     initialState: {
-        value: {} as TSHCountryDb,
+        value: {} as HDCountryDb,
         initializing: true,
     },
     reducers: {
-        overwrite(state, action: PayloadAction<TSHCountryDb>) {
+        overwrite(state, action: PayloadAction<HDCountryDb>) {
             state.value = action.payload;
             state.initializing = false;
         }

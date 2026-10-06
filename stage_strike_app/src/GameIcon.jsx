@@ -1,7 +1,7 @@
 import {BASE_URL} from "./env";
 import {useState} from "react";
 
-/** @param {{game: TSHGameInfo, fixedWidth: boolean}} props */
+/** @param {{game: HDGameInfo, fixedWidth: boolean}} props */
 export function GameIcon({game, fixedWidth=false, ...rest}) {
   const [errored, setErrored] = useState(false);
 

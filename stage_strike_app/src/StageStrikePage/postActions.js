@@ -55,7 +55,7 @@ export function ReportRpsWin(target, /** number */ winner) {
 
 /**
  * Sends the characters picked for the next game. A page for one team only
- * sends its own; TSH puts them on the scoreboard once both teams sent theirs.
+ * sends its own; HyperDrive puts them on the scoreboard once both teams sent theirs.
  * @param {{scoreboard: number, team: number|null}} target
  * @param {Object<string, Object<string, Array<[string, number]>>>} characters
  *   {team: {player: [[character en_name, skin], ...]}}
@@ -73,7 +73,7 @@ export function ReportCharacters(target, characters) {
 
 /**
  * Sends the characters picked on the character select page. Like
- * ReportCharacters, but each team picks once per score: TSH answers 409
+ * ReportCharacters, but each team picks once per score: HyperDrive answers 409
  * until the score changes.
  * @param {{scoreboard: number, team: number|null}} target
  * @param {Object<string, Object<string, Array<[string, number]>>>} characters

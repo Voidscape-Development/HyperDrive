@@ -1,12 +1,12 @@
 import {
-    tshCharactersSlice,
-    tshCountriesSlice,
-    tshGamesSlice,
-    tshPlayersSlice,
-    tshStateSlice,
+    hdCharactersSlice,
+    hdCountriesSlice,
+    hdGamesSlice,
+    hdPlayersSlice,
+    hdStateSlice,
     websocketInfoSlice
-} from "../redux/tshState";
-import { tshStore } from "../redux/store";
+} from "../redux/hdState";
+import { hdStore } from "../redux/store";
 import socketConnection from "../websocketConnection";
 import {BACKEND_PORT, PROTOCOL} from "../env";
 
@@ -22,67 +22,67 @@ export default function websocketInit() {
 
     socket.on("connect", () => {
         console.log("SocketIO connection established.");
-        tshStore.dispatch(websocketInfoSlice.actions.setStatus("connected"));
+        hdStore.dispatch(websocketInfoSlice.actions.setStatus("connected"));
         socket.emit("playerdb", {}, () => {
-            console.log("TSH acked player db request")
+            console.log("HyperDrive acked player db request")
         });
         socket.emit("characters", {}, () => {
-            console.log("TSH acked characters request")
+            console.log("HyperDrive acked characters request")
         });
         socket.emit("games", {}, () => {
-            console.log("TSH acked games request")
+            console.log("HyperDrive acked games request")
         });
 
         loadCountriesFile();
     });
 
     socket.on("program_state", data => {
-        console.log("TSH state received ", data);
-        tshStore.dispatch(tshStateSlice.actions.overwrite(data));
+        console.log("HyperDrive state received ", data);
+        hdStore.dispatch(hdStateSlice.actions.overwrite(data));
     });
 
     socket.on("games", data => {
-        console.log("TSH game info received ", data);
-        tshStore.dispatch(tshGamesSlice.actions.overwrite(data));
+        console.log("HyperDrive game info received ", data);
+        hdStore.dispatch(hdGamesSlice.actions.overwrite(data));
     })
 
     socket.on("countries", data => {
-        console.log("TSH countries info received.")
-        tshStore.dispatch(tshCountriesSlice.actions.overwrite(data));
+        console.log("HyperDrive countries info received.")
+        hdStore.dispatch(hdCountriesSlice.actions.overwrite(data));
 
     });
 
     socket.on("program_state_update", deltaMessage => {
-        console.log("TSH state update received", deltaMessage);
-        tshStore.dispatch(tshStateSlice.actions.addDeltas(deltaMessage));
+        console.log("HyperDrive state update received", deltaMessage);
+        hdStore.dispatch(hdStateSlice.actions.addDeltas(deltaMessage));
     });
 
     socket.on("playerdb", data => {
         console.log("Player data received", data);
-        tshStore.dispatch(tshPlayersSlice.actions.overwrite(data));
+        hdStore.dispatch(hdPlayersSlice.actions.overwrite(data));
     })
 
     socket.on("characters", data => {
         console.log("Character data received", data);
-        tshStore.dispatch(tshCharactersSlice.actions.overwrite(data));
+        hdStore.dispatch(hdCharactersSlice.actions.overwrite(data));
     })
 
     socket.on("disconnect", () => {
         console.log("SocketIO disconnected.")
-        tshStore.dispatch(websocketInfoSlice.actions.setStatus("disconnected"));
+        hdStore.dispatch(websocketInfoSlice.actions.setStatus("disconnected"));
         socket.connect();
     });
 
     socket.on('error', (err) => {
         console.log(err);
-        tshStore.dispatch(websocketInfoSlice.actions.setStatus("errored"));
+        hdStore.dispatch(websocketInfoSlice.actions.setStatus("errored"));
     });
 
     // This can't be set up twice because of the initialization guard at the top of the function.
     setInterval(() => {
-        const state = tshStore.getState();
-        if (state.websocketInfo.status === "connected" && state.tshState?.stateDeltas.length > 0) {
-            tshStore.dispatch(tshStateSlice.actions.applySavedDeltas());
+        const state = hdStore.getState();
+        if (state.websocketInfo.status === "connected" && state.hdState?.stateDeltas.length > 0) {
+            hdStore.dispatch(hdStateSlice.actions.applySavedDeltas());
         }
     }, 1000);
 }
@@ -99,10 +99,10 @@ const loadCountriesFile = () => {
         }
 
         console.log("Loaded countries json file", json);
-        tshStore.dispatch(tshCountriesSlice.actions.overwrite(json));
+        hdStore.dispatch(hdCountriesSlice.actions.overwrite(json));
     }).catch((e) => {
         console.error("Failed to request countries file", e);
-        tshStore.dispatch(tshCountriesSlice.actions.overwrite({}));
+        hdStore.dispatch(hdCountriesSlice.actions.overwrite({}));
     });
 }
 

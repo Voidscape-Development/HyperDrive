@@ -9,7 +9,7 @@ import {BASE_URL} from "../env";
 import {GameIcon} from "../GameIcon";
 
 
-/** Whether the changes made on this page have reached TSH. */
+/** Whether the changes made on this page have reached HyperDrive. */
 const SaveStatus = () => {
     const status = useSaveStatus();
     if (status === "idle") {
@@ -24,9 +24,9 @@ const SaveStatus = () => {
 };
 
 export const Header = ({onSelectedGameChange, ...rest}) => {
-    const {tshState, games} = useSelector(state => ({
-      tshState: state.tshState.tshState,
-      games: state.tshGames.value
+    const {hdState, games} = useSelector(state => ({
+      hdState: state.hdState.hdState,
+      games: state.hdGames.value
     }), shallowEqual);
 
     const theme = useTheme();
@@ -60,7 +60,7 @@ export const Header = ({onSelectedGameChange, ...rest}) => {
                         mr: 4,
                     }}
                 >
-                    <img alt="TSH logo" src={`${BASE_URL}/assets/icons/icon.png`} height={48} width={48} sx={{mr: 2}} />
+                    <img alt="HyperDrive logo" src={`${BASE_URL}/assets/icons/icon.png`} height={48} width={48} sx={{mr: 2}} />
                     Web Scoreboard
                 </Typography>
 
@@ -79,7 +79,7 @@ export const Header = ({onSelectedGameChange, ...rest}) => {
                               marginY: 0
                           },
                       }}
-                      value={tshState.game.codename}
+                      value={hdState.game.codename}
                       renderValue={(codename) =>
                         <GameIcon game={games[codename]} />
                       }
@@ -103,8 +103,8 @@ export const Header = ({onSelectedGameChange, ...rest}) => {
                     maxWidth: '100%',
                 }}>
                     <span>Event:&nbsp;</span>
-                    <span>{tshState.tournamentInfo.tournamentName}:</span>
-                    <span>{tshState.tournamentInfo.eventName}</span>
+                    <span>{hdState.tournamentInfo.tournamentName}:</span>
+                    <span>{hdState.tournamentInfo.eventName}</span>
                 </Box>
 
                 <SaveStatus/>
