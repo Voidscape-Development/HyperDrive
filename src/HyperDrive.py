@@ -22,6 +22,7 @@ from qtpy.QtWidgets import *
 
 from .Helpers import QtHelper
 from .Helpers.DirHelper import ResolvePath
+from .Helpers.DynamicExport import DynamicExport
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.VersionHelper import PROJECT_URL, REPOSITORY, add_beta_label
 
@@ -550,6 +551,10 @@ class Window(QMainWindow):
         if autoPull:
             Scheduler.instance.Start("completed_sets")
         self.cbAutoPullCompletedSets.toggled.connect(self.ToggleCompletedSetsAutoPull)
+
+        # Keeps the players' avatars, sponsor logos and custom data up to
+        # date as their files change
+        DynamicExport.Start()
 
         TournamentDataManager.instance.signals.tournament_changed.connect(self.UpdateLastSetsButton)
         TournamentDataManager.instance.signals.tournament_changed.connect(

@@ -16,6 +16,7 @@ from .GameReportWidget import GameReportWidget
 from .Helpers.DictHelper import deep_get
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
+from .Helpers.MediaHelper import MediaHelper
 from .Helpers.VersionHelper import add_beta_label
 from .Hotkeys import Hotkeys
 from .PlayerDB import PlayerDB
@@ -529,6 +530,7 @@ class ScoreboardWidget(QWidget):
                 ),
             ]
         )
+        MediaHelper.signals.changed.connect(self.RefreshTeamLogos)
 
         self.teamsSwapped = False
 
@@ -618,15 +620,19 @@ class ScoreboardWidget(QWidget):
         Scheduler.instance.signals.job_state_changed.disconnect(self.AutoUpdateJobStateChanged)
         Scheduler.instance.signals.tick.disconnect(self.UpdateTimeLeftTimer)
         Scheduler.instance.Unregister(self.autoUpdateJob)
+        MediaHelper.signals.changed.disconnect(self.RefreshTeamLogos)
 
     def ExportTeamLogo(self, team, value):
-        if os.path.exists(f"./user_data/team_logo/{value.lower()}.png"):
-            StateManager.Set(
-                f"score.{self.scoreboardNumber}.team.{team}.logo",
-                f"./user_data/team_logo/{value.lower()}.png",
-            )
-        else:
-            StateManager.Set(f"score.{self.scoreboardNumber}.team.{team}.logo", None)
+        logo = MediaHelper.TeamLogoPath(value)
+        StateManager.Set(
+            f"score.{self.scoreboardNumber}.team.{team}.logo",
+            logo if os.path.exists(logo) else None,
+        )
+
+    def RefreshTeamLogos(self):
+        """After a team logo is changed in the Player Database window"""
+        for team, column in (("1", self.team1column), ("2", self.team2column)):
+            self.ExportTeamLogo(team, column.findChild(QLineEdit, "teamName").text())
 
     def ExportLosersStatus(self, team, team_name, is_in_losers):
         merged_team_name = deepcopy(team_name)

@@ -9,6 +9,7 @@ from .GameAssetManager import GameAssetManager
 from .Helpers.CountryHelper import CountryHelper
 from .Helpers.DictHelper import deep_clone
 from .PlayerDB import PlayerDB
+from .PlayerMediaTabs import PlayerMediaTab, SponsorLogosTab, TeamLogosTab
 from .SeedManager import SeedManager
 from .Theme import ThemedIcon
 
@@ -864,8 +865,11 @@ class SeedsTab(QWidget):
 
 
 class PlayerDBWindow(QDialog):
+    instance: PlayerDBWindow = None
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        PlayerDBWindow.instance = self
         self.setWindowTitle(QApplication.translate("app", "Player Database"))
         self.setWindowFlags(Qt.WindowType.Window)
         self.resize(1100, 650)
@@ -888,18 +892,44 @@ class PlayerDBWindow(QDialog):
             QApplication.translate("app", "Seeds"),
         )
 
+        self.mediaTab = PlayerMediaTab()
+        self.tabs.addTab(
+            self.mediaTab,
+            ThemedIcon("./assets/icons/person.svg"),
+            QApplication.translate("app", "Player media"),
+        )
+
+        self.sponsorLogosTab = SponsorLogosTab()
+        self.tabs.addTab(
+            self.sponsorLogosTab,
+            ThemedIcon("./assets/icons/eye.svg"),
+            QApplication.translate("app", "Sponsor logos"),
+        )
+
+        self.teamLogosTab = TeamLogosTab()
+        self.tabs.addTab(
+            self.teamLogosTab,
+            ThemedIcon("./assets/icons/people.svg"),
+            QApplication.translate("app", "Team logos"),
+        )
+
     def Open(self, tab=0):
         self.tabs.setCurrentIndex(tab)
         self.show()
         self.raise_()
         self.activateWindow()
 
+    def OpenMedia(self, team: str, name: str):
+        """Opens the Player media tab on a person, e.g. from their Media button"""
+        self.Open(self.tabs.indexOf(self.mediaTab))
+        self.mediaTab.SetPerson(team, name)
+
     def reject(self):
         # Escape goes through closeEvent too, to ask about unsaved changes
         self.close()
 
     def closeEvent(self, event):
-        if not self.playersTab.ConfirmDiscard():
+        if not self.playersTab.ConfirmDiscard() or not self.mediaTab.ConfirmDiscard():
             event.ignore()
             return
         self.playersTab.Revert()

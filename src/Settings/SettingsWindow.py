@@ -1,6 +1,7 @@
 from qtpy.QtCore import *
 from qtpy.QtWidgets import *
 
+from ..Helpers.DynamicExport import DynamicExport
 from ..Hotkeys import Hotkeys
 from ..Scheduler import (
     COMPLETED_SETS_DEFAULT_INTERVAL_SECS,
@@ -175,6 +176,25 @@ class SettingsWindow(QDialog):
                 "disable_export",
                 "checkbox",
                 False,
+            )
+        )
+
+        generalSettings.append(
+            (
+                QApplication.translate(
+                    "settings.custom_player_export",
+                    "Export custom player data from user_data/custom_player_export",
+                ),
+                "custom_player_export",
+                "checkbox",
+                True,
+                DynamicExport.SettingChanged,
+                QApplication.translate(
+                    "settings.custom_player_export",
+                    "Sends the files in a folder named after a player's tag (or sponsor and tag) "
+                    "to the layouts, as the player's custom data. Changes to the files show up "
+                    "on stream within a second.",
+                ),
             )
         )
 

@@ -809,7 +809,7 @@ class GameAssetManager(QObject):
                     if gameObj != None:
                         self.parent.characters = gameObj.get("character_to_codename", {})
                         self.parent.variants = gameObj.get("variant_to_codename", {})
-                        self.parent.colors = gameObj.get("preset_colors", {})
+                        self.parent.colors = gameObj.get("preset_colors", [])
 
                         assetsKey = ""
                         if len(list(gameObj.get("assets", {}).keys())) > 0:
@@ -1119,10 +1119,10 @@ class GameAssetManager(QObject):
 
                         # Load translations for colors
                         try:
-                            for c in self.parent.colors.keys():
-                                display_name = c
-                                export_name = c
-                                en_name = c
+                            for c in range(len(self.parent.colors)):
+                                display_name = self.parent.colors[c].get("name")
+                                export_name = self.parent.colors[c].get("name")
+                                en_name = self.parent.colors[c].get("name")
 
                                 if self.parent.colors[c].get("locale"):
                                     locale = LocaleHelper.programLocale

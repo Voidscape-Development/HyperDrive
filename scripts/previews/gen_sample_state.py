@@ -28,6 +28,7 @@ from qtpy.QtCore import QTimer  # noqa: E402
 import src  # noqa: E402
 from src.BracketWidget import BracketWidget  # noqa: E402
 from src.GameAssetManager import GameAssetManager  # noqa: E402
+from src.Helpers.DynamicExport import DynamicExport  # noqa: E402
 from src.PlayerListWidget import PlayerListWidget  # noqa: E402
 from src.ScoreboardManager import ScoreboardManager  # noqa: E402
 from src.StateManager import StateManager  # noqa: E402
@@ -45,6 +46,16 @@ PLAYERS = SAMPLE["players"]
 def player(index, **extra):
     """Sample player `index` (1-based), seeded by their position"""
     return {**PLAYERS[index - 1], "seed": index, **extra}
+
+
+def write_custom_player_export():
+    """The players' custom data files, read by HyperDrive as they're loaded"""
+    for folder, files in SAMPLE["custom_player_export"].items():
+        path = os.path.join(DynamicExport.BASE_DIR, folder)
+        os.makedirs(path, exist_ok=True)
+        for name, content in files.items():
+            with open(os.path.join(path, name), "w", encoding="utf-8") as f:
+                f.write(content)
 
 
 def set_game():
@@ -141,6 +152,7 @@ def set_bracket():
 
 
 def main():
+    write_custom_player_export()
     loop = QEventLoop(src.App)
     asyncio.set_event_loop(loop)
     window = src.Window(loop)
