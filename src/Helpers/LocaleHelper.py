@@ -9,22 +9,33 @@ from qtpy.QtGui import *
 
 from src.SettingsManager import SettingsManager
 
-from .DictHelper import deep_clone
 from .DirHelper import ResolvePath
 
 # The romanizers are imported when first used: pypinyin alone takes ~40MB
 
+# The user's match and phase names, which replace or add to the built-in ones
+CUSTOM_TERMS_FILE = "./user_data/tournament_terms.json"
+TERM_KINDS = ("match", "phase")
+
 
 class LocaleHelperSignals(QObject):
     localeChanged = Signal()
+    # The match or phase names changed: dropdowns that list them fill again
+    termsChanged = Signal()
 
 
 class LocaleHelper(QObject):
     exportLocale = "en-US"
     programLocale = "en-US"
     fgTermLocale = "en-US"
+    # The names in use: the defaults with the user's names on top
     matchNames = {}
     phaseNames = {}
+    # The built-in names in the selected language, by kind ("match"/"phase")
+    defaultNames = {"match": {}, "phase": {}}
+    # The user's names, as saved in CUSTOM_TERMS_FILE
+    customTerms = {}
+    signals = None
     translator = None
     languages = []
     remapping = {}
@@ -141,7 +152,7 @@ class LocaleHelper(QObject):
         try:
             tterm_dir = ResolvePath("./src/i18n/tournament_term")
             original_term_names: dict = json.load(open(f"{tterm_dir}/en.json", encoding="utf-8"))
-            term_names = deep_clone(original_term_names)
+            translated_term_names = {}
 
             for f in os.listdir(f"{tterm_dir}/"):
                 if f.endswith(".json"):
@@ -149,35 +160,97 @@ class LocaleHelper(QObject):
 
                     if lang == LocaleHelper.fgTermLocale:
                         # We found the exact language file
-                        translatedRoundNames = json.load(open(f"{tterm_dir}/{f}", encoding="utf-8"))
-                        term_names = original_term_names.copy()
-                        term_names.update(translatedRoundNames)
+                        translated_term_names = json.load(
+                            open(f"{tterm_dir}/{f}", encoding="utf-8")
+                        )
                         break
                     elif lang == LocaleHelper.fgTermLocale.split("-")[0]:
                         # We found a more generic language file
                         # Good enough if we don't find a specific one
-                        translatedRoundNames = json.load(open(f"{tterm_dir}/{f}", encoding="utf-8"))
-                        term_names = original_term_names.copy()
-                        term_names.update(translatedRoundNames)
+                        translated_term_names = json.load(
+                            open(f"{tterm_dir}/{f}", encoding="utf-8")
+                        )
 
-            LocaleHelper.matchNames = term_names.get("match")
-            LocaleHelper.phaseNames = term_names.get("phase")
+            # Terms missing from the translation stay in English
+            for kind in TERM_KINDS:
+                LocaleHelper.defaultNames[kind] = {
+                    **original_term_names.get(kind, {}),
+                    **translated_term_names.get(kind, {}),
+                }
         except:
             logger.error(traceback.format_exc())
 
-        # Load user round names in a separate try/catch
-        try:
-            term_names: dict = json.load(
-                open("./user_data/tournament_terms.json", encoding="utf-8")
+        LocaleHelper.ApplyCustomTerms(LocaleHelper.LoadCustomTerms())
+
+    def NormalizeCustomTerms(terms) -> dict:
+        """Returns the user's tournament terms with empty and invalid entries
+        removed: {"match": {key: name}, "phase": {key: name},
+        "custom_match": [name], "custom_phase": [name]}"""
+        if not isinstance(terms, dict):
+            terms = {}
+
+        normalized = {}
+        for kind in TERM_KINDS:
+            overrides = terms.get(kind)
+            if not isinstance(overrides, dict):
+                overrides = {}
+            normalized[kind] = {
+                k: v for k, v in overrides.items() if isinstance(v, str) and v.strip()
+            }
+
+            extras = terms.get(f"custom_{kind}")
+            if not isinstance(extras, list):
+                extras = []
+            normalized[f"custom_{kind}"] = list(
+                dict.fromkeys(v.strip() for v in extras if isinstance(v, str) and v.strip())
             )
+        return normalized
 
-            term_names["phase"] = {k: v for k, v in term_names.get("phase", {}).items() if v}
-            term_names["match"] = {k: v for k, v in term_names.get("match", {}).items() if v}
-
-            LocaleHelper.phaseNames.update(term_names["phase"])
-            LocaleHelper.matchNames.update(term_names["match"])
+    def LoadCustomTerms() -> dict:
+        """Reads the user's tournament terms from user_data/tournament_terms.json"""
+        if not os.path.isfile(CUSTOM_TERMS_FILE):
+            return LocaleHelper.NormalizeCustomTerms({})
+        try:
+            with open(CUSTOM_TERMS_FILE, encoding="utf-8") as f:
+                return LocaleHelper.NormalizeCustomTerms(json.load(f))
         except:
-            logger.warning("Custom Tournament Terms were not found and/or loaded.")
+            logger.warning("Custom Tournament Terms could not be loaded.")
+            logger.warning(traceback.format_exc())
+            return LocaleHelper.NormalizeCustomTerms({})
+
+    def ApplyCustomTerms(terms: dict):
+        terms = LocaleHelper.NormalizeCustomTerms(terms)
+        LocaleHelper.customTerms = terms
+        LocaleHelper.matchNames = {**LocaleHelper.defaultNames["match"], **terms["match"]}
+        LocaleHelper.phaseNames = {**LocaleHelper.defaultNames["phase"], **terms["phase"]}
+
+    def SaveCustomTerms(terms: dict) -> bool:
+        """Saves the user's tournament terms and applies them right away"""
+        terms = LocaleHelper.NormalizeCustomTerms(terms)
+        try:
+            os.makedirs(os.path.dirname(CUSTOM_TERMS_FILE), exist_ok=True)
+            with open(CUSTOM_TERMS_FILE, "w", encoding="utf-8") as f:
+                json.dump(terms, f, indent=4, ensure_ascii=False)
+        except:
+            logger.error(traceback.format_exc())
+            return False
+
+        LocaleHelper.ApplyCustomTerms(terms)
+        LocaleHelper.signals.termsChanged.emit()
+        return True
+
+    def RefreshNamesInWidget(widget, load):
+        """Fills a phase or match combo box again with load (LoadPhaseNamesToWidget
+        or LoadMatchNamesToWidget), keeping the text it shows"""
+        text = widget.currentText()
+        widget.blockSignals(True)
+        try:
+            widget.clear()
+            widget.addItem("")
+            load(widget)
+            widget.setCurrentText(text)
+        finally:
+            widget.blockSignals(False)
 
     def GetRemaps(language: str):
         for remap, langs in LocaleHelper.remapping.items():
@@ -187,6 +260,10 @@ class LocaleHelper(QObject):
         return None
 
     def LoadPhaseNamesToWidget(widget):
+        for phaseString in LocaleHelper.customTerms.get("custom_phase", []):
+            if widget.findText(phaseString) < 0:
+                widget.addItem(phaseString)
+
         for key in dict(sorted(LocaleHelper.phaseNames.items(), key=lambda item: item[1])).keys():
             phaseString = LocaleHelper.phaseNames[key]
 
@@ -200,6 +277,10 @@ class LocaleHelper(QObject):
                     widget.addItem(phaseString)
 
     def LoadMatchNamesToWidget(widget):
+        for matchString in LocaleHelper.customTerms.get("custom_match", []):
+            if widget.findText(matchString) < 0:
+                widget.addItem(matchString)
+
         for key in dict(sorted(LocaleHelper.matchNames.items(), key=lambda item: item[1])).keys():
             matchString = LocaleHelper.matchNames[key]
             try:
@@ -266,3 +347,4 @@ class LocaleHelper(QObject):
 
 LocaleHelper.LoadLanguages()
 LocaleHelper.LoadCountryToLanguage()
+LocaleHelper.signals = LocaleHelperSignals()

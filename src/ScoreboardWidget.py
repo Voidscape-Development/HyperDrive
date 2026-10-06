@@ -555,6 +555,7 @@ class ScoreboardWidget(QWidget):
 
         self.scoreColumn.findChild(QComboBox, "match").addItem("")
         LocaleHelper.LoadMatchNamesToWidget(self.scoreColumn.findChild(QComboBox, "match"))
+        LocaleHelper.signals.termsChanged.connect(self.ReloadTournamentTerms)
 
         GameAssetManager.instance.signals.onLoad.connect(
             lambda: [
@@ -567,6 +568,15 @@ class ScoreboardWidget(QWidget):
                 self.colorMenu1.setVisible(StateManager.Get("game.has_colors", False)),
                 self.colorMenu2.setVisible(StateManager.Get("game.has_colors", False)),
             ]
+        )
+
+    def ReloadTournamentTerms(self):
+        # The match and phase names were edited in the settings
+        LocaleHelper.RefreshNamesInWidget(
+            self.scoreColumn.findChild(QComboBox, "phase"), LocaleHelper.LoadPhaseNamesToWidget
+        )
+        LocaleHelper.RefreshNamesInWidget(
+            self.scoreColumn.findChild(QComboBox, "match"), LocaleHelper.LoadMatchNamesToWidget
         )
 
     def ExportBestOf(self, value):
