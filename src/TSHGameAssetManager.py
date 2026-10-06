@@ -86,7 +86,6 @@ class TSHGameAssetManager(QObject):
         StateManager.Set("game", {})
         self.assetsLoaderLock = QMutex()
         self.assetsLoaderThread = None
-        self.thumbnailSettingsLoaded = False
         self.threadpool = QThreadPool()
         self.workers = []
 
@@ -1204,7 +1203,6 @@ class TSHGameAssetManager(QObject):
                 except:
                     logger.error(traceback.format_exc())
 
-        self.thumbnailSettingsLoaded = False
         if async_mode:
             self.assetsLoaderThread = AssetsLoaderThread(TSHGameAssetManager.instance)
             self.assetsLoaderThread.game = game

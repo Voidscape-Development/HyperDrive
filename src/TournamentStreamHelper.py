@@ -380,20 +380,6 @@ class Window(QMainWindow):
 
         self.dockWidgets = []
 
-        # Thumbnails can also be generated from the web server, so the
-        # bundled fonts can't rely on the thumbnail widget being enabled
-        from .thumbnail.main_generate_thumbnail import register_bundled_fonts
-
-        register_bundled_fonts()
-
-        if not SettingsManager.Get("general.disable_thumbnail_widget", False):
-            from .TSHThumbnailSettingsWidget import TSHThumbnailSettingsWidget
-
-            thumbnailSetting = TSHThumbnailSettingsWidget()
-            thumbnailSetting.setObjectName(QApplication.translate("app", "Thumbnail Settings"))
-            self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, thumbnailSetting)
-            self.dockWidgets.append(thumbnailSetting)
-
         bracket = TSHBracketWidget()
         bracket.setWindowIcon(ThemedIcon("assets/icons/info.svg"))
         bracket.setObjectName(QApplication.translate("app", "Bracket"))
@@ -466,8 +452,6 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, commentary)
         self.tabifyDockWidget(self.scoreboard, tournamentInfo)
         self.tabifyDockWidget(self.scoreboard, teamBattle)
-        if not SettingsManager.Get("general.disable_thumbnail_widget", False):
-            self.tabifyDockWidget(self.scoreboard, thumbnailSetting)
         self.tabifyDockWidget(self.scoreboard, playerList)
         self.tabifyDockWidget(self.scoreboard, bracket)
         self.tabifyDockWidget(self.scoreboard, streamQueue)
@@ -638,8 +622,6 @@ class Window(QMainWindow):
         toggleWidgets.addAction(self.scoreboard.toggleViewAction())
         toggleWidgets.addAction(self.stageWidget.toggleViewAction())
         toggleWidgets.addAction(commentary.toggleViewAction())
-        if not SettingsManager.Get("general.disable_thumbnail_widget", False):
-            toggleWidgets.addAction(thumbnailSetting.toggleViewAction())
         toggleWidgets.addAction(tournamentInfo.toggleViewAction())
         # toggleWidgets.addAction(teamBattle.toggleViewAction())
         toggleWidgets.addAction(playerList.toggleViewAction())

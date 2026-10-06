@@ -764,18 +764,6 @@ class WebServerActions(QThread):
         return "OK"
 
     @gui_thread_sync
-    def get_thumbnail(self, scoreboard, file_format):
-        thumbnailPath = self._get_scoreboard(scoreboard).GenerateThumbnail(
-            quiet_mode=True, disable_msgbox=True
-        )
-        if thumbnailPath:
-            if file_format == "jpg":
-                thumbnailPath = thumbnailPath.replace(".png", ".jpg")
-            return os.path.abspath(thumbnailPath)
-        else:
-            return None
-
-    @gui_thread_sync
     def update_bracket(self):
         phase_name = StateManager.Get("bracket.phase")
         group_name = StateManager.Get("bracket.phaseGroup")

@@ -1,9 +1,9 @@
 import math
-import platform
+import os
 import socket
-import subprocess
 from copy import deepcopy
 
+from loguru import logger
 from qtpy import uic
 from qtpy.QtCore import *
 from qtpy.QtGui import *
@@ -11,11 +11,13 @@ from qtpy.QtWidgets import *
 
 from src.TSHColorButton import TSHColorButton
 
+from .Helpers.TSHDictHelper import deep_get
 from .Helpers.TSHDirHelper import TSHResolve
+from .Helpers.TSHLocaleHelper import TSHLocaleHelper
 from .Helpers.TSHVersionHelper import add_beta_label
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .thumbnail import main_generate_thumbnail as thumbnail
+from .TSHGameAssetManager import TSHGameAssetManager
 from .TSHGameReportWidget import TSHGameReportWidget
 from .TSHHotkeys import TSHHotkeys
 from .TSHPlayerDB import TSHPlayerDB
@@ -30,7 +32,6 @@ from .TSHSelectSetWindow import TSHSelectSetWindow
 from .TSHSelectStationWindow import TSHSelectStationWindow
 from .TSHStatsUtil import TSHStatsUtil
 from .TSHTheme import ThemedIcon
-from .TSHThumbnailSettingsWidget import *
 from .TSHTournamentDataProvider import TSHTournamentDataProvider
 
 empty = {}
@@ -197,23 +198,6 @@ class TSHScoreboardWidget(QWidget):
         col.layout().addWidget(self.playerNumber)
         self.playerNumber.valueChanged.connect(self.SetPlayersPerTeam)
 
-        # THUMBNAIL
-        col = QWidget()
-        col.setLayout(QVBoxLayout())
-        col.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
-        col.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
-        topOptions.layout().addWidget(col)
-
-        if not SettingsManager.Get("general.disable_thumbnail_widget", False):
-            self.thumbnailBtn = QPushButton(
-                QApplication.translate("app", "Generate Thumbnail") + " "
-            )
-            self.thumbnailBtn.setIcon(ThemedIcon("assets/icons/png_file.svg"))
-            self.thumbnailBtn.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
-            col.layout().addWidget(self.thumbnailBtn, Qt.AlignmentFlag.AlignRight)
-            # self.thumbnailBtn.setPopupMode(QToolButton.InstantPopup)
-            self.thumbnailBtn.clicked.connect(self.GenerateThumbnail)
-
         # VISIBILITY
         col = QWidget()
         col.setLayout(QVBoxLayout())
@@ -276,7 +260,6 @@ class TSHScoreboardWidget(QWidget):
         bottomOptions.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
         self.innerWidget.layout().addWidget(bottomOptions)
-
 
         self.btSelectSet = QPushButton(QApplication.translate("app", "Load set"))
         self.btSelectSet.setIcon(ThemedIcon("./assets/icons/list.svg"))
@@ -670,55 +653,6 @@ class TSHScoreboardWidget(QWidget):
         StateManager.Set(
             f"score.{self.scoreboardNumber}.team.{team}.losersIndicator", losers_indicator
         )
-
-    def GenerateThumbnail(self, quiet_mode=False, disable_msgbox=False):
-        if not disable_msgbox:
-            msgBox = QMessageBox()
-            msgBox.setWindowIcon(QIcon("assets/icons/icon.png"))
-            msgBox.setWindowTitle(QApplication.translate("thumb_app", "TSH - Thumbnail"))
-        try:
-            thumbnailPath = thumbnail.generate(
-                settingsManager=SettingsManager, scoreboardNumber=self.scoreboardNumber
-            )
-            if not disable_msgbox:
-                msgBox.setText(
-                    QApplication.translate("thumb_app", "The thumbnail has been generated here:")
-                    + " "
-                    + thumbnailPath
-                    + "\n\n"
-                    + QApplication.translate(
-                        "thumb_app", "The video title and description have also been generated."
-                    )
-                )
-                msgBox.setIcon(QMessageBox.NoIcon)
-                # msgBox.setInformativeText(thumbnailPath)
-
-            thumbnail_settings = SettingsManager.Get("thumbnail_config")
-            if not quiet_mode:
-                if thumbnail_settings.get("open_explorer"):
-                    outThumbDir = f"{os.getcwd()}/out/thumbnails/"
-                    if platform.system() == "Windows":
-                        thumbnailPath = thumbnailPath[2:].replace("/", "\\")
-                        outThumbDir = f"{os.getcwd()}\\{thumbnailPath}"
-                        # os.startfile(outThumbDir)
-                        subprocess.Popen(r'explorer /select,"' + outThumbDir + '"')
-                    elif platform.system() == "Darwin":
-                        subprocess.Popen(["open", outThumbDir])
-                    else:
-                        subprocess.Popen(["xdg-open", outThumbDir])
-                else:
-                    if not disable_msgbox:
-                        msgBox.exec()
-            else:
-                return thumbnailPath
-        except Exception as e:
-            if not disable_msgbox:
-                msgBox.setText(QApplication.translate("app", "Warning"))
-                msgBox.setInformativeText(str(e))
-                msgBox.setIcon(QMessageBox.Warning)
-                msgBox.exec()
-            else:
-                raise e
 
     def ToggleElements(self, action: QAction, elements):
         for pw in self.playerWidgets:

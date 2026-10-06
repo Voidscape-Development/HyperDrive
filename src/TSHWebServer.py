@@ -901,22 +901,6 @@ class WebServer(QThread):
             "clear_all", WebServer.actions.clear_all(info.get("scoreboardNumber", "1"))
         )
 
-    # Get thumbnail
-    @api.get("/scoreboard{scoreboardNumber:seg}-get-thumbnail-{fileFormat}")
-    async def get_thumbnail(scoreboardNumber: str, fileFormat: str):
-        if fileFormat.lower() in ["png", "jpg"]:
-            result = await run_in_threadpool(
-                WebServer.actions.get_thumbnail, scoreboardNumber, fileFormat.lower()
-            )
-            if result:
-                return FileResponse(result, media_type=f"image/{fileFormat.lower()}")
-            else:
-                return HTMLResponse(
-                    "An error has occured, please check TSH logs for more information"
-                )
-        else:
-            return HTMLResponse(f"File format {fileFormat} not recognized")
-
     # Get the sets to be played
     @api.get("/get-sets")
     async def get_sets(request: Request):
