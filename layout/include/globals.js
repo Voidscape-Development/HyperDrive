@@ -390,6 +390,23 @@ function ThemeValue(section, field, fallback) {
   return _.get(data, ["layout_theme", "values", section, field], fallback);
 }
 
+// A player's or commentator's custom data, from the file named key in their
+// folder in user_data/custom_player_export/, e.g. CustomData(player, "bio").
+// Text files give their text, .json files what they hold; fallback when the
+// person has no such file. See docs/layout-data.md.
+function CustomData(player, key, fallback = null) {
+  return _.get(player, ["custom", key], fallback);
+}
+
+// The src of a custom image or video of a player, e.g.
+// CustomFile(player, "card"), or fallback when they have none
+function CustomFile(player, key, fallback = null) {
+  const path = CustomData(player, key);
+  return typeof path === "string" && path.startsWith("./user_data/")
+    ? `../../${path}`
+    : fallback;
+}
+
 // Read program_state.json
 function getData() {
   return $.ajax({

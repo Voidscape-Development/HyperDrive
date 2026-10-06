@@ -1,7 +1,8 @@
-# Layout data: bracket, stream queue, games and layout themes
+# Layout data: bracket, stream queue, games, custom player data and layout themes
 
 What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
-Stream Queue widget, the scoreboard's Games tab and the layout theme in use.
+Stream Queue widget, the scoreboard's Games tab, the players' custom data and the
+layout theme in use.
 
 ## `bracket`
 
@@ -173,6 +174,58 @@ page shows the same character select when there's no ruleset.
 Picks are sent to `POST /character_select_report?scoreboard=N[&team=T]` with
 `{"characters": {team: {player: [[character, skin], ...]}}}`; it answers 409
 `ALREADY_PICKED` until the score changes.
+
+## Custom player data: `custom`
+
+Any data a tournament wants on stream for a player or commentator, without a
+field for it in HyperDrive: a bio, a stats card, a walkout video. Each person
+can have a folder in `user_data/custom_player_export/` named after their tag,
+or their sponsor and tag (`GG Kestrel`), in any case; the tag's own folder
+wins when there are both. Characters that can't be in file names
+(`,/|;:<>\?*`) are replaced by `_`, as for avatars.
+
+Every file in it is sent in the person's `custom`, by its name without the
+extension (dots in the name become `_`):
+
+| File | Value |
+| - | - |
+| `.txt` | Its text, without the newline at its end |
+| `.md`, `.html`, `.csv`, `.xml` | Its text |
+| `.json` | What it holds (an object, a list...). Its text if it isn't valid JSON. |
+| Anything else | Its path, e.g. `./user_data/custom_player_export/Azure/card.png` |
+
+```json
+"custom": {
+  "bio": "Two-time HyperDrive Invitational champion",
+  "stats": {"wins": 12, "mains": ["mario"]},
+  "card": "./user_data/custom_player_export/Azure/card.png"
+}
+```
+
+`custom` is in the scoreboard's players (`score.N.team.T.player.P`), the
+commentators (`commentary.N`), the player lists (`player_list.slot.N.player.P`
+and `bracket.players.slot.N.player.P`) and team battle players. People
+without a folder, or with an empty one, have no `custom`.
+
+HyperDrive checks the folders every second, so changes to the files reach the
+layouts while the person is on stream. A file replaced by another with the same
+name keeps the same path, so a layout showing it doesn't load it again. Turn
+it all off with *Export custom player data* in Settings > General.
+
+In layouts, `globals.js` has:
+
+| | |
+| - | - |
+| `CustomData(player, key, fallback = null)` | `player.custom[key]`, or `fallback` |
+| `CustomFile(player, key, fallback = null)` | The `src` of the image or video in the file named `key`, or `fallback` |
+
+```js
+SetInnerHtml($(".bio"), CustomData(player, "bio", ""));
+const card = CustomFile(player, "card");
+SetInnerHtml($(".card"), card ? `<img src="${card}" />` : "");
+```
+
+`player_presentation` shows `bio` under the player's name.
 
 ## `layout_theme`
 

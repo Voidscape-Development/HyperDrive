@@ -14,6 +14,7 @@ from .Helpers.BadWordFilter import BadWordFilter
 from .Helpers.CountryHelper import CountryHelper
 from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
 from .Helpers.DirHelper import ResolvePath
+from .Helpers.DynamicExport import DynamicExport
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.PronounHelper import PronounHelper
 from .Helpers.SponsorHelper import SponsorHelper
@@ -295,6 +296,7 @@ class ScoreboardPlayerWidget(QGroupBox):
                 StateManager.Set(f"{self.path}.avatar", None)
 
             SponsorHelper.ExportValidSponsors(team, self.path)
+            DynamicExport.ExportCustomPlayerData(name, team, self.path)
 
     def ExportPlayerId(self, id=None):
         with self.dataLock:

@@ -5,6 +5,8 @@ user_data/sponsor_logo/
 !user_data/sponsor_logo/*.txt
 user_data/team_logo/
 !user_data/team_logo/*.txt
+user_data/custom_player_export/
+!user_data/custom_player_export/*.txt
 out/
 HyperDrive.exe
 HyperDrive.exe

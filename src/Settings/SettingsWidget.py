@@ -45,9 +45,12 @@ class SettingsWidget(QWidget):
                 SettingsManager.Get(self.settingsBase + "." + setting, defaultValue)
             )
             settingWidget.stateChanged.connect(
-                lambda val=None: SettingsManager.Set(
-                    self.settingsBase + "." + setting, settingWidget.isChecked()
-                )
+                lambda val=None: [
+                    SettingsManager.Set(
+                        self.settingsBase + "." + setting, settingWidget.isChecked()
+                    ),
+                    self.CheckCallable(callback),
+                ]
             )
             resetButton.clicked.connect(
                 lambda bt=None, settingWidget=settingWidget: settingWidget.setChecked(defaultValue)

@@ -405,5 +405,13 @@
       "entrants": 58,
       "event_date": 1786800000
     }
-  ]
+  ],
+  "custom_player_export": {
+    "Azure": {
+      "bio.txt": "Two-time HyperDrive Invitational champion"
+    },
+    "GG Kestrel": {
+      "bio.txt": "Undefeated in winners side this season"
+    }
+  }
 }

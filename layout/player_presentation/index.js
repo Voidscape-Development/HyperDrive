@@ -145,6 +145,9 @@ LoadEverything().then(() => {
 
           SetInnerHtml($(`.p${t + 1} .seed`), player.seed ? `<span class="seed_logo"></span>Seed ${player.seed}` : "");
 
+          // bio.txt in the player's folder in user_data/custom_player_export/
+          SetInnerHtml($(`.p${t + 1} .custom_bio`), CustomData(player, "bio", ""));
+
           let characterNames = [];
           let single_variant = null;
 
@@ -508,6 +511,8 @@ LoadEverything().then(() => {
         SetInnerHtml($(`.p${t + 1} .flagstate`), "");
 
         SetInnerHtml($(`.p${t + 1} .pronoun`), "");
+
+        SetInnerHtml($(`.p${t + 1} .custom_bio`), "");
 
         SetInnerHtml($(`.p${t + 1} .seed`), _.get(team, "player.1.seed") ? `<span class="seed_logo"></span>Seed ${_.get(team, "player.1.seed")}` : "");
 

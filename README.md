@@ -15,6 +15,9 @@ HTML overlays that you add to OBS or any other streaming software as browser sou
 - **More than 40 layouts** in [`layout/`](layout): scoreboards, brackets, top 8s, versus
   screens, stream queues and maps. They share theme options that you can change from the app.
 - **A local player database** that you can edit in the app or from a browser.
+- **Custom player data:** drop a bio, a stats file or an image in a player's folder in
+  `user_data/custom_player_export/` and the layouts get it, live
+  (see [`docs/layout-data.md`](docs/layout-data.md#custom-player-data-custom)).
 - **Web pages for your phone or a second screen:** a remote scoreboard, stage strike and
   character select, served by HyperDrive itself.
 

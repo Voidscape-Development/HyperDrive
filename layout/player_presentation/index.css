@@ -135,6 +135,12 @@ body {
   font-size: 24px;
 }
 
+.info_grid > .custom_bio {
+  max-width: 640px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .p1 .info_grid > div {
   background: color-mix(in srgb, var(--p1-score-bg-color) 35%, var(--bg-color) 65%);
 }
