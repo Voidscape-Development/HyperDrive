@@ -430,11 +430,11 @@ body {
   width: 50%;
 }
 
-.tsh_character > div {
+.hd_character > div {
   opacity: 0.4;
 }
 
-.tsh_character::after {
+.hd_character::after {
   content: "";
   position: absolute;
   width: 100%;

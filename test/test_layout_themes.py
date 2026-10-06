@@ -21,17 +21,17 @@ from src.StateManager import StateManager
 
 StateManager.Set = lambda key, value: StateManager.state.__setitem__(key, value)
 
-from src.LayoutOptions.TSHLayoutThemes import (
+from src.LayoutOptions.LayoutThemes import (
     DEFAULT_THEME,
     CssVariables,
     DefaultValues,
     ExportLayoutTheme,
     Fill,
     ImportLayoutTheme,
+    LayoutThemes,
     LayoutThemeSchema,
     NormalizeLayoutTheme,
     StateExport,
-    TSHLayoutThemes,
 )
 
 
@@ -227,10 +227,15 @@ def TestImportExport():
         )
         ExportLayoutTheme(theme, path)
         with open(path) as f:
-            assert json.load(f)["tsh_layout_theme"] == 1
+            assert json.load(f)["hyperdrive_layout_theme"] == 1
         assert ImportLayoutTheme(path) == theme
 
         # No name: the file's
+        with open(path, "w") as f:
+            json.dump({"hyperdrive_layout_theme": 1, "values": {}}, f)
+        assert ImportLayoutTheme(path)["name"] == "Shared"
+
+        # Files exported before the rename have the old key
         with open(path, "w") as f:
             json.dump({"tsh_layout_theme": 1, "values": {}}, f)
         assert ImportLayoutTheme(path)["name"] == "Shared"
@@ -254,70 +259,70 @@ def TestImportExport():
 def TestManager():
     with tempfile.TemporaryDirectory() as folder:
         path = os.path.join(folder, "user_data", "layout_themes.json")
-        TSHLayoutThemes.Load(path)
-        assert TSHLayoutThemes.ActiveName() == DEFAULT_THEME
-        assert TSHLayoutThemes.Active()["values"] == DefaultValues()
-        assert TSHLayoutThemes.UserThemes() == {}
+        LayoutThemes.Load(path)
+        assert LayoutThemes.ActiveName() == DEFAULT_THEME
+        assert LayoutThemes.Active()["values"] == DefaultValues()
+        assert LayoutThemes.UserThemes() == {}
 
-        TSHLayoutThemes.ExportToState()
+        LayoutThemes.ExportToState()
         assert StateManager.state["layout_theme"]["name"] == "Default"
 
         # The default theme can't be overwritten
         for name in ("", DEFAULT_THEME):
             try:
-                TSHLayoutThemes.SaveTheme({"name": name, "values": {}})
+                LayoutThemes.SaveTheme({"name": name, "values": {}})
                 raise AssertionError(name)
             except ValueError:
                 pass
 
-        TSHLayoutThemes.SaveTheme(
+        LayoutThemes.SaveTheme(
             {"name": "Mine", "values": {"general": {"primary_color": "#111111"}}}
         )
-        assert TSHLayoutThemes.UniqueName("Mine") == "Mine (2)"
-        assert TSHLayoutThemes.UniqueName("Default") == "Default (2)"
+        assert LayoutThemes.UniqueName("Mine") == "Mine (2)"
+        assert LayoutThemes.UniqueName("Default") == "Default (2)"
         # Saving a theme that isn't in use doesn't change the layouts
         assert StateManager.state["layout_theme"]["name"] == "Default"
 
-        TSHLayoutThemes.SetActive("Mine")
+        LayoutThemes.SetActive("Mine")
         assert StateManager.state["layout_theme"]["name"] == "Mine"
         assert StateManager.state["layout_theme"]["css"]["--general-primary-color"] == "#111111"
 
         # Edits to the theme in use go straight to the layouts
-        TSHLayoutThemes.SaveTheme(
+        LayoutThemes.SaveTheme(
             {"name": "Mine", "values": {"general": {"primary_color": "#222222"}}}
         )
         assert StateManager.state["layout_theme"]["css"]["--general-primary-color"] == "#222222"
 
         # Kept in the file
-        TSHLayoutThemes.Load(path)
-        assert TSHLayoutThemes.ActiveName() == "Mine"
-        assert TSHLayoutThemes.Active()["values"]["general"]["primary_color"] == "#222222"
+        LayoutThemes.Load(path)
+        assert LayoutThemes.ActiveName() == "Mine"
+        assert LayoutThemes.Active()["values"]["general"]["primary_color"] == "#222222"
 
         # Renaming the theme in use keeps it in use
-        TSHLayoutThemes.SaveTheme(dict(TSHLayoutThemes.Active(), name="Renamed"), "Mine")
-        assert TSHLayoutThemes.ActiveName() == "Renamed"
-        assert list(TSHLayoutThemes.UserThemes()) == ["Renamed"]
+        LayoutThemes.SaveTheme(dict(LayoutThemes.Active(), name="Renamed"), "Mine")
+        assert LayoutThemes.ActiveName() == "Renamed"
+        assert list(LayoutThemes.UserThemes()) == ["Renamed"]
         assert StateManager.state["layout_theme"]["name"] == "Renamed"
 
         # Unknown themes fall back to the default
-        TSHLayoutThemes.SetActive("Nope")
-        assert TSHLayoutThemes.ActiveName() == DEFAULT_THEME
+        LayoutThemes.SetActive("Nope")
+        assert LayoutThemes.ActiveName() == DEFAULT_THEME
 
-        TSHLayoutThemes.SetActive("Renamed")
-        TSHLayoutThemes.DeleteTheme("Renamed")
-        assert TSHLayoutThemes.ActiveName() == DEFAULT_THEME
+        LayoutThemes.SetActive("Renamed")
+        LayoutThemes.DeleteTheme("Renamed")
+        assert LayoutThemes.ActiveName() == DEFAULT_THEME
         assert StateManager.state["layout_theme"]["name"] == "Default"
 
         # A broken file means no user themes, not a crash
         with open(path, "w") as f:
             f.write("[1, 2")
-        TSHLayoutThemes.Load(path)
-        assert TSHLayoutThemes.UserThemes() == {}
+        LayoutThemes.Load(path)
+        assert LayoutThemes.UserThemes() == {}
         with open(path, "w") as f:
             json.dump({"active": "x", "themes": {"x": {"values": "bad"}, "y": {"values": {}}}}, f)
-        TSHLayoutThemes.Load(path)
-        assert list(TSHLayoutThemes.UserThemes()) == ["y"]
-        assert TSHLayoutThemes.ActiveName() == DEFAULT_THEME
+        LayoutThemes.Load(path)
+        assert list(LayoutThemes.UserThemes()) == ["y"]
+        assert LayoutThemes.ActiveName() == DEFAULT_THEME
     print("TestManager: OK")
 
 

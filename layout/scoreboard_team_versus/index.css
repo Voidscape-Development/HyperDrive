@@ -441,12 +441,12 @@ body {
   position: relative;
 }
 
-.char_icon_bg .tsh_character {
+.char_icon_bg .hd_character {
   height: 100%;
   position: relative;
 }
 
-.char_icon_bg .tsh_character > div:first-child {
+.char_icon_bg .hd_character > div:first-child {
   background-position: center !important;
   background-size: contain !important;
   height: 100% !important;
@@ -508,7 +508,7 @@ body {
   /* mask-image: linear-gradient(to left, black 50%, transparent 100%); */
 }
 
-.tsh_character {
+.hd_character {
   overflow: visible;
   position: relative;
 }

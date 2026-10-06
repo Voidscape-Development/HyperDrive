@@ -332,19 +332,19 @@ body {
   transition: opacity 0.5s;
 }
 
-/* Layout theme colors (TSH > Layout themes, "Use this theme's colors in layouts") */
-body.tsh-theme-colors .p1 .inner_container {
+/* Layout theme colors (HyperDrive > Layout themes, "Use this theme's colors in layouts") */
+body.hd-theme-colors .p1 .inner_container {
   background: linear-gradient(90deg, var(--bg-color) 0%, var(--p1-score-bg-color) 100%);
 }
 
-body.tsh-theme-colors .p2 .inner_container {
+body.hd-theme-colors .p2 .inner_container {
   background: linear-gradient(270deg, var(--bg-color) 0%, var(--p2-score-bg-color) 100%);
 }
 
-body.tsh-theme-colors .inner_container {
+body.hd-theme-colors .inner_container {
   border-radius: var(--border-radius);
 }
 
-body.tsh-theme-colors .tournament_container {
+body.hd-theme-colors .tournament_container {
   background: linear-gradient(90deg, var(--accent-secondary-color) 0%, var(--accent-color) 100%);
 }

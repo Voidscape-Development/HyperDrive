@@ -484,7 +484,7 @@ body {
   justify-content: center;
 }
 
-.icon_image > .tsh_character {
+.icon_image > .hd_character {
   flex-shrink: 0;
 }
 /* Round robin and swiss pools, under the header */

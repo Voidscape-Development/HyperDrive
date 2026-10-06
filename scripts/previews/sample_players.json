@@ -1,10 +1,10 @@
 {
   "tournament": {
-    "tournamentName": "TSH Invitational #42",
+    "tournamentName": "HyperDrive Invitational #42",
     "eventName": "Ultimate Singles",
     "numEntrants": 128,
     "address": "1 Example Street, Springfield",
-    "shortLink": "tsh-invitational-42"
+    "shortLink": "hd-invitational-42"
   },
   "scoreboard": {
     "phase": "Top 8",
@@ -21,7 +21,7 @@
   },
   "commentators": [
     {
-      "prefix": "TSH",
+      "prefix": "HD",
       "gamerTag": "Caster One",
       "name": "Alex Doe",
       "twitter": "casterone",
@@ -36,10 +36,10 @@
   ],
   "players": [
     {
-      "prefix": "TSH",
+      "prefix": "HD",
       "gamerTag": "Azure",
       "name": "Ana Silva",
-      "twitter": "azure_tsh",
+      "twitter": "azure_hd",
       "pronoun": "she/her",
       "country_code": "BR",
       "state_code": "SP",
@@ -312,7 +312,7 @@
   "recent_sets": [
     {
       "id": 1,
-      "tournament": "TSH Weekly #120",
+      "tournament": "HyperDrive Weekly #120",
       "event": "Ultimate Singles",
       "online": false,
       "score": [
@@ -327,7 +327,7 @@
     },
     {
       "id": 2,
-      "tournament": "TSH Weekly #118",
+      "tournament": "HyperDrive Weekly #118",
       "event": "Ultimate Singles",
       "online": true,
       "score": [
@@ -387,7 +387,7 @@
     {
       "placement": 1,
       "event_name": "Ultimate Singles",
-      "tournament_name": "TSH Weekly #120",
+      "tournament_name": "HyperDrive Weekly #120",
       "entrants": 64,
       "event_date": 1788000000
     },
@@ -401,7 +401,7 @@
     {
       "placement": 3,
       "event_name": "Ultimate Singles",
-      "tournament_name": "TSH Weekly #118",
+      "tournament_name": "HyperDrive Weekly #118",
       "entrants": 58,
       "event_date": 1786800000
     }

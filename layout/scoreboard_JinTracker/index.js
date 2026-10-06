@@ -221,7 +221,7 @@ LoadEverything().then(() => {
             );
             UpdateColor(player, t);
           }
-          if (team.color && !tsh_settings["forceDefaultScoreColors"]) {
+          if (team.color && !hd_settings["forceDefaultScoreColors"]) {
             document
               .querySelector(":root")
               .style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
@@ -287,7 +287,7 @@ LoadEverything().then(() => {
           SetInnerHtml($(`.p${t + 1}.container .sponsor_icon`), "");
           SetInnerHtml($(`.p${t + 1} .score`), String(team.score));
           UpdateColorAlternate(player, t);
-          if (team.color && !tsh_settings["forceDefaultScoreColors"]) {
+          if (team.color && !hd_settings["forceDefaultScoreColors"]) {
             document
               .querySelector(":root")
               .style.setProperty(`--p${t + 1}-score-bg-color`, team.color);

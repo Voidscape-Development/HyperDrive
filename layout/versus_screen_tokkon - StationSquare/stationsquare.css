@@ -3,7 +3,7 @@
    Loaded after index.css + team_shot.css; every rule is scoped to
    body.stationsquare (every index*.html opts in).
    Same design language as scoreboard - StationSquare/stationsquare.css.
-   Palette is fixed (ignores TSH team colors) by design.
+   Palette is fixed (ignores HyperDrive team colors) by design.
    Sections:
      1. Tokens
      2. Top box: tournament name
@@ -332,7 +332,7 @@
   position: relative;
   z-index: 1;
   height: 100%;
-  /* Pull the italic glyph back to optical center (TSH owns transform) */
+  /* Pull the italic glyph back to optical center (HyperDrive owns transform) */
   left: -3px;
 }
 

@@ -256,7 +256,7 @@ body {
   border-radius: var(--border-radius);
 }
 
-.tsh_character_container {
+.hd_character_container {
   gap: 4px;
   width: unset;
   margin-left: 4px;
@@ -264,7 +264,7 @@ body {
   align-items: center;
 }
 
-.tsh_character {
+.hd_character {
   width: 36px;
   height: 36px;
   background: #3f3f46;
@@ -272,21 +272,21 @@ body {
   overflow: hidden;
 }
 
-.portraits .tsh_character_container {
+.portraits .hd_character_container {
   width: 92px;
 }
 
-.portraits .tsh_character {
+.portraits .hd_character {
   width: 92px;
   border-radius: 0;
   height: 100%;
 }
 
-.p1 .tsh_character {
+.p1 .hd_character {
   background: var(--p1-score-bg-color);
 }
 
-.p2 .tsh_character {
+.p2 .hd_character {
   background: var(--p2-score-bg-color);
 }
 

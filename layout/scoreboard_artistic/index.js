@@ -139,7 +139,7 @@ LoadEverything().then(() => {
             );
           }
         }
-        if(team.color && !tsh_settings["forceDefaultScoreColors"]) {
+        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
           document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
           document.querySelector(':root').style.setProperty(`--p${t + 1}-sponsor-color`, team.color);
         }
@@ -241,7 +241,7 @@ LoadEverything().then(() => {
           `<div class='sponsor-logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
         );
         
-        if(team.color && !tsh_settings["forceDefaultScoreColors"]) {
+        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
           document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
           document.querySelector(':root').style.setProperty(`--p${t + 1}-sponsor-color`, team.color);
         }

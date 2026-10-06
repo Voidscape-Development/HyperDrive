@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 Push-Location (Join-Path $PSScriptRoot "..")
 
 try {
-    # HyperDrive.exe isn't committed: build it with dependencies\tsh.spec and copy it here
+    # HyperDrive.exe isn't committed: build it with dependencies\hyperdrive.spec and copy it here
     if (-not (Test-Path "HyperDrive.exe")) {
         throw "HyperDrive.exe not found. Build it and copy it to the repository root first."
     }
@@ -34,7 +34,7 @@ try {
         }
     }
 
-    # The executable embeds the files from src it uses, but TSHResolve looks
+    # The executable embeds the files from src it uses, but ResolvePath looks
     # for them next to it first and they've been needed there before
     Copy-Item -Recurse -Force "src" "HyperDrive\src"
     Get-ChildItem -Path "HyperDrive\src" -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force

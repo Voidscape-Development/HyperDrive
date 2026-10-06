@@ -3,14 +3,14 @@
 // round robin and swiss pools, and the older "rounds" shape some layouts
 // were drawn around. Load after globals.js:
 //   <script src="../include/bracket.js"></script>
-var TSHBracket = {
+var HDBracket = {
   POOL_TYPES: ["ROUND_ROBIN", "SWISS"],
 
   // Value standing for a bye in the rounds shape (any id past the players)
   BYE_ID: 99999,
 
   IsPool(bracket) {
-    return TSHBracket.POOL_TYPES.includes(_.get(bracket, "type"));
+    return HDBracket.POOL_TYPES.includes(_.get(bracket, "type"));
   },
 
   Columns(bracket, side) {
@@ -21,11 +21,11 @@ var TSHBracket = {
   // winners then grand finals (and a 3rd place match, when there's no
   // losers side) on top, losers below
   Areas(bracket) {
-    const losers = TSHBracket.Columns(bracket, "losers").map((c) => ({ ...c, side: "losers" }));
-    const third = TSHBracket.Columns(bracket, "third_place").map((c) => ({ ...c, side: "third_place" }));
+    const losers = HDBracket.Columns(bracket, "losers").map((c) => ({ ...c, side: "losers" }));
+    const third = HDBracket.Columns(bracket, "third_place").map((c) => ({ ...c, side: "third_place" }));
     const upper = []
-      .concat(TSHBracket.Columns(bracket, "winners").map((c) => ({ ...c, side: "winners" })))
-      .concat(TSHBracket.Columns(bracket, "grand_final").map((c) => ({ ...c, side: "grand_final" })));
+      .concat(HDBracket.Columns(bracket, "winners").map((c) => ({ ...c, side: "winners" })))
+      .concat(HDBracket.Columns(bracket, "grand_final").map((c) => ({ ...c, side: "grand_final" })));
     if (losers.length == 0) return { upper: upper.concat(third), lower: [] };
     return { upper, lower: losers.concat(third) };
   },
@@ -98,9 +98,9 @@ var TSHBracket = {
   ToRounds(bracket, players) {
     const rounds = {};
     const where = {}; // set id: [roundKey, index]
-    const winners = TSHBracket.Columns(bracket, "winners");
-    const grandFinal = TSHBracket.Columns(bracket, "grand_final");
-    const losers = TSHBracket.Columns(bracket, "losers");
+    const winners = HDBracket.Columns(bracket, "winners");
+    const grandFinal = HDBracket.Columns(bracket, "grand_final");
+    const losers = HDBracket.Columns(bracket, "losers");
     const sets = bracket.sets || {};
 
     const add = (columns, keyOf) => {
@@ -125,7 +125,7 @@ var TSHBracket = {
       if (next) rounds[String(c + 1)].size = Math.max(rounds[String(c + 1)].size, next.size * 2);
     }
 
-    const playerId = (p) => (p.id ? p.id : p.bye ? TSHBracket.BYE_ID : -2);
+    const playerId = (p) => (p.id ? p.id : p.bye ? HDBracket.BYE_ID : -2);
     const nameOf = (id) => {
       const team = players ? players[id] : null;
       if (!team) return "";
@@ -171,12 +171,12 @@ var TSHBracket = {
         if (k > 0 && rounds[String(k + 1)] && k < winners.length) {
           nextWin = [k + 1, i >> 1];
           const target = rounds[String(k + 1)].sets[i >> 1];
-          if (target && target.playerId[i % 2] > 0 && target.playerId[i % 2] != TSHBracket.BYE_ID) {
+          if (target && target.playerId[i % 2] > 0 && target.playerId[i % 2] != HDBracket.BYE_ID) {
             player = target.playerId[i % 2];
           }
         }
         round.sets[i] = {
-          playerId: [player, TSHBracket.BYE_ID],
+          playerId: [player, HDBracket.BYE_ID],
           score: [0, 0],
           completed: player > 0,
           nextWin,
@@ -198,7 +198,7 @@ var TSHBracket = {
     const bracket = _.get(data, "bracket.bracket", {});
     const players = _.get(data, "bracket.players.slot", {});
     const highlight = ThemeValue("standings", "highlight_top", 0);
-    const pool = TSHBracket.IsPool(bracket);
+    const pool = HDBracket.IsPool(bracket);
     const swiss = bracket.type == "SWISS";
     let html = `<table class="standings_table ${pool ? "pool" : "elimination"}">`;
 
@@ -213,11 +213,11 @@ var TSHBracket = {
       </tr></thead><tbody>`;
       for (const row of bracket.standings || []) {
         const team = players[row.playerId];
-        const name = team ? await TSHBracket.TeamName(team) : row.name;
+        const name = team ? await HDBracket.TeamName(team) : row.name;
         const record = `${row.wins}-${row.losses}${row.draws ? "-" + row.draws : ""}`;
         html += `<tr class="${highlight && row.rank <= highlight ? "top" : ""}" data-player="${row.playerId}">
           <td class="st_rank">${row.rank}</td>
-          <td class="st_name">${TSHBracket.FlagHtml(team)}<span>${name}</span></td>
+          <td class="st_name">${HDBracket.FlagHtml(team)}<span>${name}</span></td>
           <td class="st_record">${record}</td>
           <td class="st_points">${row.points}</td>
           <td class="st_game_diff">${row.gameDiff > 0 ? "+" : ""}${row.gameDiff}</td>
@@ -228,10 +228,10 @@ var TSHBracket = {
       html += `<thead><tr><th class="st_rank">#</th><th class="st_name">Player</th></tr></thead><tbody>`;
       for (const row of bracket.results || []) {
         const team = players[row.id];
-        const name = team ? await TSHBracket.TeamName(team) : row.name;
+        const name = team ? await HDBracket.TeamName(team) : row.name;
         html += `<tr class="${highlight && row.order <= highlight ? "top" : ""}" data-player="${row.id}">
           <td class="st_rank">${row.order}</td>
-          <td class="st_name">${TSHBracket.FlagHtml(team)}<span>${name}</span></td>
+          <td class="st_name">${HDBracket.FlagHtml(team)}<span>${name}</span></td>
         </tr>`;
       }
     }
@@ -259,8 +259,8 @@ var TSHBracket = {
     const bracket = _.get(data, "bracket.bracket", {});
     const sets = bracket.sets || {};
     const players = _.get(data, "bracket.players.slot", {});
-    const columns = TSHBracket.Columns(bracket, "pool");
-    const byes = TSHBracket.ByesText(bracket);
+    const columns = HDBracket.Columns(bracket, "pool");
+    const byes = HDBracket.ByesText(bracket);
     const shape = JSON.stringify(columns.map((c) => [c.key, c.sets]));
 
     if (container.data("shape") != shape) {
@@ -293,16 +293,16 @@ var TSHBracket = {
         const set = sets[id];
         const element = round.find(`.pool_set[data-set="${CSS.escape(id)}"]`);
         if (!set || !element.get(0)) continue;
-        const winner = TSHBracket.Winner(set);
+        const winner = HDBracket.Winner(set);
         for (const slot of [0, 1]) {
           const p = set.players[slot];
           const row = element.find(`.slot_p_${slot}`);
           const team = p && p.id ? players[p.id] : null;
           SetInnerHtml(
             row.find(".name"),
-            team ? await TSHBracket.TeamName(team) : p && p.pending && p.source ? `<span class="pending_source">${_.escape(p.source)}</span>` : ""
+            team ? await HDBracket.TeamName(team) : p && p.pending && p.source ? `<span class="pending_source">${_.escape(p.source)}</span>` : ""
           );
-          SetInnerHtml(row.find(".score"), TSHBracket.ScoreText(set, slot));
+          SetInnerHtml(row.find(".score"), HDBracket.ScoreText(set, slot));
           row.toggleClass("won", winner === slot).toggleClass("lost", winner === 1 - slot);
           row.addClass("player");
         }

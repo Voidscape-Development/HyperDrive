@@ -149430,6 +149430,45 @@
         ],
         "characterId": null,
         "expand": []
+      },
+      {
+        "id": 3633,
+        "name": "Id",
+        "isCommon": null,
+        "videogameId": 48548,
+        "externalIdMap": null,
+        "images": [
+          {
+            "id": 9921438,
+            "width": 950,
+            "height": 950,
+            "ratio": 1,
+            "type": "icon",
+            "url": "https://images.start.gg/images/character/3633/image-9c1a6dbfd35c2881c82a3f76c3c40cae-optimized.png",
+            "isOriginal": true,
+            "entity": null,
+            "entityId": null,
+            "uploadedBy": null,
+            "createdAt": null,
+            "updatedAt": null
+          },
+          {
+            "id": 9921439,
+            "width": 950,
+            "height": 950,
+            "ratio": 1,
+            "type": "stockIcon",
+            "url": "https://images.start.gg/images/character/3633/image-23449e096021599bbef0d1f5fb1c249f-optimized.png",
+            "isOriginal": true,
+            "entity": null,
+            "entityId": null,
+            "uploadedBy": null,
+            "createdAt": null,
+            "updatedAt": null
+          }
+        ],
+        "characterId": null,
+        "expand": []
       }
     ]
   },
@@ -152758,7 +152797,8 @@
     3629,
     3630,
     3631,
-    3632
+    3632,
+    3633
   ],
   "resultEntity": "character",
   "actionRecords": []

@@ -1,6 +1,6 @@
 # Layout data: bracket, stream queue, games and layout themes
 
-What TSH sends to the layouts (in `program_state`) for the bracket widget, the
+What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
 Stream Queue widget, the scoreboard's Games tab and the layout theme in use.
 
 ## `bracket`
@@ -53,7 +53,7 @@ Each set in `sets`:
 ### Helpers for layouts: `layout/include/bracket.js`
 
 Load it after `globals.js` (`<script src="../include/bracket.js"></script>`)
-for `TSHBracket`:
+for `HDBracket`:
 
 | | |
 | - | - |
@@ -124,7 +124,7 @@ The player list (unchanged), and the start.gg phase and phase group names.
 | `streams` | Every stream, in the widget's order: `[{name, manual, scoreboard, sets}]`. `scoreboard` is the scoreboard number showing the stream's sets, or `null`. |
 | `byName` | The same sets, by stream name |
 | `lastUpdated` | When start.gg's queues were last pulled (seconds since the epoch) |
-| `currentStream` | The Twitch username set in TSH |
+| `currentStream` | The Twitch username set in HyperDrive |
 
 Each set has start.gg's set data (`id`, `match`, `phase`, `best_of`,
 `best_of_text`, `state`, `station`, `team: {"1": {teamName, losers, seed,
@@ -177,7 +177,7 @@ The theme picked in Layout themes:
 | Key | |
 | - | - |
 | `name` | |
-| `values` | Every field, by section: `{general: {primary_color, ...}, chip: {...}, ...}` (see `LayoutThemeSchema()` in `src/LayoutOptions/TSHLayoutThemes.py`) |
+| `values` | Every field, by section: `{general: {primary_color, ...}, chip: {...}, ...}` (see `LayoutThemeSchema()` in `src/LayoutOptions/LayoutThemes.py`) |
 | `css` | The values as CSS custom properties: `{"--general-primary-color": "#d02670", ...}` |
 | `stylesheet` | The same as a `:root { ... }` stylesheet |
 
@@ -194,23 +194,23 @@ it before each `Update()`:
   `--p1/p2-sponsor-color` with custom sponsor colors), plus `--chip-color`,
   `--chip-bg`, `--bracket-score-bg`, `--bracket-sponsor-bg`,
   `--bracket-winner-color`, `--bracket-line-color`, `--strike-striked-color`
-  and `--strike-selected-color`, and adds `tsh-theme-colors` to `<body>`.
+  and `--strike-selected-color`, and adds `hd-theme-colors` to `<body>`.
   These go in a stylesheet, so a color a layout sets on `:root` itself
   (e.g. a scoreboard's team colors) wins.
 - Display options add classes to `<body>`, only for values that change what
   layouts show. `main.css` and `include/bracket.css` hide by them:
-  `tsh-hide-pronouns`, `tsh-hide-seed`, `tsh-hide-social`,
-  `tsh-hide-country-flag`, `tsh-hide-state-flag`, `tsh-hide-avatar`,
-  `tsh-hide-losers`, `tsh-no-text-outline`, `tsh-text-upper`, `tsh-text-none`,
-  `tsh-bracket-hide-avatar`, `tsh-bracket-hide-character`,
-  `tsh-bracket-hide-country-flag`, `tsh-bracket-hide-state-flag`,
-  `tsh-bracket-hide-seed`, `tsh-bracket-hide-round-names`,
-  `tsh-bracket-show-identifier`, `tsh-bracket-hide-pending`,
-  `tsh-bracket-no-dim-losers`, `tsh-bracket-hide-focus-label`,
-  `tsh-standings-hide-game-diff`,
-  `tsh-standings-hide-points`, `tsh-standings-show-buchholz`,
-  `tsh-strike-hide-names` and `tsh-strike-hide-striker`.
+  `hd-hide-pronouns`, `hd-hide-seed`, `hd-hide-social`,
+  `hd-hide-country-flag`, `hd-hide-state-flag`, `hd-hide-avatar`,
+  `hd-hide-losers`, `hd-no-text-outline`, `hd-text-upper`, `hd-text-none`,
+  `hd-bracket-hide-avatar`, `hd-bracket-hide-character`,
+  `hd-bracket-hide-country-flag`, `hd-bracket-hide-state-flag`,
+  `hd-bracket-hide-seed`, `hd-bracket-hide-round-names`,
+  `hd-bracket-show-identifier`, `hd-bracket-hide-pending`,
+  `hd-bracket-no-dim-losers`, `hd-bracket-hide-focus-label`,
+  `hd-standings-hide-game-diff`,
+  `hd-standings-hide-points`, `hd-standings-show-buchholz`,
+  `hd-strike-hide-names` and `hd-strike-hide-striker`.
 - The animation speed is set on GSAP's global timeline (off: 1000x).
 
-A `tsh_theme` event is sent on `document` after it's applied, and
+A `hd_theme` event is sent on `document` after it's applied, and
 `ThemeValue(section, field, fallback)` reads a value.

@@ -16,7 +16,7 @@ print(file_list)
 
 languages = ["en", "pt-BR", "fr", "ja", "es", "de", "it", "zh-CN", "zh-TW"]
 
-output = [f"src/i18n/TSH_{lang}.ts" for lang in languages]
+output = [f"src/i18n/HyperDrive_{lang}.ts" for lang in languages]
 
 os.system(f"pyside6-lupdate {' '.join(file_list)} -ts {' '.join(output)}")
 

@@ -2,7 +2,7 @@ import os
 
 import orjson
 
-from .Helpers.TSHDictHelper import *
+from .Helpers.DictHelper import *
 
 
 class SettingsManager:

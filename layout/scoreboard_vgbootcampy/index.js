@@ -135,7 +135,7 @@ LoadEverything().then(() => {
               : `<div class='sponsor-logo' style=''></div>`
           );
         }
-        if(team.color && !tsh_settings["forceDefaultScoreColors"]) {
+        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
           document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
         }
       }

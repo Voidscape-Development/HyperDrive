@@ -1,4 +1,4 @@
-# Checks the stage strike rules of TSHStageStrikeLogic.
+# Checks the stage strike rules of StageStrikeLogic.
 # Run from the repository root: python test/test_stage_strike_logic.py
 import os
 import sys
@@ -48,12 +48,12 @@ state_module = types.ModuleType("src.StateManager")
 state_module.StateManager = FakeStateManager
 sys.modules["src.StateManager"] = state_module
 
-manager_module = types.ModuleType("src.TSHScoreboardManager")
-manager_module.TSHScoreboardManager = FakeScoreboardManager
+manager_module = types.ModuleType("src.ScoreboardManager")
+manager_module.ScoreboardManager = FakeScoreboardManager
 FakeScoreboardManager.instance = FakeScoreboardManager()
-sys.modules["src.TSHScoreboardManager"] = manager_module
+sys.modules["src.ScoreboardManager"] = manager_module
 
-from src.TSHStageStrikeLogic import TSHStageStrikeLogic
+from src.StageStrikeLogic import StageStrikeLogic
 
 
 class Ruleset:
@@ -81,7 +81,7 @@ STARTERS = ["bf", "fd", "sv", "ps2", "tc"]
 def NewLogic(**kwargs):
     FakeScoreboardManager.instance = FakeScoreboardManager()
     FakeStateManager.state = {}
-    logic = TSHStageStrikeLogic(1)
+    logic = StageStrikeLogic(1)
     logic.SetRuleset(Ruleset(STARTERS, **kwargs))
     return logic
 

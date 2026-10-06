@@ -1,0 +1,178 @@
+import traceback
+
+from loguru import logger
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtWidgets import *
+
+from .DisplayOptions import ApplyHiddenElements
+from .ScoreboardPlayerWidget import ScoreboardPlayerWidget
+from .StateManager import StateManager
+
+
+class PlayerListSlotWidgetSignals(QObject):
+    dataChanged = Signal()
+
+
+class PlayerListSlotWidget(QGroupBox):
+    def __init__(self, index, playerList, base="player_list", *args):
+        super().__init__(*args)
+        self.index = index
+        self.playerList = playerList
+
+        self.base = base
+
+        self.signals = PlayerListSlotWidgetSignals()
+
+        self.setLayout(QVBoxLayout())
+        slotNameWidget = QWidget()
+        slotNameWidget.setLayout(QHBoxLayout())
+
+        self.slotName = QLineEdit()
+        slotNameLabel = QLabel()
+        slotNameLabel.setText(QApplication.translate("Form", "Team Name"))
+        slotNameLabel.setMaximumWidth(150)
+        slotNameLabel.setMinimumWidth(slotNameLabel.maximumWidth())
+        slotNameWidget.layout().addWidget(slotNameLabel)
+        slotNameWidget.layout().addWidget(self.slotName)
+        self.layout().addWidget(slotNameWidget)
+
+        self.scoreWidget = QWidget()
+        self.scoreWidget.setLayout(QHBoxLayout())
+        scoreLabel = QLabel()
+        scoreLabel.setText(QApplication.translate("app", "Score"))
+        score = QSpinBox()
+        score.setMaximum(999999)
+        self.scoreWidget.layout().addWidget(scoreLabel)
+        self.scoreWidget.layout().addWidget(score)
+        score.editingFinished.connect(
+            lambda: [StateManager.Set(f"{self.base}.slot.{self.index}.score", score.value())]
+        )
+        self.layout().addWidget(self.scoreWidget)
+        score.editingFinished.emit()
+        self.scoreWidget.setVisible(False)
+        scoreLabel.setMaximumWidth(slotNameLabel.maximumWidth())
+        scoreLabel.setMinimumWidth(scoreLabel.maximumWidth())
+
+        self.childDataChangedLock = False
+
+        self.slotName.editingFinished.connect(
+            lambda: [StateManager.Set(f"{self.base}.slot.{self.index}.name", self.slotName.text())]
+        )
+        self.slotName.editingFinished.emit()
+
+        self.list = QWidget()
+        self.list.setLayout(QHBoxLayout())
+        self.layout().addWidget(self.list)
+
+        self.playerWidgets = []
+
+    def SetPlayersPerTeam(self, number):
+        # logger.info(f"PlayerListSlotWidget#SetPlayersPerTeam({number})")
+        if number != len(self.playerWidgets):
+            with StateManager.SaveBlock():
+                self.DoSetPlayersPerTeam(number)
+
+        # if number > 1:
+        #     self.team1column.findChild(QLineEdit, "teamName").setVisible(True)
+        #     self.team2column.findChild(QLineEdit, "teamName").setVisible(True)
+        # else:
+        #     self.team1column.findChild(QLineEdit, "teamName").setVisible(False)
+        #     self.team1column.findChild(QLineEdit, "teamName").setText("")
+        #     self.team2column.findChild(QLineEdit, "teamName").setVisible(False)
+        #     self.team2column.findChild(QLineEdit, "teamName").setText("")
+
+    def DoSetPlayersPerTeam(self, number):
+        while len(self.playerWidgets) < number:
+            p = ScoreboardPlayerWidget(
+                index=len(self.playerWidgets) + 1,
+                teamNumber=1,
+                path=f"{self.base}.slot.{self.index}.player.{len(self.playerWidgets) + 1}",
+            )
+            self.playerWidgets.append(p)
+            self.list.layout().addWidget(p)
+
+            p.SetCharactersPerPlayer(self.playerList.charactersPerPlayer)
+            ApplyHiddenElements(p, self.playerList.hiddenElements)
+
+            index = len(self.playerWidgets) - 1
+
+            p.btMoveUp.clicked.connect(
+                lambda x=None, index=index, p=p: p.SwapWith(
+                    self.playerWidgets[max(0, self.playerWidgets.index(p) - 1)]
+                )
+            )
+            p.btMoveDown.clicked.connect(
+                lambda x=None, index=index, p=p: p.SwapWith(
+                    self.playerWidgets[
+                        min(len(self.playerWidgets) - 1, self.playerWidgets.index(p) + 1)
+                    ]
+                )
+            )
+
+            p.instanceSignals.dataChanged.connect(self.ChildDataChangedEmit)
+
+        while len(self.playerWidgets) > number:
+            p = self.playerWidgets[-1]
+            p.setParent(None)
+            self.playerWidgets.remove(p)
+            StateManager.Unset(p.path)
+            p.deleteLater()
+
+    def ChildDataChangedEmit(self):
+        if not self.childDataChangedLock:
+            self.signals.dataChanged.emit()
+
+    def SetCharacterNumber(self, value):
+        # logger.info(f"PlayerListSlotWidget#SetCharacterNumber({value})")
+        with StateManager.SaveBlock():
+            for pw in self.playerWidgets:
+                pw.SetCharactersPerPlayer(value)
+
+    def SetTeamData(self, data, enrichBlocking=True):
+        data = data or {}
+
+        try:
+            with StateManager.SaveBlock():
+                self.childDataChangedLock = True
+
+                if data.get("name"):
+                    self.slotName.setText(data.get("name"))
+                    self.slotName.editingFinished.emit()
+                else:
+                    self.slotName.setText("")
+                    self.slotName.editingFinished.emit()
+
+                StateManager.Set(f"{self.base}.slot.{self.index}.wins", data.get("wins"))
+                StateManager.Set(f"{self.base}.slot.{self.index}.loses", data.get("losses"))
+                StateManager.Set(
+                    f"{self.base}.slot.{self.index}.winPercentage", data.get("winPercentage")
+                )
+
+                for i, pw in enumerate(self.playerWidgets):
+                    if data.get("players"):
+                        try:
+                            data.get("players")[i]["wins"] = data.get("wins")
+                            data.get("players")[i]["losses"] = data.get("losses")
+                            data.get("players")[i]["winPercentage"] = data.get("winPercentage")
+                            pw.SetData(data.get("players")[i], enrichBlocking=enrichBlocking)
+                        except:
+                            pw.Clear()
+                            logger.error(traceback.format_exc())
+                    else:
+                        pw.Clear()
+        finally:
+            self.childDataChangedLock = False
+
+        self.signals.dataChanged.emit()
+
+    def Clear(self):
+        try:
+            with StateManager.SaveBlock():
+                self.childDataChangedLock = True
+                for i, pw in enumerate(self.playerWidgets):
+                    pw.Clear()
+        finally:
+            self.childDataChangedLock = False
+
+        self.signals.dataChanged.emit()

@@ -2,7 +2,7 @@
 
 - Go to OBS and add a new Browser.
 - Select the /layout/scoreboard_vgbootcampy_waiting/index.html as the local file and set its width and height to 1920 and 1080 respectively.
-- Run TSH and enter the players' information.
+- Run HyperDrive and enter the players' information.
 
 # Setup Instructions:
 

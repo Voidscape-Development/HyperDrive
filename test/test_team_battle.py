@@ -24,8 +24,8 @@ SettingsManager.Set("general.team_battle_default_stocks", 3)
 SettingsManager.Set("general.team_battle_default_first_to", 2)
 
 from src.StateManager import StateManager
-from src.TSHTeamBattleModeEnum import TSHTeamBattleModeEnum
-from src.TSHTeamBattleWidget import TSHTeamBattleWidget
+from src.TeamBattleModeEnum import TeamBattleModeEnum
+from src.TeamBattleWidget import TeamBattleWidget
 
 failures = 0
 
@@ -37,7 +37,7 @@ def check(condition, message):
         print(f"FAIL: {message}")
 
 
-w = TSHTeamBattleWidget()
+w = TeamBattleWidget()
 
 
 def stocks(team):
@@ -54,7 +54,7 @@ def active(team):
 
 # Stock Pool
 w.autoAdvance.setChecked(True)
-check(w.battleMode is TSHTeamBattleModeEnum.STOCK_POOL, "starts in Stock Pool")
+check(w.battleMode is TeamBattleModeEnum.STOCK_POOL, "starts in Stock Pool")
 check(w.livesNumber.value() == 3, "starts with the stocks from the settings")
 w.playerNumber.setValue(3)
 check(stocks(1) == [3, 3, 3] and stocks(2) == [3, 3, 3], "new players get the stocks")
@@ -104,7 +104,7 @@ check(stocks(1)[0] == 3 and not eliminated(1)[0], "clearing a player doesn't eli
 
 # First To
 w.modeCombo.setCurrentIndex(1)
-check(w.battleMode is TSHTeamBattleModeEnum.FIRST_TO, "switches to First To")
+check(w.battleMode is TeamBattleModeEnum.FIRST_TO, "switches to First To")
 check(w.livesNumber.value() == 2, "uses the First To amount from the settings")
 check(stocks(1) == [0, 0, 0] and eliminated(2) == [False] * 3, "switching resets the players")
 

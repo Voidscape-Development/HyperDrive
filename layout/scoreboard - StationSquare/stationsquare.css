@@ -2,7 +2,7 @@
    STATION SQUARE — stationsquare.css
    Loaded after index.css; every rule is scoped to body.stationsquare
    so the shared scoreboard styles for other games are untouched.
-   Palette is fixed (ignores TSH team colors) by design.
+   Palette is fixed (ignores HyperDrive team colors) by design.
    Sections:
      1. Tokens
      2. Player tab (static "PLAYER 1/2" label)
@@ -143,7 +143,7 @@
   z-index: 1;
   height: 100%;
   /* Synthesized italic slants glyph ink rightward of its box; pull it back to
-     optical center. Uses left, not transform — TSH text-fitting owns transform. */
+     optical center. Uses left, not transform — HyperDrive text-fitting owns transform. */
   left: -2px;
 }
 

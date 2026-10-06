@@ -143,7 +143,7 @@ body.no_title .viewport {
   justify-content: center;
 }
 
-body.tsh-bracket-hide-round-names .bf_round_name {
+body.hd-bracket-hide-round-names .bf_round_name {
   display: none !important;
 }
 
@@ -258,7 +258,7 @@ body.tsh-bracket-hide-round-names .bf_round_name {
   -webkit-mask-image: -webkit-linear-gradient(right, #ffffff 0%, #ffffff 70%, #ffffff00 100%);
 }
 
-.tsh_character_img {
+.hd_character_img {
   opacity: 0.5;
 }
 
@@ -321,7 +321,7 @@ body.tsh-bracket-hide-round-names .bf_round_name {
   background: var(--bracket-score-bg, var(--p1-score-bg-color));
 }
 
-body.tsh-bracket-show-identifier .slot .player {
+body.hd-bracket-show-identifier .slot .player {
   padding-left: 24px;
 }
 
@@ -389,6 +389,6 @@ body.has_focus .bf_lines path.focused {
 }
 
 .focus_label:not(.shown),
-body.tsh-bracket-hide-focus-label .focus_label {
+body.hd-bracket-hide-focus-label .focus_label {
   visibility: hidden;
 }

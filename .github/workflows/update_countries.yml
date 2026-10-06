@@ -1,6 +1,6 @@
 name: Update countries file
 
-# Downloads the countries+states+cities database and commits the parts TSH
+# Downloads the countries+states+cities database and commits the parts HyperDrive
 # uses of it as assets/countries.json
 
 on:

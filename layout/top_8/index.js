@@ -138,7 +138,7 @@ LoadEverything().then(() => {
                 event
               ).then(() => {
                 // Extract dominant color from character background images
-                let characterElements = $(`.slot${parseInt(t)} .p${parseInt(p)}.container .character_container .tsh_character`);
+                let characterElements = $(`.slot${parseInt(t)} .p${parseInt(p)}.container .character_container .hd_character`);
 
                 function extractColor(imgEl, onColor) {
                   try {
@@ -154,7 +154,7 @@ LoadEverything().then(() => {
 
                 if (characterElements.length > 1) {
                   characterElements.each(function(idx) {
-                    const img = $(this).find('.tsh-center-image img.tsh-img').get(0);
+                    const img = $(this).find('.hd-center-image img.hd-img').get(0);
                     if (img && img.complete) {
                       extractColor(img, (c1, c2) => {
                         $(characterElements[idx]).css({ "background": `linear-gradient(135deg, rgba(${c1.join(",")}, 0.85) 0%, rgba(${c2.join(",")}, 0.6) 100%)` });
@@ -166,7 +166,7 @@ LoadEverything().then(() => {
                     }
                   });
                 } else {
-                  const img = $(`.slot${parseInt(t)} .p${parseInt(p)}.container .character_container .tsh-center-image img.tsh-img`).get(0);
+                  const img = $(`.slot${parseInt(t)} .p${parseInt(p)}.container .character_container .hd-center-image img.hd-img`).get(0);
                   if (img && img.complete) {
                     extractColor(img, (c1, c2) => {
                       $(`.slot${parseInt(t)} .p${parseInt(p)}.container .character_container`).css({ "background": `linear-gradient(135deg, rgba(${c1.join(",")}, 0.85) 0%, rgba(${c2.join(",")}, 0.6) 100%)` });
@@ -294,12 +294,12 @@ LoadEverything().then(() => {
             event
           ).then(() => {
             // Extract dominant color from team's character background images
-            let characterElements = $(`.slot${parseInt(t)} .p1.container .character_container .tsh_character`);
+            let characterElements = $(`.slot${parseInt(t)} .p1.container .character_container .hd_character`);
 
             if (characterElements.length > 1) {
               // Multiple characters with dividers - color each one individually
               characterElements.each(function(idx) {
-                let bgImage = $(this).find('.tsh-center-image').css("background-image");
+                let bgImage = $(this).find('.hd-center-image').css("background-image");
                 if (bgImage && bgImage !== "none") {
                   let imgUrl = bgImage.match(/url\("?([^"]*)"?\)/)?.[1];
                   if (imgUrl) {
@@ -327,7 +327,7 @@ LoadEverything().then(() => {
               });
             } else {
               // Single character - color the entire container
-              $(`.slot${parseInt(t)} .p1.container .character_container .tsh-center-image`).each(function() {
+              $(`.slot${parseInt(t)} .p1.container .character_container .hd-center-image`).each(function() {
                 let bgImage = $(this).css("background-image");
                 if (bgImage && bgImage !== "none") {
                   let imgUrl = bgImage.match(/url\("?([^"]*)"?\)/)?.[1];

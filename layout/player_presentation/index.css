@@ -453,7 +453,7 @@ body {
   flex-direction: column;
 }
 
-.character .tsh_character {
+.character .hd_character {
   -webkit-mask-image: -webkit-linear-gradient(
     left,
     #ffffff 0%,
@@ -462,7 +462,7 @@ body {
   );
 }
 
-.p2.character .tsh_character {
+.p2.character .hd_character {
   -webkit-mask-image: -webkit-linear-gradient(
     right,
     #ffffff 0%,
@@ -835,12 +835,12 @@ body {
   right: 0;
 }
 
-.sets .player_char .tsh_character > div:first-child {
+.sets .player_char .hd_character > div:first-child {
   mask-image: linear-gradient(to right, black 20%, transparent 100%);
   opacity: 0.8;
 }
 
-.sets .oponent_char .tsh_character > div:first-child {
+.sets .oponent_char .hd_character > div:first-child {
   mask-image: linear-gradient(to left, black 20%, transparent 100%);
   opacity: 0.8;
 }

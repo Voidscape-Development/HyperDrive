@@ -529,11 +529,11 @@ body {
   background-image: url("./P2CameraBorderLight.png");
 }
 
-.p1 .tsh_character {
+.p1 .hd_character {
   transform: skew(-20deg);
 }
 
-.p2 .tsh_character {
+.p2 .hd_character {
   transform: skew(20deg);
 }
 
@@ -562,10 +562,10 @@ body {
   /* z-index: 1; */
 }
 
-.p1 .tsh_character {
+.p1 .hd_character {
   background: var(--p1-score-bg-color);
 }
 
-.p2 .tsh_character {
+.p2 .hd_character {
   background: var(--p2-score-bg-color);
 }

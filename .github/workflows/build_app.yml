@@ -145,7 +145,7 @@ jobs:
           set PYTHONUTF8=1
           chcp 65001
           set PYTHONIOENCODING=utf-8
-          uv run --no-sync pyinstaller --noconfirm .\dependencies\tsh.spec
+          uv run --no-sync pyinstaller --noconfirm .\dependencies\hyperdrive.spec
 
       # The complete application (executable, assets, layouts, user_data and
       # the stage strike app) zipped into HyperDrive-windows.zip

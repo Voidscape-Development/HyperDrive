@@ -1,6 +1,6 @@
-## HTML-based overlay templates for TournamentStreamHelper
+## HTML-based overlay templates for HyperDrive
 
-Here you'll find templates for animated layouts using TournamentStreamHelper's output.
+Here you'll find templates for animated layouts using HyperDrive's output.
 
 In `/include/` you'll find `globals.js` which contain general functions used in most template layouts. You'll also find some of the libraries used: `gsap` and `jquery`.
 
@@ -13,4 +13,4 @@ With this, you'll have access to the console logs (and errors) and to quickly ed
 
 Preview images (`<page>_preview.png`) are rendered by the "Update layout previews" GitHub Action when a pull request changes a layout, using the sample data in `scripts/previews`. To render them locally, see `scripts/previews/render_previews.py`.
 
-**Link to the main program:** https://github.com/joaorb64/TournamentStreamHelper
+The data layouts receive is described in [`docs/layout-data.md`](../docs/layout-data.md).

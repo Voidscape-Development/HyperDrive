@@ -146,16 +146,16 @@ LoadEverything().then(() => {
 
     // Resolve icon asset keys once — determines which char slots to show
     const gameCodename = _.get(data, "game.codename", "default");
-    const secKey = _.get(tsh_settings, `secondary_icon.${gameCodename}.asset_key`)
-                || _.get(tsh_settings, `secondary_icon.default.asset_key`) || "";
-    const terKey = _.get(tsh_settings, `tertiary_icon.${gameCodename}.asset_key`)
-                || _.get(tsh_settings, `tertiary_icon.default.asset_key`) || "";
+    const secKey = _.get(hd_settings, `secondary_icon.${gameCodename}.asset_key`)
+                || _.get(hd_settings, `secondary_icon.default.asset_key`) || "";
+    const terKey = _.get(hd_settings, `tertiary_icon.${gameCodename}.asset_key`)
+                || _.get(hd_settings, `tertiary_icon.default.asset_key`) || "";
 
     for (const [t, team] of teams.entries()) {
       const side = t === 0 ? "t1" : "t2";
       const teamEl = document.querySelector(`.team.${side}`);
 
-      if (team.color && !tsh_settings["forceDefaultScoreColors"]) {
+      if (team.color && !hd_settings["forceDefaultScoreColors"]) {
         document.querySelector(":root").style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
       }
 

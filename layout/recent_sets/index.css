@@ -131,12 +131,12 @@ body {
   right: 0;
 }
 
-.p1_char .tsh_character > div:first-child {
+.p1_char .hd_character > div:first-child {
   mask-image: linear-gradient(to right, black 20%, transparent 100%);
   opacity: 0.8;
 }
 
-.p2_char .tsh_character > div:first-child {
+.p2_char .hd_character > div:first-child {
   mask-image: linear-gradient(to left, black 20%, transparent 100%);
   opacity: 0.8;
 }

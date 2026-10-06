@@ -94,7 +94,7 @@ LoadEverything().then(() => {
 
       SetInnerHtml($(`.${team_id} .score`), String(team.score));
 
-      if(team.color && !tsh_settings["forceDefaultScoreColors"]) {
+      if(team.color && !hd_settings["forceDefaultScoreColors"]) {
         document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
       }
 

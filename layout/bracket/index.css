@@ -302,11 +302,11 @@ body {
   );
 }
 
-.tsh_character_img {
+.hd_character_img {
   opacity: 0.5;
 }
 
-.tsh_variant_icon {
+.hd_variant_icon {
   height: 90%;
   left: 25%;
 }
@@ -403,7 +403,7 @@ body {
   background: var(--bracket-score-bg, var(--p1-score-bg-color));
 }
 
-body.tsh-bracket-show-identifier .slot .player {
+body.hd-bracket-show-identifier .slot .player {
   padding-left: 18px;
 }
 
