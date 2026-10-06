@@ -1,0 +1,245 @@
+/* ═══════════════════════════════════════════════════════════
+   STAGE STRIKE DISPLAY — minimal.css
+   Compact lower-third bar: struck stages on the left, the
+   picked stage on the right.
+     minimal.html        — stage thumbnails
+     minimal_names.html  — names only (body.names)
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --ssd-ban-color: #f44336;
+  --ssd-pick-color: #4caf50;
+  --ssd-neutral: rgba(255, 255, 255, 0.35);
+}
+
+body {
+  font-family: var(--font);
+  font-weight: 700;
+  opacity: 0;
+  overflow: hidden;
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  filter:
+    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 1px 1px rgba(0, 0, 0, 0.40));
+}
+
+
+/* ── Bar ─────────────────────────────────────────────────── */
+
+.ssd_bar {
+  position: absolute;
+  left: 48px;
+  bottom: 48px;
+  max-width: 1824px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px 0 0;
+  box-sizing: border-box;
+  color: var(--text-color);
+  background: var(--bg-color);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  /* Hidden until there's something to show — SSD_SetVisible fades it in */
+  opacity: 0;
+  visibility: hidden;
+}
+
+.bar_label {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 18px;
+  background: color-mix(in srgb, var(--text-color) 8%, transparent);
+  border-right: 4px solid var(--ssd-pick-color);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.label_title {
+  font-size: 22px;
+  letter-spacing: 2px;
+}
+
+.label_game {
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.6;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.bans,
+.pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar_divider {
+  width: 2px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+
+/* ── Banned stages ───────────────────────────────────────── */
+
+.ban_item {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ban_item .thumb {
+  position: relative;
+  width: 96px;
+  height: 54px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Bar in the color of whoever struck the stage */
+.ban_item .thumb::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: var(--by-color);
+}
+
+.ban_item .thumb_image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: grayscale(0.85) brightness(0.5);
+}
+
+.ban_item .strike_x {
+  position: absolute;
+  inset: 0;
+}
+
+.ban_item .strike_x::before,
+.ban_item .strike_x::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--ssd-ban-color);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.ban_item .strike_x::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Thumbnail variant shows names only through the picked stage */
+.ban_item .stage_name {
+  display: none;
+}
+
+
+/* ── Picked stage ────────────────────────────────────────── */
+
+.pick_item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pick_item .thumb {
+  width: 110px;
+  height: 58px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 0 0 3px var(--ssd-pick-color), 0 0 12px var(--ssd-pick-color);
+}
+
+.pick_text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.pick_label {
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--ssd-pick-color);
+}
+
+.pick_item .stage_name {
+  max-width: 260px;
+  height: 34px;
+  font-size: 30px;
+  overflow: hidden;
+}
+
+.pick_item .stage_name .text {
+  justify-content: flex-start;
+}
+
+.pick_item.pending .thumb {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.pick_item.pending .pick_label {
+  color: var(--ssd-neutral);
+}
+
+.pick_item.pending .stage_name {
+  opacity: 0.4;
+}
+
+
+/* ── Names-only variant ──────────────────────────────────── */
+
+.names .ssd_bar {
+  height: 64px;
+}
+
+.names .ban_item .thumb {
+  display: none;
+}
+
+.names .ban_item .stage_name {
+  display: block;
+  position: relative;
+  padding: 6px 12px 6px 14px;
+  font-size: 20px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--border-radius-chip);
+  /* Color of whoever struck the stage */
+  border-left: 4px solid var(--by-color);
+  text-decoration: line-through 3px var(--ssd-ban-color);
+}
+
+.names .pick_item .thumb {
+  display: none;
+}
+
+.names .pick_item {
+  padding-left: 14px;
+  border-left: 4px solid var(--ssd-pick-color);
+}
+
+.names .pick_item.pending {
+  border-left-color: var(--ssd-neutral);
+}

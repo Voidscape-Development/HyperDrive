@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════════════════════════
+   TEAM SHOT — team_shot.css
+   Loaded after index.css; every rule is scoped to body.team_shot
+   (every index*.html opts in; the avatar variants use section 5).
+
+   Each player's team (up to 4 characters, "full" action renders)
+   is posed as one overlapping group filling its half of the screen.
+   Look (info text, VS, top / bottom info) lives in stationsquare.css.
+
+   Sections:
+     1. Tokens / layout lines
+     2. Team group container
+     3. Character slots (P1; P2 mirrors)
+     4. Info panels
+     5. Player avatars (index_online_avatar / index_player_avatar)
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Tokens / layout lines ────────────────────────────── */
+
+.team_shot {
+  --ts-top: 0px;           /* top edge of the team group */
+  --ts-bottom: 1080px;     /* characters are cut here */
+  --ts-half-width: 960px;  /* each team gets half the screen */
+  --ts-render-ratio: 4096 / 4929;  /* Tōkon "full" render aspect */
+}
+
+
+/* ── 2. Team group container ─────────────────────────────── */
+
+/* One half of the screen per team; anything outside that box is clipped. */
+.team_shot .p1.character,
+.team_shot .p2.character {
+  top: var(--ts-top);
+  height: calc(var(--ts-bottom) - var(--ts-top));
+  width: var(--ts-half-width);
+  transform: none;
+  display: block;
+  z-index: -1;
+  clip-path: inset(0);
+}
+
+.team_shot .p1.character { left: 0; }
+.team_shot .p2.character { right: 0; left: unset; }
+
+/* Undo index.css card styling — renders are free-standing cutouts */
+.team_shot .character > .tsh_character {
+  position: absolute !important;
+  height: auto;
+  aspect-ratio: var(--ts-render-ratio);
+  border-radius: 0;
+  background: none !important;
+  overflow: visible;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+  /* Own GPU layer per character: the slide-in moves the layer instead of
+     re-painting the render + shadow every frame */
+  will-change: transform, opacity;
+}
+
+.team_shot .character .tsh_character_img {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* TSH positions each render by its eye point, which varies a lot between
+   characters. Pin the render to its slot instead: full width, bottom-anchored. */
+.team_shot .character .tsh-img {
+  left: 0 !important;
+  top: auto !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* P2 renders face inward */
+.team_shot .p2.character .tsh-img { transform: scaleX(-1); }
+
+
+/* ── 3. Character slots ──────────────────────────────────── */
+/* Order follows TSH's character order. Positions mirror the mockup:
+     1 = back, top, largest (Deadpool)   3 = outer front (Captain America)
+     2 = inner              (Doom)       4 = center front (Spider-Man)
+   Stacking: 4 front, then 3, then 2, with 1 at the back.
+   Offsets are relative to the group container (= screen top).
+   Groups hug the outer edge; the spare width is left toward the VS. */
+
+.team_shot .character > .tsh_character:nth-child(1) { width: 600px; top: 37px;  z-index: 1 !important; }
+.team_shot .character > .tsh_character:nth-child(2) { width: 572px; top: 371px; z-index: 2 !important; }
+.team_shot .character > .tsh_character:nth-child(3) { width: 493px; top: 393px; z-index: 3 !important; }
+.team_shot .character > .tsh_character:nth-child(4) { width: 540px; top: 434px; z-index: 4 !important; }
+
+.team_shot .p1.character > .tsh_character:nth-child(1) { left: 0; }
+.team_shot .p1.character > .tsh_character:nth-child(2) { left: 180px; }
+.team_shot .p1.character > .tsh_character:nth-child(3) { left: -110px; }
+.team_shot .p1.character > .tsh_character:nth-child(4) { left: 50px; }
+
+.team_shot .p2.character > .tsh_character:nth-child(1) { right: 0; }
+.team_shot .p2.character > .tsh_character:nth-child(2) { right: 180px; }
+.team_shot .p2.character > .tsh_character:nth-child(3) { right: -110px; }
+.team_shot .p2.character > .tsh_character:nth-child(4) { right: 50px; }
+
+/* A lone character takes the big slot, toward the outer edge */
+.team_shot .character > .tsh_character:only-child { width: 680px; top: 164px; }
+.team_shot .p1.character > .tsh_character:only-child { left: 60px; }
+.team_shot .p2.character > .tsh_character:only-child { right: 60px; }
+
+
+/* ── 4. Info panels ──────────────────────────────────────── */
+/* No panel: info text floats in the bottom corners (see stationsquare.css) */
+
+.team_shot .player.container {
+  top: unset;
+  bottom: 0;
+  height: auto;
+  width: var(--ts-half-width);
+}
+
+.team_shot .character_name {
+  max-width: 700px;
+}
+
+
+/* ── 5. Player avatars ───────────────────────────────────── */
+/* The avatar card fills its parent by default; give it a fixed card
+   in its half instead, toward the outer edge like the character groups. */
+
+.team_shot .character .player_avatar {
+  position: absolute;
+  top: 170px;
+  width: 600px;
+  height: 600px;
+}
+
+.team_shot .p1.character .player_avatar { left: 100px; }
+.team_shot .p2.character .player_avatar { right: 100px; }

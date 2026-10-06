@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>HyperDrive</title>
+  <defs>
+    <radialGradient id="space" cx="0.62" cy="0.42" r="0.75">
+      <stop offset="0" stop-color="#4c2fd6"/>
+      <stop offset="0.55" stop-color="#22176e"/>
+      <stop offset="1" stop-color="#0b0b2b"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.5" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="streak" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0"/>
+      <stop offset="1" stop-color="#67e8f9"/>
+    </linearGradient>
+    <linearGradient id="glyph" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#c4f1ff"/>
+    </linearGradient>
+    <clipPath id="disc">
+      <circle cx="128" cy="128" r="120"/>
+    </clipPath>
+  </defs>
+
+  <!-- Badge -->
+  <circle cx="128" cy="128" r="120" fill="url(#space)"/>
+
+  <g clip-path="url(#disc)">
+    <!-- Starfield stretched into warp lines -->
+    <g stroke="#ffffff" stroke-linecap="round">
+      <line x1="150" y1="44" x2="226" y2="44" stroke-width="3" stroke-opacity="0.35"/>
+      <line x1="196" y1="70" x2="250" y2="70" stroke-width="2" stroke-opacity="0.3"/>
+      <line x1="40" y1="206" x2="96" y2="206" stroke-width="2" stroke-opacity="0.3"/>
+      <line x1="150" y1="214" x2="214" y2="214" stroke-width="3" stroke-opacity="0.35"/>
+      <line x1="200" y1="186" x2="246" y2="186" stroke-width="2" stroke-opacity="0.25"/>
+    </g>
+
+    <!-- Speed trails behind the H -->
+    <g transform="translate(128 128) skewX(-12) translate(-128 -128)">
+      <rect x="6" y="86" width="60" height="10" rx="5" fill="url(#streak)"/>
+      <rect x="-6" y="122" width="72" height="12" rx="6" fill="url(#streak)"/>
+      <rect x="10" y="160" width="56" height="10" rx="5" fill="url(#streak)"/>
+    </g>
+  </g>
+
+  <!-- Forward-leaning H with an arrow crossbar -->
+  <g transform="translate(128 128) skewX(-12) translate(-128 -128)" fill="url(#glyph)">
+    <rect x="74" y="62" width="32" height="132" rx="5"/>
+    <rect x="160" y="62" width="32" height="132" rx="5"/>
+    <path d="M100 110 H138 L160 128 L138 146 H100 Z"/>
+  </g>
+
+  <!-- Rim -->
+  <circle cx="128" cy="128" r="120" fill="none" stroke="url(#ring)" stroke-width="8"/>
+</svg>

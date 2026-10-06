@@ -1,0 +1,245 @@
+/* Shared by the bracket layouts: the round robin / swiss pool view, the
+   standings table and the layout theme's bracket options. */
+
+/* Pool view: the rounds on the left, the standings on the right */
+.pool_container {
+  display: none;
+}
+
+body.pool_view .pool_container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px 24px;
+  justify-content: center;
+  position: absolute;
+  top: calc(var(--title-size, 100px) + 30px);
+  left: 0;
+  width: 64vw;
+  height: calc(100vh - var(--title-size, 100px) - 40px);
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+body.pool_view .winners_container,
+body.pool_view .losers_container,
+body.pool_view .center_container,
+body.pool_view .winners_icons,
+body.pool_view .losers_icons,
+body.pool_view .trophy,
+body.pool_view .lines {
+  display: none !important;
+}
+
+.pool_container .round {
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.byes.text_empty {
+  display: none;
+}
+
+.byes {
+  font-size: 16px;
+  color: var(--text-color);
+  background: var(--bg-fill, var(--bg-color));
+  border-radius: calc(var(--border-radius) / 2);
+  padding: 2px 8px;
+  -webkit-text-stroke: 0;
+  overflow: hidden;
+  height: 1.4em;
+}
+
+.standings_container {
+  font-size: 20px;
+  font-weight: bold;
+  position: absolute;
+  top: calc(var(--title-size, 100px) + 30px);
+  right: 24px;
+  width: calc(36vw - 48px);
+  max-height: calc(100vh - var(--title-size, 100px) - 40px);
+  overflow: hidden;
+  color: var(--text-color);
+}
+
+.standings_container.hidden {
+  display: none;
+}
+
+body.standings_only .standings_container {
+  left: 50%;
+  right: auto;
+  width: min(900px, calc(100vw - 48px));
+  transform: translateX(-50%);
+  font-size: 24px;
+}
+
+.standings_table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  font-family: var(--font);
+}
+
+.standings_table th {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  padding: 2px 8px;
+  text-align: center;
+}
+
+.standings_table th.st_name,
+.standings_table td.st_name {
+  text-align: left;
+  width: 100%;
+}
+
+.standings_table td {
+  background: var(--chip-bg, var(--bg-fill, var(--bg-color)));
+  color: var(--chip-color, var(--text-color));
+  padding: 6px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.standings_table td:first-child {
+  border-top-left-radius: calc(var(--border-radius) / 2);
+  border-bottom-left-radius: calc(var(--border-radius) / 2);
+}
+
+.standings_table td:last-child {
+  border-top-right-radius: calc(var(--border-radius) / 2);
+  border-bottom-right-radius: calc(var(--border-radius) / 2);
+}
+
+.standings_table td.st_rank {
+  background: var(--bracket-score-bg, var(--p1-score-bg-color));
+  color: var(--p1-score-color);
+  min-width: 1.5em;
+}
+
+.standings_table tr.top td.st_rank {
+  background: var(--bracket-winner-color, var(--accent-color));
+}
+
+.standings_table tr.top td.st_name {
+  box-shadow: inset 4px 0 0 var(--bracket-winner-color, var(--accent-color));
+}
+
+.standings_table td.st_name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.standings_table .flag {
+  height: 0.8em;
+  width: auto;
+  border-radius: 2px;
+}
+
+body.tsh-standings-hide-game-diff .standings_table .st_game_diff,
+body.tsh-standings-hide-points .standings_table .st_points,
+body:not(.tsh-standings-show-buchholz) .standings_table .st_buchholz {
+  display: none;
+}
+
+/* Layout theme: bracket options */
+.set_identifier {
+  display: none;
+}
+
+body.tsh-bracket-show-identifier .set_identifier {
+  display: flex;
+}
+
+body.tsh-bracket-hide-avatar :is(.avatar, .online_avatar, .icon_image),
+body.tsh-bracket-hide-character .character_container,
+body.tsh-bracket-hide-country-flag .flagcountry,
+body.tsh-bracket-hide-state-flag .flagstate,
+body.tsh-bracket-hide-seed .seed,
+body.tsh-bracket-hide-round-names .round_name,
+body.tsh-bracket-hide-pending .pending_source {
+  display: none !important;
+}
+
+body:not(.tsh-bracket-no-dim-losers) .player.lost {
+  filter: brightness(0.6);
+}
+
+/* Pools drawn by TSHBracket.RenderPool() */
+.pool_round {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  max-width: 320px;
+  min-width: 0;
+  gap: 8px;
+}
+
+.pool_round .round_name {
+  position: static;
+  width: auto;
+  font-size: 18px;
+  padding: 2px 8px;
+  color: var(--text-color);
+  background: var(--bg-fill, var(--bg-color));
+  border-radius: calc(var(--border-radius) / 2);
+  height: 26px;
+  box-sizing: border-box;
+}
+
+.pool_set {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: calc(var(--border-radius) / 2);
+  overflow: hidden;
+}
+
+.pool_player {
+  display: flex;
+  height: calc(var(--pool-set-height, 48px) / 2);
+  font-size: calc(var(--pool-set-height, 48px) / 3);
+  background: var(--chip-bg, var(--bg-fill, var(--bg-color)));
+  color: var(--chip-color, var(--text-color));
+}
+
+.pool_player .name {
+  font-size: inherit;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 8px;
+}
+
+.pool_player .name .text {
+  justify-content: flex-start;
+}
+
+.pool_player .score {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2em;
+  flex-shrink: 0;
+  color: var(--p1-score-color);
+  background: var(--bracket-score-bg, var(--p1-score-bg-color));
+}
+
+.pool_player.won .score {
+  background: var(--bracket-winner-color, var(--bracket-score-bg, var(--p1-score-bg-color)));
+}
+
+.pool_player .pending_source {
+  font-style: italic;
+  font-weight: normal;
+  opacity: 0.6;
+}

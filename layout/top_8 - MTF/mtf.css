@@ -1,0 +1,329 @@
+/* ═══════════════════════════════════════════════════════════
+   MTF — top 8 design overrides (loaded after index.css)
+   Same design language as scoreboard - MTF/mtf.css and
+   stage_strike_display - MTF/mtf.css. Scoped to body.mtf.
+     1. Tokens / fonts
+     2. Shared panel (striped fill + white outline)
+     3. Header (tournament name)
+     4. Player cards
+     5. Placement number
+     6. Footer (name / sponsor / twitter)
+     7. Chips (flags / record)
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Tokens / fonts ───────────────────────────────────── */
+
+@font-face {
+  font-family: "SairaSemiExpanded";
+  src: url("../fonts/Saira/Saira_SemiExpanded-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+}
+
+/* MTF blue is the fallback; Update() overrides these inline on :root with
+   the scoreboard's team colors unless forceDefaultScoreColors is set. */
+:root {
+  --mtf-blue: #0a90ff;
+  --p1-score-bg-color: var(--mtf-blue);
+  --p2-score-bg-color: var(--mtf-blue);
+}
+
+.mtf {
+  --mtf-outline: #ffffff;
+  --mtf-outline-width: 4px;
+  --mtf-radius: 12px;
+  --mtf-stripe-a: #121212;
+  --mtf-stripe-b: #1d1d1d;
+  --mtf-stripe-size: 14px;
+  --mtf-font-display: "SairaSemiExpanded", var(--font);
+
+  --mtf-wash-strength: 45%;
+  --mtf-wash-length: 100%;
+
+  --mtf-header-top: 56px;
+  --mtf-header-height: 112px;
+
+  --mtf-footer-height: 100px;
+
+  --mtf-chip-height: 32px;
+  --mtf-chip-outline-width: 3px;
+  --mtf-chip-radius: 8px;
+
+  /* primary   = team 1 color → washes
+     secondary = team 2 color → sponsor tags, icons, header label */
+  --mtf-primary: var(--p1-score-bg-color);
+  --mtf-secondary: var(--p2-score-bg-color);
+  --mtf-secondary-light: color-mix(in srgb, var(--mtf-secondary) 75%, #ffffff);
+
+  --mtf-stripes: repeating-linear-gradient(
+    -45deg,
+    var(--mtf-stripe-a) 0 var(--mtf-stripe-size),
+    var(--mtf-stripe-b) var(--mtf-stripe-size) calc(var(--mtf-stripe-size) * 2)
+  );
+  --mtf-stripes-small: repeating-linear-gradient(
+    -45deg,
+    var(--mtf-stripe-a) 0 calc(var(--mtf-stripe-size) * 0.7),
+    var(--mtf-stripe-b) calc(var(--mtf-stripe-size) * 0.7) calc(var(--mtf-stripe-size) * 1.4)
+  );
+  --mtf-wash: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--mtf-primary) var(--mtf-wash-strength), transparent),
+    transparent var(--mtf-wash-length)
+  );
+}
+
+
+/* ── 2. Shared panel ─────────────────────────────────────── */
+
+.mtf .mtf_panel {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--text-color);
+  border: var(--mtf-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-radius);
+  background: var(--mtf-wash), var(--mtf-stripes);
+}
+
+
+/* ── 3. Header ───────────────────────────────────────────── */
+
+/* Full-width bar lined up with the card edges (index.css .container_outer):
+   tournament name + "Top 8" on the left, date + entrants on the right */
+.mtf .mtf_header {
+  top: var(--mtf-header-top);
+  left: 128px;
+  right: 128px;
+  height: var(--mtf-header-height);
+  /* Shared 2-row grid: each row is baseline-aligned across both sides, so the
+     sub lines start at the same height despite different top-line font sizes */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-content: center;
+  align-items: baseline;
+  column-gap: 32px;
+  row-gap: 8px;
+  padding: 0 28px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+}
+
+.mtf .mtf_header .header_left,
+.mtf .mtf_header .header_right {
+  display: contents;
+}
+
+.mtf .mtf_header .tournament_name { grid-area: 1 / 1; }
+.mtf .mtf_header .phase_name      { grid-area: 2 / 1; }
+.mtf .mtf_header .event_date      { grid-area: 1 / 2; justify-self: end; }
+.mtf .mtf_header .entrants        { grid-area: 2 / 2; justify-self: end; }
+
+.mtf .mtf_header .tournament_name {
+  width: 100%;
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 38px;
+  letter-spacing: 1px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.mtf .mtf_header .phase_name {
+  font-size: 20px;
+  letter-spacing: 3px;
+  line-height: 1.1;
+  color: var(--mtf-secondary-light);
+}
+
+.mtf .mtf_header .event_date {
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: 1px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.mtf .mtf_header .entrants {
+  font-size: 20px;
+  letter-spacing: 3px;
+  line-height: 1.1;
+  white-space: nowrap;
+  color: var(--mtf-secondary-light);
+}
+
+.mtf .mtf_header .header_left .text {
+  justify-content: flex-start;
+}
+
+.mtf .mtf_header .header_right .text {
+  justify-content: flex-end;
+}
+
+
+/* ── 4. Player cards ─────────────────────────────────────── */
+
+/* Striped panel; character art sits on top */
+.mtf .player.container {
+  box-sizing: border-box;
+  border: var(--mtf-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-radius);
+  background: var(--mtf-stripes);
+}
+
+/* Art fills the whole card; the footer text sits on top of it */
+.mtf .character_container {
+  height: 100%;
+  background: transparent;
+}
+
+.mtf .character_container .tsh_character {
+  background-color: transparent;
+}
+
+
+/* ── 5. Placement number ─────────────────────────────────── */
+
+/* No box of its own — sits directly on the card, like the scoreboard score.
+   Transparent is explicit to beat index.css's gradient fill. */
+.mtf .player .score {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 16px;
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 96px;
+  line-height: 1;
+  color: #ffffff;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+  text-shadow:
+    0 3px 4px rgba(0, 0, 0, 0.7),
+    0 0 12px rgba(0, 0, 0, 0.5);
+}
+
+.mtf .top4_container .score {
+  width: auto;
+  height: auto;
+  padding: 6px 12px;
+  font-size: 68px;
+}
+
+.mtf .top8_container .score {
+  width: auto;
+  height: auto;
+  padding: 4px 10px;
+  font-size: 56px;
+}
+
+
+/* ── 6. Footer (name / sponsor / twitter) ────────────────── */
+
+/* No divider — text overlays the art. Primary wash + dark fade rise from the
+   bottom edge and fade out to nothing, so there's no hard band. */
+.mtf .footer {
+  height: var(--mtf-footer-height);
+  background:
+    var(--mtf-wash),
+    linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+  text-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.9),
+    0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+.mtf .name_twitter {
+  gap: 4px;
+}
+
+.mtf .name_twitter .name {
+  font-weight: 700;
+}
+
+.mtf .sponsor {
+  color: var(--mtf-secondary-light);
+}
+
+.mtf .name_twitter .twitter,
+.mtf .name_twitter .team_members {
+  opacity: 0.9;
+}
+
+.mtf .twitter_logo {
+  background: var(--mtf-secondary-light);
+}
+
+.mtf .sponsor_icon {
+  opacity: 0.85;
+}
+
+.mtf .sponsor_icon > div > div {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+}
+
+
+/* ── 7. Chips (flags / record) ───────────────────────────── */
+
+/* Mini panel: same stripes + white outline as the cards */
+.mtf .flags {
+  gap: 6px;
+  right: 10px;
+  bottom: calc(var(--mtf-footer-height) + 10px);
+  margin-bottom: 0;
+  align-items: flex-end;
+}
+
+.mtf .flags > div,
+.mtf .record-chip {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--mtf-chip-height);
+  min-height: 0;
+  padding: 0 10px;
+  border: var(--mtf-chip-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-chip-radius);
+  background: var(--mtf-stripes-small);
+  color: var(--text-color);
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Re-assert after display:flex above so empty chips take no space */
+.mtf .flags > div:has(.text_empty),
+.mtf .flags > div:empty,
+.mtf .record-chip:empty,
+.mtf .record-chip:has(.text_empty) {
+  display: none;
+}
+
+.mtf .flags .text {
+  gap: 6px;
+}
+
+.mtf .flagname {
+  font-size: 18px;
+  padding-right: 0;
+}
+
+.mtf .flag {
+  width: 26px;
+  height: 18px;
+  border-radius: 3px;
+}
+
+.mtf .record-chip {
+  top: 10px;
+  right: 10px;
+  min-width: 0;
+}

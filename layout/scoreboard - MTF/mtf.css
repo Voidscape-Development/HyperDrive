@@ -1,0 +1,385 @@
+/* ═══════════════════════════════════════════════════════════
+   MTF — design language overrides (loaded after index.css)
+   Scoped to body.mtf so other games sharing index.css are
+   unaffected.
+     1. Tokens / fonts
+     2. Shared panel (striped fill + white outline)
+     3. Player bars
+     4. Score
+     5. Name / sponsor
+     6. Character icon
+     7. Chips
+     8. Center match box
+     9. Footer (tournament name)
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Tokens / fonts ───────────────────────────────────── */
+
+@font-face {
+  font-family: "SairaSemiExpanded";
+  src: url("../fonts/Saira/Saira_SemiExpanded-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+}
+
+/* MTF blue is the fallback player color; Update() overrides these inline on
+   :root with the team color unless forceDefaultScoreColors is set.
+   Safe on :root because only MTF pages load this file. */
+:root {
+  --mtf-blue: #0a90ff;
+  --p1-score-bg-color: var(--mtf-blue);
+  --p2-score-bg-color: var(--mtf-blue);
+}
+
+.mtf {
+  --mtf-outline: #ffffff;
+  --mtf-outline-width: 4px;
+  --mtf-radius: 12px;
+  --mtf-stripe-a: #121212;
+  --mtf-stripe-b: #1d1d1d;
+  --mtf-stripe-size: 14px;
+  --mtf-font-display: "SairaSemiExpanded", var(--font);
+
+  --mtf-bar-top: 18px;
+  --mtf-bar-width: 500px;
+  --mtf-bar-height: 64px;
+  --mtf-score-width: 68px;
+  --mtf-center-width: 280px;
+  --mtf-center-height: 72px;
+  --mtf-gap: 20px;
+  
+  --mtf-wash-strength: 55%;
+  --mtf-wash-length: 50%;
+
+  --mtf-chip-top: calc(var(--mtf-bar-top) + var(--mtf-bar-height) + 8px);
+  --mtf-chip-height: 32px;
+  --mtf-chip-outline-width: 3px;
+  --mtf-chip-radius: 8px;
+}
+
+/* Two layout-wide colors, shared by both players:
+     primary   = team 1 color → bar washes
+     secondary = team 2 color → sponsor tags, chip icons, losers badge, phase */
+.mtf {
+  --mtf-primary: var(--p1-score-bg-color);
+  --mtf-secondary: var(--p2-score-bg-color);
+  --mtf-secondary-light: color-mix(in srgb, var(--mtf-secondary) 75%, #ffffff);
+  --mtf-secondary-gradient: linear-gradient(
+    to bottom,
+    var(--mtf-secondary-light),
+    color-mix(in srgb, var(--mtf-secondary) 85%, #000000)
+  );
+}
+
+
+/* ── 2. Shared panel ─────────────────────────────────────── */
+
+.mtf .mtf_panel {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--text-color);
+  border: var(--mtf-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-radius);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--mtf-stripe-a) 0 var(--mtf-stripe-size),
+    var(--mtf-stripe-b) var(--mtf-stripe-size) calc(var(--mtf-stripe-size) * 2)
+  );
+}
+
+
+/* ── 3. Player bars ──────────────────────────────────────── */
+
+/* Bars sit either side of the center box: 300 | 500 | 20 | 280 | 20 | 500 | 300 */
+.mtf .mtf_bar {
+  top: var(--mtf-bar-top);
+  width: var(--mtf-bar-width);
+  height: var(--mtf-bar-height);
+  gap: 10px;
+}
+
+.mtf .p1.mtf_bar {
+  right: calc(50% + var(--mtf-center-width) / 2 + var(--mtf-gap));
+  flex-direction: row;
+  padding-left: 6px;
+}
+
+/* P2 mirrors P1 (stripe direction is set with the wash below) */
+.mtf .p2.mtf_bar {
+  left: calc(50% + var(--mtf-center-width) / 2 + var(--mtf-gap));
+  flex-direction: row-reverse;
+  padding-right: 6px;
+}
+
+/* Primary-color wash: strongest at the score side, fading into the stripes
+   toward the outer edge. Tune with --mtf-wash-strength / --mtf-wash-length. */
+.mtf .mtf_bar {
+  --mtf-wash-color: color-mix(in srgb, var(--mtf-primary) var(--mtf-wash-strength), transparent);
+}
+
+.mtf .p1.mtf_bar {
+  background:
+    linear-gradient(to left, var(--mtf-wash-color), transparent var(--mtf-wash-length)),
+    repeating-linear-gradient(
+      -45deg,
+      var(--mtf-stripe-a) 0 var(--mtf-stripe-size),
+      var(--mtf-stripe-b) var(--mtf-stripe-size) calc(var(--mtf-stripe-size) * 2)
+    );
+}
+
+.mtf .p2.mtf_bar {
+  background:
+    linear-gradient(to right, var(--mtf-wash-color), transparent var(--mtf-wash-length)),
+    repeating-linear-gradient(
+      45deg,
+      var(--mtf-stripe-a) 0 var(--mtf-stripe-size),
+      var(--mtf-stripe-b) var(--mtf-stripe-size) calc(var(--mtf-stripe-size) * 2)
+    );
+}
+
+/* Empty elements collapse so gaps don't appear around them */
+.mtf .mtf_bar > .sponsor_icon:has(.text_empty),
+.mtf .mtf_bar > .character_container:not(:has(:not(.text_empty))) {
+  display: none;
+}
+
+
+/* ── 4. Score ────────────────────────────────────────────── */
+
+.mtf .mtf_bar .score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  width: var(--mtf-score-width);
+  height: auto;
+  margin: 0;
+  flex-shrink: 0;
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 40px;
+  color: #ffffff;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+  /* No box of its own — the score sits directly on the bar's team-color wash.
+     Transparent is explicit to beat index.css's .p1/.p2 .score fill. */
+  background: transparent;
+}
+
+.mtf .p1.mtf_bar .score { margin-left: auto; }
+.mtf .p2.mtf_bar .score { margin-right: auto; }
+
+
+/* ── 5. Name / sponsor ───────────────────────────────────── */
+
+.mtf .mtf_bar .name {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+.mtf .p1.mtf_bar .name .text { justify-content: flex-start; }
+.mtf .p2.mtf_bar .name .text { justify-content: flex-end; }
+
+.mtf .mtf_bar .sponsor {
+  color: var(--mtf-secondary-light);
+  margin-right: 8px;
+}
+
+.mtf .mtf_bar .losers {
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  border-radius: 4px;
+  background: var(--mtf-secondary-gradient);
+}
+
+.mtf .mtf_bar .sponsor_icon .text {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+}
+
+.mtf .mtf_bar .sponsor_icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+
+/* ── 6. Character icon ───────────────────────────────────── */
+
+.mtf .mtf_bar .character_container > div,
+.mtf .mtf_bar .character_container > div > div {
+  width: 44px;
+  height: 44px;
+}
+
+.mtf .mtf_bar .tsh_character {
+  background-color: transparent;
+  border-radius: 0;
+}
+
+
+/* ── 7. Chips ────────────────────────────────────────────── */
+
+/* Row under each bar, aligned to the bar's inner (center-facing) edge */
+.mtf .chips {
+  top: var(--mtf-chip-top);
+  width: var(--mtf-bar-width);
+  height: var(--mtf-chip-height);
+  gap: 6px;
+  overflow: visible;
+}
+
+.mtf .p1.chips {
+  left: auto;
+  right: calc(50% + var(--mtf-center-width) / 2 + var(--mtf-gap));
+  justify-content: flex-end;
+}
+
+/* Base CSS makes P2 row-reverse (mirrored order), so flex-end = left edge */
+.mtf .p2.chips {
+  left: calc(50% + var(--mtf-center-width) / 2 + var(--mtf-gap));
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+/* Mini panel: same stripes + white outline as the bars */
+.mtf .chip {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--mtf-chip-height);
+  border: var(--mtf-chip-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-chip-radius);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--mtf-stripe-a) 0 calc(var(--mtf-stripe-size) * 0.7),
+    var(--mtf-stripe-b) calc(var(--mtf-stripe-size) * 0.7) calc(var(--mtf-stripe-size) * 1.4)
+  );
+}
+
+.mtf .p2 .chip {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--mtf-stripe-a) 0 calc(var(--mtf-stripe-size) * 0.7),
+    var(--mtf-stripe-b) calc(var(--mtf-stripe-size) * 0.7) calc(var(--mtf-stripe-size) * 1.4)
+  );
+}
+
+/* Re-assert after display:flex above so empty chips take no space */
+.mtf .chip:has(.text_empty) {
+  display: none;
+}
+
+.mtf .chip .text:not(.text_empty),
+.mtf .p1 .chip .text:not(.text_empty),
+.mtf .p2 .chip .text:not(.text_empty) {
+  height: 100%;
+  padding: 0 10px;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: transparent;
+  border-radius: 0;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Seed / twitter / pronoun glyphs use the secondary color */
+.mtf .chip .seed_logo,
+.mtf .chip .twitter_logo,
+.mtf .chip .pronoun_logo {
+  width: 16px;
+  height: 16px;
+  margin-left: 0;
+  margin-right: 6px;
+  background: var(--mtf-secondary-light);
+}
+
+.mtf .chip .flag {
+  width: 26px;
+  height: 18px;
+  border-radius: 3px;
+}
+
+.mtf .chip .flagcountry .text,
+.mtf .chip .flagstate .text {
+  gap: 6px;
+}
+
+
+/* ── 8. Center match box ─────────────────────────────────── */
+
+.mtf .mtf_center {
+  top: calc(var(--mtf-bar-top) - (var(--mtf-center-height) - var(--mtf-bar-height)) / 2);
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--mtf-center-width);
+  height: var(--mtf-center-height);
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 16px;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+.mtf .mtf_center .phase_name {
+  width: 100%;
+  font-size: 16px;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  color: var(--mtf-secondary-light);
+}
+
+.mtf .mtf_center .match {
+  width: 100%;
+  font-size: 26px;
+  letter-spacing: 1px;
+  line-height: 1.1;
+}
+
+.mtf .mtf_center .text {
+  justify-content: center;
+}
+
+
+/* ── 9. Footer (tournament name) ─────────────────────────── */
+
+.mtf .mtf_footer {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  text-align: center;
+  color: var(--text-color);
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  /* Heavy shadow so the name reads over bright gameplay with no panel behind it */
+  text-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.95),
+    0 0 8px rgba(0, 0, 0, 0.85),
+    0 0 16px rgba(0, 0, 0, 0.6);
+}
+
+.mtf .mtf_footer .tournament_name {
+  width: 100%;
+  height: auto;
+  font-size: inherit;
+}
+
+.mtf .mtf_footer .text {
+  justify-content: center;
+}

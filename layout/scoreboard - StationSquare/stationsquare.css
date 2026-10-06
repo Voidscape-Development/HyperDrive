@@ -1,0 +1,507 @@
+/* ═══════════════════════════════════════════════════════════
+   STATION SQUARE — stationsquare.css
+   Loaded after index.css; every rule is scoped to body.stationsquare
+   so the shared scoreboard styles for other games are untouched.
+   Palette is fixed (ignores TSH team colors) by design.
+   Sections:
+     1. Tokens
+     2. Player tab (static "PLAYER 1/2" label)
+     3. Player bar
+     4. Score orb
+     5. Name / avatar / sponsor
+     6. Top box: tournament name
+     7. Bottom: phase over match (transparent)
+     8. Chips (incl. country / state flags)
+     9. Tekken 8 variant (body.ss-tekken8)
+    10. Tokon variant (body.ss-tokon)
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Tokens ───────────────────────────────────────────── */
+
+.stationsquare {
+  --ss-navy: #1a2d8f;
+  --ss-blue: #2356c8;
+  --ss-sky: #34a2ea;
+  --ss-cyan: #43c0f5;
+  --ss-ring: #8fdcff;
+  --ss-accent: #ffd83a;
+  --ss-text-shadow: 0 2px 0 #0f237a, 0 0 4px rgba(10, 25, 90, 0.6);
+  /* Darker shadow for text with no panel behind it (match / phase over gameplay).
+     Revert to var(--ss-text-shadow) to undo. */
+  --ss-float-shadow:
+    0 2px 0 #081552,
+    0 0 2px rgba(0, 0, 0, 0.9),
+    0 0 8px rgba(4, 12, 50, 0.85);
+
+  /* One gradient shared by tab + bar (sized to bar height) so the seam is invisible */
+  --ss-bar-height: 58px;
+  --ss-bar-gradient: linear-gradient(
+    180deg,
+    #1c2f96 0%,
+    var(--ss-blue) 30%,
+    var(--ss-sky) 70%,
+    var(--ss-cyan) 100%
+  );
+}
+
+.stationsquare .container,
+.stationsquare .ss_tab,
+.stationsquare .chip {
+  font-style: italic;
+}
+
+
+/* ── 2. Player tab ───────────────────────────────────────── */
+
+.stationsquare .ss_tab {
+  position: absolute;
+  top: 0;
+  width: 150px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  border-radius: 14px;
+  background: var(--ss-bar-gradient);
+  background-size: 100% var(--ss-bar-height);
+  color: #ffffff;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: var(--ss-text-shadow);
+}
+
+.stationsquare .p1.ss_tab { left: 198px;  padding-left: 14px;  justify-content: flex-start; }
+.stationsquare .p2.ss_tab { right: 198px; padding-right: 14px; justify-content: flex-end; }
+
+
+/* ── 3. Player bar ───────────────────────────────────────── */
+
+.stationsquare .player.container {
+  top: 0;
+  width: 440px;
+  height: var(--ss-bar-height);
+  gap: 10px;
+  isolation: isolate;
+  background: var(--ss-bar-gradient);
+  box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.35);
+}
+
+.stationsquare .p1.player.container {
+  left: 300px;
+  padding: 0 2px 0 18px;
+  border-radius: 0 0 20px 20px;
+}
+
+.stationsquare .p2.player.container {
+  right: 300px;
+  padding: 0 18px 0 2px;
+  border-radius: 0 0 20px 20px;
+}
+
+
+/* ── 4. Score orb ────────────────────────────────────────── */
+
+.stationsquare .p1 .score,
+.stationsquare .p2 .score {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 3px solid var(--ss-ring);
+  box-shadow: 0 0 0 1px #0d1f6b, 0 2px 4px rgba(0, 0, 0, 0.5);
+  background: radial-gradient(
+    circle at 38% 30%,
+    #ff7a7a 0%,
+    #e81818 28%,
+    #a80000 58%,
+    #3a0000 100%
+  );
+  color: #ffffff;
+  font-size: 26px;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Glossy highlight */
+.stationsquare .score::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 9px;
+  width: 18px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.stationsquare .score > .text {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  /* Synthesized italic slants glyph ink rightward of its box; pull it back to
+     optical center. Uses left, not transform — TSH text-fitting owns transform. */
+  left: -2px;
+}
+
+.stationsquare .losers {
+  background: #e81818;
+  box-shadow: 0 0 0 2px var(--ss-ring);
+  font-style: normal;
+}
+
+
+/* ── 5. Name / avatar / sponsor ──────────────────────────── */
+
+.stationsquare .name_twitter .name {
+  font-size: 30px;
+  color: #ffffff;
+  text-shadow: var(--ss-text-shadow);
+  /* Room for the italic overhang so the last glyph isn't clipped */
+  padding-right: 6px;
+  box-sizing: border-box;
+}
+
+.stationsquare .p1 .name .text { justify-content: flex-start; }
+.stationsquare .p2 .name .text { justify-content: flex-end; }
+
+.stationsquare .sponsor {
+  color: var(--ss-accent);
+}
+
+.stationsquare .p1 .icon,
+.stationsquare .p2 .icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background-color: var(--ss-navy);
+  box-shadow: 0 0 0 2px var(--ss-ring);
+}
+
+/* Faded sponsor logo behind the name */
+.stationsquare .sponsor_icon {
+  position: absolute;
+  top: -8px;
+  z-index: -1;
+  opacity: 0.75;
+}
+
+.stationsquare .p1 .sponsor_icon { right: 110px; }
+.stationsquare .p2 .sponsor_icon { left: 110px; }
+
+.stationsquare .sponsor_icon > div > div,
+.stationsquare .sponsor_icon .text {
+  width: 84px;
+  height: 84px;
+}
+
+
+/* ── 6. Top box: tournament name ─────────────────────────── */
+
+.stationsquare .info.container.top {
+  top: 140px;
+  bottom: unset;
+  width: 300px;
+  height: 40px;
+  padding: 0 16px;
+  justify-content: center;
+  border-radius: 6px;
+  border: 2px solid var(--ss-blue);
+  background: linear-gradient(180deg, #ffffff 0%, #e3f3ff 100%);
+  box-shadow: inset 0 -3px 0 rgba(67, 192, 245, 0.35);
+  color: var(--ss-navy);
+}
+
+.stationsquare .info.container.top .tournament_name {
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+
+/* ── 7. Bottom: phase over match, no panel ────────────────── */
+/* Transparent — text floats over gameplay */
+
+.stationsquare .info.container.bottom {
+  top: unset;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 90px;
+  padding: 4px 28px;
+  gap: 2px;
+  flex-direction: column;
+  justify-content: center;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.stationsquare .info.container.bottom .match {
+  font-size: 39px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  text-shadow: var(--ss-float-shadow);
+}
+
+.stationsquare .info.container.bottom .phase {
+  font-size: 28px;
+  letter-spacing: 1.5px;
+  color: #d9f3ff;
+  text-shadow: var(--ss-float-shadow);
+}
+
+.stationsquare .info.container > .text_empty { display: none; }
+
+
+/* ── 8. Chips ────────────────────────────────────────────── */
+
+/* Same offsets as the original SF6 offline chips — clears the in-game health bars */
+.stationsquare .chips {
+  top: 106px;
+  width: 450px;
+  height: 26px;
+  gap: 6px;
+}
+
+.stationsquare .p1.chips { left: 8px; justify-content: flex-start; }
+.stationsquare .p2.chips { left: unset; right: 8px; justify-content: flex-start; }
+
+.stationsquare .chip {
+  border-radius: 13px;
+}
+
+.stationsquare .p1 .chip .text:not(.text_empty),
+.stationsquare .p2 .chip .text:not(.text_empty) {
+  height: 26px;
+  font-size: 17px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 13px;
+  border: 1px solid rgba(143, 220, 255, 0.6);
+  background: linear-gradient(180deg, #2a47b8 0%, var(--ss-navy) 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 0 #0f237a;
+}
+
+/* Country / state chips — flag + code */
+.stationsquare .flagcountry .text,
+.stationsquare .flagstate .text {
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 1px;
+}
+
+.stationsquare .flag {
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+
+/* ── 9. Tekken 8 variant (body.ss-tekken8) ───────────────── */
+/* Sections 1–8 are the SF6 offline baseline. This keeps Tekken 8's
+   original geometry — chips row on top, thin 38px bars, top box
+   flush to the top, logo above the bottom panel — in Station Square style. */
+
+.stationsquare.ss-tekken8 {
+  --ss-bar-height: 38px;
+}
+
+/* Bars: pill-shaped; overflow visible so the orb can sit slightly proud */
+.stationsquare.ss-tekken8 .player.container {
+  top: 32px;
+  width: 540px;
+  gap: 8px;
+  overflow: visible;
+}
+
+.stationsquare.ss-tekken8 .p1.player.container {
+  left: 160px;
+  padding: 0 0 0 14px;
+  border-radius: 19px;
+}
+
+.stationsquare.ss-tekken8 .p2.player.container {
+  right: 160px;
+  padding: 0 14px 0 0;
+  border-radius: 19px;
+}
+
+.stationsquare.ss-tekken8 .name_twitter .name { font-size: 28px; }
+
+.stationsquare.ss-tekken8 .p1 .icon,
+.stationsquare.ss-tekken8 .p2 .icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+}
+
+/* Sponsor logo stays within the bar height (bar no longer clips it) */
+.stationsquare.ss-tekken8 .sponsor_icon { top: 0; }
+.stationsquare.ss-tekken8 .p1 .sponsor_icon { right: 100px; }
+.stationsquare.ss-tekken8 .p2 .sponsor_icon { left: 100px; }
+
+.stationsquare.ss-tekken8 .sponsor_icon > div > div,
+.stationsquare.ss-tekken8 .sponsor_icon .text {
+  width: 38px;
+  height: 38px;
+}
+
+/* Top box: flush to the top edge, between the bars */
+.stationsquare.ss-tekken8 .info.container.top {
+  top: 0;
+  width: 440px;
+  height: 30px;
+  padding: 0 16px;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+
+.stationsquare.ss-tekken8 .info.container.top .tournament_name { font-size: 22px; }
+
+.stationsquare.ss-tekken8 .logo {
+  top: unset;
+  bottom: 72px;
+  width: 80px;
+  height: 80px;
+}
+
+/* Chips: original Tekken 8 row above the bars */
+.stationsquare.ss-tekken8 .chips {
+  top: 4px;
+  width: 530px;
+  height: 24px;
+  gap: 4px;
+}
+
+.stationsquare.ss-tekken8 .p1.chips {
+  left: 142px;
+  flex-direction: row-reverse;
+  justify-content: left;
+}
+
+.stationsquare.ss-tekken8 .p2.chips {
+  left: unset;
+  right: 142px;
+  flex-direction: row;
+  justify-content: right;
+}
+
+.stationsquare.ss-tekken8 .chip { border-radius: 12px; }
+
+.stationsquare.ss-tekken8 .chip .text:not(.text_empty) {
+  height: 24px;
+  font-size: 16px;
+  padding: 0 10px;
+  border-radius: 12px;
+}
+
+
+/* ── 10. Tokon variant (body.ss-tokon) ───────────────────── */
+/* Keeps Tokon's original geometry — floating 56px bars, chips
+   (incl. country / state flags), tournament name in a box flush to the top,
+   floating match text below it, phase alone at the bottom — in Station Square style. */
+
+.stationsquare.ss-tokon {
+  --ss-bar-height: 56px;
+}
+
+/* Bars: floating pills (not attached to the top edge like SF6) */
+.stationsquare.ss-tokon .player.container {
+  top: 12px;
+  width: 544px;
+  gap: 10px;
+}
+
+.stationsquare.ss-tokon .p1.player.container {
+  left: 175px;
+  padding: 0 4px 0 18px;
+  border-radius: 28px;
+}
+
+.stationsquare.ss-tokon .p2.player.container {
+  right: 175px;
+  padding: 0 18px 0 4px;
+  border-radius: 28px;
+}
+
+.stationsquare.ss-tokon .p1 .score,
+.stationsquare.ss-tokon .p2 .score {
+  width: 48px;
+  height: 48px;
+  font-size: 30px;
+}
+
+.stationsquare.ss-tokon .score::after {
+  top: 5px;
+  left: 10px;
+  width: 20px;
+  height: 11px;
+}
+
+.stationsquare.ss-tokon .p1 .icon,
+.stationsquare.ss-tokon .p2 .icon {
+  width: 40px;
+  height: 40px;
+}
+
+.stationsquare.ss-tokon .p1 .sponsor_icon { top: 0; right: 90px; }
+.stationsquare.ss-tokon .p2 .sponsor_icon { top: 0; left: 90px; }
+
+.stationsquare.ss-tokon .sponsor_icon > div > div,
+.stationsquare.ss-tokon .sponsor_icon .text {
+  width: 56px;
+  height: 56px;
+}
+
+/* Top box: tournament name, flush to the top edge between the bars */
+.stationsquare.ss-tokon .info.container.top {
+  top: 0;
+  width: 420px;
+  height: 34px;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+
+/* Middle: match name as floating text, ~150px below the top box
+   (same look as the bottom match text on SF6 / Tekken 8) */
+.stationsquare.ss-tokon .info.container.middle {
+  top: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 44px;
+  padding: 0 28px;
+  justify-content: center;
+  border: none;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.stationsquare.ss-tokon .info.container.middle .match {
+  font-size: 39px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  text-shadow: var(--ss-float-shadow);
+}
+
+/* Bottom: phase only, floating at the bottom edge */
+.stationsquare.ss-tokon .info.container.bottom {
+  bottom: -5px;
+  height: 40px;
+  padding: 0 28px;
+}
+
+/* Chips: original Tokon position, below the bars */
+.stationsquare.ss-tokon .chips {
+  top: 112px;
+}
+
+.stationsquare.ss-tokon .p1.chips { top: 1052px; left: 128px; justify-content: left; }
+.stationsquare.ss-tokon .p2.chips { top: 1052px; left: unset; right: 128px; justify-content: right; }

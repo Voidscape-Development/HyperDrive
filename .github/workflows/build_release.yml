@@ -1,0 +1,60 @@
+name: Build Release
+
+# Publishes the newest build of main (the latest-build prerelease made by
+# build_app.yml) as a versioned release, tagged with the program version in
+# assets/versions.json. The in-app update check compares that version with
+# the tag of the latest release, so bump it before running this.
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+concurrency:
+    group: build-release
+    cancel-in-progress: false
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+
+        steps:
+            # The commit latest-build was built from, so the tag, the version
+            # and the zip all match
+            - name: Checkout latest build
+              uses: actions/checkout@v4
+              with:
+                  ref: latest-build
+
+            - name: Read version
+              id: version
+              run: |
+                  version=$(jq -r '.program' assets/versions.json)
+                  if [ -z "$version" ] || [ "$version" = "null" ]; then
+                    echo "::error::No program version in assets/versions.json"
+                    exit 1
+                  fi
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
+
+            - name: Download application zip
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+              run: gh release download latest-build --pattern HyperDrive-windows.zip --clobber
+
+            - name: Publish release
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+                  VERSION: ${{ steps.version.outputs.version }}
+              run: |
+                  if gh release view "$VERSION" > /dev/null 2>&1; then
+                    echo "::error::Release $VERSION already exists. Bump the program version in assets/versions.json first."
+                    exit 1
+                  fi
+                  gh release create "$VERSION" HyperDrive-windows.zip \
+                    --target "$(git rev-parse HEAD)" \
+                    --title "HyperDrive $VERSION" \
+                    --generate-notes \
+                    --latest

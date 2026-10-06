@@ -1,0 +1,44 @@
+query PlayerLastSetsQuery($eventSlug: String!, $playerID: ID!) {
+	event(slug: $eventSlug) {
+		sets(page: 1, perPage: 10, sortType: RECENT, filters: {playerIds: [$playerID]}) {
+			nodes {
+				id
+				slots {
+					seed {
+						seedNum
+					}
+					entrant {
+						id
+						initialSeedNum
+						participants {
+							id
+							player {
+								id
+								prefix
+								gamerTag
+							}
+						}
+					}
+				}
+				games {
+					selections {
+						entrant {
+							id
+						}
+						selectionValue
+					}
+				}
+				entrant1Score
+				entrant2Score
+				winnerId
+				fullRoundText
+				phaseGroup {
+					displayIdentifier
+					phase {
+						name
+					}
+				}
+			}
+		}
+	}
+}

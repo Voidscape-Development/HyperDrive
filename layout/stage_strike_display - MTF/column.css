@@ -1,0 +1,131 @@
+/* ═══════════════════════════════════════════════════════════
+   STAGE STRIKE DISPLAY — column.css
+   Narrow, text-only column centered on screen — sized to sit
+   in the gap between a split-screen player camera layout.
+   Game number on top, banned stages below, picked stage last.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --ssd-ban-color: #f44336;
+  --ssd-pick-color: #4caf50;
+  --ssd-neutral: rgba(255, 255, 255, 0.35);
+}
+
+body {
+  font-family: var(--font);
+  font-weight: 700;
+  opacity: 0;
+  overflow: hidden;
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  filter:
+    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 1px 1px rgba(0, 0, 0, 0.40));
+}
+
+
+/* ── Column ──────────────────────────────────────────────── */
+
+.ssd_column {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 0 14px;
+  box-sizing: border-box;
+  color: var(--text-color);
+  background: var(--bg-color);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  text-transform: uppercase;
+  line-height: 1;
+  /* Hidden until there's something to show — SSD_SetVisible fades it in */
+  opacity: 0;
+  visibility: hidden;
+}
+
+.column_game {
+  padding: 10px 0;
+  font-size: 24px;
+  letter-spacing: 2px;
+  text-align: center;
+  background: color-mix(in srgb, var(--text-color) 8%, transparent);
+  border-bottom: 3px solid var(--ssd-pick-color);
+}
+
+.column_section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 14px;
+}
+
+.section_label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  opacity: 0.55;
+}
+
+.bans,
+.pick {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+
+/* ── Banned ──────────────────────────────────────────────── */
+
+.ban_line {
+  height: 20px;
+  padding-left: 8px;
+  font-size: 18px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.6);
+  /* Color of whoever struck the stage */
+  border-left: 3px solid var(--by-color);
+}
+
+.ban_line .text {
+  justify-content: flex-start;
+  text-decoration: line-through 2px var(--ssd-ban-color);
+}
+
+
+/* ── Picked ──────────────────────────────────────────────── */
+
+.pick_label {
+  color: var(--ssd-pick-color);
+  opacity: 1;
+}
+
+.pick_line {
+  height: 26px;
+  padding-left: 8px;
+  font-size: 24px;
+  overflow: hidden;
+  border-left: 3px solid var(--ssd-pick-color);
+}
+
+.pick_line .text {
+  justify-content: flex-start;
+}
+
+.pick_section.pending .pick_label {
+  color: var(--ssd-neutral);
+}
+
+.pick_line.pending {
+  font-size: 18px;
+  height: 20px;
+  opacity: 0.6;
+  /* Color of whoever is up next */
+  border-left-color: var(--turn-color);
+}

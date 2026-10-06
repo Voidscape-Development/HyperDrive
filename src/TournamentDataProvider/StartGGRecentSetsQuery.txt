@@ -1,0 +1,18 @@
+query RecentSetsEventsQuery($uid: ID!, $page: Int!, $perPage: Int!, $videogameId: ID!) {
+	user(id: $uid) {
+		events(query: {page: $page, perPage: $perPage, filter: {videogameId: [$videogameId]}}) {
+			pageInfo {
+				totalPages
+			}
+			nodes {
+				id
+				isOnline
+				name
+				tournament {
+					name
+				}
+				startAt
+			}
+		}
+	}
+}

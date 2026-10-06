@@ -1,0 +1,31 @@
+fragment RecentSetDetails on Set {
+	id
+	slots {
+		entrant {
+			id
+			participants {
+				player {
+					id
+				}
+			}
+		}
+	}
+	games {
+		selections {
+			entrant {
+				id
+			}
+			selectionValue
+		}
+	}
+	entrant1Score
+	entrant2Score
+	winnerId
+	fullRoundText
+	phaseGroup {
+		displayIdentifier
+		phase {
+			name
+		}
+	}
+}

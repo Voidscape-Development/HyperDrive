@@ -1,0 +1,158 @@
+import sys
+import threading
+import time
+import traceback
+
+from loguru import logger
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtWidgets import *
+
+
+class _ProgressEvent(QEvent):
+    _type = QEvent.Type(QEvent.registerEventType())
+
+    def __init__(self, n, t):
+        super().__init__(self._type)
+        self.n = n
+        self.t = t
+
+
+class WorkerSignals(QObject):
+    """
+    Defines the signals available from a running worker thread.
+
+    Supported signals are:
+
+    finished
+        No data
+
+    error
+        `tuple` (exctype, value, traceback.format_exc() )
+
+    result
+        `object` data returned from processing, anything
+
+    progress
+        `int` indicating % progress
+
+    """
+
+    finished = Signal()
+    error = Signal(tuple)
+    result = Signal(object)
+    progress = Signal(int, int)
+
+    def event(self, e):
+        if e.type() == _ProgressEvent._type:
+            self.progress.emit(e.n, e.t)
+            return True
+        return super().event(e)
+
+
+class Worker(QRunnable):
+    """
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    """
+
+    def __init__(self, fn, *args, **kwargs):
+        super().__init__()
+
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        # ORIGINAL METHOD
+        # Add the callback to our kwargs
+        # self.kwargs['progress_callback'] = lambda n, t: self.signals.progress.emit(n, t)
+
+        # SECOND WAY, STILL FAILED
+        # Add the callback to our kwargs.
+        # Use QTimer.singleShot with self.signals as the context object so the
+        # emission is always marshalled to the GUI thread, regardless of which
+        # thread calls the callback. Directly emitting Signal(int, int) from a
+        # non-GUI thread triggers a PyQt6 bug in its typed-argument marshaling
+        # that corrupts the heap and causes hard crashes in unrelated threads.
+        # _signals = self.signals
+        # self.kwargs['progress_callback'] = lambda n, t: QTimer.singleShot(
+        #     0, _signals, lambda: _signals.progress.emit(n, t)
+        # )
+
+        # NEW WAY
+        # Add the callback to our kwargs.
+        # Use QTimer.singleShot with self.signals as the context object so the
+        # emission is always marshalled to the GUI thread, regardless of which
+        # thread calls the callback. Directly emitting Signal(int, int) from a
+        # non-GUI thread triggers a PyQt6 bug in its typed-argument marshaling
+        # that corrupts the heap and causes hard crashes in unrelated threads.
+        _signals = self.signals
+        self.kwargs["progress_callback"] = lambda n, t: QApplication.postEvent(
+            _signals, _ProgressEvent(n, t)
+        )
+
+        # Cancellation event
+        self.cancel_event = threading.Event()
+        self.kwargs["cancel_event"] = self.cancel_event
+
+        self.completed = False
+        self.result = None
+        # Set once run() is done, so wait_for_all() doesn't have to poll
+        self.done_event = threading.Event()
+
+    @Slot()
+    def run(self):
+        """
+        Initialise the runner function with passed args, kwargs.
+        """
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            self.result = self.fn(*self.args, **self.kwargs)
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            # Return the result of the processing
+            self.signals.result.emit(self.result)
+        finally:
+            if self.signals.finished:
+                self.signals.finished.emit()  # Done
+
+            # self.completed is guaranteed to not cause a race condition self.result if checked first.
+            self.completed = True
+            self.done_event.set()
+
+    def cancel(self):
+        """
+        Set the cancel event to indicate that the task should be cancelled.
+        """
+        self.cancel_event.set()
+
+    @staticmethod
+    def wait_for_all(workers, timeout=None):
+        """
+        Wait for a collection of workers to complete.
+
+        :returns: True if the workers complete, false if a timeout is set and exceeded.
+        """
+
+        deadline = None if timeout is None else time.monotonic() + timeout
+
+        for w in workers:
+            remaining = None if deadline is None else max(0, deadline - time.monotonic())
+            if not w.done_event.wait(remaining):
+                return False
+
+        return True

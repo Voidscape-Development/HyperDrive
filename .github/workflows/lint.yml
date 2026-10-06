@@ -1,0 +1,27 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ruff:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      # Only ruff is needed, not the application's dependencies
+      - name: Install ruff
+        run: uv sync --frozen --only-group dev
+
+      - name: Lint
+        run: uv run --no-sync ruff check --output-format=github .
+
+      - name: Check formatting
+        run: uv run --no-sync ruff format --check .

@@ -1,0 +1,47 @@
+name: Update countries file
+
+# Downloads the countries+states+cities database and commits the parts TSH
+# uses of it as assets/countries.json
+
+on:
+  schedule:
+    - cron: '17 4 * * 1' # Mondays
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-countries
+  cancel-in-progress: false
+
+jobs:
+  update_countries:
+    name: Update countries file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Download countries database
+        run: |
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/countries.json" \
+            'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/refs/heads/master/json/countries%2Bstates%2Bcities.json'
+
+      - name: Generate assets/countries.json
+        run: uv run --no-project ./scripts/gen_countries.py "$RUNNER_TEMP/countries.json"
+
+      - name: Commit and push
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./assets/countries.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Update countries file"
+          git push origin HEAD:main

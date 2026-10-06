@@ -1,0 +1,83 @@
+[project]
+name = "hyperdrive"
+version = "1.0.0"
+description = "A Stream helper for fighting game tournaments"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "arabic-buckwalter-transliteration",
+    "atproto",
+    "chardet",
+    "charset-normalizer==3.4.1",
+    "cutlet",
+    "deepdiff==8.1.1",
+    "fastapi>=0.142.2",
+    "grpcio",
+    "koroman==1.0.14",
+    "loguru==0.7.3",
+    "msgpack>=1.1.2",
+    "orjson",
+    "parrygg>=0.1.6",
+    "pillow",
+    "py7zr",
+    "pycountry",
+    "pynput==1.7.7",
+    "pypinyin",
+    "pyqt6",
+    "python-dateutil==2.9.0",
+    "python-dotenv",
+    "python-socketio>=5.17.0",
+    "qasync==0.27.1",
+    "qtpy",
+    "requests",
+    "sqladmin>=0.32.0",
+    "sqlmodel>=0.0.47",
+    "termcolor==2.5.0",
+    "tqdm==2.2.3",
+    "tzdata",
+    "unidic-lite",
+    "uvicorn>=0.54.0",
+    "websockets>=17.2",
+]
+
+[dependency-groups]
+dev = ["ruff"]
+# Builds the Windows executable (build_app.yml)
+build = ["pyinstaller"]
+# pyside6-lrelease generates the .qm translation binaries (build_app.yml)
+locale = ["pyside6"]
+# Renders the layout previews (update_previews.yml)
+previews = ["playwright", "py7zr", "requests"]
+
+[tool.uv]
+# HyperDrive is an application, not a library: don't build or install it
+package = false
+default-groups = ["dev"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+extend-exclude = ["layout", "stage_strike_app", "user_data"]
+
+[tool.ruff.lint]
+select = [
+    "E4", "E7", "E9", # pycodestyle errors
+    "F",              # pyflakes
+    "I",              # import sorting
+    "UP",             # pyupgrade
+]
+ignore = [
+    "E722",    # bare except: used deliberately around Qt and network calls
+    "F403",    # star imports from qtpy are the convention in this codebase
+    "F405",    # names coming from those star imports
+    # Left as they are for now, fixing them can change behaviour:
+    "E402",    # imports after sys.path or environment setup
+    "E711",    # == None (Qt and custom types can override __eq__)
+    "E712",    # == True / == False
+    "E721",    # type() == comparisons
+    "E741",    # variables named l, I or O
+    "F841",    # unused variables (removing the line can drop a side effect)
+    "UP030",   # positional format fields
+    "UP031",   # % formatting
+]

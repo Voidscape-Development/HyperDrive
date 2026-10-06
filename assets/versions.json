@@ -1,0 +1,11 @@
+{
+    "program": "1.0.0",
+    "beta_features": [
+        "web_score",
+        "team_battle"
+    ],
+    "supported_providers": [
+        "StartGG",
+        "[BETA] ParryGG"
+    ]
+}

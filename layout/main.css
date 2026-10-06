@@ -1,0 +1,270 @@
+/* ═══════════════════════════════════════════════════════════
+   FONTS
+   Primary: SairaCondensed — condensed, sporty, great for long
+   player tags. Falls back to NotoSans for extended Latin /
+   Cyrillic, then to system CJK fonts (JP, ZH-SC, ZH-TC, KR)
+   so tournament names and player handles in any script render
+   correctly without bundling multi-hundred-MB CJK font files.
+   ═══════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: "SairaCondensed";
+  src: url("./fonts/Saira/Saira_Condensed-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "SairaCondensed";
+  src: url("./fonts/Saira/Saira_Condensed-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "SairaCondensed";
+  src: url("./fonts/Saira/Saira_Condensed-Regular.ttf") format("truetype");
+  font-weight: 400;
+}
+
+/* Variable font — covers Latin, Cyrillic, Greek, and extended scripts */
+@font-face {
+  font-family: "NotoSans";
+  src: url("./fonts/NotoSans/NotoSans.ttf") format("truetype");
+  font-weight: 100 900;
+}
+
+/* CJK variable fonts — per-character fallback in the font stack below */
+@font-face {
+  font-family: "NotoSansJP";
+  src: url("./fonts/NotoSans/NotoSansJP.ttf") format("truetype");
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: "NotoSansSC";
+  src: url("./fonts/NotoSans/NotoSansSC.ttf") format("truetype");
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: "NotoSansTC";
+  src: url("./fonts/NotoSans/NotoSansTC.ttf") format("truetype");
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: "NotoSansKR";
+  src: url("./fonts/NotoSans/NotoSansKR.ttf") format("truetype");
+  font-weight: 100 900;
+}
+
+/* Legacy — kept so layouts that still reference these names render */
+@font-face {
+  font-family: "RobotoCondensed";
+  src: url("./include/RobotoCondensed.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./include/Roboto-Regular.ttf") format("truetype");
+}
+
+.tsh_transcript {
+  display: flex;
+  flex-direction: column;
+  .original {
+    font-size: 0.6em;
+  }
+  .transcript {
+    align-items: center;
+    justify-content: center;
+    font-size: 0.4em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}
+
+.tsh_character_container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.tsh_character {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.tsh_character_img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.tsh_variant_icon {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  height: 75%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  opacity: 0.75;
+  z-index: 99;
+  filter: drop-shadow(0 0 1px white) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
+  display: none;
+}
+
+/* Global text stroke — contrasting outline computed from each element's own color,
+   paint-order ensures the stroke renders behind the fill so letterforms stay clean */
+body {
+  -webkit-text-stroke: 4px rgb(from currentColor calc(255 - r) calc(255 - g) calc(255 - b) / 0.15);
+  paint-order: stroke fill;
+}
+
+/* Override browser UA default (content-box) for all images */
+img {
+  overflow-clip-margin: border-box;
+}
+
+/* <img> elements inside icon/avatar slots — fill the container */
+.icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Sponsor logos — contain keeps the full logo visible without cropping */
+.sponsor_icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Horizontally-scrolling single-line text block used inside containers */
+.text {
+  white-space: nowrap;
+  display: flex;
+  min-width: 100%;
+  width: fit-content;
+  place-items: center;
+  place-content: center;
+  height: 100%;
+  gap: inherit;
+  transform-origin: left;
+  line-height: 1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS  (Material You–inspired dark theme)
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Font stack — per-character fallback:
+     SairaCondensed for Latin, NotoSans for extended Latin/Cyrillic/Greek,
+     then bundled CJK fonts for Japanese, Simplified/Traditional Chinese, Korean */
+  --font: "SairaCondensed", "NotoSans",
+    "NotoSansJP", "NotoSansSC", "NotoSansTC", "NotoSansKR",
+    sans-serif;
+
+  /* Shape */
+  --border-radius: 12px;
+  --border-radius-chip: 5px;
+  --border-radius-pill: 9999px;
+
+  /* Color */
+  --text-color: #ffffff;
+  /* Semi-transparent so the overlay sits slightly over the game feed */
+  --bg-color: rgb(18, 17, 28);
+
+  /* Player accent colors — defaults; overridden per-match via
+     DEFAULT_TEAM1_COLOR / DEFAULT_TEAM2_COLOR in TSHScoreboardWidget.py */
+  --p1-sponsor-color: oklch(
+    from var(--p1-score-bg-color)
+    calc(l + 0.13)
+    c
+    h
+  );
+
+  --p2-sponsor-color: oklch(
+    from var(--p2-score-bg-color)
+    calc(l + 0.13)
+    c
+    h
+  );
+  --p1-score-bg-color: #e53935;
+  --p2-score-bg-color: #1e88e5;
+  --p1-score-color: #ffffff;
+  --p2-score-color: #ffffff;
+
+  /* Highlights (winners, the current set, the selected stage) */
+  --accent-color: #d02670;
+  --accent-secondary-color: #121212;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   ALTERNATE THEMES  (uncomment one block to activate)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Dark Solid — fully opaque, no transparency */
+/* :root {
+  --bg-color: #12111c;
+  --text-color: #ffffff;
+  --p1-score-bg-color: #e53935;
+  --p2-score-bg-color: #1e88e5;
+  --p1-score-color: #ffffff;
+  --p2-score-color: #ffffff;
+} */
+
+/* Light */
+/* :root {
+  --text-color: #111111;
+  --bg-color: rgba(230, 232, 240, 0.92);
+  --p1-sponsor-color: #b71c1c;
+  --p2-sponsor-color: #0d47a1;
+  --p1-score-bg-color: #e53935;
+  --p2-score-bg-color: #1e88e5;
+  --p1-score-color: #ffffff;
+  --p2-score-color: #ffffff;
+} */
+
+
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT THEME
+   The theme selected in TSH (Layout themes) is applied by
+   ApplyLayoutTheme() in include/globals.js: its colors override
+   the tokens above (when "Use this theme's colors in layouts" is
+   on) and its display options add these classes to <body>.
+   ═══════════════════════════════════════════════════════════ */
+
+body.tsh-hide-pronouns :is(.pronoun, .pronoun_logo),
+body.tsh-hide-seed :is(.seed, .seed_logo),
+body.tsh-hide-social :is(.twitter, .twitter_logo, .twitter-container, .twitter_container),
+body.tsh-hide-country-flag .flagcountry,
+body.tsh-hide-state-flag :is(.flagstate, .player_state),
+body.tsh-hide-avatar :is(.avatar, .online_avatar, .player_avatar, .floating_online_avatar),
+body.tsh-hide-losers :is(.losers_badge, .losers_container, .losers_icons) {
+  display: none !important;
+}
+
+body.tsh-no-text-outline {
+  -webkit-text-stroke: 0;
+}
+
+body.tsh-text-upper .text {
+  text-transform: uppercase !important;
+}
+
+body.tsh-text-none .text {
+  text-transform: none !important;
+}

@@ -1,0 +1,122 @@
+name: Update layout previews
+
+# Renders the preview images of the layouts a pull request changes and
+# commits them to the pull request
+
+on:
+  pull_request:
+    paths:
+      - 'layout/**'
+  workflow_dispatch:
+    inputs:
+      layouts:
+        description: 'Layout folders to render, separated by spaces (e.g. layout/scoreboard), or "all"'
+        required: true
+        default: 'all'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: layout-previews-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    name: Render layout previews
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.head_ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Find the layouts to render
+        id: layouts
+        env:
+          INPUT_LAYOUTS: ${{ github.event.inputs.layouts }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ "$INPUT_LAYOUTS" = "all" ]; then
+              echo "args=--all" >> "$GITHUB_OUTPUT"
+            else
+              echo "args=$INPUT_LAYOUTS" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # Preview images changing don't need previews rendered again
+          changed=$(git diff --name-only "$BASE_SHA"...HEAD -- layout \
+            | grep -v -E '(^|/)([^/]*_preview|preview_[^/]*)\.png$|^layout/README\.md$' || true)
+          echo "Changed files:"
+          echo "$changed"
+
+          # Files in layout/ that aren't in a layout's folder (shared scripts,
+          # fonts, settings...) affect every layout
+          if echo "$changed" | grep -q -E '^layout/([^/]+$|(include|fonts|icons)/)'; then
+            echo "args=--all" >> "$GITHUB_OUTPUT"
+          else
+            folders=$(echo "$changed" | grep -E '^layout/' | cut -d/ -f1-2 | sort -u | tr '\n' ' ')
+            echo "args=$folders" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@v6
+        if: steps.layouts.outputs.args != ''
+
+      - name: Install dependencies
+        if: steps.layouts.outputs.args != ''
+        run: |
+          uv sync --frozen --only-group previews
+          uv run --no-sync playwright install --with-deps chromium
+
+      - name: Cache game assets
+        if: steps.layouts.outputs.args != ''
+        uses: actions/cache@v4
+        with:
+          path: user_data/games
+          key: layout-preview-assets-${{ hashFiles('scripts/previews/config.json') }}
+
+      - name: Download game assets
+        if: steps.layouts.outputs.args != ''
+        run: |
+          if [ ! -d user_data/games ]; then
+            uv run --no-sync ./scripts/previews/download_assets.py
+          fi
+
+      - name: Render previews
+        if: steps.layouts.outputs.args != ''
+        env:
+          ARGS: ${{ steps.layouts.outputs.args }}
+        run: |
+          # Split the folders on spaces, without expanding anything in them
+          set -f
+          uv run --no-sync ./scripts/previews/render_previews.py $ARGS
+
+      - name: Commit previews
+        id: commit
+        if: steps.layouts.outputs.args != ''
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -- 'layout/**/*_preview.png'
+          if git diff --cached --quiet; then
+            echo "No preview changes"
+            exit 0
+          fi
+          git commit -m "Update layout previews"
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      # Pull requests from forks can't be pushed to: their previews are
+      # attached to the run instead
+      - name: Push previews
+        if: steps.commit.outputs.committed == 'true' && (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+        run: git push origin HEAD:${{ github.head_ref || github.ref_name }}
+
+      - name: Upload previews
+        if: steps.commit.outputs.committed == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        uses: actions/upload-artifact@v4
+        with:
+          name: layout-previews
+          path: layout/**/*_preview.png

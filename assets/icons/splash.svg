@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="220" viewBox="0 0 540 220">
+  <title>HyperDrive splash screen</title>
+  <!-- Rendered to splash.png at 2x. Fonts are Saira (SIL OFL), from layout/fonts -->
+  <style>
+    @font-face { font-family: "Saira HD"; font-weight: 800; font-style: italic;
+      src: url("../../layout/fonts/Saira/Saira-ExtraBoldItalic.ttf"); }
+    .word { font-family: "Saira HD"; font-weight: 800; font-style: italic; font-size: 56px; letter-spacing: -0.5px; }
+  </style>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1c1660"/>
+      <stop offset="1" stop-color="#090920"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.5" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="drive" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="540" height="220" fill="url(#bg)"/>
+
+  <!-- Warp lines -->
+  <g stroke="#ffffff" stroke-linecap="round" stroke-opacity="0.18">
+    <line x1="210" y1="26" x2="330" y2="26" stroke-width="2"/>
+    <line x1="380" y1="48" x2="520" y2="48" stroke-width="2"/>
+    <line x1="300" y1="186" x2="440" y2="186" stroke-width="2"/>
+    <line x1="420" y1="200" x2="528" y2="200" stroke-width="1.5"/>
+  </g>
+
+  <image href="icon.svg" x="26" y="30" width="160" height="160"/>
+
+  <text x="206" y="130" class="word" fill="#ffffff">Hyper<tspan fill="url(#drive)">Drive</tspan></text>
+
+  <rect y="214" width="540" height="6" fill="url(#accent)"/>
+</svg>

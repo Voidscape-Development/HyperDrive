@@ -1,0 +1,408 @@
+/* ═══════════════════════════════════════════════════════════
+   STATION SQUARE — stationsquare.css (versus screen)
+   Loaded after index.css + team_shot.css; every rule is scoped to
+   body.stationsquare (every index*.html opts in).
+   Same design language as scoreboard - StationSquare/stationsquare.css.
+   Palette is fixed (ignores TSH team colors) by design.
+   Sections:
+     1. Tokens
+     2. Top box: tournament name
+     3. Bottom: phase over match (transparent)
+     4. VS + game number / best-of pill
+     5. Player info (no panel, bottom corners, soft fade)
+     6. Score orb + losers badge
+     7. Chips (pronoun / twitter / seed / flags / controller)
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Tokens ───────────────────────────────────────────── */
+
+.stationsquare {
+  --ss-navy: #1a2d8f;
+  --ss-blue: #2356c8;
+  --ss-sky: #34a2ea;
+  --ss-cyan: #43c0f5;
+  --ss-ring: #8fdcff;
+  --ss-accent: #ffd83a;
+  --ss-text-shadow: 0 2px 0 #0f237a, 0 0 4px rgba(10, 25, 90, 0.6);
+  /* For text with no panel behind it (over the character art) */
+  --ss-float-shadow:
+    0 2px 0 #081552,
+    0 0 2px rgba(0, 0, 0, 0.9),
+    0 0 8px rgba(4, 12, 50, 0.85);
+  --ss-corner-inset: 32px;  /* player info distance from the side edges */
+  --ss-bottom-inset: 24px;  /* player info distance from the bottom edge */
+}
+
+/* .stationsquare .container,
+.stationsquare .vs {
+  font-style: italic;
+} */
+
+
+/* ── 2. Top box: tournament name ─────────────────────────── */
+
+.stationsquare .info_top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 520px;
+  height: 46px;
+  padding: 0 20px;
+  justify-content: center;
+  z-index: 10;
+  border: 2px solid var(--ss-blue);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #e3f3ff 100%);
+  box-shadow: inset 0 -3px 0 rgba(67, 192, 245, 0.35);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+  color: var(--ss-navy);
+}
+
+.stationsquare .info_top .tournament {
+  width: 100%;
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.stationsquare .info_top .tournament .text { justify-content: center; }
+
+
+/* ── 3. Bottom: phase over match, no panel ───────────────── */
+
+.stationsquare .info_bottom {
+  top: unset;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 560px;
+  padding: 0;
+  gap: 2px;
+  z-index: 10;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: none;
+  filter: none;
+}
+
+.stationsquare .info_bottom .phase {
+  align-self: stretch;
+  font-size: 50px;
+  letter-spacing: 1.5px;
+  color: #d9f3ff;
+  text-shadow: var(--ss-float-shadow);
+}
+
+.stationsquare .info_bottom .match {
+  width: 100%;
+  flex-grow: 0;
+  padding: 0;
+  font-size: 64px;
+  letter-spacing: 1px;
+  text-transform: none;
+  color: #ffffff;
+  text-shadow: var(--ss-float-shadow);
+}
+
+.stationsquare .info_bottom .text { justify-content: center; }
+.stationsquare .info_bottom > .text_empty { display: none; }
+
+
+/* ── 4. VS: dead center ──────────────────────────────────── */
+
+.stationsquare .vs {
+  top: 50%;
+  left: 50%;
+  font-size: 200px;
+  line-height: 1;
+  color: #ffffff;
+  -webkit-text-stroke: 0;
+  /* Room for the italic overhang */
+  /* padding-right: 16px; */
+  text-shadow:
+    0 8px 0 #0f237a,
+    0 0 6px var(--ss-navy),
+    0 0 28px rgba(67, 192, 245, 0.85);
+}
+
+/* Game number just above the VS, best-of pill just under it
+   (VS spans 440–640px at 200px / line-height 1) */
+.stationsquare .info_game {
+  top: 360px;
+  height: 76px;
+  width: 520px;
+}
+
+.stationsquare .info_best_of {
+  top: 652px;
+  height: 36px;
+  width: 360px;
+}
+
+.stationsquare .info_game,
+.stationsquare .info_best_of {
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0;
+  justify-content: center;
+  z-index: 999;
+  background: none;
+  filter: none;
+}
+
+/* Floating text like the match title, in the accent color with the
+   VS's hard drop + glow so it pops */
+.stationsquare .info_game .game_number {
+  width: 100%;
+  font-size: 64px;
+  letter-spacing: 2px;
+  color: var(--ss-accent);
+  text-shadow:
+    0 5px 0 #0f237a,
+    0 0 4px var(--ss-navy),
+    0 0 20px rgba(67, 192, 245, 0.85);
+}
+
+.stationsquare .info_game .game_number .text { justify-content: center; }
+
+.stationsquare .info_best_of .best_of {
+  align-self: center;
+  max-width: 100%;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.stationsquare .info_best_of .best_of .text:not(.text_empty) {
+  height: 36px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  border-radius: 18px;
+  border: 1px solid rgba(143, 220, 255, 0.6);
+  background: linear-gradient(180deg, #2a47b8 0%, var(--ss-navy) 100%);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  text-shadow: 0 1px 0 #0f237a;
+}
+
+
+/* ── 5. Player info: no panel, bottom corners ────────────── */
+
+.stationsquare .player.container {
+  background: none;
+  filter: none;
+  border-radius: 0;
+  align-items: flex-end;
+  gap: 32px;
+  color: #ffffff;
+}
+
+.stationsquare .p1.player.container {
+  padding: 0 0 var(--ss-bottom-inset) var(--ss-corner-inset);
+}
+
+.stationsquare .p2.player.container {
+  padding: 0 var(--ss-corner-inset) var(--ss-bottom-inset) 0;
+}
+
+/* Soft dark fade behind the corner text: rises above the info and fades
+   out toward the screen center. Sits between the characters and the text. */
+.stationsquare .player.container::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: -160px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    0deg,
+    rgba(5, 10, 40, 0.8) 0%,
+    rgba(5, 10, 40, 0.55) 45%,
+    rgba(5, 10, 40, 0) 100%
+  );
+}
+
+.stationsquare .p1.player.container::before {
+  -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent 100%);
+}
+
+.stationsquare .p2.player.container::before {
+  -webkit-mask-image: linear-gradient(270deg, #000 55%, transparent 100%);
+}
+
+.stationsquare .player_col {
+  flex-grow: 0;
+  width: 470px;
+}
+
+.stationsquare .container .name {
+  font-size: 60px;
+  color: #ffffff;
+  text-shadow: var(--ss-float-shadow);
+  /* Room for the italic overhang so the last glyph isn't clipped */
+  padding-right: 8px;
+  box-sizing: border-box;
+}
+
+.stationsquare .p1 .name .text { justify-content: flex-start; }
+.stationsquare .p2 .name .text { justify-content: flex-end; }
+
+.stationsquare .sponsor {
+  color: var(--ss-accent) !important;
+}
+
+.stationsquare .container .real_name {
+  font-size: 26px;
+  color: #d9f3ff;
+  text-shadow: var(--ss-float-shadow);
+}
+
+/* Sponsor logo sits just above the name */
+.stationsquare .player.container > .sponsor_logo {
+  position: absolute;
+  top: unset;
+  bottom: 100%;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+.stationsquare .p1.player.container > .sponsor_logo { left: var(--ss-corner-inset); }
+.stationsquare .p2.player.container > .sponsor_logo { right: var(--ss-corner-inset); left: unset; }
+
+/* The <img> index.js injects shares the class — keep it inside the box */
+.stationsquare .sponsor_logo img.sponsor_logo {
+  position: static;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: none;
+}
+
+
+/* ── 6. Score orb + losers badge ─────────────────────────── */
+
+.stationsquare .score_col {
+  position: relative;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.stationsquare .p1 .score,
+.stationsquare .p2 .score {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  width: 112px;
+  height: 112px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 5px solid var(--ss-ring);
+  box-shadow: 0 0 0 2px #0d1f6b, 0 4px 10px rgba(0, 0, 0, 0.55);
+  background: radial-gradient(
+    circle at 38% 30%,
+    #ff7a7a 0%,
+    #e81818 28%,
+    #a80000 58%,
+    #3a0000 100%
+  );
+  color: #ffffff;
+  font-size: 66px;
+  text-shadow: 0 3px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Glossy highlight */
+.stationsquare .score::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 22px;
+  width: 44px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.stationsquare .score > .text {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  /* Pull the italic glyph back to optical center (TSH owns transform) */
+  left: -3px;
+}
+
+/* Sits above the orb without affecting layout */
+.stationsquare .losers_badge {
+  top: unset;
+  bottom: 100%;
+  left: 50% !important;
+  right: unset !important;
+  margin-bottom: 10px;
+  transform: translateX(-50%);
+  font-size: 22px;
+  padding: 2px 12px;
+  border-radius: 13px;
+  background: #e81818 !important;
+  box-shadow: 0 0 0 2px var(--ss-ring);
+  color: #ffffff;
+  font-style: normal;
+  text-shadow: 0 1px 0 #3a0000;
+}
+
+
+/* ── 7. Chips ────────────────────────────────────────────── */
+
+.stationsquare .info_grid > .text > div,
+.stationsquare .p1 .controller,
+.stationsquare .p2 .controller {
+  height: 32px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(143, 220, 255, 0.6);
+  background: linear-gradient(180deg, #2a47b8 0%, var(--ss-navy) 100%);
+  color: #ffffff;
+  font-size: 20px;
+  text-shadow: 0 1px 0 #0f237a;
+}
+
+.stationsquare .info_grid > .text > .flagcountry,
+.stationsquare .info_grid > .text > .flagstate {
+  height: 32px;
+  padding: 0 14px 0 10px;
+  gap: 8px;
+}
+
+.stationsquare .flag {
+  width: 30px;
+  height: 20px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.stationsquare .flagname {
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.stationsquare .twitter_logo,
+.stationsquare .seed_logo,
+.stationsquare .pronoun_logo {
+  background: #ffffff;
+  width: 20px;
+  height: 20px;
+}
+
+/* Controller: in the column flow instead of pinned to the panel bottom */
+.stationsquare .controller {
+  position: static;
+  margin-top: 8px;
+  align-self: flex-start;
+}
+
+.stationsquare .p2 .controller { align-self: flex-end; }

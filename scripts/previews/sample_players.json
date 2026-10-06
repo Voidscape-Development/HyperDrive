@@ -1,0 +1,409 @@
+{
+  "tournament": {
+    "tournamentName": "TSH Invitational #42",
+    "eventName": "Ultimate Singles",
+    "numEntrants": 128,
+    "address": "1 Example Street, Springfield",
+    "shortLink": "tsh-invitational-42"
+  },
+  "scoreboard": {
+    "phase": "Top 8",
+    "match": "Winners Final",
+    "best_of": 5,
+    "score": [
+      2,
+      1
+    ],
+    "players": [
+      1,
+      2
+    ]
+  },
+  "commentators": [
+    {
+      "prefix": "TSH",
+      "gamerTag": "Caster One",
+      "name": "Alex Doe",
+      "twitter": "casterone",
+      "pronoun": "they/them"
+    },
+    {
+      "gamerTag": "Caster Two",
+      "name": "Sam Roe",
+      "twitter": "castertwo",
+      "pronoun": "she/her"
+    }
+  ],
+  "players": [
+    {
+      "prefix": "TSH",
+      "gamerTag": "Azure",
+      "name": "Ana Silva",
+      "twitter": "azure_tsh",
+      "pronoun": "she/her",
+      "country_code": "BR",
+      "state_code": "SP",
+      "mains": {
+        "ssbu": [
+          [
+            "Palutena",
+            0
+          ],
+          [
+            "Sonic",
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "prefix": "GG",
+      "gamerTag": "Kestrel",
+      "name": "Kenji Sato",
+      "twitter": "kestrel_gg",
+      "pronoun": "he/him",
+      "country_code": "JP",
+      "state_code": "13",
+      "mains": {
+        "ssbu": [
+          [
+            "Sonic",
+            0
+          ],
+          [
+            "Joker",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Marlowe",
+      "name": "Mia Lowe",
+      "twitter": "marlowe",
+      "pronoun": "she/her",
+      "country_code": "US",
+      "state_code": "CA",
+      "mains": {
+        "ssbu": [
+          [
+            "Pikachu",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "prefix": "NX",
+      "gamerTag": "Quill",
+      "name": "Quinn Hale",
+      "twitter": "quill_nx",
+      "pronoun": "they/them",
+      "country_code": "CA",
+      "state_code": "ON",
+      "mains": {
+        "ssbu": [
+          [
+            "Wolf",
+            0
+          ],
+          [
+            "Fox",
+            4
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Ember",
+      "name": "Elena Ruiz",
+      "twitter": "ember",
+      "pronoun": "she/her",
+      "country_code": "MX",
+      "state_code": "JAL",
+      "mains": {
+        "ssbu": [
+          [
+            "Peach",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "prefix": "VX",
+      "gamerTag": "Tundra",
+      "name": "Tomas Berg",
+      "twitter": "tundra_vx",
+      "pronoun": "he/him",
+      "country_code": "SE",
+      "state_code": "AB",
+      "mains": {
+        "ssbu": [
+          [
+            "Ken",
+            1
+          ],
+          [
+            "Ryu",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Pixel",
+      "name": "Paul Martin",
+      "twitter": "pixel",
+      "pronoun": "he/him",
+      "country_code": "FR",
+      "state_code": "IDF",
+      "mains": {
+        "ssbu": [
+          [
+            "Steve",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "prefix": "RB",
+      "gamerTag": "Saffron",
+      "name": "Sara Khan",
+      "twitter": "saffron_rb",
+      "pronoun": "she/her",
+      "country_code": "GB",
+      "state_code": "ENG",
+      "mains": {
+        "ssbu": [
+          [
+            "Pyra / Mythra",
+            0
+          ],
+          [
+            "Byleth",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Bolt",
+      "name": "Ben Ortiz",
+      "twitter": "bolt",
+      "country_code": "US",
+      "state_code": "TX",
+      "mains": {
+        "ssbu": [
+          [
+            "Captain Falcon",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Cinder",
+      "name": "Chloe Park",
+      "twitter": "cinder",
+      "country_code": "KR",
+      "state_code": "11",
+      "mains": {
+        "ssbu": [
+          [
+            "Lucina",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Drift",
+      "name": "Diego Lopez",
+      "twitter": "drift",
+      "country_code": "CL",
+      "state_code": "RM",
+      "mains": {
+        "ssbu": [
+          [
+            "Mario",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Echo",
+      "name": "Emma Clark",
+      "twitter": "echo",
+      "country_code": "AU",
+      "state_code": "NSW",
+      "mains": {
+        "ssbu": [
+          [
+            "Inkling",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Flint",
+      "name": "Felix Wagner",
+      "twitter": "flint",
+      "country_code": "DE",
+      "state_code": "BE",
+      "mains": {
+        "ssbu": [
+          [
+            "Snake",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Gale",
+      "name": "Grace Lee",
+      "twitter": "gale",
+      "country_code": "US",
+      "state_code": "NY",
+      "mains": {
+        "ssbu": [
+          [
+            "Zelda",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Harbor",
+      "name": "Hugo Costa",
+      "twitter": "harbor",
+      "country_code": "PT",
+      "state_code": "11",
+      "mains": {
+        "ssbu": [
+          [
+            "Donkey Kong",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "gamerTag": "Iris",
+      "name": "Ivy Chen",
+      "twitter": "iris",
+      "country_code": "CA",
+      "state_code": "QC",
+      "mains": {
+        "ssbu": [
+          [
+            "Kirby",
+            0
+          ]
+        ]
+      }
+    }
+  ],
+  "recent_sets": [
+    {
+      "id": 1,
+      "tournament": "TSH Weekly #120",
+      "event": "Ultimate Singles",
+      "online": false,
+      "score": [
+        3,
+        2
+      ],
+      "timestamp": 1788000000,
+      "winner": 0,
+      "round": "Grand Final",
+      "phase_name": "Top 8",
+      "phase_id": ""
+    },
+    {
+      "id": 2,
+      "tournament": "TSH Weekly #118",
+      "event": "Ultimate Singles",
+      "online": true,
+      "score": [
+        1,
+        3
+      ],
+      "timestamp": 1786800000,
+      "winner": 1,
+      "round": "Winners Final",
+      "phase_name": "Top 8",
+      "phase_id": ""
+    },
+    {
+      "id": 3,
+      "tournament": "Springfield Major 2026",
+      "event": "Ultimate Singles",
+      "online": false,
+      "score": [
+        3,
+        1
+      ],
+      "timestamp": 1784000000,
+      "winner": 0,
+      "round": "Losers Semi-Final",
+      "phase_name": "Top 24",
+      "phase_id": ""
+    }
+  ],
+  "last_sets": [
+    {
+      "phase_name": "Top 16",
+      "round_name": "Winners Quarter-Final",
+      "player1_score": 3,
+      "player2_score": 0,
+      "player2_seed": 8,
+      "player2_name": "Pixel"
+    },
+    {
+      "phase_name": "Top 16",
+      "round_name": "Winners Semi-Final",
+      "player1_score": 3,
+      "player2_score": 1,
+      "player2_seed": 4,
+      "player2_team": "NX",
+      "player2_name": "Quill"
+    },
+    {
+      "phase_name": "Pools",
+      "round_name": "Winners Final",
+      "player1_score": 2,
+      "player2_score": 1,
+      "player2_seed": 16,
+      "player2_name": "Iris"
+    }
+  ],
+  "history_sets": [
+    {
+      "placement": 1,
+      "event_name": "Ultimate Singles",
+      "tournament_name": "TSH Weekly #120",
+      "entrants": 64,
+      "event_date": 1788000000
+    },
+    {
+      "placement": 2,
+      "event_name": "Ultimate Singles",
+      "tournament_name": "Springfield Major 2026",
+      "entrants": 512,
+      "event_date": 1784000000
+    },
+    {
+      "placement": 3,
+      "event_name": "Ultimate Singles",
+      "tournament_name": "TSH Weekly #118",
+      "entrants": 58,
+      "event_date": 1786800000
+    }
+  ]
+}

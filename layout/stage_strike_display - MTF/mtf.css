@@ -1,0 +1,528 @@
+/* ═══════════════════════════════════════════════════════════
+   MTF — stage strike design overrides
+   Loaded after the variant's own stylesheet (full / minimal /
+   column.css). Same design language as scoreboard - MTF/mtf.css.
+   Scoped to body.mtf so pages opt in one at a time.
+     1. Tokens / fonts
+     2. Panel (striped fill + white outline + primary wash)
+     3. Header                          — full
+     4. Cards                           — full
+     5. Banned / available              — full
+     6. Picked                          — full
+     7. "Banned by / Picked by" chip    — full
+     8. Minimal bar                     — minimal
+     9. Names-only bar                  — minimal_names
+    10. Column                          — column
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Tokens / fonts ───────────────────────────────────── */
+
+@font-face {
+  font-family: "SairaSemiExpanded";
+  src: url("../fonts/Saira/Saira_SemiExpanded-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+}
+
+/* MTF blue is the fallback; SSD_ApplyMtfColors (common.js) overrides these
+   inline on :root with the team colors unless forceDefaultScoreColors is set. */
+:root {
+  --mtf-blue: #0a90ff;
+  --p1-score-bg-color: var(--mtf-blue);
+  --p2-score-bg-color: var(--mtf-blue);
+}
+
+.mtf {
+  --mtf-outline: #ffffff;
+  --mtf-outline-width: 4px;
+  --mtf-radius: 12px;
+  --mtf-stripe-a: #121212;
+  --mtf-stripe-b: #1d1d1d;
+  --mtf-stripe-size: 14px;
+  --mtf-font-display: "SairaSemiExpanded", var(--font);
+
+  --mtf-wash-strength: 35%;
+  --mtf-wash-length: 70%;
+
+  --mtf-chip-outline-width: 3px;
+  --mtf-chip-radius: 8px;
+
+  --mtf-card-outline-width: 3px;
+  --mtf-ban-color: #ff3b3b;
+
+  /* Edge inset for the bar — floats like the scoreboard panels */
+  --mtf-bar-inset: 20px;
+
+  --mtf-primary: var(--p1-score-bg-color);
+  --mtf-secondary: var(--p2-score-bg-color);
+  --mtf-secondary-light: color-mix(in srgb, var(--mtf-secondary) 75%, #ffffff);
+  --mtf-secondary-gradient: linear-gradient(
+    to bottom,
+    var(--mtf-secondary-light),
+    color-mix(in srgb, var(--mtf-secondary) 85%, #000000)
+  );
+
+  --mtf-stripes: repeating-linear-gradient(
+    -45deg,
+    var(--mtf-stripe-a) 0 var(--mtf-stripe-size),
+    var(--mtf-stripe-b) var(--mtf-stripe-size) calc(var(--mtf-stripe-size) * 2)
+  );
+  --mtf-stripes-small: repeating-linear-gradient(
+    -45deg,
+    var(--mtf-stripe-a) 0 calc(var(--mtf-stripe-size) * 0.7),
+    var(--mtf-stripe-b) calc(var(--mtf-stripe-size) * 0.7) calc(var(--mtf-stripe-size) * 1.4)
+  );
+  --mtf-wash: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--mtf-primary) var(--mtf-wash-strength), transparent),
+    transparent var(--mtf-wash-length)
+  );
+}
+
+/* Player markers (struck-by chips / edges) use the layout-wide secondary
+   (team 2) color; ruleset / gentleman's markers keep their own --by-color.
+   Each variant reads --mtf-chip-color. */
+.mtf .by_chip,
+.mtf .ban_item,
+.mtf .ban_line {
+  --mtf-chip-color: var(--by-color);
+}
+
+.mtf .pick_line {
+  --mtf-chip-color: var(--turn-color);
+}
+
+.mtf .team {
+  --mtf-chip-color: var(--mtf-secondary);
+}
+
+
+/* ── 2. Panel ────────────────────────────────────────────── */
+
+.mtf .ssd_panel,
+.mtf .ssd_bar,
+.mtf .ssd_column {
+  border: var(--mtf-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-radius);
+  background: var(--mtf-stripes);
+}
+
+/* No backdrop on minimal / column, so the wash sits right on the fill */
+.mtf .ssd_bar,
+.mtf .ssd_column {
+  background: var(--mtf-wash), var(--mtf-stripes);
+}
+
+/* Header stacked on top (centered), cards in a row underneath */
+.mtf.bar .ssd_panel {
+  left: var(--mtf-bar-inset);
+  right: var(--mtf-bar-inset);
+  bottom: var(--mtf-bar-inset);
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border: var(--mtf-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-radius);
+}
+
+/* Stripes + primary wash layered over the blurred backdrop, so the panel
+   keeps its texture once a stage is picked. ::after paints after
+   .backdrop at the same z-index; header/cards sit above at z-index 1. */
+.mtf .ssd_panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    var(--mtf-wash),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(18, 18, 18, 0.55) 0 var(--mtf-stripe-size),
+      rgba(29, 29, 29, 0.55) var(--mtf-stripe-size) calc(var(--mtf-stripe-size) * 2)
+    );
+}
+
+.mtf .backdrop {
+  filter: blur(18px) brightness(0.6) saturate(1.1);
+}
+
+
+/* ── 3. Header ───────────────────────────────────────────── */
+
+/* Game chip top center, whose-turn / locked-in status centered under it */
+.mtf .panel_header {
+  flex-direction: column;
+  align-items: center;
+  height: auto;
+  gap: 6px;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* No "Stage Select" title in MTF — the game chip leads the header */
+.mtf .header_title {
+  display: none;
+}
+
+/* Game number as a mini panel, same as the scoreboard chips */
+.mtf .header_game {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 12px;
+  border: var(--mtf-chip-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-chip-radius);
+  background: var(--mtf-stripes-small);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.mtf .header_status {
+  align-self: stretch;
+  width: auto;
+  max-width: none;
+  height: 20px;
+  margin-left: 0;
+  color: var(--mtf-secondary-light);
+  font-size: 16px;
+  letter-spacing: 2px;
+  opacity: 1;
+}
+
+.mtf .header_status .text {
+  justify-content: center;
+}
+
+.mtf.bar .panel_header {
+  width: auto;
+}
+
+
+/* ── 4. Cards ────────────────────────────────────────────── */
+
+.mtf .card {
+  box-sizing: border-box;
+  border: var(--mtf-card-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-chip-radius);
+  background: var(--mtf-stripes-small);
+  box-shadow: none;
+}
+
+.mtf .card::after {
+  inset: 40% 0 0 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+}
+
+.mtf .card_name {
+  left: 10px;
+  right: 10px;
+  bottom: 6px;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+
+/* ── 5. Banned / available ───────────────────────────────── */
+
+/* Struck stages recede: dimmer outline, desaturated art */
+.mtf .card.ban {
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.mtf .card.ban .card_image {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.mtf .card.ban .card_name {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.mtf .card.ban .strike_x::before,
+.mtf .card.ban .strike_x::after {
+  width: 64px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--mtf-ban-color);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.mtf.bar .card.ban,
+.mtf.bar .card.open {
+  height: 136px;
+}
+
+.mtf .card.open.out {
+  opacity: 0.4;
+}
+
+/* Locked-in stage in the list: heavier outline + primary glow, like the picked box */
+.mtf .card.open.chosen {
+  border-width: var(--mtf-outline-width);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--mtf-primary) 70%, transparent);
+}
+
+
+/* ── 6. Picked ───────────────────────────────────────────── */
+
+.mtf .card.picked {
+  border-width: var(--mtf-outline-width);
+  border-radius: var(--mtf-radius);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--mtf-primary) 70%, transparent);
+}
+
+.mtf.bar .card.picked {
+  height: 172px;
+}
+
+.mtf .card.picked .card_name {
+  height: 34px;
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 28px;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Waiting on a pick: striped panel with a big "?" */
+.mtf .card.picked.pending {
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: none;
+}
+
+.mtf .card.picked.pending .card_name {
+  opacity: 0.5;
+}
+
+.mtf .pending_mark {
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 72px;
+  opacity: 0.2;
+}
+
+
+/* ── 7. "Banned by / Picked by" chip ─────────────────────── */
+
+/* Mini panel like the scoreboard chips, tinted with --mtf-chip-color */
+.mtf .by_chip {
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  height: 26px;
+  padding: 0 8px;
+  border: 2px solid var(--mtf-outline);
+  border-radius: 6px;
+  background:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--mtf-chip-color) 55%, transparent),
+      transparent 70%
+    ),
+    var(--mtf-stripes-small);
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+.mtf .by_label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 1;
+  color: color-mix(in srgb, var(--mtf-chip-color) 45%, #ffffff);
+}
+
+.mtf .by_name {
+  font-size: 15px;
+}
+
+.mtf .card.ban .by_chip {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.mtf .card.picked .by_chip {
+  height: 30px;
+  border-width: var(--mtf-chip-outline-width);
+  border-radius: var(--mtf-chip-radius);
+}
+
+.mtf .card.picked .by_label {
+  font-size: 12px;
+}
+
+.mtf .card.picked .by_name {
+  font-size: 18px;
+}
+
+
+/* ── 8. Minimal bar ──────────────────────────────────────── */
+
+.mtf .ssd_bar {
+  left: 40px;
+  bottom: 40px;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* No "Stages" title — the game chip leads the bar, like the full header */
+.mtf .label_title {
+  display: none;
+}
+
+.mtf .bar_label {
+  padding: 0 0 0 14px;
+  background: none;
+  border-right: none;
+}
+
+.mtf .label_game {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 32px;
+  margin: 0;
+  padding: 0 12px;
+  border: var(--mtf-chip-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-chip-radius);
+  background: var(--mtf-stripes-small);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  opacity: 1;
+}
+
+.mtf .bar_divider {
+  width: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Struck thumbnails: dimmed outline, desaturated art, red X */
+.mtf .ban_item .thumb {
+  box-sizing: border-box;
+  border: var(--mtf-chip-outline-width) solid rgba(255, 255, 255, 0.45);
+  border-radius: var(--mtf-chip-radius);
+}
+
+.mtf .ban_item .thumb::after {
+  background: var(--mtf-chip-color);
+}
+
+.mtf .ban_item .thumb_image {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.mtf .ban_item .strike_x::before,
+.mtf .ban_item .strike_x::after {
+  width: 40px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--mtf-ban-color);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Picked thumbnail: full outline + primary glow, like the full layout's picked card */
+.mtf .pick_item .thumb {
+  box-sizing: border-box;
+  border: var(--mtf-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-chip-radius);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--mtf-primary) 70%, transparent);
+}
+
+.mtf .pick_label {
+  color: var(--mtf-secondary-light);
+}
+
+.mtf .pick_item .stage_name {
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 28px;
+}
+
+.mtf .pick_item.pending .thumb {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: var(--mtf-stripes-small);
+  box-shadow: none;
+}
+
+.mtf .pick_item.pending .pick_label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+
+/* ── 9. Names-only bar ───────────────────────────────────── */
+
+/* Struck names as mini chips: dimmed outline, striker's color fading in from the left */
+.mtf.names .ban_item .stage_name {
+  padding: 5px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 6px;
+  background:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--mtf-chip-color) 55%, transparent),
+      transparent 70%
+    ),
+    var(--mtf-stripes-small);
+  text-decoration-color: var(--mtf-ban-color);
+}
+
+.mtf.names .pick_item {
+  border-left-color: var(--mtf-outline);
+}
+
+.mtf.names .pick_item.pending {
+  border-left-color: rgba(255, 255, 255, 0.45);
+}
+
+
+/* ── 10. Column ──────────────────────────────────────────── */
+
+.mtf .ssd_column {
+  padding: 12px 0 14px;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Game number as a centered mini panel */
+.mtf .column_game {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 12px;
+  border: var(--mtf-chip-outline-width) solid var(--mtf-outline);
+  border-radius: var(--mtf-chip-radius);
+  background: var(--mtf-stripes-small);
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.mtf .section_label {
+  color: var(--mtf-secondary-light);
+  opacity: 1;
+}
+
+.mtf .ban_line {
+  border-left-color: var(--mtf-chip-color);
+}
+
+.mtf .ban_line .text {
+  text-decoration-color: var(--mtf-ban-color);
+}
+
+.mtf .pick_line {
+  border-left-color: var(--mtf-outline);
+  font-family: var(--mtf-font-display);
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.mtf .pick_line.pending {
+  border-left-color: var(--mtf-chip-color);
+  font-family: var(--font);
+  font-weight: 700;
+}
+
+.mtf .pick_section.pending .pick_label {
+  color: rgba(255, 255, 255, 0.5);
+}

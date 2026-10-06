@@ -1,0 +1,211 @@
+name: Build the application
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'layout/**'
+  workflow_dispatch:
+
+jobs:
+  build_locale:
+    name: Generate Locale Files
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/heads/feature/' ) || startsWith( github.ref, 'refs/heads/fix/' ) }}
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Install Python dependencies
+        run: uv sync --frozen --no-dev --group locale
+
+      - name: Generate locale files
+        run: |
+          uv run --no-sync pyside6-lrelease -version
+          uv run --no-sync ./src/i18n/gen_translation_files.py
+          uv run --no-sync ./src/i18n/gen_translation_binaries.py
+
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./src/i18n/*.ts ./src/i18n/*.qm
+          if ! git diff --cached --quiet; then
+            git commit -m "Update locale files" -a
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.extract_branch.outputs.branch }}
+
+  build_frontend:
+    name: build_frontend
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/heads/feature/' ) || startsWith( github.ref, 'refs/heads/fix/' ) }}
+    outputs:
+      frontend-build: ${{ steps.upload-frontend.outputs.artifact-id }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          stage_strike_app
+          assets
+
+    - name: Node setup
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/jod'
+
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      with:
+        path: 'stage_strike_app/node_modules'
+        key: |
+          ${{ runner.os }}-node-${{ hashFiles('stage_strike_app/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Install frontend dependencies
+      working-directory: 'stage_strike_app'
+      run: npm install
+
+    - name: Build frontend
+      working-directory: 'stage_strike_app'
+      run: npm run build
+
+    - name: upload-frontend
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: stage_strike_app/build
+
+  build:
+    needs: ['build_locale', 'build_frontend']
+    name: Generate Windows Release
+    runs-on: ${{ matrix.os }}
+    if: ${{ github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/heads/feature/' ) || startsWith( github.ref, 'refs/heads/fix/' ) }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["windows-latest"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Install Python dependencies
+        run: uv sync --frozen --no-dev --group build
+
+      - name: Update to latest main
+        run: |
+          git pull origin main
+          git checkout main
+
+      # Downloaded after the pull so the fresh build isn't clobbered by (or
+      # conflicting with) the committed one. download-artifact v5 extracts a
+      # single artifact fetched by id straight into `path`, so the path has to
+      # be the build folder itself, not the repository root. The old build is
+      # removed first so stale hashed bundles get deleted from the repository.
+      - name: Remove previous frontend build
+        shell: bash
+        run: rm -rf stage_strike_app/build
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v5
+        with:
+          artifact-ids: ${{ needs.build_frontend.outputs.frontend-build }}
+          path: stage_strike_app/build
+
+      - name: Generate HyperDrive Windows executable
+        run: |
+          set PYTHONUTF8=1
+          chcp 65001
+          set PYTHONIOENCODING=utf-8
+          uv run --no-sync .\scripts\gen_contributors.py
+          uv run --no-sync pyinstaller --noconfirm .\dependencies\tsh.spec
+
+      # The complete application (executable, assets, layouts, user_data and
+      # the stage strike app) zipped into HyperDrive-windows.zip
+      - name: Package application
+        shell: pwsh
+        run: |
+          Copy-Item -Force dist\HyperDrive.exe HyperDrive.exe
+          .\scripts\gen_release.ps1
+
+      # HyperDrive.exe isn't committed: every build added another ~75 MB copy of it
+      # to the repository history. The application zip is published as an
+      # artifact of the run and, for main, as the latest-build release instead.
+      - name: Upload application
+        uses: actions/upload-artifact@v4
+        with:
+          name: HyperDrive-windows
+          path: HyperDrive-windows.zip
+          compression-level: 0
+
+      - name: Commit files
+        shell: bash
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A 'stage_strike_app/build'
+          git add -u
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update frontend"
+          fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.extract_branch.outputs.branch }}
+
+      # A single prerelease that's overwritten by every build of main, so the
+      # newest build always has the same download link:
+      # https://github.com/<owner>/<repo>/releases/download/latest-build/HyperDrive-windows.zip
+      # Build Release (build_release.yml) publishes it as a versioned release.
+      - name: Publish latest-build release
+        if: ${{ github.ref == 'refs/heads/main' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          notes="Automatic build of main at $sha"
+          git tag -f latest-build "$sha"
+          git push -f origin refs/tags/latest-build
+          if gh release view latest-build > /dev/null 2>&1; then
+            gh release edit latest-build --notes "$notes"
+            gh release upload latest-build HyperDrive-windows.zip --clobber
+            # Earlier builds published the bare executable, which the zip contains
+            gh release delete-asset latest-build HyperDrive.exe --yes 2> /dev/null || true
+          else
+            gh release create latest-build HyperDrive-windows.zip --prerelease \
+              --title "Latest build" --notes "$notes"
+          fi
