@@ -63,13 +63,17 @@ for `HDBracket`:
 | `SetState(set, expand)` | `hidden`, `displayed` or `done` (shown with its line to the next set) |
 | `Winner(set)`, `ScoreText(set, slot)` | |
 | `StandingsHtml(data)` | A pool's standings, or an elimination bracket's results, as a table |
+| `GridHtml(data)` | A pool as a round robin grid of who played who, players in seed order |
 | `RenderPool(container, data)` | Draws a pool's rounds, for layouts without a pool view of their own |
 | `ToRounds(bracket, players)` | The bracket in the older `rounds` shape (`{"1": {name, sets: {"0": {playerId, score, nextWin...}}}}`, losers rounds negative), with byes filled in, for layouts drawn around it |
 
 `layout/include/bracket.css` has the pool view, the standings table and the
 layout theme's bracket options.
 
-`layout/bracket/standings.html` shows only the standings.
+`layout/bracket/standings.html` shows only the standings, and
+`layout/bracket/round_robin.html` a round robin / swiss pool as a grid: a
+row and a column per player, the score where two players meet (from the
+row player's side) and a blank cell where a player meets themselves.
 
 ### `bracket.focus`
 

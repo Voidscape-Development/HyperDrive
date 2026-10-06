@@ -1,10 +1,12 @@
 name: Update layout previews
 
-# Renders the preview images of the layouts a pull request changes and
-# commits them to the pull request
+# Renders the preview images of the layouts a push to main changes and
+# commits them to main
 
 on:
-  pull_request:
+  push:
+    branches:
+      - main
     paths:
       - 'layout/**'
   workflow_dispatch:
@@ -18,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: layout-previews-${{ github.head_ref || github.ref }}
+  group: layout-previews-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -28,15 +30,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Find the layouts to render
         id: layouts
         env:
           INPUT_LAYOUTS: ${{ github.event.inputs.layouts }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             if [ "$INPUT_LAYOUTS" = "all" ]; then
@@ -47,8 +48,15 @@ jobs:
             exit 0
           fi
 
+          # A push with nothing to compare against (e.g. a new branch)
+          # renders every layout
+          if [ -z "$BEFORE_SHA" ] || ! git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+            echo "args=--all" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           # Preview images changing don't need previews rendered again
-          changed=$(git diff --name-only "$BASE_SHA"...HEAD -- layout \
+          changed=$(git diff --name-only "$BEFORE_SHA" HEAD -- layout \
             | grep -v -E '(^|/)([^/]*_preview|preview_[^/]*)\.png$|^layout/README\.md$' || true)
           echo "Changed files:"
           echo "$changed"
@@ -108,15 +116,6 @@ jobs:
           git commit -m "Update layout previews"
           echo "committed=true" >> "$GITHUB_OUTPUT"
 
-      # Pull requests from forks can't be pushed to: their previews are
-      # attached to the run instead
       - name: Push previews
-        if: steps.commit.outputs.committed == 'true' && (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
-        run: git push origin HEAD:${{ github.head_ref || github.ref_name }}
-
-      - name: Upload previews
-        if: steps.commit.outputs.committed == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
-        uses: actions/upload-artifact@v4
-        with:
-          name: layout-previews
-          path: layout/**/*_preview.png
+        if: steps.commit.outputs.committed == 'true'
+        run: git push origin HEAD:${{ github.ref_name }}

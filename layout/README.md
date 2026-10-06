@@ -11,6 +11,6 @@ Testing and debugging locally with Chrome:
 - Enable *Device toolbar* and set the screen size to 1920x1080
 With this, you'll have access to the console logs (and errors) and to quickly edit css rules for easier development
 
-Preview images (`<page>_preview.png`) are rendered by the "Update layout previews" GitHub Action when a pull request changes a layout, using the sample data in `scripts/previews`. To render them locally, see `scripts/previews/render_previews.py`.
+Preview images (`<page>_preview.png`) are rendered by the "Update layout previews" GitHub Action when a push to main changes a layout, using the sample data in `scripts/previews`. To render them locally, see `scripts/previews/render_previews.py`.
 
 The data layouts receive is described in [`docs/layout-data.md`](../docs/layout-data.md).

@@ -3,7 +3,8 @@
 // lines from each set to the next. Round robin and swiss pools: each round's
 // sets with the standings beside them.
 // Options (set in the .html): ALWAYS_EXPAND shows every set from the start,
-// WINNERS_ONLY / LOSERS_ONLY one side, STANDINGS_ONLY just the standings.
+// WINNERS_ONLY / LOSERS_ONLY one side, STANDINGS_ONLY just the standings,
+// GRID_ONLY a round robin / swiss pool as a grid of who played who.
 LoadEverything().then(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
@@ -332,12 +333,30 @@ LoadEverything().then(() => {
     }
   }
 
+  async function UpdateGrid(data) {
+    const container = $(".grid_container");
+    if (!container.get(0)) return;
+    const show = HDBracket.IsPool(data.bracket.bracket);
+    container.toggleClass("hidden", !show);
+    if (!show) return;
+    const html = await HDBracket.GridHtml(data);
+    if (container.data("html") == html) return;
+    const rebuilt = container.data("shape") != HDBracket.Signature(data);
+    container.data("html", html);
+    container.data("shape", HDBracket.Signature(data));
+    container.html(html);
+    if (rebuilt) {
+      gsap.from(container.find("tr"), { autoAlpha: 0, x: -20, stagger: 0.04, duration: 0.3 });
+    }
+  }
+
   Update = async (event) => {
     let data = event.data;
     let oldData = event.oldData;
 
     if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides) {
-      $(".winners_container, .losers_container, .pool_container, .lines").html("");
+      $(".winners_container, .losers_container, .pool_container, .grid_container, .lines").html("");
+      $(".grid_container").data("html", null);
       lastSignature = null;
       return;
     }
@@ -351,7 +370,9 @@ LoadEverything().then(() => {
       return;
     }
 
-    if (!window.STANDINGS_ONLY) {
+    if (window.GRID_ONLY) {
+      await UpdateGrid(data);
+    } else if (!window.STANDINGS_ONLY) {
       const signature = HDBracket.Signature(data);
       if (signature != lastSignature) {
         lastSignature = signature;

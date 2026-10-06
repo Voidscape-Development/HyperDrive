@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="../include/globals.js"></script>
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="../include/bracket.css" />
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+  <!-- A round robin grid: each player a row and a column, the scores where
+       they meet, blank where a player meets themselves -->
+  <body class="grid_only">
+    <div class="title">
+      <div class="container">
+        <div class="logo"></div>
+        <div class="col">
+          <div class="tournament_name"></div>
+          <div class="event_name"></div>
+        </div>
+        <div class="col">
+          <div class="bracket_name"></div>
+          <div class="pool_name"></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid_container"></div>
+    <script>
+      window.GRID_ONLY = true;
+    </script>
+    <script src="../include/bracket.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
