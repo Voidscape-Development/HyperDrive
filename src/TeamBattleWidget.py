@@ -124,6 +124,7 @@ class TeamBattleWidget(QDockWidget):
         self.matchCombo.lineEdit().editingFinished.connect(self.MatchExport)
         self.matchCombo.addItem("")
         LocaleHelper.LoadMatchNamesToWidget(self.matchCombo)
+        LocaleHelper.signals.termsChanged.connect(self.ReloadTournamentTerms)
 
         resetValues = QPushButton(QApplication.translate("app", "Reset Player Mode Values"))
         resetValues.setFixedHeight(24)
@@ -333,6 +334,11 @@ class TeamBattleWidget(QDockWidget):
         self.SwitchBattleMode()
         self.playerNumber.setValue(1)
         self.characterNumber.setValue(1)
+
+    def ReloadTournamentTerms(self):
+        # The match and phase names were edited in the settings
+        LocaleHelper.RefreshNamesInWidget(self.phaseCombo, LocaleHelper.LoadPhaseNamesToWidget)
+        LocaleHelper.RefreshNamesInWidget(self.matchCombo, LocaleHelper.LoadMatchNamesToWidget)
 
     # =====================================================
     # GENERAL CONTROL METHODS

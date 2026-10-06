@@ -12,7 +12,9 @@ from ..Scheduler import (
 )
 from ..SettingsManager import SettingsManager
 from .AppearanceSettings import AppearanceSettings
+from .PronounSettings import PronounSettings
 from .SettingsWidget import SettingsWidget
+from .TournamentTermsSettings import TournamentTermsSettings
 
 
 class SettingsWindow(QDialog):
@@ -370,6 +372,12 @@ class SettingsWindow(QDialog):
             QApplication.translate("settings", "Default Display Options"),
             SettingsWidget("display_options", displaySettings),
         )
+
+        self.add_setting_widget(
+            QApplication.translate("settings", "Match & Phase Names"), TournamentTermsSettings()
+        )
+
+        self.add_setting_widget(QApplication.translate("settings", "Pronouns"), PronounSettings())
 
         # Add API Key settings
         APIKeySettings = []

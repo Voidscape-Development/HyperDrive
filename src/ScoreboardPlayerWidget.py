@@ -15,6 +15,7 @@ from .Helpers.CountryHelper import CountryHelper
 from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
+from .Helpers.PronounHelper import PronounHelper
 from .Helpers.SponsorHelper import SponsorHelper
 from .PlayerDB import PlayerDB
 from .SeedManager import SeedManager
@@ -177,22 +178,7 @@ class ScoreboardPlayerWidget(QGroupBox):
 
         self.pronoun_completer = QCompleter()
         self.findChild(QLineEdit, "pronoun").setCompleter(self.pronoun_completer)
-        self.pronoun_list = []
-        for file in ["./user_data/pronouns_list.txt"]:
-            try:
-                with open(file) as f:
-                    for l in f.readlines():
-                        processed_line = l.replace("\n", "").strip()
-                        if processed_line and processed_line not in self.pronoun_list:
-                            self.pronoun_list.append(processed_line)
-            except FileNotFoundError:
-                with open("./user_data/pronouns_list.txt", "w") as f:
-                    logger.info("creating ./user_data/pronouns_list.txt")
-            except Exception as e:
-                logger.error(traceback.format_exc())
-        self.pronoun_model = QStringListModel()
-        self.pronoun_completer.setModel(self.pronoun_model)
-        self.pronoun_model.setStringList(self.pronoun_list)
+        self.pronoun_completer.setModel(PronounHelper.Model())
 
     def deleteLater(self):
         self._deleted = True
@@ -994,11 +980,7 @@ class ScoreboardPlayerWidget(QGroupBox):
 
         PlayerDB.AddPlayers([playerData], overwrite=True)
 
-        if playerData.get("pronoun") and playerData["pronoun"] not in self.pronoun_list:
-            with open("./user_data/pronouns_list.txt", "a") as pronouns_file:
-                pronouns_file.write(playerData["pronoun"] + "\n")
-                self.pronoun_list.append(playerData["pronoun"])
-                self.pronoun_model.setStringList(self.pronoun_list)
+        PronounHelper.Add(playerData.get("pronoun"))
 
         self.CharactersChanged(includeMains=True)
 
