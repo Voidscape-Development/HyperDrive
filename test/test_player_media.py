@@ -107,7 +107,38 @@ def TestLiveRefresh():
     assert StateManager.Get(f"{PATH}.sponsor_logo") is None
 
 
+def TestAvatarFallback():
+    sponsored = MediaHelper.AvatarPath("HD", "Marlowe")
+    tagOnly = MediaHelper.AvatarPath("", "Marlowe")
+    assert MediaHelper.AvatarPaths("HD", "Marlowe") == [sponsored, tagOnly]
+    assert MediaHelper.AvatarPaths("", "Marlowe") == [tagOnly]
+    assert MediaHelper.FindAvatar("HD", "Marlowe") is None
+    # Saved as the tag alone, which works with any sponsor
+    assert MediaHelper.NewAvatarPath("HD", "Marlowe") == tagOnly
+
+    MediaHelper.SaveImageAsPng(Image_("t.png"), tagOnly)
+    StateManager.Set(f"{PATH}.name", "Marlowe")
+    DynamicExport.ExportPlayerMedia("Marlowe", "HD", PATH)
+    assert StateManager.Get(f"{PATH}.avatar") == tagOnly
+    DynamicExport.ExportPlayerMedia("Marlowe", "NEW", PATH)
+    assert StateManager.Get(f"{PATH}.avatar") == tagOnly
+
+    # The sponsor and tag one wins, live, and is the one replaced
+    MediaHelper.SaveImageAsPng(Image_("s.png"), MediaHelper.AvatarPath("NEW", "Marlowe"))
+    DynamicExport.Refresh()
+    assert StateManager.Get(f"{PATH}.avatar") == MediaHelper.AvatarPath("NEW", "Marlowe")
+    assert MediaHelper.NewAvatarPath("NEW", "Marlowe") == MediaHelper.AvatarPath("NEW", "Marlowe")
+
+    # Removing it falls back to the tag alone
+    MediaHelper.Remove(MediaHelper.AvatarPath("NEW", "Marlowe"))
+    DynamicExport.Refresh()
+    assert StateManager.Get(f"{PATH}.avatar") == tagOnly
+
+    # No tag: no avatar, even with a sponsor
+    assert MediaHelper.AvatarPaths("HD", "") == [MediaHelper.AvatarPath("HD", "")]
+
+
 if __name__ == "__main__":
-    for test in [TestPaths, TestSaveImageAsPng, TestSponsors, TestLiveRefresh]:
+    for test in [TestPaths, TestSaveImageAsPng, TestSponsors, TestLiveRefresh, TestAvatarFallback]:
         test()
         print(f"{test.__name__}: OK")

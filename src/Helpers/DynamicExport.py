@@ -130,14 +130,14 @@ class DynamicExport:
         return (stat.st_mtime_ns, stat.st_size)
 
     def _ExportMedia(path: str, name: str, team: str, force: bool):
-        avatar = MediaHelper.AvatarPath(team, name)
+        avatars = MediaHelper.AvatarPaths(team, name)
         sponsors = SponsorHelper.CandidatePaths(team) if team else []
-        signature = tuple((p, DynamicExport._Stat(p)) for p in [avatar, *sponsors])
+        signature = tuple((p, DynamicExport._Stat(p)) for p in [*avatars, *sponsors])
         if not force and DynamicExport._mediaSignatures.get(path) == signature:
             return
         DynamicExport._mediaSignatures[path] = signature
 
-        StateManager.Set(f"{path}.avatar", avatar if signature[0][1] is not None else None)
+        StateManager.Set(f"{path}.avatar", MediaHelper.FindAvatar(team, name))
         SponsorHelper.ExportValidSponsors(team, path)
 
     def Files(folder: str) -> list[os.DirEntry]:

@@ -357,8 +357,8 @@ class PlayerMediaTab(QWidget):
 
         self.model.clear()
         for team, name, inDB in people.values():
-            avatar = MediaHelper.AvatarPath(team, name)
-            hasAvatar = os.path.isfile(avatar)
+            avatar = MediaHelper.FindAvatar(team, name)
+            hasAvatar = avatar is not None
             hasFolder = DynamicExport.FindCustomFolder(name, team) is not None
             if self.onlyWithFiles.isChecked() and not (hasAvatar or hasFolder):
                 continue
@@ -399,17 +399,30 @@ class PlayerMediaTab(QWidget):
         hasName = bool(name)
 
         # Avatar
-        avatar = MediaHelper.AvatarPath(team, name)
-        self.avatarPreview.SetImage(avatar if hasName else None)
-        self.avatarLabel.setText(
-            QApplication.translate("app", "Saved as {0}").format(
+        avatar = MediaHelper.FindAvatar(team, name) if hasName else None
+        self.avatarPreview.SetImage(avatar)
+        if not hasName:
+            avatarText = QApplication.translate("app", "Type a tag, or pick someone on the left.")
+        elif avatar:
+            avatarText = QApplication.translate("app", "From {0}").format(
                 os.path.relpath(avatar, "./user_data")
             )
-            if hasName
-            else QApplication.translate("app", "Type a tag, or pick someone on the left.")
-        )
+        else:
+            avatarText = QApplication.translate("app", "Will be saved as {0}").format(
+                os.path.relpath(MediaHelper.NewAvatarPath(team, name), "./user_data")
+            )
+        if hasName and team:
+            avatarText += "\n" + QApplication.translate(
+                "app",
+                "Looked for with the sponsor first ({0}), then the tag alone ({1}), "
+                "so it works with any sponsor.",
+            ).format(
+                os.path.basename(MediaHelper.AvatarPath(team, name)),
+                os.path.basename(MediaHelper.AvatarPath("", name)),
+            )
+        self.avatarLabel.setText(avatarText)
         self.avatarChooseBt.setEnabled(hasName)
-        self.avatarRemoveBt.setEnabled(hasName and os.path.isfile(avatar))
+        self.avatarRemoveBt.setEnabled(avatar is not None)
         self.avatarPreview.setAcceptDrops(hasName)
 
         # Sponsor logos
@@ -474,7 +487,7 @@ class PlayerMediaTab(QWidget):
         team, name = self.Person()
         if not name:
             return
-        destination = MediaHelper.AvatarPath(team, name)
+        destination = MediaHelper.NewAvatarPath(team, name)
         if not ConfirmOverwrite(self, destination):
             return
         try:
@@ -487,7 +500,9 @@ class PlayerMediaTab(QWidget):
 
     def RemoveAvatar(self):
         team, name = self.Person()
-        MediaHelper.Remove(MediaHelper.AvatarPath(team, name))
+        avatar = MediaHelper.FindAvatar(team, name)
+        if avatar:
+            MediaHelper.Remove(avatar)
         MediaHelper.Changed()
         self.LoadPerson()
 

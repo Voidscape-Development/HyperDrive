@@ -218,6 +218,10 @@ and `sponsor_logos`. A file replaced by another with the same name keeps the
 same path, so a layout showing it doesn't load it again. Turn custom data off
 with *Export custom player data* in Settings > General.
 
+A player's `avatar` is `user_data/player_avatar/<sponsor> <tag>.png`, or
+`<tag>.png` when there's none with their sponsor, so it stays when their
+sponsor changes. Avatars set in the app are saved as the tag alone.
+
 `sponsor_logos` has the logo of each of a player's sponsors (`HD | GG`:
 `{"1": ".../HD.png", "2": ".../GG.png"}`) when there's no logo for all of them
 together, which is then `sponsor_logo`.

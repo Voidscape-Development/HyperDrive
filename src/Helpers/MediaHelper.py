@@ -36,6 +36,27 @@ class MediaHelper:
         merged = f"{team} {name}" if team else name
         return f"{AVATAR_DIR}/{MediaHelper.Sanitize(merged)}.png"
 
+    def AvatarPaths(team: str, name: str) -> list[str]:
+        """Where a person's avatar is looked for, in order: their sponsor and
+        tag ("HD Azure.png"), then their tag alone ("Azure.png"), so their
+        avatar stays when their sponsor changes"""
+        paths = [MediaHelper.AvatarPath(team, name)]
+        if team and name:
+            paths.append(MediaHelper.AvatarPath("", name))
+        return paths
+
+    def FindAvatar(team: str, name: str) -> str | None:
+        """The avatar a person gets, if they have one"""
+        for path in MediaHelper.AvatarPaths(team, name):
+            if os.path.isfile(path):
+                return path
+        return None
+
+    def NewAvatarPath(team: str, name: str) -> str:
+        """Where to save a person's avatar: over the one they have, or as
+        their tag alone, which works with any sponsor"""
+        return MediaHelper.FindAvatar(team, name) or MediaHelper.AvatarPath("", name)
+
     def SponsorLogoPath(sponsor: str) -> str:
         return f"{SPONSOR_LOGO_DIR}/{MediaHelper.Sanitize(sponsor).upper()}.png"
 
