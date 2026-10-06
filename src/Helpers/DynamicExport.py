@@ -1,5 +1,4 @@
 import os
-import re
 import threading
 
 import orjson
@@ -8,23 +7,27 @@ from loguru import logger
 from ..Scheduler import Scheduler
 from ..SettingsManager import SettingsManager
 from ..StateManager import StateManager
+from .MediaHelper import CUSTOM_PLAYER_DIR, MediaHelper
+from .SponsorHelper import SponsorHelper
 
 
 class DynamicExport:
-    """Exports the files in a person's folder in user_data/custom_player_export/
-    to `<path>.custom`, for layouts to show (see docs/layout-data.md).
+    """Exports a person's files in user_data to the layouts, and again
+    whenever they change: their avatar, their sponsors' logos, and the files
+    in their folder in user_data/custom_player_export/ as `<path>.custom`
+    (see docs/layout-data.md).
 
-    A person's folder is named after their tag, or their sponsor and tag
-    ("TEAM Tag"), in any case. Each file is exported by its name without
+    A person's custom folder is named after their tag, or their sponsor and
+    tag ("TEAM Tag"), in any case. Each file is exported by its name without
     the extension: text files as their contents, .json files as what they
     hold, anything else (images, videos...) as its path.
     """
 
-    BASE_DIR = "./user_data/custom_player_export"
+    BASE_DIR = CUSTOM_PLAYER_DIR
     SETTING = "general.custom_player_export"
-    # Scheduler job that checks the folders for changes
+    # Scheduler job that checks the files for changes
     JOB = "custom_player_export"
-    # How often the folders are checked for changes while enabled
+    # How often the files are checked for changes
     POLL_INTERVAL_MS = 1000
 
     TEXT_EXTENSIONS = (".txt", ".csv", ".xml", ".html", ".md")
@@ -35,15 +38,17 @@ class DynamicExport:
     lock = threading.RLock()
     # Path -> (tag, sponsor) of the person exported there
     _people: dict[str, tuple[str, str]] = {}
-    # Path -> the folder and files last exported there, to tell when they change
+    # Path -> the custom folder and files last exported there, to tell when they change
     _signatures: dict[str, tuple] = {}
+    # Path -> the avatar and sponsor logos last exported there
+    _mediaSignatures: dict[str, tuple] = {}
 
     def Enabled() -> bool:
+        """Custom data is exported. Avatars and sponsor logos always are."""
         return SettingsManager.Get(DynamicExport.SETTING, True)
 
-    def SettingChanged():
-        """Starts or stops checking the folders for changes, as the setting
-        says, and exports the custom data again, or clears it when disabled."""
+    def Start():
+        """Starts checking the people's files for changes"""
         scheduler = Scheduler.instance
         if DynamicExport.JOB not in scheduler.jobs:
             scheduler.Register(
@@ -51,22 +56,24 @@ class DynamicExport:
                 lambda done: [DynamicExport.Refresh(), done()],
                 DynamicExport.POLL_INTERVAL_MS,
             )
-        if DynamicExport.Enabled():
-            scheduler.Start(DynamicExport.JOB)
-        elif scheduler.IsEnabled(DynamicExport.JOB):
-            scheduler.Stop(DynamicExport.JOB)
+            # Files changed from the app show up right away
+            MediaHelper.signals.changed.connect(lambda: DynamicExport.Refresh())
+        scheduler.Start(DynamicExport.JOB)
+
+    def SettingChanged():
+        """Exports the custom data again, or clears it when disabled"""
         DynamicExport.Refresh(force=True)
 
-    def ExportCustomPlayerData(name: str, team: str, path: str):
-        """Exports the custom data of the person now at path, and keeps it
-        up to date while their files change."""
+    def ExportPlayerMedia(name: str, team: str, path: str):
+        """Exports the avatar, sponsor logos and custom data of the person now
+        at path, and keeps them up to date while their files change."""
         with DynamicExport.lock:
             DynamicExport._people[path] = (name, team)
             DynamicExport._Export(path, DynamicExport._Folders(), force=True)
 
     def Refresh(force=False):
-        """Exports again the custom data whose files changed since it was
-        exported (or all of it, with force), e.g. on a timer."""
+        """Exports again the files that changed since they were exported (or
+        all of them, with force), e.g. on a timer."""
         with DynamicExport.lock:
             if not DynamicExport._people:
                 return
@@ -76,21 +83,26 @@ class DynamicExport:
                 if StateManager.Get(path) is None:
                     DynamicExport._people.pop(path, None)
                     DynamicExport._signatures.pop(path, None)
+                    DynamicExport._mediaSignatures.pop(path, None)
                     continue
                 DynamicExport._Export(path, folders, force=force)
 
-    def _Sanitize(name: str) -> str:
-        return re.sub(r"[,/|;:<>\\?*]", "_", name).strip().upper()
+    def FindCustomFolder(name: str, team: str) -> str | None:
+        """The custom data folder of a person, whether or not it's exported"""
+        return DynamicExport._MatchFolder(name, team, DynamicExport._Folders(always=True))
 
-    def _Folders() -> dict[str, str]:
+    def FolderKey(name: str) -> str:
+        return MediaHelper.Sanitize(name).strip().upper()
+
+    def _Folders(always=False) -> dict[str, str]:
         """The people's folders, by sanitized upper case name"""
         folders = {}
-        if not DynamicExport.Enabled() or not os.path.isdir(DynamicExport.BASE_DIR):
+        if not (always or DynamicExport.Enabled()) or not os.path.isdir(DynamicExport.BASE_DIR):
             return folders
         try:
             for entry in os.scandir(DynamicExport.BASE_DIR):
                 if entry.is_dir():
-                    folders[DynamicExport._Sanitize(entry.name)] = (
+                    folders[DynamicExport.FolderKey(entry.name)] = (
                         f"{DynamicExport.BASE_DIR}/{entry.name}"
                     )
         except OSError as e:
@@ -105,12 +117,30 @@ class DynamicExport:
         if team.strip():
             candidates.append(f"{team} {name}")
         for candidate in candidates:
-            folder = folders.get(DynamicExport._Sanitize(candidate))
+            folder = folders.get(DynamicExport.FolderKey(candidate))
             if folder is not None:
                 return folder
         return None
 
-    def _Files(folder: str) -> list[os.DirEntry]:
+    def _Stat(path: str):
+        try:
+            stat = os.stat(path)
+        except OSError:
+            return None
+        return (stat.st_mtime_ns, stat.st_size)
+
+    def _ExportMedia(path: str, name: str, team: str, force: bool):
+        avatar = MediaHelper.AvatarPath(team, name)
+        sponsors = SponsorHelper.CandidatePaths(team) if team else []
+        signature = tuple((p, DynamicExport._Stat(p)) for p in [avatar, *sponsors])
+        if not force and DynamicExport._mediaSignatures.get(path) == signature:
+            return
+        DynamicExport._mediaSignatures[path] = signature
+
+        StateManager.Set(f"{path}.avatar", avatar if signature[0][1] is not None else None)
+        SponsorHelper.ExportValidSponsors(team, path)
+
+    def Files(folder: str) -> list[os.DirEntry]:
         try:
             entries = [
                 e
@@ -126,8 +156,10 @@ class DynamicExport:
 
     def _Export(path: str, folders: dict[str, str], force=False):
         name, team = DynamicExport._people[path]
+        DynamicExport._ExportMedia(path, name, team, force)
+
         folder = DynamicExport._MatchFolder(name, team, folders)
-        files = DynamicExport._Files(folder) if folder else []
+        files = DynamicExport.Files(folder) if folder else []
 
         signature = []
         for entry in files:

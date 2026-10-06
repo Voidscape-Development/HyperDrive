@@ -1,5 +1,4 @@
 import os
-import re
 import threading
 import traceback
 
@@ -16,7 +15,6 @@ from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
 from .Helpers.PronounHelper import PronounHelper
-from .Helpers.SponsorHelper import SponsorHelper
 from .PlayerDB import PlayerDB
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
@@ -342,26 +340,11 @@ class TeamPlayerWidget(QGroupBox):
         with self.dataLock:
             team = self.findChild(QLineEdit, "team").text()
             name = self.findChild(QLineEdit, "name").text()
-            merged = ""
 
-            if team != "":
-                merged += team + " "
-
-            merged += name
-
-            merged = re.sub(r"[,/|;:<>\\?*]", "_", merged)
-
-            # Online avatar
             StateManager.Set(f"{self.path}.online_avatar", onlineAvatar)
 
-            # Local avatar
-            if os.path.exists(f"./user_data/player_avatar/{merged}.png"):
-                StateManager.Set(f"{self.path}.avatar", f"./user_data/player_avatar/{merged}.png")
-            else:
-                StateManager.Set(f"{self.path}.avatar", None)
-
-            SponsorHelper.ExportValidSponsors(team, self.path)
-            DynamicExport.ExportCustomPlayerData(name, team, self.path)
+            # Local avatar, sponsor logos and custom data, kept up to date
+            DynamicExport.ExportPlayerMedia(name, team, self.path)
 
     def ExportPlayerCity(self, city=""):
         with self.dataLock:

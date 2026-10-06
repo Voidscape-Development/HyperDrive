@@ -46,7 +46,7 @@ def Custom(path=PATH):
 def Export(name, team="", path=PATH):
     # The widgets set other keys first, so the player's path exists
     StateManager.Set(f"{path}.name", name)
-    DynamicExport.ExportCustomPlayerData(name, team, path)
+    DynamicExport.ExportPlayerMedia(name, team, path)
 
 
 def TestValues():

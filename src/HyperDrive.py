@@ -552,8 +552,9 @@ class Window(QMainWindow):
             Scheduler.instance.Start("completed_sets")
         self.cbAutoPullCompletedSets.toggled.connect(self.ToggleCompletedSetsAutoPull)
 
-        # Keeps the players' custom data up to date as their files change
-        DynamicExport.SettingChanged()
+        # Keeps the players' avatars, sponsor logos and custom data up to
+        # date as their files change
+        DynamicExport.Start()
 
         TournamentDataManager.instance.signals.tournament_changed.connect(self.UpdateLastSetsButton)
         TournamentDataManager.instance.signals.tournament_changed.connect(

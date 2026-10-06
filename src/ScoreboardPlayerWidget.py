@@ -1,5 +1,4 @@
 import os
-import re
 import threading
 import traceback
 
@@ -17,7 +16,6 @@ from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.PronounHelper import PronounHelper
-from .Helpers.SponsorHelper import SponsorHelper
 from .PlayerDB import PlayerDB
 from .SeedManager import SeedManager
 from .SettingsManager import SettingsManager
@@ -112,6 +110,16 @@ class ScoreboardPlayerWidget(QGroupBox):
         self.delete_bt.clicked.connect(self.DeletePlayerFromDB)
         self.delete_bt.setMinimumWidth(1)
 
+        self.media_bt = QPushButton(QApplication.translate("app", "Media..."))
+        self.media_bt.setFont(QFont(self.media_bt.font().family(), 9))
+        self.media_bt.setIcon(ThemedIcon("assets/icons/person.svg"))
+        self.media_bt.setToolTip(
+            QApplication.translate("app", "Avatar, sponsor logos and custom data of this player")
+        )
+        bottom_buttons_layout.addWidget(self.media_bt)
+        self.media_bt.clicked.connect(self.OpenMedia)
+        self.media_bt.setMinimumWidth(1)
+
         self.clear_bt = QPushButton(QApplication.translate("app", "Clear"))
         self.clear_bt.setFont(QFont(self.clear_bt.font().family(), 9))
         # self.clear_bt.setFont(self.parent.font_small)
@@ -180,6 +188,16 @@ class ScoreboardPlayerWidget(QGroupBox):
         self.pronoun_completer = QCompleter()
         self.findChild(QLineEdit, "pronoun").setCompleter(self.pronoun_completer)
         self.pronoun_completer.setModel(PronounHelper.Model())
+
+    def OpenMedia(self):
+        # Imported here: the window imports the widgets' modules
+        from .PlayerDBWindow import PlayerDBWindow
+
+        if PlayerDBWindow.instance is not None:
+            PlayerDBWindow.instance.OpenMedia(
+                self.findChild(QLineEdit, "team").text().strip(),
+                self.findChild(QLineEdit, "name").text().strip(),
+            )
 
     def deleteLater(self):
         self._deleted = True
@@ -277,26 +295,11 @@ class ScoreboardPlayerWidget(QGroupBox):
         with self.dataLock:
             team = self.findChild(QLineEdit, "team").text()
             name = self.findChild(QLineEdit, "name").text()
-            merged = ""
 
-            if team != "":
-                merged += team + " "
-
-            merged += name
-
-            merged = re.sub(r"[,/|;:<>\\?*]", "_", merged)
-
-            # Online avatar
             StateManager.Set(f"{self.path}.online_avatar", onlineAvatar)
 
-            # Local avatar
-            if os.path.exists(f"./user_data/player_avatar/{merged}.png"):
-                StateManager.Set(f"{self.path}.avatar", f"./user_data/player_avatar/{merged}.png")
-            else:
-                StateManager.Set(f"{self.path}.avatar", None)
-
-            SponsorHelper.ExportValidSponsors(team, self.path)
-            DynamicExport.ExportCustomPlayerData(name, team, self.path)
+            # Local avatar, sponsor logos and custom data, kept up to date
+            DynamicExport.ExportPlayerMedia(name, team, self.path)
 
     def ExportPlayerId(self, id=None):
         with self.dataLock:

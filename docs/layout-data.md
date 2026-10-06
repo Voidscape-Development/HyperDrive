@@ -207,10 +207,20 @@ commentators (`commentary.N`), the player lists (`player_list.slot.N.player.P`
 and `bracket.players.slot.N.player.P`) and team battle players. People
 without a folder, or with an empty one, have no `custom`.
 
+The files can be managed in the app, in the Player Database window's *Player
+media* tab (also opened by the *Media...* button of a player or commentator),
+which also sets avatars. Its *Sponsor logos* and *Team logos* tabs manage
+`user_data/sponsor_logo/` and `user_data/team_logo/`.
+
 HyperDrive checks the folders every second, so changes to the files reach the
-layouts while the person is on stream. A file replaced by another with the same
-name keeps the same path, so a layout showing it doesn't load it again. Turn
-it all off with *Export custom player data* in Settings > General.
+layouts while the person is on stream; so do a player's `avatar`, `sponsor_logo`
+and `sponsor_logos`. A file replaced by another with the same name keeps the
+same path, so a layout showing it doesn't load it again. Turn custom data off
+with *Export custom player data* in Settings > General.
+
+`sponsor_logos` has the logo of each of a player's sponsors (`HD | GG`:
+`{"1": ".../HD.png", "2": ".../GG.png"}`) when there's no logo for all of them
+together, which is then `sponsor_logo`.
 
 In layouts, `globals.js` has:
 

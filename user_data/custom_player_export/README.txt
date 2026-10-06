@@ -12,4 +12,6 @@ e.g. bio.txt as "bio":
 - anything else (images, videos...): its path
 
 Changes to the files show up on stream within a second.
+You can also manage these files in HyperDrive: Player database > Player media,
+or the Media... button of a player.
 It can be turned off in Settings > General.
