@@ -5,7 +5,6 @@ import traceback
 import unicodedata
 
 import orjson
-import pycountry
 from loguru import logger
 from qtpy.QtCore import *
 from qtpy.QtGui import *
@@ -37,7 +36,7 @@ class TSHCountryHelper(QObject):
         if country_code not in TSHCountryHelper.countries:
             return {}
 
-        data = {
+        return {
             "name": TSHCountryHelper.countries[country_code]["name"],
             "display_name": TSHCountryHelper.countries[country_code]["display_name"],
             "en_name": TSHCountryHelper.countries[country_code]["en_name"],
@@ -46,19 +45,6 @@ class TSHCountryHelper(QObject):
             "longitude": TSHCountryHelper.countries[country_code]["longitude"],
             "asset": f"./assets/country_flag/{country_code.lower()}.svg",
         }
-
-        try:
-            country = pycountry.countries.get(
-                alpha_2=TSHCountryHelper.countries[country_code]["code"]
-            )
-            data["emoji"] = country.flag
-        except AttributeError:
-            logger.warning(
-                f"The following country could not be found in the pycountry library: {TSHCountryHelper.countries[country_code]['code']}"
-            )
-            data["emoji"] = None
-
-        return data
 
     # Generated from the countries+states+cities database by
     # scripts/gen_countries.py, which keeps only what TSH uses of it

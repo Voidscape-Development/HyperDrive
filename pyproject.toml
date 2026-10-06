@@ -21,7 +21,6 @@ dependencies = [
     "parrygg>=0.1.6",
     "pillow",
     "py7zr",
-    "pycountry",
     "pynput==1.7.7",
     "pypinyin",
     "pyqt6",
