@@ -1,11 +1,11 @@
 import React from "react";
 
 /**
- * Form state that follows TSH and saves itself.
+ * Form state that follows HyperDrive and saves itself.
  *
- * The fields start from, and keep following, `serverValues` (what TSH has),
+ * The fields start from, and keep following, `serverValues` (what HyperDrive has),
  * except for the ones edited here that haven't been saved yet, so an update
- * coming back from TSH never overwrites what someone is typing.
+ * coming back from HyperDrive never overwrites what someone is typing.
  *
  * Edits are saved `debounceMs` after the last one, or right away with
  * `flush()` (on blur / Enter) or `setField(..., {immediate: true})`.

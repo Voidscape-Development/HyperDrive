@@ -12,20 +12,20 @@ package = types.ModuleType("src")
 package.__path__ = [os.path.abspath("src")]
 sys.modules["src"] = package
 
-localeHelper = types.ModuleType("src.Helpers.TSHLocaleHelper")
+localeHelper = types.ModuleType("src.Helpers.LocaleHelper")
 
 
-class TSHLocaleHelper:
+class LocaleHelper:
     matchNames = {}
 
 
-localeHelper.TSHLocaleHelper = TSHLocaleHelper
+localeHelper.LocaleHelper = LocaleHelper
 helpers = types.ModuleType("src.Helpers")
 helpers.__path__ = [os.path.abspath("src/Helpers")]
 sys.modules["src.Helpers"] = helpers
-sys.modules["src.Helpers.TSHLocaleHelper"] = localeHelper
+sys.modules["src.Helpers.LocaleHelper"] = localeHelper
 
-from src.TSHBracketModel import *
+from src.BracketModel import *
 
 
 def Play(bracket, better=lambda a, b: a < b):

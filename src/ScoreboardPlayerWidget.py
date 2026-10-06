@@ -1,0 +1,1075 @@
+import os
+import re
+import threading
+import traceback
+
+from loguru import logger
+from qtpy import uic
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtWidgets import *
+
+from .GameAssetManager import GameAssetManager
+from .Helpers.BadWordFilter import BadWordFilter
+from .Helpers.CountryHelper import CountryHelper
+from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
+from .Helpers.DirHelper import ResolvePath
+from .Helpers.LocaleHelper import LocaleHelper
+from .Helpers.SponsorHelper import SponsorHelper
+from .PlayerDB import PlayerDB
+from .SeedManager import SeedManager
+from .SettingsManager import SettingsManager
+from .StateManager import StateManager
+from .Theme import ThemedIcon
+from .TournamentDataManager import TournamentDataManager
+
+
+class ScoreboardPlayerWidgetSignals(QObject):
+    playerId_changed = Signal()
+    player1Id_changed = Signal()
+    player2Id_changed = Signal()
+    player_seed_changed = Signal()
+    dataChanged = Signal()
+
+
+class ScoreboardPlayerWidget(QGroupBox):
+    countries = None
+    countryModel = None
+    characterModel = None
+    _deleted = False
+    _swapping = False
+
+    dataLock = threading.RLock()
+
+    def __init__(self, index=0, teamNumber=0, path="", customName="", *args):
+        super().__init__(*args)
+
+        self.instanceSignals = ScoreboardPlayerWidgetSignals()
+
+        self.path = path
+
+        self.index = index
+        self.teamNumber = teamNumber
+        self.customName = customName
+
+        self.losers = False
+
+        uic.loadUi(ResolvePath("src/layout/ScoreboardPlayer.ui"), self)
+
+        custom_textbox_layout = QHBoxLayout()
+        self.custom_textbox = QPlainTextEdit()
+        custom_textbox_layout.addWidget(self.custom_textbox)
+        self.layout().addLayout(custom_textbox_layout, 98, 2, 1, 1)
+        self.custom_textbox.setObjectName("custom_textbox")
+        self.custom_textbox.setMaximumHeight(100)
+        self.custom_textbox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.custom_textbox.setPlaceholderText(
+            QApplication.translate("app", "Additional information")
+        )
+        self.custom_textbox.textChanged.connect(
+            lambda element=self.custom_textbox: [
+                StateManager.Set(f"{self.path}.{element.objectName()}", element.toPlainText()),
+                self.instanceSignals.dataChanged.emit(),
+            ]
+        )
+
+        self.character_container = self.findChild(QWidget, "characters")
+
+        self.LoadCountries()
+
+        CountryHelper.signals.countriesUpdated.connect(self.LoadCountries)
+
+        self.character_elements = []
+
+        bottom_buttons_layout = QHBoxLayout()
+        bottom_buttons_layout.setSpacing(4)
+        self.layout().addLayout(bottom_buttons_layout, 99, 0, 1, 3)
+
+        self.save_bt = QPushButton(QApplication.translate("app", "Save new player"))
+        self.save_bt.setFont(QFont(self.save_bt.font().family(), 9))
+        # self.save_bt.setFont(self.parent.font_small)
+        self.save_bt.setIcon(ThemedIcon("assets/icons/save.svg"))
+        bottom_buttons_layout.addWidget(self.save_bt)
+        self.save_bt.clicked.connect(self.SavePlayerToDB)
+        self.findChild(QLineEdit, "name").editingFinished.connect(self.ManageSavePlayerToDBText)
+        self.findChild(QLineEdit, "team").editingFinished.connect(self.ManageSavePlayerToDBText)
+        self.save_bt.setMinimumWidth(1)
+
+        self.delete_bt = QPushButton(QApplication.translate("app", "Delete player entry"))
+        # self.delete_bt.setFont(self.parent.font_small)
+        self.delete_bt.setIcon(ThemedIcon("assets/icons/cancel.svg"))
+        bottom_buttons_layout.addWidget(self.delete_bt)
+        self.delete_bt.setFont(QFont(self.delete_bt.font().family(), 9))
+        self.delete_bt.setEnabled(False)
+        self.findChild(QLineEdit, "name").editingFinished.connect(
+            self.ManageDeletePlayerFromDBActive
+        )
+        self.findChild(QLineEdit, "team").editingFinished.connect(
+            self.ManageDeletePlayerFromDBActive
+        )
+        self.delete_bt.clicked.connect(self.DeletePlayerFromDB)
+        self.delete_bt.setMinimumWidth(1)
+
+        self.clear_bt = QPushButton(QApplication.translate("app", "Clear"))
+        self.clear_bt.setFont(QFont(self.clear_bt.font().family(), 9))
+        # self.clear_bt.setFont(self.parent.font_small)
+        self.clear_bt.setIcon(ThemedIcon("assets/icons/undo.svg"))
+        bottom_buttons_layout.addWidget(self.clear_bt)
+        self.clear_bt.clicked.connect(self.Clear)
+        self.clear_bt.setMinimumWidth(1)
+
+        # Move up/down
+        titleContainer = self.findChild(QHBoxLayout, "titleContainer")
+        titleContainer.setSpacing(4)
+        self.btMoveUp = QPushButton()
+        self.btMoveUp.setFixedSize(24, 24)
+        self.btMoveUp.setIcon(ThemedIcon("./assets/icons/arrow_up.svg"))
+        titleContainer.addWidget(self.btMoveUp)
+        self.btMoveDown = QPushButton()
+        self.btMoveDown.setFixedSize(24, 24)
+        self.btMoveDown.setIcon(ThemedIcon("./assets/icons/arrow_down.svg"))
+        titleContainer.addWidget(self.btMoveDown)
+
+        self.SetIndex(index, teamNumber)
+
+        self.lastExportedName = ""
+
+        self.findChild(QLineEdit, "name").editingFinished.connect(self.NameChanged)
+        self.findChild(QLineEdit, "team").editingFinished.connect(self.NameChanged)
+
+        for c in self.findChildren(QLineEdit):
+            c.editingFinished.connect(
+                lambda element=c: [
+                    StateManager.Set(
+                        f"{self.path}.{element.objectName() if element.objectName() != 'qt_spinbox_lineedit' else element.parent().objectName()}",
+                        element.text(),
+                    ),
+                    self.instanceSignals.dataChanged.emit(),
+                ]
+            )
+
+        seed = self.findChild(QSpinBox, "seed")
+        seed.valueChanged.connect(lambda value: StateManager.Set(f"{self.path}.seed", value))
+        seed.valueChanged.connect(lambda value: self.instanceSignals.player_seed_changed.emit())
+
+        seed.setValue(0)
+        seed.valueChanged.emit(seed.value())
+
+        SeedManager.signals.seed_changed.connect(self.SeedOverrideChanged)
+
+        self.findChild(QCheckBox, "birthday").toggled.connect(
+            lambda state, element=c: [StateManager.Set(f"{self.path}.birthday", state)]
+        )
+        self.findChild(QCheckBox, "birthday").toggled.emit(False)
+
+        for c in self.findChildren(QComboBox):
+            c.currentIndexChanged.connect(
+                lambda text, element=c: [self.ComboBoxIndexChanged(element)]
+            )
+            c.currentIndexChanged.emit(0)
+
+        self.SetCharactersPerPlayer(1)
+
+        PlayerDB.signals.db_updated.connect(self.SetupAutocomplete)
+        self.SetupAutocomplete()
+
+        GameAssetManager.instance.signals.onLoad.connect(self.ReloadCharacters)
+
+        self.pronoun_completer = QCompleter()
+        self.findChild(QLineEdit, "pronoun").setCompleter(self.pronoun_completer)
+        self.pronoun_list = []
+        for file in ["./user_data/pronouns_list.txt"]:
+            try:
+                with open(file) as f:
+                    for l in f.readlines():
+                        processed_line = l.replace("\n", "").strip()
+                        if processed_line and processed_line not in self.pronoun_list:
+                            self.pronoun_list.append(processed_line)
+            except FileNotFoundError:
+                with open("./user_data/pronouns_list.txt", "w") as f:
+                    logger.info("creating ./user_data/pronouns_list.txt")
+            except Exception as e:
+                logger.error(traceback.format_exc())
+        self.pronoun_model = QStringListModel()
+        self.pronoun_completer.setModel(self.pronoun_model)
+        self.pronoun_model.setStringList(self.pronoun_list)
+
+    def deleteLater(self):
+        self._deleted = True
+        super().deleteLater()
+
+    def ComboBoxIndexChanged(self, element: QComboBox):
+        StateManager.Set(f"{self.path}.{element.objectName()}", element.currentData())
+        self.instanceSignals.dataChanged.emit()
+
+    def CharactersChanged(self, includeMains=False):
+        if self._deleted:
+            logger.warning(
+                f"CharactersChanged called on deleted ScoreboardPlayerWidget for {self.path}"
+            )
+            return
+
+        with self.dataLock:
+            characters = {}
+
+            for i, (element, character, color, variant) in enumerate(self.character_elements):
+                data = character.currentData()
+
+                if data == None:
+                    data = {}
+
+                if character.currentData() == None:
+                    data = {"name": character.currentText()}
+
+                if color.currentData() and color.currentData().get("name", ""):
+                    data["name"] = color.currentData().get("name", "")
+
+                if color.currentData() and color.currentData().get("en_name", ""):
+                    data["en_name"] = color.currentData().get("en_name", "")
+
+                if color.currentData() and character.currentData():
+                    data["assets"] = color.currentData().get("assets", {})
+
+                if data.get("assets") == None:
+                    data["assets"] = {}
+
+                data["skin"] = color.currentIndex()
+                if variant.currentData():
+                    data["variant"] = variant.currentData()
+                else:
+                    data["variant"] = {}
+
+                characters[i + 1] = data
+
+            StateManager.Set(f"{self.path}.character", characters)
+
+            if includeMains:
+                StateManager.Set(f"{self.path}.mains", characters)
+
+    def SetLosers(self, value):
+        with self.dataLock:
+            self.losers = value
+            self.ExportMergedName()
+
+    def NameChanged(self):
+        with self.dataLock:
+            team = self.findChild(QLineEdit, "team").text()
+            name = self.findChild(QLineEdit, "name").text()
+            merged = team + " " + name
+
+            if merged != self.lastExportedName:
+                self.ExportMergedName()
+                self.ExportPlayerImages()
+                self.ExportPlayerId()
+
+            self.lastExportedName = merged
+
+            self.SetRomanizedText()
+
+    def ExportMergedName(self):
+        with self.dataLock:
+            team = self.findChild(QLineEdit, "team").text()
+            name = self.findChild(QLineEdit, "name").text()
+            merged = ""
+            nameOnlyMerged = ""
+
+            if team != "":
+                merged += team + " | "
+
+            merged += name
+            nameOnlyMerged += name
+
+            if self.losers:
+                merged += " [L]"
+                nameOnlyMerged += " [L]"
+
+            StateManager.Set(f"{self.path}.mergedName", merged)
+            StateManager.Set(f"{self.path}.mergedOnlyName", nameOnlyMerged)
+
+    def ExportPlayerImages(self, onlineAvatar=None):
+        with self.dataLock:
+            team = self.findChild(QLineEdit, "team").text()
+            name = self.findChild(QLineEdit, "name").text()
+            merged = ""
+
+            if team != "":
+                merged += team + " "
+
+            merged += name
+
+            merged = re.sub(r"[,/|;:<>\\?*]", "_", merged)
+
+            # Online avatar
+            StateManager.Set(f"{self.path}.online_avatar", onlineAvatar)
+
+            # Local avatar
+            if os.path.exists(f"./user_data/player_avatar/{merged}.png"):
+                StateManager.Set(f"{self.path}.avatar", f"./user_data/player_avatar/{merged}.png")
+            else:
+                StateManager.Set(f"{self.path}.avatar", None)
+
+            SponsorHelper.ExportValidSponsors(team, self.path)
+
+    def ExportPlayerId(self, id=None):
+        with self.dataLock:
+            if StateManager.Get(f"{self.path}.id") != id:
+                StateManager.Set(f"{self.path}.id", id)
+                # While swapping the id goes through intermediate values;
+                # SwapWith emits once for the final one instead
+                if not self._swapping:
+                    self.EmitPlayerIdChanged()
+
+    def EmitPlayerIdChanged(self):
+        # Each of these starts start.gg requests for the player's stats
+        if "score" in self.path:
+            self.instanceSignals.playerId_changed.emit()
+            if "team.1" in self.path:
+                self.instanceSignals.player1Id_changed.emit()
+            else:
+                self.instanceSignals.player2Id_changed.emit()
+
+    def ExportPlayerCity(self, city=None):
+        with self.dataLock:
+            if StateManager.Get(f"{self.path}.city") != city:
+                StateManager.Set(f"{self.path}.city", city)
+
+    def SwapWith(self, other: ScoreboardPlayerWidget, emitIdChanged=True):
+        """Swap this player's data with other's.
+
+        With emitIdChanged=False the playerId signals aren't emitted for the
+        new ids, for callers that move the player stats themselves instead of
+        fetching them again.
+        """
+        if self == other:
+            logger.info("Swapping player with themselves")
+            return
+        oldIds = [StateManager.Get(f"{w.path}.id") for w in [self, other]]
+        try:
+            StateManager.BlockSaving()
+            self._swapping = True
+            other._swapping = True
+            with self.dataLock:
+                with other.dataLock:
+                    tmpData = []
+
+                    # Save state
+                    for w in [self, other]:
+                        data = {}
+                        for widget in w.findChildren(QWidget):
+                            # Unnamed widgets (e.g. the line edits inside
+                            # editable combo boxes) can't be found again by
+                            # name, and loading them would hit another widget
+                            if not widget.objectName():
+                                continue
+                            if type(widget) == QLineEdit:
+                                data[widget.objectName()] = widget.text()
+                            if type(widget) == QComboBox:
+                                data[widget.objectName()] = widget.currentIndex()
+                            if type(widget) == QPlainTextEdit:
+                                data[widget.objectName()] = widget.toPlainText()
+                            if type(widget) == QCheckBox:
+                                data[widget.objectName()] = widget.isChecked()
+                        data["online_avatar"] = StateManager.Get(f"{w.path}.online_avatar")
+                        data["id"] = StateManager.Get(f"{w.path}.id")
+                        data["seed"] = StateManager.Get(f"{w.path}.seed")
+                        data["wins"] = StateManager.Get(f"{w.path}.wins")
+                        data["losses"] = StateManager.Get(f"{w.path}.losses")
+                        data["winPercentage"] = StateManager.Get(f"{w.path}.winPercentage")
+                        data["city"] = StateManager.Get(f"{w.path}.city")
+                        tmpData.append(data)
+
+                    # Load state
+                    for i, w in enumerate([other, self]):
+                        lineEdits = []
+                        for objName in tmpData[i]:
+                            widget = w.findChild(QWidget, objName)
+                            if widget:
+                                if type(widget) == QLineEdit:
+                                    widget.setText(tmpData[i][objName])
+                                    lineEdits.append(widget)
+                                if type(widget) == QComboBox:
+                                    widget.setCurrentIndex(tmpData[i][objName])
+                                if type(widget) == QPlainTextEdit:
+                                    widget.setPlainText(tmpData[i][objName])
+                                if type(widget) == QCheckBox:
+                                    widget.setChecked(tmpData[i][objName])
+                        # Only once every field is set, so the name/team
+                        # handlers run on the final name instead of a mix of
+                        # both players' (each run exports images, sponsors...)
+                        for widget in lineEdits:
+                            widget.editingFinished.emit()
+                        w.ExportPlayerId(tmpData[i]["id"])
+                        StateManager.Set(f"{w.path}.online_avatar", tmpData[i]["online_avatar"])
+                        StateManager.Set(f"{w.path}.seed", tmpData[i]["seed"])
+                        StateManager.Set(f"{w.path}.wins", tmpData[i]["wins"])
+                        StateManager.Set(f"{w.path}.losses", tmpData[i]["losses"])
+                        StateManager.Set(f"{w.path}.winPercentage", tmpData[i]["winPercentage"])
+                        StateManager.Set(f"{w.path}.city", tmpData[i]["city"])
+        finally:
+            self._swapping = False
+            other._swapping = False
+            StateManager.ReleaseSaving()
+
+        if emitIdChanged:
+            for w, oldId in zip([self, other], oldIds):
+                if StateManager.Get(f"{w.path}.id") != oldId:
+                    w.EmitPlayerIdChanged()
+
+    def SetIndex(self, index: int, team: int):
+        if self.customName == "":
+            self.findChild(QWidget, "title").setText(
+                QApplication.translate("app", "Player {0}").format(index)
+            )
+        else:
+            title = self.customName + " {0}"
+            self.findChild(QWidget, "title").setText(
+                QApplication.translate("app", title).format(index)
+            )
+        self.index = index
+        self.teamNumber = team
+
+    def SetCharactersPerPlayer(self, number):
+        # logger.info(f"ScoreboardPlayerWidget#SetCharactersPerPlayer({number})")
+        while len(self.character_elements) < number:
+            character_element = QWidget()
+            character_element.setLayout(QHBoxLayout())
+            character_element.layout().setSpacing(4)
+            character_element.layout().setContentsMargins(0, 0, 0, 0)
+            player_character = QComboBox()
+            player_character.setEditable(True)
+            character_element.layout().addWidget(player_character)
+            player_character.setMinimumWidth(60)
+            player_character.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            player_character.view().setMinimumWidth(60)
+            player_character.completer().setCompletionMode(QCompleter.PopupCompletion)
+            player_character.completer().popup().setMinimumWidth(250)
+            player_character.setModel(GameAssetManager.instance.characterModel)
+            player_character.setIconSize(QSize(24, 24))
+            player_character.setFixedHeight(32)
+            player_character.setFont(QFont(player_character.font().family(), 9))
+            player_character.lineEdit().setFont(QFont(player_character.font().family(), 9))
+
+            player_character_color = QComboBox()
+            character_element.layout().addWidget(player_character_color)
+            player_character_color.setIconSize(QSize(48, 48))
+            player_character_color.setFixedHeight(32)
+            player_character_color.setMinimumWidth(64)
+            player_character_color.setMaximumWidth(120)
+            player_character_color.setFont(QFont(player_character_color.font().family(), 9))
+            view = QListView()
+            view.setIconSize(QSize(128, 128))
+            player_character_color.setView(view)
+            player_character_color.setEditable(True)
+            player_character_color.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            player_character_color.completer().setCompletionMode(QCompleter.PopupCompletion)
+            # self.player_character_color.activated.connect(self.CharacterChanged)
+            # self.CharacterChanged()
+
+            # Add variant
+            player_variant = QComboBox()
+            player_variant.setObjectName("variants")
+            character_element.layout().addWidget(player_variant)
+            player_variant.setIconSize(QSize(24, 24))
+            player_variant.setFixedHeight(32)
+            player_variant.setMinimumWidth(60)
+            player_variant.setMaximumWidth(120)
+            player_variant.setFont(QFont(player_variant.font().family(), 9))
+            player_variant.setModel(GameAssetManager.instance.variantModel)
+            view = QListView()
+            view.setIconSize(QSize(24, 24))
+            player_variant.setView(view)
+            player_variant.setEditable(True)
+            player_variant.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            player_variant.completer().setCompletionMode(QCompleter.PopupCompletion)
+
+            if len(GameAssetManager.instance.variants) <= 0:
+                player_variant.setVisible(False)
+
+            # Move up/down
+            btMoveUp = QPushButton()
+            btMoveUp.setFixedSize(24, 24)
+            btMoveUp.setIcon(ThemedIcon("./assets/icons/arrow_up.svg"))
+            character_element.layout().addWidget(btMoveUp)
+            btMoveUp.clicked.connect(
+                lambda x=None, index=len(self.character_elements): self.SwapCharacters(
+                    index, index - 1
+                )
+            )
+            btMoveDown = QPushButton()
+            btMoveDown.setFixedSize(24, 24)
+            btMoveDown.setIcon(ThemedIcon("./assets/icons/arrow_down.svg"))
+            character_element.layout().addWidget(btMoveDown)
+            btMoveDown.clicked.connect(
+                lambda x=None, index=len(self.character_elements): self.SwapCharacters(
+                    index, index + 1
+                )
+            )
+
+            # Add line to characters
+            self.character_container.layout().addWidget(character_element)
+
+            self.character_elements.append(
+                [character_element, player_character, player_character_color, player_variant]
+            )
+
+            player_character.currentIndexChanged.connect(
+                lambda x, element=player_character, target=player_character_color: [
+                    self.LoadSkinOptions(element, target),
+                    self.CharactersChanged(),
+                ]
+            )
+
+            player_character_color.currentIndexChanged.connect(
+                lambda index, element=player_character: [self.CharactersChanged()]
+            )
+
+            player_variant.currentIndexChanged.connect(
+                lambda index, element=player_character: [self.CharactersChanged()]
+            )
+
+            player_character.setCurrentIndex(0)
+            player_character_color.setCurrentIndex(0)
+            player_variant.setCurrentIndex(0)
+
+            player_character.setObjectName(f"character_{len(self.character_elements)}")
+            player_character_color.setObjectName(f"character_color_{len(self.character_elements)}")
+            # player_variant.setObjectName(
+            #     f"variant_{len(self.character_elements)}")
+
+        while len(self.character_elements) > number:
+            self.character_elements[-1][0].setParent(None)
+            self.character_elements.pop()
+
+        if self.character_container.findChild(QComboBox, "variants") is not None:
+            if len(GameAssetManager.instance.variants) <= 0:
+                for container in self.findChildren(QComboBox, "variants"):
+                    container.setVisible(False)
+                for container in self.findChildren(QComboBox):
+                    if "character_color_" in container.objectName():
+                        container.setMaximumWidth(210)
+            else:
+                for container in self.findChildren(QComboBox, "variants"):
+                    container.setVisible(True)
+                for container in self.findChildren(QComboBox):
+                    if "character_color_" in container.objectName():
+                        container.setMaximumWidth(120)
+
+        self.CharactersChanged(includeMains=True)
+
+    def SwapCharacters(self, index1: int, index2: int):
+        with StateManager.SaveBlock():
+            self.DoSwapCharacters(index1, index2)
+
+    def DoSwapCharacters(self, index1: int, index2: int):
+        if index2 > len(self.character_elements) - 1:
+            index2 = 0
+
+        char1 = self.character_elements[index1]
+        char2 = self.character_elements[index2]
+
+        # Save index1 settings
+        tmp = [char1[1].currentText(), char1[2].currentIndex()]
+
+        # Set index1 to index2
+        # Character
+        found = char1[1].findText(char2[1].currentText())
+        if found != -1:
+            char1[1].setCurrentIndex(found)
+        else:
+            char1[1].setCurrentText(char2[1].currentText())
+
+        # Color
+        char1[2].setCurrentIndex(char2[2].currentIndex())
+
+        # Set index2 to temp (index1)
+        # Character
+        found = char2[1].findText(tmp[0])
+        if found != -1:
+            char2[1].setCurrentIndex(found)
+        else:
+            char2[1].setCurrentText(tmp[0])
+
+        # Color
+        char2[2].setCurrentIndex(tmp[1])
+
+        self.CharactersChanged()
+
+    def LoadCountries(self):
+        try:
+            if CountryHelper.countryModel == None:
+                CountryHelper.LoadCountries()
+
+            countryCompleter = QCompleter(CountryHelper.countryModel)
+
+            country: QComboBox = self.findChild(QComboBox, "country")
+            country.setCompleter(countryCompleter)
+            country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            country.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            country.view().setMinimumWidth(60)
+            country.completer().setCompletionMode(QCompleter.PopupCompletion)
+            country.completer().popup().setMinimumWidth(300)
+            country.setModel(CountryHelper.countryModel)
+            country.setFont(QFont(country.font().family(), 9))
+            country.lineEdit().setFont(QFont(country.font().family(), 9))
+
+            country.currentIndexChanged.connect(self.LoadStates)
+            country.currentIndexChanged.connect(self.SetRomanizedText)
+
+            state: QComboBox = self.findChild(QComboBox, "state")
+            state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            state.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            state.view().setMinimumWidth(60)
+            state.completer().setCompletionMode(QCompleter.PopupCompletion)
+            state.completer().popup().setMinimumWidth(300)
+            state.setFont(QFont(state.font().family(), 9))
+            state.lineEdit().setFont(QFont(state.font().family(), 9))
+
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            exit()
+
+    def LoadStates(self, index):
+        country: QComboBox = self.findChild(QComboBox, "country")
+
+        countryData = None
+        if country.currentData(Qt.ItemDataRole.UserRole) != None:
+            countryData = CountryHelper.countries.get(
+                country.currentData(Qt.ItemDataRole.UserRole).get("code"), {}
+            )
+
+        stateModel = QStandardItemModel()
+
+        noState = QStandardItem()
+        noState.setData({}, Qt.ItemDataRole.UserRole)
+        stateModel.appendRow(noState)
+
+        states = countryData.get("states")
+
+        if states is not None:
+            for i, state_code in enumerate(states.keys()):
+                item = QStandardItem()
+                # Windows has some weird thing with files named CON.png. In case a state code is CON,
+                # we try to load _CON.png instead
+                path = f"./assets/state_flag/{countryData.get('code')}/{'_CON' if state_code == 'CON' else state_code}.png"
+
+                if not os.path.exists(path):
+                    path = None
+
+                states[state_code].update({"asset": path})
+                item.setIcon(QIcon(path))
+                item.setData(states[state_code], Qt.ItemDataRole.UserRole)
+                item.setData(
+                    f"{states[state_code]['name']} ({state_code})", Qt.ItemDataRole.EditRole
+                )
+                stateModel.appendRow(item)
+
+        state: QComboBox = self.findChild(QComboBox, "state")
+        state.setModel(stateModel)
+        state.setCurrentIndex(0)
+
+    def LoadSkinOptions(self, element, target):
+        characterData = element.currentData()
+
+        if characterData:
+            target.setModel(GameAssetManager.instance.skinModels.get(characterData.get("en_name")))
+        else:
+            target.setModel(QStandardItemModel())
+
+    def ReloadCharacters(self):
+        if len(GameAssetManager.instance.variants) <= 0:
+            for container in self.findChildren(QComboBox, "variants"):
+                container.setVisible(False)
+            for container in self.findChildren(QComboBox):
+                if "character_color_" in container.objectName():
+                    container.setMaximumWidth(210)
+        else:
+            for container in self.findChildren(QComboBox, "variants"):
+                container.setVisible(True)
+            for container in self.findChildren(QComboBox):
+                if "character_color_" in container.objectName():
+                    container.setMaximumWidth(120)
+        for c in self.character_elements:
+            c[1].setModel(GameAssetManager.instance.characterModel)
+            c[1].setIconSize(QSize(24, 24))
+            c[1].setFixedHeight(32)
+            c[3].setModel(GameAssetManager.instance.variantModel)
+
+    def SetupAutocomplete(self):
+        if PlayerDB.model:
+            self.findChild(QLineEdit, "name").setCompleter(CustomPlayerCompleter(PlayerDB.model))
+            self.findChild(QLineEdit, "name").completer().activated[QModelIndex].connect(
+                lambda x: self.SetData(x.data(Qt.ItemDataRole.UserRole)) if x is not None else None,
+                Qt.QueuedConnection,
+            )
+            self.findChild(QLineEdit, "name").completer().setCaseSensitivity(
+                Qt.CaseSensitivity.CaseInsensitive
+            )
+            self.findChild(QLineEdit, "name").completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            self.findChild(QLineEdit, "name").completer().setModel(PlayerDB.model)
+
+            self.ManageSavePlayerToDBText()
+            self.ManageDeletePlayerFromDBActive()
+
+    def SetData(self, data, dontLoadFromDB=False, clear=True, no_mains=False, enrichBlocking=True):
+        self.dataLock.acquire()
+
+        logger.debug(f"Setting data for {self.path}: {data}")
+
+        # BlockSaving() lives inside the try so that the finally below always
+        # releases it, even if one of the calls in between raises.
+        try:
+            StateManager.BlockSaving()
+
+            if clear:
+                self.Clear(no_mains=no_mains)
+
+            # Load player data from DB; will be overwriten by incoming data
+            if not dontLoadFromDB and PlayerDB.model is not None:
+                tag = (
+                    data.get("prefix") + " " + data.get("gamerTag")
+                    if data.get("prefix")
+                    else data.get("gamerTag")
+                )
+
+                # Looked up by tag instead of converting every row of the
+                # model back to a dict, which took tens of ms with a big DB
+                item = PlayerDB.GetPlayer(tag)
+                if item is not None:
+                    self.SetData(
+                        item,
+                        dontLoadFromDB=True,
+                        clear=False,
+                        no_mains=no_mains,
+                        enrichBlocking=enrichBlocking,
+                    )
+                    if SettingsManager.Get("general.disable_overwrite", False):
+                        data = data | item
+
+            # Provider-side lazy enrichment (e.g. parry → mains from a
+            # linked start.gg account). No-op for providers that don't
+            # override EnrichPlayerData; cached so repeated loads are free.
+            # Bulk loads (e.g. a whole bracket) pass enrichBlocking=False so
+            # a cache miss is fetched in the background instead of making a
+            # network request per player on the UI thread.
+            provider = (
+                TournamentDataManager.instance.provider if TournamentDataManager.instance else None
+            )
+            if provider is not None:
+                data = provider.EnrichPlayerData(data, blocking=enrichBlocking) or data
+
+            name = self.findChild(QWidget, "name")
+            if data.get("gamerTag") and data.get("gamerTag") != name.text():
+                data["gamerTag"] = BadWordFilter.Censor(data["gamerTag"], data.get("country_code"))
+                name.setText(f"{data.get('gamerTag')}")
+                name.editingFinished.emit()
+
+            team = self.findChild(QWidget, "team")
+            if data.get("prefix") and data.get("prefix") != team.text():
+                data["prefix"] = BadWordFilter.Censor(data["prefix"], data.get("country_code"))
+                team.setText(f"{data.get('prefix')}")
+                team.editingFinished.emit()
+
+            real_name = self.findChild(QWidget, "real_name")
+            if data.get("name") and data.get("name") != real_name.text():
+                data["name"] = BadWordFilter.Censor(data["name"], data.get("country_code"))
+                real_name.setText(f"{data.get('name')}")
+                real_name.editingFinished.emit()
+
+            if data.get("avatar"):
+                self.ExportPlayerImages(data.get("avatar"))
+
+            if data.get("id"):
+                self.ExportPlayerId(data.get("id"))
+
+            if data.get("city"):
+                self.ExportPlayerCity(data.get("city"))
+
+            twitter = self.findChild(QWidget, "twitter")
+            if data.get("twitter") and data.get("twitter") != twitter.text():
+                data["twitter"] = BadWordFilter.Censor(data["twitter"], data.get("country_code"))
+                twitter.setText(f"{data.get('twitter')}")
+                twitter.editingFinished.emit()
+
+            if (
+                data.get("custom_textbox")
+                and data.get("custom_textbox") != self.custom_textbox.toPlainText()
+            ):
+                data["custom_textbox"] = BadWordFilter.Censor(
+                    data["custom_textbox"], data.get("country_code")
+                )
+                self.custom_textbox.setPlainText(
+                    f"{data.get('custom_textbox')}".replace("\\n", "\n")
+                )
+                self.custom_textbox.textChanged.emit()
+
+            pronoun = self.findChild(QWidget, "pronoun")
+            if data.get("pronoun") and data.get("pronoun") != pronoun.text():
+                data["pronoun"] = BadWordFilter.Censor(data["pronoun"], data.get("country_code"))
+                pronoun.setText(f"{data.get('pronoun')}")
+                pronoun.editingFinished.emit()
+
+            if data.get("country_code"):
+                countryElement: QComboBox = self.findChild(QComboBox, "country")
+                countryIndex = 0
+                for i in range(CountryHelper.countryModel.rowCount()):
+                    item = CountryHelper.countryModel.item(i).data(Qt.ItemDataRole.UserRole)
+                    if item:
+                        if data.get("country_code") == item.get("code"):
+                            countryIndex = i
+                            break
+                if countryElement.currentIndex() != countryIndex:
+                    countryElement.setCurrentIndex(countryIndex)
+
+            if data.get("state_code"):
+                countryElement: QComboBox = self.findChild(QComboBox, "country")
+                stateElement: QComboBox = self.findChild(QComboBox, "state")
+                stateIndex = 0
+                for i in range(stateElement.model().rowCount()):
+                    item = stateElement.model().item(i).data(Qt.ItemDataRole.UserRole)
+                    if item:
+                        if data.get("state_code") == item.get("original_code"):
+                            stateIndex = i
+                            break
+                if stateElement.currentIndex() != stateIndex:
+                    stateElement.setCurrentIndex(stateIndex)
+
+            if data.get("mains") and no_mains != True:
+                if type(data.get("mains")) == list:
+                    for element in self.character_elements:
+                        character_element = element[1]
+                        characterIndex = 0
+                        for i in range(character_element.model().rowCount()):
+                            item = character_element.model().item(i).data(Qt.ItemDataRole.UserRole)
+                            if item:
+                                if item.get("en_name") == data.get("mains")[0]:
+                                    characterIndex = i
+                                    break
+                        character_element.setCurrentIndex(characterIndex)
+                elif type(data.get("mains")) == dict:
+                    game_codename = GameAssetManager.instance.selectedGame.get("codename")
+                    base_game_dir = GameAssetManager.instance.selectedGame.get(
+                        "base_game_dir", game_codename
+                    )
+                    mains = (
+                        data.get("mains").get(game_codename)
+                        or data.get("mains").get(base_game_dir)
+                        or []
+                    )
+
+                    for i, main in enumerate(mains):
+                        if i < len(self.character_elements):
+                            character_element = self.character_elements[i][1]
+                            color_element = self.character_elements[i][2]
+                            variant_element = self.character_elements[i][3]
+                            characterIndex = 0
+                            for i in range(character_element.model().rowCount()):
+                                item = (
+                                    character_element.model().item(i).data(Qt.ItemDataRole.UserRole)
+                                )
+                                if item:
+                                    if item.get("en_name") == main[0]:
+                                        characterIndex = i
+                                        break
+                            if character_element.currentIndex() != characterIndex:
+                                character_element.setCurrentIndex(characterIndex)
+                            if len(main) > 1:
+                                if color_element.currentIndex() != int(main[1]):
+                                    color_element.setCurrentIndex(int(main[1]))
+                            else:
+                                if color_element.currentIndex() != 0:
+                                    color_element.setCurrentIndex(0)
+
+                            variantIndex = 0
+                            if variant_element:
+                                for i in range(variant_element.model().rowCount()):
+                                    item = (
+                                        variant_element.model()
+                                        .item(i)
+                                        .data(Qt.ItemDataRole.UserRole)
+                                    )
+                                    if item:
+                                        if len(main) >= 3:
+                                            if item.get("en_name") == main[2]:
+                                                variantIndex = i
+                                                break
+                                        else:
+                                            variantIndex = 0
+                                            break
+                            else:
+                                variantIndex = 0
+                            if variant_element.currentIndex() != variantIndex:
+                                variant_element.setCurrentIndex(variantIndex)
+
+            if data.get("seed") is not None:
+                if data.get("seed") > 0:
+                    StateManager.Set(f"{self.path}.seed", data.get("seed"))
+                    self.findChild(QSpinBox, "seed").setValue(int(data.get("seed")))
+                else:
+                    self.findChild(QSpinBox, "seed").setValue(0)
+            if data.get("wins") is not None:
+                StateManager.Set(f"{self.path}.wins", data.get("wins"))
+            if data.get("losses") is not None:
+                StateManager.Set(f"{self.path}.losses", data.get("losses"))
+            if data.get("winPercentage") is not None:
+                StateManager.Set(f"{self.path}.winPercentage", data.get("winPercentage"))
+            if data.get("city"):
+                StateManager.Set(f"{self.path}.city", data.get("city"))
+
+            # Seeds set by hand in the seed editor win over loaded ones
+            if data.get("gamerTag"):
+                override = SeedManager.GetOverride(self.GetCurrentPlayerTag())
+                if override is not None:
+                    self.findChild(QSpinBox, "seed").setValue(override)
+        finally:
+            StateManager.ReleaseSaving()
+            self.dataLock.release()
+
+    def SeedOverrideChanged(self, tag):
+        # Updates the seed shown when the seed editor changes this player's
+        currentTag = self.GetCurrentPlayerTag()
+        if not currentTag or (tag and tag != currentTag):
+            return
+        seed = SeedManager.GetSeed(currentTag)
+        if seed is None and not tag:
+            # Clearing every seed shouldn't wipe a seed that came with the set
+            return
+        self.findChild(QSpinBox, "seed").setValue(seed or 0)
+
+    def GetCurrentPlayerTag(self):
+        gamerTag = self.findChild(QWidget, "name").text()
+        prefix = self.findChild(QWidget, "team").text()
+        return prefix + " " + gamerTag if prefix else gamerTag
+
+    def SavePlayerToDB(self):
+        tag = self.GetCurrentPlayerTag()
+
+        playerData = {
+            "prefix": self.findChild(QWidget, "team").text(),
+            "gamerTag": self.findChild(QWidget, "name").text(),
+            "name": self.findChild(QWidget, "real_name").text(),
+            "twitter": self.findChild(QWidget, "twitter").text(),
+            "pronoun": self.findChild(QWidget, "pronoun").text(),
+            "custom_textbox": "\\n".join(self.custom_textbox.toPlainText().splitlines()),
+        }
+
+        if GameAssetManager.instance.selectedGame.get("codename"):
+            mains = []
+
+            for i, (element, character, color, variant) in enumerate(self.character_elements):
+                data = {}
+
+                if character.currentData() is not None:
+                    data["name"] = character.currentData().get("en_name")
+                else:
+                    data["name"] = ""
+
+                data["skin"] = color.currentIndex()
+
+                if data["skin"] == None:
+                    data["skin"] = 0
+
+                if variant.currentData():
+                    data["variant"] = variant.currentData().get("en_name", "")
+                else:
+                    data["variant"] = ""
+
+                if data["name"] != "":
+                    mains.append([data.get("name"), data.get("skin"), data.get("variant")])
+
+            playerData["mains"] = {GameAssetManager.instance.selectedGame.get("codename"): mains}
+
+        if self.findChild(QComboBox, "country").currentData(Qt.ItemDataRole.UserRole):
+            playerData["country_code"] = (
+                self.findChild(QComboBox, "country")
+                .currentData(Qt.ItemDataRole.UserRole)
+                .get("code")
+            )
+
+        if self.findChild(QComboBox, "state").currentData(Qt.ItemDataRole.UserRole):
+            playerData["state_code"] = (
+                self.findChild(QComboBox, "state").currentData(Qt.ItemDataRole.UserRole).get("code")
+            )
+
+        PlayerDB.AddPlayers([playerData], overwrite=True)
+
+        if playerData.get("pronoun") and playerData["pronoun"] not in self.pronoun_list:
+            with open("./user_data/pronouns_list.txt", "a") as pronouns_file:
+                pronouns_file.write(playerData["pronoun"] + "\n")
+                self.pronoun_list.append(playerData["pronoun"])
+                self.pronoun_model.setStringList(self.pronoun_list)
+
+        self.CharactersChanged(includeMains=True)
+
+    def ManageSavePlayerToDBText(self):
+        tag = self.GetCurrentPlayerTag()
+
+        if tag in PlayerDB.database:
+            self.save_bt.setText(QApplication.translate("app", "Update player"))
+        else:
+            self.save_bt.setText(QApplication.translate("app", "Save new player"))
+
+    def ManageDeletePlayerFromDBActive(self):
+        tag = self.GetCurrentPlayerTag()
+
+        if tag in PlayerDB.database:
+            self.delete_bt.setEnabled(True)
+        else:
+            self.delete_bt.setEnabled(False)
+
+    def DeletePlayerFromDB(self):
+        tag = self.GetCurrentPlayerTag()
+        PlayerDB.DeletePlayer(tag)
+
+    def Clear(self, no_mains=False):
+        with StateManager.SaveBlock():
+            self.DoClear(no_mains=no_mains)
+
+    def DoClear(self, no_mains=False):
+        with self.dataLock:
+            for c in self.findChildren(QLineEdit):
+                if c.objectName() != "" and c.objectName() != "qt_spinbox_lineedit":
+                    if c.text() != "":
+                        c.setText("")
+                        c.editingFinished.emit()
+
+            for c in self.findChildren(QSpinBox):
+                c.setValue(0)
+                c.lineEdit().editingFinished.emit()
+
+            for c in self.findChildren(QPlainTextEdit):
+                if c.toPlainText() != "":
+                    c.clear()
+                    c.textChanged.emit()
+
+            for c in self.findChildren(QComboBox):
+                if no_mains:
+                    for charelem in self.character_elements:
+                        for i in range(len(charelem)):
+                            if charelem[i] == c:
+                                break
+                        else:
+                            c.setCurrentIndex(0)
+                        continue  # only executed if the inner loop DID break
+                else:
+                    c.setCurrentIndex(0)
+
+        StateManager.Unset(f"{self.path}.online_avatar")
+        StateManager.Unset(f"{self.path}.wins")
+        StateManager.Unset(f"{self.path}.losses")
+        StateManager.Unset(f"{self.path}.winPercentage")
+
+    def SetRomanizedText(self):
+        name = self.findChild(QWidget, "name").text()
+        team = self.findChild(QWidget, "team").text()
+        romanized_data = {"name": name, "team": team}
+        country = self.findChild(QComboBox, "country")
+        if country.currentData(Qt.ItemDataRole.UserRole) != None:
+            country_code = country.currentData(Qt.ItemDataRole.UserRole).get("code")
+            if country_code:
+                romanized_data = {
+                    "name": LocaleHelper.RomanizeTextFromCountry(name, country_code),
+                    "team": LocaleHelper.RomanizeTextFromCountry(team, country_code),
+                }
+        StateManager.Set(f"{self.path}.romanized_data", romanized_data)

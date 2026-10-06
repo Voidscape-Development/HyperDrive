@@ -1,14 +1,14 @@
-export interface TSHCountryInfo {
+export interface HDCountryInfo {
     code: string;
     display_name: string;
     en_name: string;
 }
 
-export interface TSHPlayerInfo {
+export interface HDPlayerInfo {
     id?: [number, number];
     city?: string;
-    state?: TSHCountryInfo;
-    country?: TSHCountryInfo;
+    state?: HDCountryInfo;
+    country?: HDCountryInfo;
     online_avatar?: string;
     name: string;
     mergedName: string;
@@ -19,63 +19,62 @@ export interface TSHPlayerInfo {
     sponsor_logo?: string;
     team?: string;
     twitter?: string;
-    character: TSHCharacterSelections;
+    character: HDCharacterSelections;
 }
 
-export interface TSHTeamInfo {
+export interface HDTeamInfo {
     score: number;
     teamName: string;
-    player: Record<number, TSHPlayerInfo>;
+    player: Record<number, HDPlayerInfo>;
     losers: boolean;
     color: string;
 }
 
-export interface TSHScoreInfo {
+export interface HDScoreInfo {
     best_of: number;
     best_of_text: string;
     match: string;
     phase: string;
     set_id: number;
     station?: string;
-    stream_url?: string;
-    team: Record<number, TSHTeamInfo>;
+    team: Record<number, HDTeamInfo>;
 }
 
-export interface TSHCharacterBase {
+export interface HDCharacterBase {
     codename: string;
     display_name: string;
     en_name: string;
     name: string;
 }
 
-export interface TSHCharacterSelection extends TSHCharacterBase {
+export interface HDCharacterSelection extends HDCharacterBase {
     skin: number; // This is -1 if unset.
 }
 
-export type TSHCharacterSelections = Record<number, TSHCharacterSelection>;
+export type HDCharacterSelections = Record<number, HDCharacterSelection>;
 
-export interface TSHCharacterDb {
-    [codename: string]: TSHCharacterDbEntry;
+export interface HDCharacterDb {
+    [codename: string]: HDCharacterDbEntry;
 }
 
-export interface TSHCharacterDbEntry extends TSHCharacterBase {
-    skins: TSHCharacterSkin[];
+export interface HDCharacterDbEntry extends HDCharacterBase {
+    skins: HDCharacterSkin[];
 }
 
-export interface TSHCharacterSkin {
-    assets: TSHCharacterSkinAssets;
+export interface HDCharacterSkin {
+    assets: HDCharacterSkinAssets;
 }
 
-export interface TSHCharacterSkinAssets {
-    art?: TSHCharacterSkinAsset;
-    "base_files/icon"?: TSHCharacterSkinAsset;
-    costume?: TSHCharacterSkinAsset;
-    css?: TSHCharacterSkinAsset;
-    full?: TSHCharacterSkinAsset;
-    profile?: TSHCharacterSkinAsset;
+export interface HDCharacterSkinAssets {
+    art?: HDCharacterSkinAsset;
+    "base_files/icon"?: HDCharacterSkinAsset;
+    costume?: HDCharacterSkinAsset;
+    css?: HDCharacterSkinAsset;
+    full?: HDCharacterSkinAsset;
+    profile?: HDCharacterSkinAsset;
 }
 
-export interface TSHCharacterSkinAsset {
+export interface HDCharacterSkinAsset {
     asset: string; // Path to the asset
     average_size?: Point2D;
     image_size?: Point2D;
@@ -89,18 +88,18 @@ export interface Point2D {
     y: number;
 }
 
-export type TSHCharacters = Record<string, TSHCharacterSelection>;
+export type HDCharacters = Record<string, HDCharacterSelection>;
 
-export interface TSHSetEntrant {
+export interface HDSetEntrant {
     gamerTag: string;
     prefix?: string;
     name?: string;
     id: number[];
 }
 
-export interface TSHSet {
+export interface HDSet {
     bracket_type: string;
-    entrants: [TSHSetEntrant, TSHSetEntrant];
+    entrants: [HDSetEntrant, HDSetEntrant];
     id: number;
     isOnline?: boolean;
     isPools: boolean;
@@ -117,33 +116,33 @@ export interface TSHSet {
     tournament_phase?: string;
 }
 
-export interface TSHPlayerDbEntry {
+export interface HDPlayerDbEntry {
     country_code: string;
     custom_textbox: string;
     prefixed_tag: string;
     gamerTag: string;
-    mains?: TSHMainsMap;
+    mains?: HDMainsMap;
     name: string;
     prefix: string;
     pronoun: string;
     twitter: string;
 }
 
-export type TSHCountryCode = string;
+export type HDCountryCode = string;
 
-export interface TSHCountryDb {
-    [country_code: TSHCountryCode]: TSHCountryInfo
+export interface HDCountryDb {
+    [country_code: HDCountryCode]: HDCountryInfo
 }
 
-export type TSHMainsMap = Record<string, TSHMain[]>;
+export type HDMainsMap = Record<string, HDMain[]>;
 
-export type TSHMain = [string, number, string];
+export type HDMain = [string, number, string];
 
-export type TSHPlayerDb = Record<string, TSHPlayerDbEntry>;
+export type HDPlayerDb = Record<string, HDPlayerDbEntry>;
 
-export interface TSHState {
+export interface HDState {
     score: {
-        [scoreboard: number]: TSHScoreInfo;
+        [scoreboard: number]: HDScoreInfo;
         ruleset: object;
     };
     game?: {
@@ -166,11 +165,11 @@ export interface TSHState {
     };
 }
 
-export interface TSHGamesDb {
-    [codename: string]: TSHGameInfo
+export interface HDGamesDb {
+    [codename: string]: HDGameInfo
 }
 
-export interface TSHGameInfo{
+export interface HDGameInfo{
     challonge_game_id: number,
     has_stages: boolean
     has_variants: boolean

@@ -20,10 +20,10 @@ import {api} from "./api";
 /**
  * @typedef {object} UpcomingSetsState
  * @property {?string} setFilter
- * @property {?TSHSet} selectedSet
+ * @property {?HDSet} selectedSet
  * @property {boolean} showFinished
  * @property {boolean} expanded
- * @property {Array.<TSHSet>} sets
+ * @property {Array.<HDSet>} sets
  */
 export default class UpcomingSets extends React.Component {
     /** @type UpcomingSetsState */ state;
@@ -96,7 +96,7 @@ export default class UpcomingSets extends React.Component {
     }
 
     /**
-     * @returns {TSHSet[]}
+     * @returns {HDSet[]}
      */
     filteredSets = () => {
         if (this.state.setFilter === null) {
@@ -113,7 +113,7 @@ export default class UpcomingSets extends React.Component {
         ));
     }
 
-    onSetClicked = ( /** @type {TSHSet} */ set) => {
+    onSetClicked = ( /** @type {HDSet} */ set) => {
         this.setState({
             selectedSet: set
         });
@@ -182,7 +182,7 @@ export default class UpcomingSets extends React.Component {
                                     </TableHead>
                                     <TableBody>
                                         {
-                                            this.filteredSets().map((/** TSHSet */ set) => (
+                                            this.filteredSets().map((/** HDSet */ set) => (
                                                 <TableRow
                                                     hover
                                                     onClick={() => {this.onSetClicked(set)}}

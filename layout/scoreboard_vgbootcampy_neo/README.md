@@ -1,10 +1,10 @@
 # Neo VGBC Style Overlay:
 
 - Download the zip file and open it.
-- Move the scoreboard_vgbootcampy_neo file into the /layout folder of TSH where all the other scoreboard files are located.
+- Move the scoreboard_vgbootcampy_neo file into the /layout folder of HyperDrive where all the other scoreboard files are located.
 - Go to OBS and add a new Browser.
 - Select the /layout/scoreboard_vgbootcampy_neo/index.html as the local file and set its width and height to 1920 and 1080 respectively.
-- Run TSH and enter the players' information.
+- Run HyperDrive and enter the players' information.
   - Select "Shutdown source when not visible" in the Browser's properties so that it plays the overlay animation everytime it becomes visible.
 
 # Player Cams:
@@ -19,7 +19,7 @@
 
 - Country flags used in this overlay are stored in scoreboard_vgbootcampy_neo/assets/country_flag as PNG images.
 - Additional flags used in this overlay are stored in scoreboard_vgbootcampy_neo/user_data/additional_flag as PNG images.
-- Most of the country flags and all additional flags were created by editing the flags in base TSH that are in TournamentStreamHelper/assets/country_flag and TournamentStreamHelper/user_data/additional_flag.
+- Most of the country flags and all additional flags were created by editing the flags in base HyperDrive that are in HyperDrive/assets/country_flag and HyperDrive/user_data/additional_flag.
 - Some of the country flags were created by editing the Twemoji Flags Icons Pack designed by Twitter on:
   - https://www.iconarchive.com/show/twemoji-flags-icons-by-twitter.1.html
   - https://www.iconarchive.com/show/twemoji-flags-icons-by-twitter.2.html

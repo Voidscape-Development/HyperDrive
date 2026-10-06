@@ -31,10 +31,10 @@ npm run dev
 
 The dev server reloads as you edit and forwards API, socket.io and asset requests to
 HyperDrive (see `PROXIED_PATHS` in [`vite.config.js`](vite.config.js)). If you've changed
-HyperDrive's web server port, set `TSH_PORT` in a `.env.local` file:
+HyperDrive's web server port, set `HYPERDRIVE_PORT` in a `.env.local` file:
 
 ```sh
-TSH_PORT=5600
+HYPERDRIVE_PORT=5600
 ```
 
 When the app calls a new endpoint, add its path to `PROXIED_PATHS`.

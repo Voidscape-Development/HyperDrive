@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import chinese_converter
 
-zh_cn_parse = ET.parse("src/i18n/TSH_zh-CN.ts")
+zh_cn_parse = ET.parse("src/i18n/HyperDrive_zh-CN.ts")
 root = zh_cn_parse.getroot()
 for child in root:
     if child.tag == "context":
@@ -15,12 +15,12 @@ for child in root:
                         traditional = chinese_converter.to_traditional(message_child.text)
                         message_child.text = traditional
 
-zh_cn_parse.write("src/i18n/TSH_zh-TW.ts")
+zh_cn_parse.write("src/i18n/HyperDrive_zh-TW.ts")
 
-with open("src/i18n/TSH_zh-TW.ts", encoding="utf-8") as traditional_file:
+with open("src/i18n/HyperDrive_zh-TW.ts", encoding="utf-8") as traditional_file:
     traditional_text = traditional_file.read()
 
-with open("src/i18n/TSH_zh-TW.ts", "w", encoding="utf-8") as traditional_file:
+with open("src/i18n/HyperDrive_zh-TW.ts", "w", encoding="utf-8") as traditional_file:
     header = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE TS>\n'
     traditional_text = traditional_text.replace('language="zh_CN"', 'language="zh_TW"')
     traditional_file.write(header + traditional_text)

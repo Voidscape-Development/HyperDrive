@@ -11,7 +11,7 @@ import {NoRulesetError} from "../StageStrikePage/NoRulesetError";
 import {CharacterReportDialog} from "../StageStrikePage/CharacterReportDialog";
 import {CharacterIcon, CharacterName, FindCharacter} from "../StageStrikePage/characterAssets";
 import {CharacterSelectReport} from "../StageStrikePage/postActions";
-import {useCharacters, useScoreboardParam, useStrikeData, useTeamParam} from "../StageStrikePage/useTshData";
+import {useCharacters, useScoreboardParam, useStrikeData, useTeamParam} from "../StageStrikePage/useHdData";
 
 /**
  * Character selection only, for a scoreboard (?scoreboard=<n>) and one team
@@ -66,8 +66,8 @@ export default function CharacterSelectPage() {
 }
 
 /**
- * Asks TSH for the scoreboard's data again when its score changes, as the
- * score is what unlocks the next pick. TSH sends every state change to the
+ * Asks HyperDrive for the scoreboard's data again when its score changes, as the
+ * score is what unlocks the next pick. HyperDrive sends every state change to the
  * app; only the score's matter here.
  */
 function useRefreshOnScore(scoreboard, refresh) {

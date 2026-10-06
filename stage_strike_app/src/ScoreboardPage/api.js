@@ -2,7 +2,7 @@ import {BASE_URL} from "../env";
 import {track} from "./saveStatus";
 
 /*
- * Calls to TSH for the remote scoreboard. Teams are always in on-screen
+ * Calls to HyperDrive for the remote scoreboard. Teams are always in on-screen
  * order: team 1 is the left side of the scoreboard, even while the teams
  * are swapped.
  *

@@ -751,17 +751,17 @@ body {
 
 .roa2 .character_container div:not(.text) { height: 70px; width: 70px; }
 
-.tsh_character {
+.hd_character {
   background-color: transparent;
   border-radius: calc(var(--border-radius) / 2);
   overflow: hidden;
 }
 
-.p1 .tsh_character {
+.p1 .hd_character {
   background-color: color-mix(in srgb, var(--p1-score-bg-color) 65%, var(--bg-color) 35%);
 }
 
-.p2 .tsh_character {
+.p2 .hd_character {
   background-color: color-mix(in srgb, var(--p2-score-bg-color) 65%, var(--bg-color) 35%);
 }
 

@@ -18,7 +18,7 @@ LoadEverything().then(() => {
     // team 1 → --p1-score-bg-color (washes), team 2 → --p2-score-bg-color (accents)
     [1, 2].forEach((t) => {
       let team = data.score?.[window.scoreboardNumber]?.team?.[String(t)];
-      if (team && team.color && !tsh_settings["forceDefaultScoreColors"]) {
+      if (team && team.color && !hd_settings["forceDefaultScoreColors"]) {
         document.querySelector(":root").style.setProperty(`--p${t}-score-bg-color`, team.color);
       }
     });

@@ -1,12 +1,12 @@
 """Builds sample_state.json, the program state the layout previews are
-rendered with, by running TSH and filling it in with sample_players.json.
+rendered with, by running HyperDrive and filling it in with sample_players.json.
 
 Usage, from the repository root, after download_assets.py:
     python scripts/previews/gen_sample_state.py
 
-Use a clean checkout: TSH starts from the program state and settings already
+Use a clean checkout: HyperDrive starts from the program state and settings already
 in out/ and user_data/. Needs a display (or QT_QPA_PLATFORM=offscreen). Run it
-again when what TSH sends to the layouts changes.
+again when what HyperDrive sends to the layouts changes.
 """
 
 import asyncio
@@ -26,13 +26,13 @@ from qasync import QEventLoop  # noqa: E402
 from qtpy.QtCore import QTimer  # noqa: E402
 
 import src  # noqa: E402
+from src.BracketWidget import BracketWidget  # noqa: E402
+from src.GameAssetManager import GameAssetManager  # noqa: E402
+from src.PlayerListWidget import PlayerListWidget  # noqa: E402
+from src.ScoreboardManager import ScoreboardManager  # noqa: E402
 from src.StateManager import StateManager  # noqa: E402
-from src.TSHBracketWidget import TSHBracketWidget  # noqa: E402
-from src.TSHGameAssetManager import TSHGameAssetManager  # noqa: E402
-from src.TSHPlayerListWidget import TSHPlayerListWidget  # noqa: E402
-from src.TSHScoreboardManager import TSHScoreboardManager  # noqa: E402
-from src.TSHTournamentDataProvider import TSHTournamentDataProvider  # noqa: E402
-from src.TSHWebServer import WebServer  # noqa: E402
+from src.TournamentDataManager import TournamentDataManager  # noqa: E402
+from src.WebServer import WebServer  # noqa: E402
 
 GAME = "ssbu"
 OUT_FILE = os.path.join(HERE, "sample_state.json")
@@ -48,17 +48,17 @@ def player(index, **extra):
 
 
 def set_game():
-    games = list(TSHGameAssetManager.instance.games.keys())
-    TSHGameAssetManager.instance.LoadGameAssets(games.index(GAME) + 1, async_mode=False)
+    games = list(GameAssetManager.instance.games.keys())
+    GameAssetManager.instance.LoadGameAssets(games.index(GAME) + 1, async_mode=False)
 
 
 def set_tournament_info():
-    TSHTournamentDataProvider.instance.signals.tournament_data_updated.emit(SAMPLE["tournament"])
+    TournamentDataManager.instance.signals.tournament_data_updated.emit(SAMPLE["tournament"])
 
 
 def set_scoreboard():
     sb = SAMPLE["scoreboard"]
-    scoreboard = TSHScoreboardManager.instance.GetScoreboard(1)
+    scoreboard = ScoreboardManager.instance.GetScoreboard(1)
     for team, index in enumerate(sb["players"], start=1):
         scoreboard.signals.ChangeSetData.emit(
             {
@@ -79,8 +79,8 @@ def set_scoreboard():
 
 
 def set_stats():
-    """What TSH would fetch from start.gg for the players on the scoreboard"""
-    stats = TSHScoreboardManager.instance.GetScoreboard(1).stats
+    """What HyperDrive would fetch from start.gg for the players on the scoreboard"""
+    stats = ScoreboardManager.instance.GetScoreboard(1).stats
     stats.UpdateRecentSets({"sets": SAMPLE["recent_sets"], "request_time": 1})
     for team, index in enumerate(SAMPLE["scoreboard"]["players"], start=1):
         p = PLAYERS[index - 1]
@@ -108,12 +108,12 @@ def set_commentary():
 
 def set_player_list(window):
     standings = [{"players": [player(i)]} for i in range(1, 9)]
-    playerList = window.findChildren(TSHPlayerListWidget)[0]
+    playerList = window.findChildren(PlayerListWidget)[0]
     playerList.LoadFromStandings(standings)
 
 
 def set_bracket():
-    widget = TSHBracketWidget.instance
+    widget = BracketWidget.instance
     widget.playerList.LoadFromStandings(
         [{"players": [player(i)]} for i in range(1, len(PLAYERS) + 1)], enrichBlocking=False
     )

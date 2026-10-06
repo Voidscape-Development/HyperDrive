@@ -30,7 +30,7 @@ export function CharSelector({
     onCharSkinChanged,
     stackProps,
  }) {
-    const /** @type {TSHCharacterDb} */ characters = useSelector((state) => state.tshCharacters.characters);
+    const /** @type {HDCharacterDb} */ characters = useSelector((state) => state.hdCharacters.characters);
     const hasCharName = charName && charName !== '';
 
     return (
@@ -130,7 +130,7 @@ export function CharSelector({
 }
 
 /**
- * @param {TSHCharacterSkin} skin
+ * @param {HDCharacterSkin} skin
  * @return string
  */
 function getSkinAssetUrl(skin) {

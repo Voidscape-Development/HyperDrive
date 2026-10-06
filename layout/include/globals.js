@@ -12,7 +12,7 @@ var maxAppliedDeltaIdx = -1;
 // Global variable containing settings red from settings.json
 // The settings under /layout/settings.json (global) are merged with /layout/<directory>/settings.json (local),
 // where the local settings have priority over global ones
-var tsh_settings = {};
+var hd_settings = {};
 
 // This is called once after initialization. Layouts should reimplement this function.
 var Start = async () => {
@@ -25,7 +25,7 @@ var Update = async (event) => {
 };
 
 // Animation speed from the layout theme (1 = normal)
-var tsh_animation_scale = 1;
+var hd_animation_scale = 1;
 
 // Wrapper for the update call
 async function UpdateWrapper(event) {
@@ -36,7 +36,7 @@ async function UpdateWrapper(event) {
   // If initialization wasn't done yet, call Start()
   // We use gsap.globalTimeline.timeScale as 0 for animation to not play before this
   if (gsap.globalTimeline.timeScale() == 0) {
-    gsap.globalTimeline.timeScale(tsh_animation_scale);
+    gsap.globalTimeline.timeScale(hd_animation_scale);
     window.requestAnimationFrame(() => {
       $(document).waitForImages(() => {
         $("body").fadeTo(1, 1, () => {
@@ -49,7 +49,7 @@ async function UpdateWrapper(event) {
 }
 
 // Gets current program state,
-// Dispatch "tsh_update" event if data has changed
+// Dispatch "hd_update" event if data has changed
 // This function is called in a high frequency
 async function UpdateData() {
   try {
@@ -60,7 +60,7 @@ async function UpdateData() {
       return;
     }
 
-    let event = new CustomEvent("tsh_update");
+    let event = new CustomEvent("hd_update");
     event.data = data;
     event.oldData = oldData;
 
@@ -72,7 +72,7 @@ async function UpdateData() {
 }
 
 // Gets current program state using SocketIO,
-// Dispatch "tsh_update" event if data has changed
+// Dispatch "hd_update" event if data has changed
 // This function is called in a high frequency.
 // Similar to UpdateData() except for SocketIO support
 // which requires being on HTTP/HTTPS
@@ -98,7 +98,7 @@ async function UpdateData_SocketIO() {
     socket.on("disconnect", () => {
       // call program_state.json initially in case it's a
       // websocket issue and not with web server being gone
-      // e.g. TSH being closed
+      // e.g. HyperDrive being closed
       console.log("socket.io disconnected");
       UpdateData();
     });
@@ -135,7 +135,7 @@ async function UpdateData_SocketIO() {
       // received a complete valid state for a point in time.
       maxAppliedDeltaIdx = message["delta_index"];
 
-      let event = new CustomEvent("tsh_update");
+      let event = new CustomEvent("hd_update");
       event.data = data;
       event.oldData = oldData;
 
@@ -146,7 +146,7 @@ async function UpdateData_SocketIO() {
     socket.on("program_state_update", (message) => {
       try {
         console.log("Handling state delta: ", message);
-        HandleTSHStateUpdateMessage(message);
+        HandleHDStateUpdateMessage(message);
       } catch (e) {
         // We failed to handle the program state, so request a new update.
         socket.emit("program_state", {});
@@ -213,7 +213,7 @@ async function LoadEverything() {
 async function InitAll() {
   await LoadSettings();
 
-  if (tsh_settings.automatic_theme) {
+  if (hd_settings.automatic_theme) {
     GetLogoColors();
   }
 
@@ -236,9 +236,9 @@ async function InitAll() {
 
   $(document).ready(() => {
     console.log("== Init complete ==");
-    document.dispatchEvent(new CustomEvent("tsh_init"));
+    document.dispatchEvent(new CustomEvent("hd_init"));
 
-    document.addEventListener("tsh_update", UpdateWrapper);
+    document.addEventListener("hd_update", UpdateWrapper);
     gsap.globalTimeline.timeScale(0);
 
     // Set up listener to regrab data and rerun intro animations on OBS scene switch
@@ -257,38 +257,38 @@ async function InitAll() {
 }
 
 // Font stack a theme font is put in front of (same as main.css's --font)
-const TSH_FONT_FALLBACK =
+const HD_FONT_FALLBACK =
   '"SairaCondensed", "NotoSans", "NotoSansJP", "NotoSansSC", "NotoSansTC", "NotoSansKR", sans-serif';
 
 // Body classes for the theme's display options: [class, section, field, value
 // that adds the class]. main.css and the layouts hide or show things by them.
-const TSH_THEME_CLASSES = [
-  ["tsh-hide-pronouns", "chip", "pronouns_display", false],
-  ["tsh-hide-seed", "chip", "seed_display", false],
-  ["tsh-hide-social", "chip", "social_media_display", false],
-  ["tsh-hide-country-flag", "chip", "country_flag_display", false],
-  ["tsh-hide-state-flag", "chip", "state_flag_display", false],
-  ["tsh-hide-avatar", "chip", "avatar_display", false],
-  ["tsh-hide-losers", "chip", "losers_display", false],
-  ["tsh-no-text-outline", "general", "text_outline", false],
-  ["tsh-bracket-hide-avatar", "bracket", "avatar_display", false],
-  ["tsh-bracket-hide-character", "bracket", "character_display", false],
-  ["tsh-bracket-hide-country-flag", "bracket", "country_flag_display", false],
-  ["tsh-bracket-hide-state-flag", "bracket", "state_flag_display", false],
-  ["tsh-bracket-hide-seed", "bracket", "seed_display", false],
-  ["tsh-bracket-hide-round-names", "bracket", "round_names_display", false],
-  ["tsh-bracket-show-identifier", "bracket", "identifier_display", true],
-  ["tsh-bracket-hide-pending", "bracket", "pending_display", false],
-  ["tsh-bracket-no-dim-losers", "bracket", "dim_losers", false],
-  ["tsh-bracket-hide-focus-label", "bracket", "focus_label_display", false],
-  ["tsh-standings-hide-game-diff", "standings", "game_diff_display", false],
-  ["tsh-standings-hide-points", "standings", "points_display", false],
-  ["tsh-standings-show-buchholz", "standings", "buchholz_display", true],
-  ["tsh-strike-hide-names", "stage_strike", "stage_names_display", false],
-  ["tsh-strike-hide-striker", "stage_strike", "striker_display", false],
+const HD_THEME_CLASSES = [
+  ["hd-hide-pronouns", "chip", "pronouns_display", false],
+  ["hd-hide-seed", "chip", "seed_display", false],
+  ["hd-hide-social", "chip", "social_media_display", false],
+  ["hd-hide-country-flag", "chip", "country_flag_display", false],
+  ["hd-hide-state-flag", "chip", "state_flag_display", false],
+  ["hd-hide-avatar", "chip", "avatar_display", false],
+  ["hd-hide-losers", "chip", "losers_display", false],
+  ["hd-no-text-outline", "general", "text_outline", false],
+  ["hd-bracket-hide-avatar", "bracket", "avatar_display", false],
+  ["hd-bracket-hide-character", "bracket", "character_display", false],
+  ["hd-bracket-hide-country-flag", "bracket", "country_flag_display", false],
+  ["hd-bracket-hide-state-flag", "bracket", "state_flag_display", false],
+  ["hd-bracket-hide-seed", "bracket", "seed_display", false],
+  ["hd-bracket-hide-round-names", "bracket", "round_names_display", false],
+  ["hd-bracket-show-identifier", "bracket", "identifier_display", true],
+  ["hd-bracket-hide-pending", "bracket", "pending_display", false],
+  ["hd-bracket-no-dim-losers", "bracket", "dim_losers", false],
+  ["hd-bracket-hide-focus-label", "bracket", "focus_label_display", false],
+  ["hd-standings-hide-game-diff", "standings", "game_diff_display", false],
+  ["hd-standings-hide-points", "standings", "points_display", false],
+  ["hd-standings-show-buchholz", "standings", "buchholz_display", true],
+  ["hd-strike-hide-names", "stage_strike", "stage_names_display", false],
+  ["hd-strike-hide-striker", "stage_strike", "striker_display", false],
 ];
 
-// Applies the layout theme TSH exports (data.layout_theme): display options as
+// Applies the layout theme HyperDrive exports (data.layout_theme): display options as
 // body classes, colors and fonts as main.css's custom properties, and the
 // animation speed. Called before each Update(); does nothing if the theme
 // didn't change. The properties go in a stylesheet, not on :root's style, so
@@ -297,7 +297,7 @@ function ApplyLayoutTheme(data, oldData) {
   const theme = _.get(data, "layout_theme");
   if (!theme || !theme.values) return;
   if (
-    document.getElementById("tsh-layout-theme") &&
+    document.getElementById("hd-layout-theme") &&
     JSON.stringify(theme) == JSON.stringify(_.get(oldData, "layout_theme"))
   )
     return;
@@ -305,21 +305,21 @@ function ApplyLayoutTheme(data, oldData) {
   const v = theme.values;
   const get = (section, field, fallback) => _.get(v, [section, field], fallback);
 
-  for (const [cls, section, field, when] of TSH_THEME_CLASSES) {
+  for (const [cls, section, field, when] of HD_THEME_CLASSES) {
     document.body.classList.toggle(cls, get(section, field) === when);
   }
   // Layouts with a palette of their own switch to the theme's under this class
-  document.body.classList.toggle("tsh-theme-colors", get("general", "apply_colors", false) === true);
+  document.body.classList.toggle("hd-theme-colors", get("general", "apply_colors", false) === true);
   const textCase = get("general", "text_case", "layout");
-  document.body.classList.toggle("tsh-text-upper", textCase == "uppercase");
-  document.body.classList.toggle("tsh-text-none", textCase == "none");
+  document.body.classList.toggle("hd-text-upper", textCase == "uppercase");
+  document.body.classList.toggle("hd-text-none", textCase == "none");
 
   // Every theme value as --<section>-<field>, for layouts that want them
   const props = Object.assign({}, theme.css || {});
 
   const font = get("general", "font_family", "");
   if (font) {
-    props["--font"] = `"${String(font).replace(/["\\]/g, "")}", ${TSH_FONT_FALLBACK}`;
+    props["--font"] = `"${String(font).replace(/["\\]/g, "")}", ${HD_FONT_FALLBACK}`;
   }
 
   const css = theme.css || {};
@@ -352,10 +352,10 @@ function ApplyLayoutTheme(data, oldData) {
     }
   }
 
-  let style = document.getElementById("tsh-layout-theme");
+  let style = document.getElementById("hd-layout-theme");
   if (!style) {
     style = document.createElement("style");
-    style.id = "tsh-layout-theme";
+    style.id = "hd-layout-theme";
     document.head.appendChild(style);
   }
   style.textContent =
@@ -367,13 +367,13 @@ function ApplyLayoutTheme(data, oldData) {
     "}\n";
 
   const speed = Number(get("animation", "speed", 100)) || 100;
-  tsh_animation_scale = get("animation", "enabled", true) === false ? 1000 : speed / 100;
+  hd_animation_scale = get("animation", "enabled", true) === false ? 1000 : speed / 100;
   // 0 means the layout hasn't started yet (see UpdateWrapper)
   if (gsap.globalTimeline.timeScale() != 0) {
-    gsap.globalTimeline.timeScale(tsh_animation_scale);
+    gsap.globalTimeline.timeScale(hd_animation_scale);
   }
 
-  document.dispatchEvent(new CustomEvent("tsh_theme", { detail: theme }));
+  document.dispatchEvent(new CustomEvent("hd_theme", { detail: theme }));
 }
 
 // A theme color (#rrggbb or Qt's #aarrggbb) as CSS
@@ -426,7 +426,7 @@ async function LoadSettings() {
     console.log(e);
   }
 
-  tsh_settings = _.defaultsDeep(
+  hd_settings = _.defaultsDeep(
     window.settings,
     file_settings,
     global_settings,
@@ -435,9 +435,9 @@ async function LoadSettings() {
 
 // Registers element for content fitting inside div if the div is resized
 function RegisterFit(element) {
-  if (!$(element).hasClass("tsh-fit-content")) {
+  if (!$(element).hasClass("hd-fit-content")) {
     if ($(element).get(0)) {
-      $(element).addClass("tsh-fit-content");
+      $(element).addClass("hd-fit-content");
       divResizeObserver.observe($(element).get(0));
     }
   }
@@ -499,7 +499,7 @@ async function LoadKuroshiro() {
 
 // Transcribes Japanese text to Roman characters using Kuroshiro
 async function Transcript(text) {
-  let settings = _.defaultsDeep(tsh_settings.japanese_transcription, {
+  let settings = _.defaultsDeep(hd_settings.japanese_transcription, {
     enabled: true,
     to: "romaji",
     mode: "normal",
@@ -518,7 +518,7 @@ async function Transcript(text) {
         })
         .then((res) => {
           return `
-            <div class="tsh_transcript">
+            <div class="hd_transcript">
               <span class="original">
                 ${text}
               </span>
@@ -714,8 +714,8 @@ async function CenterImage(element, assetData, options = {}) {
     $(element).data(options);
 
     await CenterImageDo($(element)).then(() => {
-      if (!$(element).hasClass("tsh-center-image")) {
-        $(element).addClass("tsh-center-image");
+      if (!$(element).hasClass("hd-center-image")) {
+        $(element).addClass("hd-center-image");
         imageResizeObserver.observe($(element).get(0));
       }
     });
@@ -947,8 +947,8 @@ async function CenterImageDo(element) {
             }
 
             $(element).css({ position: "relative" });
-            $(element).find("img.tsh-img").remove();
-            const $img = $("<img>").addClass("tsh-img").css({
+            $(element).find("img.hd-img").remove();
+            const $img = $("<img>").addClass("hd-img").css({
               position: "absolute",
               left: `${xx}px`,
               top: `${yy}px`,
@@ -1020,7 +1020,7 @@ class ContentResolver {
   }
 }
 
-function HandleTSHStateUpdateMessage(message) {
+function HandleHDStateUpdateMessage(message) {
   const deltaIdx = message["delta_index"];
   const deltas = message["delta"];
 
@@ -1030,7 +1030,7 @@ function HandleTSHStateUpdateMessage(message) {
     );
   }
 
-  let event = new CustomEvent("tsh_update");
+  let event = new CustomEvent("hd_update");
   // Ancient jutsu to deep-clone an object. We will be modifying
   event.oldData = JSON.parse(JSON.stringify(data));
 

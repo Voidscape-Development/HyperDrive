@@ -34,9 +34,9 @@ from parrygg.services.tournament_service_pb2_grpc import TournamentServiceStub
 from parrygg.services.user_service_pb2 import *
 from parrygg.services.user_service_pb2_grpc import UserServiceStub
 
-from ..Helpers.TSHCountryHelper import TSHCountryHelper
-from ..TSHGameAssetManager import TSHGameAssetManager
-from ..TSHPlayerDB import TSHPlayerDB
+from ..GameAssetManager import GameAssetManager
+from ..Helpers.CountryHelper import CountryHelper
+from ..PlayerDB import PlayerDB
 from .StartGGDataProvider import StartGGDataProvider
 from .TournamentDataProvider import TournamentDataProvider
 
@@ -59,8 +59,8 @@ PARRY_FAVICON_URL = "https://parry.gg/assets/favicon-BgItT2B4.png"
 # Parry profile URL prefix (used to identify a user-lookup placeholder URL
 # when a provider is constructed without a tournament context).
 
-# Map parry's BracketType enum to the bare-string values TSH consumers
-# (e.g. TSHBracketWidget's bracketType gate) compare against. Explicit map
+# Map parry's BracketType enum to the bare-string values HyperDrive consumers
+# (e.g. BracketWidget's bracketType gate) compare against. Explicit map
 # rather than prefix-stripping so a future parry enum rename or new bracket
 # type fails loudly rather than silently producing a wrong string.
 _BRACKET_TYPE_NAMES = {
@@ -120,8 +120,8 @@ class ParryGGDataProvider(TournamentDataProvider):
     _startgg_mains_cache = None  # dict[parry_user_id -> mains dict or {}]
     _startgg_subquery = None  # lazy StartGGDataProvider for cross-platform fallback queries
 
-    def __init__(self, url, threadpool, tshTdp, api_key=None) -> None:
-        super().__init__(url, threadpool, tshTdp)
+    def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
+        super().__init__(url, threadpool, dataManager)
         self.name = "ParryGG"
         self._initialized = False
 
@@ -312,7 +312,7 @@ class ParryGGDataProvider(TournamentDataProvider):
     def _team_display_name(cls, seed):
         # parry's EventEntrant carries an optional team display name; when it's
         # blank (most cases today) join gamer tags, matching the layouts'
-        # fallback (TSHBracketView.py:138 and e.g. layout/scoreboard_pandastic
+        # fallback (BracketView.py:138 and e.g. layout/scoreboard_pandastic
         # /index.js:177).
         ee = cls._seed_entrant(seed)
         if ee is None:
@@ -358,7 +358,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             self._startgg_subquery = StartGGDataProvider(
                 "start.gg/",
                 self.threadpool,
-                self.tshTdp,
+                self.dataManager,
             )
         return self._startgg_subquery
 
@@ -532,7 +532,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                     # per-game shape.
                     char_tuple = None
                     for character in participant.characters:
-                        char_tuple = TSHGameAssetManager.instance.GetCharacterFromParryGGSlug(
+                        char_tuple = GameAssetManager.instance.GetCharacterFromParryGGSlug(
                             character.slug
                         )
                         if char_tuple:
@@ -541,7 +541,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                         logger.debug(
                             f"  game {match_game.index} slot {slot.slot} user {participant.user_id}: "
                             f"parry slug(s) {slugs} did NOT resolve to any character with a matching "
-                            f"'parrygg_slug' in game '{TSHGameAssetManager.instance.selectedGame.get('codename')}'"
+                            f"'parrygg_slug' in game '{GameAssetManager.instance.selectedGame.get('codename')}'"
                         )
                     else:
                         logger.debug(
@@ -564,7 +564,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         return games_data, mains_by_user
 
     def _build_match_info(self, match, seeds, phase, bracket, round_label):
-        """Build the TSH match dict from raw parry pieces.
+        """Build the HyperDrive match dict from raw parry pieces.
 
         Args:
             match: Match proto.
@@ -601,7 +601,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                     }
                     # mains = [character_key, skin]. Parry does encode a skin
                     # color (per-image variant, e.g. {'color': 'yellow'}), but
-                    # we don't map those to TSH skin indices yet, so default the
+                    # we don't map those to HyperDrive skin indices yet, so default the
                     # skin to 0. Mirrors StartGGDataProvider.GetMatch's
                     # per-player selection shape consumed by the scoreboard.
                     main_key = mains_by_user.get(user.id)
@@ -630,7 +630,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         }
 
         # Signal the scoreboard to apply the per-player character selections
-        # (parallels start.gg's has_selection_data gate in TSHScoreboardWidget).
+        # (parallels start.gg's has_selection_data gate in ScoreboardWidget).
         if mains_by_user:
             result["has_selection_data"] = True
         if games_data:
@@ -645,7 +645,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         return result
 
     def _fetch_future_set(self, match_id):
-        """Fetch a single match by ID and convert to TSH future-set format."""
+        """Fetch a single match by ID and convert to HyperDrive future-set format."""
         try:
             req = GetMatchRequest()
             req.id = match_id
@@ -658,7 +658,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             return None
 
     def _process_future_set(self, ctx):
-        """Convert a parry MatchContext to TSH future-set format.
+        """Convert a parry MatchContext to HyperDrive future-set format.
 
         Mirrors the shape produced by StartGGDataProvider.ProcessFutureSet so
         downstream consumers (templates, scoreboard widgets) can render parry
@@ -688,7 +688,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             ee = self._seed_entrant(seed)
             if ee is not None:
                 for player_index, user in enumerate(ee.entrant.users):
-                    country_data = TSHCountryHelper.countries.get(user.location_country) or {}
+                    country_data = CountryHelper.countries.get(user.location_country) or {}
                     state_data = {}
                     if user.location_state:
                         state_data = (country_data.get("states") or {}).get(user.location_state, {})
@@ -700,7 +700,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                     name = user.gamer_tag
                     sponsor = user.sponsor_name
                     team["player"][str(player_index + 1)] = {
-                        "country": TSHCountryHelper.GetBasicCountryInfo(user.location_country),
+                        "country": CountryHelper.GetBasicCountryInfo(user.location_country),
                         "state": state_data,
                         "name": name,
                         "team": sponsor,
@@ -789,8 +789,8 @@ class ParryGGDataProvider(TournamentDataProvider):
         except Exception as e:
             logger.error(f"Error processing entrants: {traceback.format_exc()}")
 
-        logger.info(f"GetEntrants: adding {len(players)} players to TSHPlayerDB")
-        TSHPlayerDB.AddPlayers(players)
+        logger.info(f"GetEntrants: adding {len(players)} players to PlayerDB")
+        PlayerDB.AddPlayers(players)
 
     def GetTournamentData(self, progress_callback=None, cancel_event=None):
         self._setup_service("Tournament")
@@ -835,7 +835,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             videogame = event_data.game.slug
             if videogame:
                 self.videogame = videogame
-                self.tshTdp.signals.game_changed.emit(videogame)
+                self.dataManager.signals.game_changed.emit(videogame)
 
         except Exception as e:
             logger.error(f"Error extracting tournament data: {e}")
@@ -885,7 +885,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             return {}
 
     def GetMatches(self, getFinished=False, progress_callback=None, cancel_event=None):
-        """Traverse Event -> Phase -> Bracket and emit one TSH match dict per match.
+        """Traverse Event -> Phase -> Bracket and emit one HyperDrive match dict per match.
 
         Bracket-traversal is preferred over MatchService.GetMatches because the
         Bracket-side Match protos populate stream_queue_entry, which the flat
@@ -934,14 +934,14 @@ class ParryGGDataProvider(TournamentDataProvider):
 
     def GetStations(self, progress_callback=None, cancel_event=None):
         # parry.gg has no first-class "station" concept; emit each stream as a
-        # TSH "stream" entry so the stream selector populates. The "stream"
+        # HyperDrive "stream" entry so the stream selector populates. The "stream"
         # field carries the resolved URL for the dialog's Stream column;
         # "identifier" is the human-friendly display name for the auto-update
         # banner ("Auto update (Stream [<identifier>])").
         #
         # parry streams have a "capacity" field for multi-up broadcasts (e.g.
         # capacity=4 = four matches on screen at once). Each capacity slot is
-        # surfaced as its own row so a user can bind one TSH scoreboard per
+        # surfaced as its own row so a user can bind one HyperDrive scoreboard per
         # slot. The provider's GetStreamMatchId reads the "slot" key to pick
         # the Nth STREAM_QUEUE_ENTRY_STATUS_ONSTREAM match for that stream.
         rows = []
@@ -1040,7 +1040,7 @@ class ParryGGDataProvider(TournamentDataProvider):
 
     def GetStationMatchsId(self, stationId):
         # parry has no station concept, but a parry stream has an ordered
-        # queue of matches. Returning that queue here lets TSH's existing
+        # queue of matches. Returning that queue here lets HyperDrive's existing
         # station-queue plumbing (LoadStationSetsDo → GetFutureMatchesList →
         # station_queue StateManager key) populate an upcoming-matches
         # overlay for parry streams. ``stationId`` is the parry stream UUID
@@ -1241,7 +1241,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         link_2 = self._get_linked_startgg_account(parry_user_id_2)
         if not link_1 or not link_2:
             return []
-        videogame_id = TSHGameAssetManager.instance.selectedGame.get("smashgg_game_id")
+        videogame_id = GameAssetManager.instance.selectedGame.get("smashgg_game_id")
         if not videogame_id:
             return []
         pid_1 = self._resolve_startgg_player_id(link_1["slug"])
@@ -1294,7 +1294,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         if not link:
             self._startgg_mains_cache[parry_user_id] = {}
             return {}
-        selected = TSHGameAssetManager.instance.selectedGame or {}
+        selected = GameAssetManager.instance.selectedGame or {}
         videogame_id = selected.get("smashgg_game_id")
         if not videogame_id:
             return {}  # don't cache — game may change
@@ -1434,7 +1434,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         """Recent tournament placements for a player, via UserService.GetUserPlacements.
 
         Filters out non-singles events (entrant_size != 1) since the consumer
-        in TSHStatsUtil only requests this data when the scoreboard is in
+        in StatsUtil only requests this data when the scoreboard is in
         1v1 mode.
 
         To resolve event/tournament metadata we use the same trick as
@@ -1547,7 +1547,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                     logger.info(
                         f"  bracket {bracket.id[:8]}… name={bracket.name!r} index={bracket.index}"
                     )
-                    # `bracketType` (camelCase) matches the field name TSHBracketWidget
+                    # `bracketType` (camelCase) matches the field name BracketWidget
                     # reads at line 240 to gate dropdown enablement; non-DOUBLE_ELIMINATION
                     # brackets are intentionally disabled for now.
                     bracket_info = {
@@ -1566,11 +1566,11 @@ class ParryGGDataProvider(TournamentDataProvider):
         return phases
 
     def GetTournamentPhaseGroup(self, id, progress_callback=None, cancel_event=None):
-        """Build the bracket-detail dict TSH renders.
+        """Build the bracket-detail dict HyperDrive renders.
 
         StartGG calls this a "phase group" — for parry that's a single Bracket.
         Output shape matches StartGGDataProvider.GetTournamentPhaseGroup so the
-        TSHBracket consumer treats both providers identically:
+        HDBracket consumer treats both providers identically:
             {
                 "entrants": [{"players": [...], "name": str?}, ...],   # ordered by seed
                 "seedMap": [seed numbers in bracket position order],
@@ -1591,7 +1591,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             # on every bracket within the phase, so a multi-pool phase reports
             # all phase entrants for each pool. Filter to the seeds actually
             # referenced by this bracket's matches, then renumber pool-locally
-            # so TSHBracket's seeding(playerNumber) produces the right layout
+            # so HDBracket's seeding(playerNumber) produces the right layout
             # for the pool's real size.
             referenced_seed_ids = {
                 slot.seed_id for match in bracket.matches for slot in match.slots if slot.seed_id
@@ -1672,8 +1672,8 @@ class ParryGGDataProvider(TournamentDataProvider):
             # No seedMap: parry's Seed.bracket_index isn't a reliable
             # bracket-position field today (sorting by it produces sequential
             # 1..N instead of standard bracket layout). Omitting the key lets
-            # TSHBracket fall back to its own seeding(playerNumber) at
-            # TSHBracket.py:71, which produces the correct power-of-2 bracket
+            # HDBracket fall back to its own seeding(playerNumber) at
+            # HDBracket.py:71, which produces the correct power-of-2 bracket
             # layout with seeds beyond originalPlayerNumber rendered as byes.
 
             # Sets keyed by signed round number (positive=winners, negative=losers),
@@ -1761,8 +1761,8 @@ class ParryGGDataProvider(TournamentDataProvider):
 
             final_data["sets"] = sets_by_round
 
-            # Progressions: TSH consumers only read len() to drive the in/out
-            # spinners (TSHBracketWidget.UpdatePhaseGroup).
+            # Progressions: HyperDrive consumers only read len() to drive the in/out
+            # spinners (BracketWidget.UpdatePhaseGroup).
             #
             # Outgoing: Bracket.progressions carries one entry per seed
             # advancing out. Filter to those originating from this bracket

@@ -19,7 +19,7 @@ if ! pushd "${DIR}/.." >/dev/null 2>&1; then
   exit 255
 fi
 
-# HyperDrive.exe isn't committed: build it with dependencies/tsh.spec and copy it here
+# HyperDrive.exe isn't committed: build it with dependencies/hyperdrive.spec and copy it here
 if [ ! -f HyperDrive.exe ]; then
   echo "HyperDrive.exe not found. Build it and copy it to the repository root first."
   popd >/dev/null 2>&1
@@ -42,7 +42,6 @@ cp -R stage_strike_app/build \
 
 rm -rf \
 	HyperDrive/assets/versions.json \
-	HyperDrive/assets/contributors.txt \
 	HyperDrive/layout/game_images \
 	HyperDrive/layout/game_screenshots
 

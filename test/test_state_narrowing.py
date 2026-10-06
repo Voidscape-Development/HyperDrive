@@ -16,7 +16,7 @@ sys.modules["src"] = package
 
 from deepdiff import DeepDiff, Delta
 
-from src.Helpers.TSHDictHelper import deep_clone, deep_get, deep_set, deep_unset
+from src.Helpers.DictHelper import deep_clone, deep_get, deep_set, deep_unset
 from src.StateManager import StateManager
 
 KEYS = ["a", "b", "c", "1", "2", "x y", "q'uote", 'dq"', "back\\slash", "ü"]

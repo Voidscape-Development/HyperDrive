@@ -1,4 +1,4 @@
-# Checks TSHScheduler: runs never overlap, runs requested while running are
+# Checks Scheduler: runs never overlap, runs requested while running are
 # folded into one, intervals are clamped, and a job finishing on a Worker
 # thread reschedules correctly.
 # Run from the repository root: python test/test_scheduler.py
@@ -16,7 +16,7 @@ sys.modules["src"] = package
 
 from qtpy.QtCore import QCoreApplication, QEventLoop, QThreadPool, QTimer
 
-from src.TSHScheduler import TSHScheduler
+from src.Scheduler import Scheduler
 from src.Workers import Worker
 
 app = QCoreApplication.instance() or QCoreApplication(sys.argv)
@@ -29,7 +29,7 @@ def Wait(ms):
 
 
 def TestNoOverlapAndRerun():
-    scheduler = TSHScheduler()
+    scheduler = Scheduler()
     calls = []
     scheduler.Register("job", lambda done: calls.append(done), 60000)
 
@@ -53,7 +53,7 @@ def TestNoOverlapAndRerun():
 
 
 def TestStartStopAndInterval():
-    scheduler = TSHScheduler()
+    scheduler = Scheduler()
     calls = []
     scheduler.Register("job", lambda done: [calls.append(1), done()], 1000, min_interval_ms=500)
 
@@ -78,7 +78,7 @@ def TestStartStopAndInterval():
 
 
 def TestUnregister():
-    scheduler = TSHScheduler()
+    scheduler = Scheduler()
     calls = []
     changed = []
     scheduler.signals.job_state_changed.connect(changed.append)
@@ -101,7 +101,7 @@ def TestUnregister():
 
 
 def TestGroupInterval():
-    scheduler = TSHScheduler()
+    scheduler = Scheduler()
     for name in ("a", "b"):
         scheduler.Register(name, lambda done: done(), 5000, min_interval_ms=3000, group="g")
     scheduler.Register("other", lambda done: done(), 5000)
@@ -116,7 +116,7 @@ def TestGroupInterval():
 
 
 def TestFailingCallback():
-    scheduler = TSHScheduler()
+    scheduler = Scheduler()
 
     def Fail(done):
         raise RuntimeError("expected")
@@ -129,7 +129,7 @@ def TestFailingCallback():
 
 
 def TestWorkerFinished():
-    scheduler = TSHScheduler()
+    scheduler = Scheduler()
     pool = QThreadPool()
     results = []
     doneThreads = []

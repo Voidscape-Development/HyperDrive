@@ -1,6 +1,6 @@
 As the following characters (,/|;:<>\?*) are not able to be used in (Windows) file names,
-all invalid characters will need to be replaced with an underscore (_) to be recognized as valid for TSH.
+all invalid characters will need to be replaced with an underscore (_) to be recognized as valid for HyperDrive.
 
 The image will only be exported once you open the program and select the player.
 
-E.x. "TSH | TEST" could equal "TSH", "TEST", or even "TSH _ TEST" for the file name
+E.x. "HyperDrive | TEST" could equal "HyperDrive", "TEST", or even "HyperDrive _ TEST" for the file name

@@ -12,16 +12,16 @@ import {Box} from "@mui/system";
 import CurrentSet from "./CurrentSet";
 import UpcomingSets from "./UpcomingSets";
 import {Header} from "./Header";
-import {tshStore, ReduxState} from "../redux/store"
+import {hdStore, ReduxState} from "../redux/store"
 import {shallowEqual, useDispatch, useSelector} from "react-redux";
-import {tshStateSlice} from "../redux/tshState";
+import {hdStateSlice} from "../redux/hdState";
 import websocketInit from "./websocketInit";
 import websocketConnection from "../websocketConnection";
 import {selectedScoreboardSlice} from "../redux/uiState";
-import {TSHState} from "../backendDataTypes";
+import {HDState} from "../backendDataTypes";
 
 /**
- * Main page for the scoreboard. This whole contraption is powered by TSH's python-side
+ * Main page for the scoreboard. This whole contraption is powered by HyperDrive's python-side
  * program state. In order to do that, we subscribe to updates that get sent out and update
  * our state piecemeal. Each update has a number so that we can tell if our updates are stale
  * or out of order and request a full state send-over.
@@ -30,19 +30,19 @@ export default function ScoreboardPage(props: any) {
     const dispatch = useDispatch();
     const {loading, errored, selectedScoreboard, scoreboards} = useSelector((state: ReduxState) => ({
         loading: (
-            state.tshState.initializing
-            || state.tshCharacters.initializing
-            || state.tshPlayers.initializing
-            || state.tshGames.initializing
-            || state.tshCountries.initializing
+            state.hdState.initializing
+            || state.hdCharacters.initializing
+            || state.hdPlayers.initializing
+            || state.hdGames.initializing
+            || state.hdCountries.initializing
         ),
         errored: state.websocketInfo.status === "errored",
-        scoreboards: state.tshState.tshState.score,
+        scoreboards: state.hdState.hdState.score,
         selectedScoreboard: state.selectedScoreboard.value
     }), shallowEqual);
 
     React.useEffect(() => {
-        document.title = `TSH ${i18n.t("scoreboard")}`;
+        document.title = `HyperDrive ${i18n.t("scoreboard")}`;
         websocketInit();
     }, []);
 
@@ -59,7 +59,7 @@ export default function ScoreboardPage(props: any) {
     );
 
     const onSelectedSetChanged = () => {
-        dispatch(tshStateSlice.actions.loadingNewData({}));
+        dispatch(hdStateSlice.actions.loadingNewData({}));
     };
 
     const onSelectedGameChanged= (newGame: string) => {
@@ -87,7 +87,7 @@ export default function ScoreboardPage(props: any) {
                                     sx={{width: '100%'}}
                                     variant={"scrollable"}
                                     onChange={(event, newValue) => {
-                                        tshStore.dispatch(selectedScoreboardSlice.actions.setSelectedScoreboard(newValue))
+                                        hdStore.dispatch(selectedScoreboardSlice.actions.setSelectedScoreboard(newValue))
                                     }}
                                     value={selectedScoreboard}
                                 >
@@ -127,7 +127,7 @@ export default function ScoreboardPage(props: any) {
     )
 }
 
-const scoreboardKeys = (scoreboards: TSHState['score']) => {
+const scoreboardKeys = (scoreboards: HDState['score']) => {
     if (scoreboards) {
         return Object.keys(scoreboards)
             .filter(k => k.match(/^\d+$/))

@@ -6,7 +6,7 @@ user_data/sponsor_logo/
 user_data/team_logo/
 !user_data/team_logo/*.txt
 out/
-TSH.exe
+HyperDrive.exe
 HyperDrive.exe
 update.tar.gz
 __pycache__/
@@ -19,19 +19,19 @@ layout_custom*
 .idea/
 .DS_Store
 
-TSH.cflags
+HyperDrive.cflags
 
-TSH.config
+HyperDrive.config
 
-TSH.creator
+HyperDrive.creator
 
-TSH.creator.user
+HyperDrive.creator.user
 
-TSH.cxxflags
+HyperDrive.cxxflags
 
-TSH.files
+HyperDrive.files
 
-TSH.includes
+HyperDrive.includes
 
 THS.cflags
 
@@ -54,7 +54,7 @@ src/layout/ui_*.py
 src/layout/*_ui.py
 layout_*/*
 build/main/*
-TSH_old.exe
+HyperDrive_old.exe
 HyperDrive_old.exe
 release.zip
 main.spec

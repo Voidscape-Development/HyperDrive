@@ -44,7 +44,7 @@
 .team_shot .p2.character { right: 0; left: unset; }
 
 /* Undo index.css card styling — renders are free-standing cutouts */
-.team_shot .character > .tsh_character {
+.team_shot .character > .hd_character {
   position: absolute !important;
   height: auto;
   aspect-ratio: var(--ts-render-ratio);
@@ -57,15 +57,15 @@
   will-change: transform, opacity;
 }
 
-.team_shot .character .tsh_character_img {
+.team_shot .character .hd_character_img {
   width: 100%;
   height: 100%;
   overflow: visible;
 }
 
-/* TSH positions each render by its eye point, which varies a lot between
+/* HyperDrive positions each render by its eye point, which varies a lot between
    characters. Pin the render to its slot instead: full width, bottom-anchored. */
-.team_shot .character .tsh-img {
+.team_shot .character .hd-img {
   left: 0 !important;
   top: auto !important;
   bottom: 0 !important;
@@ -74,36 +74,36 @@
 }
 
 /* P2 renders face inward */
-.team_shot .p2.character .tsh-img { transform: scaleX(-1); }
+.team_shot .p2.character .hd-img { transform: scaleX(-1); }
 
 
 /* ── 3. Character slots ──────────────────────────────────── */
-/* Order follows TSH's character order. Positions mirror the mockup:
+/* Order follows HyperDrive's character order. Positions mirror the mockup:
      1 = back, top, largest (Deadpool)   3 = outer front (Captain America)
      2 = inner              (Doom)       4 = center front (Spider-Man)
    Stacking: 4 front, then 3, then 2, with 1 at the back.
    Offsets are relative to the group container (= screen top).
    Groups hug the outer edge; the spare width is left toward the VS. */
 
-.team_shot .character > .tsh_character:nth-child(1) { width: 600px; top: 37px;  z-index: 1 !important; }
-.team_shot .character > .tsh_character:nth-child(2) { width: 572px; top: 371px; z-index: 2 !important; }
-.team_shot .character > .tsh_character:nth-child(3) { width: 493px; top: 393px; z-index: 3 !important; }
-.team_shot .character > .tsh_character:nth-child(4) { width: 540px; top: 434px; z-index: 4 !important; }
+.team_shot .character > .hd_character:nth-child(1) { width: 600px; top: 37px;  z-index: 1 !important; }
+.team_shot .character > .hd_character:nth-child(2) { width: 572px; top: 371px; z-index: 2 !important; }
+.team_shot .character > .hd_character:nth-child(3) { width: 493px; top: 393px; z-index: 3 !important; }
+.team_shot .character > .hd_character:nth-child(4) { width: 540px; top: 434px; z-index: 4 !important; }
 
-.team_shot .p1.character > .tsh_character:nth-child(1) { left: 0; }
-.team_shot .p1.character > .tsh_character:nth-child(2) { left: 180px; }
-.team_shot .p1.character > .tsh_character:nth-child(3) { left: -110px; }
-.team_shot .p1.character > .tsh_character:nth-child(4) { left: 50px; }
+.team_shot .p1.character > .hd_character:nth-child(1) { left: 0; }
+.team_shot .p1.character > .hd_character:nth-child(2) { left: 180px; }
+.team_shot .p1.character > .hd_character:nth-child(3) { left: -110px; }
+.team_shot .p1.character > .hd_character:nth-child(4) { left: 50px; }
 
-.team_shot .p2.character > .tsh_character:nth-child(1) { right: 0; }
-.team_shot .p2.character > .tsh_character:nth-child(2) { right: 180px; }
-.team_shot .p2.character > .tsh_character:nth-child(3) { right: -110px; }
-.team_shot .p2.character > .tsh_character:nth-child(4) { right: 50px; }
+.team_shot .p2.character > .hd_character:nth-child(1) { right: 0; }
+.team_shot .p2.character > .hd_character:nth-child(2) { right: 180px; }
+.team_shot .p2.character > .hd_character:nth-child(3) { right: -110px; }
+.team_shot .p2.character > .hd_character:nth-child(4) { right: 50px; }
 
 /* A lone character takes the big slot, toward the outer edge */
-.team_shot .character > .tsh_character:only-child { width: 680px; top: 164px; }
-.team_shot .p1.character > .tsh_character:only-child { left: 60px; }
-.team_shot .p2.character > .tsh_character:only-child { right: 60px; }
+.team_shot .character > .hd_character:only-child { width: 680px; top: 164px; }
+.team_shot .p1.character > .hd_character:only-child { left: 60px; }
+.team_shot .p2.character > .hd_character:only-child { right: 60px; }
 
 
 /* ── 4. Info panels ──────────────────────────────────────── */

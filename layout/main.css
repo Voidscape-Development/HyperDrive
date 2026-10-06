@@ -68,7 +68,7 @@
   src: url("./include/Roboto-Regular.ttf") format("truetype");
 }
 
-.tsh_transcript {
+.hd_transcript {
   display: flex;
   flex-direction: column;
   .original {
@@ -88,25 +88,25 @@
   }
 }
 
-.tsh_character_container {
+.hd_character_container {
   display: flex;
   width: 100%;
   height: 100%;
 }
 
-.tsh_character {
+.hd_character {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-.tsh_character_img {
+.hd_character_img {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-.tsh_variant_icon {
+.hd_variant_icon {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -187,7 +187,7 @@ img {
   --bg-color: rgb(18, 17, 28);
 
   /* Player accent colors — defaults; overridden per-match via
-     DEFAULT_TEAM1_COLOR / DEFAULT_TEAM2_COLOR in TSHScoreboardWidget.py */
+     DEFAULT_TEAM1_COLOR / DEFAULT_TEAM2_COLOR in ScoreboardWidget.py */
   --p1-sponsor-color: oklch(
     from var(--p1-score-bg-color)
     calc(l + 0.13)
@@ -241,30 +241,30 @@ img {
 
 /* ═══════════════════════════════════════════════════════════
    LAYOUT THEME
-   The theme selected in TSH (Layout themes) is applied by
+   The theme selected in HyperDrive (Layout themes) is applied by
    ApplyLayoutTheme() in include/globals.js: its colors override
    the tokens above (when "Use this theme's colors in layouts" is
    on) and its display options add these classes to <body>.
    ═══════════════════════════════════════════════════════════ */
 
-body.tsh-hide-pronouns :is(.pronoun, .pronoun_logo),
-body.tsh-hide-seed :is(.seed, .seed_logo),
-body.tsh-hide-social :is(.twitter, .twitter_logo, .twitter-container, .twitter_container),
-body.tsh-hide-country-flag .flagcountry,
-body.tsh-hide-state-flag :is(.flagstate, .player_state),
-body.tsh-hide-avatar :is(.avatar, .online_avatar, .player_avatar, .floating_online_avatar),
-body.tsh-hide-losers :is(.losers_badge, .losers_container, .losers_icons) {
+body.hd-hide-pronouns :is(.pronoun, .pronoun_logo),
+body.hd-hide-seed :is(.seed, .seed_logo),
+body.hd-hide-social :is(.twitter, .twitter_logo, .twitter-container, .twitter_container),
+body.hd-hide-country-flag .flagcountry,
+body.hd-hide-state-flag :is(.flagstate, .player_state),
+body.hd-hide-avatar :is(.avatar, .online_avatar, .player_avatar, .floating_online_avatar),
+body.hd-hide-losers :is(.losers_badge, .losers_container, .losers_icons) {
   display: none !important;
 }
 
-body.tsh-no-text-outline {
+body.hd-no-text-outline {
   -webkit-text-stroke: 0;
 }
 
-body.tsh-text-upper .text {
+body.hd-text-upper .text {
   text-transform: uppercase !important;
 }
 
-body.tsh-text-none .text {
+body.hd-text-none .text {
   text-transform: none !important;
 }

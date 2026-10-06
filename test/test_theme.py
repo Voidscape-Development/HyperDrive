@@ -1,4 +1,4 @@
-# Checks TSHTheme's theme model: checking themes, importing and exporting
+# Checks Theme's theme model: checking themes, importing and exporting
 # them, and working out which theme is in use from the settings.
 # Run from the repository root: python test/test_theme.py
 import json
@@ -17,7 +17,7 @@ from src.SettingsManager import SettingsManager
 
 SettingsManager.SaveSettings = lambda: None
 
-from src.TSHTheme import (
+from src.Theme import (
     COLOR_KEYS,
     DEFAULT_ACCENT,
     DEFAULT_RADIUS,
@@ -29,7 +29,7 @@ from src.TSHTheme import (
     ExportTheme,
     ImportTheme,
     NormalizeTheme,
-    TSHTheme,
+    Theme,
 )
 
 
@@ -108,7 +108,7 @@ def TestExportImport():
         path = os.path.join(folder, "midnight.json")
         ExportTheme(theme, path)
         data = json.load(open(path))
-        assert data["tsh_theme"] == 1
+        assert data["hyperdrive_theme"] == 1
         assert ImportTheme(path) == theme
 
         # The file name is used when the theme has none
@@ -117,7 +117,17 @@ def TestExportImport():
         json.dump(data, open(unnamed, "w"))
         assert ImportTheme(unnamed)["name"] == "Sunset"
 
-        for content in ['{"colors": {"text": "#fff"}}', "not json", "[1, 2]", '{"tsh_theme": 1}']:
+        # Files exported before the rename have the old key
+        data["tsh_theme"] = data.pop("hyperdrive_theme")
+        json.dump(data, open(unnamed, "w"))
+        assert ImportTheme(unnamed)["name"] == "Sunset"
+
+        for content in [
+            '{"colors": {"text": "#fff"}}',
+            "not json",
+            "[1, 2]",
+            '{"hyperdrive_theme": 1}',
+        ]:
             bad = os.path.join(folder, "bad.json")
             open(bad, "w").write(content)
             try:
@@ -136,58 +146,58 @@ def TestExportImport():
 
 def TestMode():
     Settings()
-    assert TSHTheme.Mode() == THEME_DARK
-    assert TSHTheme.IsDark()
+    assert Theme.Mode() == THEME_DARK
+    assert Theme.IsDark()
 
     # Light mode from before the Appearance settings
     Settings(light_mode=True)
-    assert TSHTheme.Mode() == THEME_LIGHT
-    assert not TSHTheme.IsDark()
+    assert Theme.Mode() == THEME_LIGHT
+    assert not Theme.IsDark()
     Settings({"theme": THEME_DARK}, light_mode=True)
-    assert TSHTheme.Mode() == THEME_DARK
+    assert Theme.Mode() == THEME_DARK
 
     Settings({"theme": "custom:Mine", "custom_themes": {"Mine": {"colors": {"window": "#ffffff"}}}})
-    assert TSHTheme.Mode() == "custom:Mine"
-    assert TSHTheme.CustomThemeName() == "Mine"
-    assert TSHTheme.Current()["name"] == "Mine"
-    assert not TSHTheme.IsDark()
+    assert Theme.Mode() == "custom:Mine"
+    assert Theme.CustomThemeName() == "Mine"
+    assert Theme.Current()["name"] == "Mine"
+    assert not Theme.IsDark()
 
     # A custom theme that's gone falls back to the default
     Settings({"theme": "custom:Gone"})
-    assert TSHTheme.Mode() == THEME_DARK
-    assert TSHTheme.CustomThemeName() is None
+    assert Theme.Mode() == THEME_DARK
+    assert Theme.CustomThemeName() is None
 
     Settings({"theme": "nonsense"})
-    assert TSHTheme.Mode() == THEME_DARK
+    assert Theme.Mode() == THEME_DARK
 
 
 def TestAccent():
     Settings({"theme": THEME_LIGHT, "accent_color": "#2f80ed"})
-    assert TSHTheme.Current()["colors"]["accent"] == "#2f80ed"
+    assert Theme.Current()["colors"]["accent"] == "#2f80ed"
     Settings({"accent_color": "nope"})
-    assert TSHTheme.Current()["colors"]["accent"] == DEFAULT_ACCENT
+    assert Theme.Current()["colors"]["accent"] == DEFAULT_ACCENT
     # Text on a light accent is dark, on a dark accent white
     Settings({"accent_color": "#ffe066"})
-    assert TSHTheme.Colors()["onAccent"].name() == "#111111"
+    assert Theme.Colors()["onAccent"].name() == "#111111"
     Settings({"accent_color": "#1a237e"})
-    assert TSHTheme.Colors()["onAccent"].name() == "#ffffff"
+    assert Theme.Colors()["onAccent"].name() == "#ffffff"
 
 
 def TestCustomThemes():
     Settings({"custom_themes": {"Good": {"colors": {"text": "#fff"}}, "Broken": "x"}})
-    assert list(TSHTheme.CustomThemes()) == ["Good"]
+    assert list(Theme.CustomThemes()) == ["Good"]
 
-    TSHTheme.SaveCustomTheme(NormalizeTheme({"colors": {"text": "#000"}}, "New"))
-    assert sorted(TSHTheme.CustomThemes()) == ["Good", "New"]
-    assert TSHTheme.UniqueName("New") == "New (2)"
-    assert TSHTheme.UniqueName("Other") == "Other"
+    Theme.SaveCustomTheme(NormalizeTheme({"colors": {"text": "#000"}}, "New"))
+    assert sorted(Theme.CustomThemes()) == ["Good", "New"]
+    assert Theme.UniqueName("New") == "New (2)"
+    assert Theme.UniqueName("Other") == "Other"
 
     # Renaming replaces the old entry
-    TSHTheme.SaveCustomTheme(NormalizeTheme({"colors": {"text": "#000"}}, "Renamed"), "New")
-    assert sorted(TSHTheme.CustomThemes()) == ["Good", "Renamed"]
+    Theme.SaveCustomTheme(NormalizeTheme({"colors": {"text": "#000"}}, "Renamed"), "New")
+    assert sorted(Theme.CustomThemes()) == ["Good", "Renamed"]
 
-    TSHTheme.DeleteCustomTheme("Good")
-    assert sorted(TSHTheme.CustomThemes()) == ["Renamed"]
+    Theme.DeleteCustomTheme("Good")
+    assert sorted(Theme.CustomThemes()) == ["Renamed"]
 
 
 if __name__ == "__main__":

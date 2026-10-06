@@ -6,7 +6,7 @@ proportions. Flags are public domain.
 
 Changes from upstream:
 
-- File names are lowercased (`GB-ENG.svg` → `gb-eng.svg`) to match the codes TSH uses.
+- File names are lowercased (`GB-ENG.svg` → `gb-eng.svg`) to match the codes HyperDrive uses.
 - Percentage sizes on `<rect>` (`br`, `by`, `gb-sct`) are converted to viewBox units,
   since Qt's SVG renderer resolves them differently from browsers.
 - Optimized with [svgo](https://github.com/svg/svgo) using `multipass`. Each flag uses
@@ -15,5 +15,5 @@ Changes from upstream:
 - Each `<svg>` gets `width="100"` and a matching `height`, so a layout that doesn't
   size its `<img>` shows the flag at the same 100px width as the old PNGs.
 
-The `.png` flags are the previous set. TSH no longer uses them, and they're kept for one
+The `.png` flags are the previous set. HyperDrive no longer uses them, and they're kept for one
 release so layouts that hardcode `country_flag/<code>.png` keep working.

@@ -21,7 +21,7 @@ LoadEverything().then(() => {
     // Set team colors if available
     const teams = Object.values(data.score[window.scoreboardNumber].team);
     for (const [t, team] of teams.entries()) {
-      if (team.color && !tsh_settings["forceDefaultScoreColors"]) {
+      if (team.color && !hd_settings["forceDefaultScoreColors"]) {
         document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
       }
     }

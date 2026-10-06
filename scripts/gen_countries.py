@@ -1,6 +1,6 @@
 """Builds assets/countries.json from the countries+states+cities database
 (https://github.com/dr5hn/countries-states-cities-database), keeping only
-what TSH reads from it.
+what HyperDrive reads from it.
 
 Usage: python scripts/gen_countries.py <countries+states+cities.json> [out]
 
@@ -18,14 +18,14 @@ MAPPING_FILE = os.path.join(ROOT, "src", "i18n", "mapping.json")
 
 
 def remove_accents_lower(input_str):
-    # Must match TSHCountryHelper.remove_accents_lower
+    # Must match CountryHelper.remove_accents_lower
     nfkd_form = unicodedata.normalize("NFKD", input_str)
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
 
 
-def tsh_translation_keys():
-    """The translation keys TSH can look up: each of its languages, and the
-    language without its region (TSHCountryHelper tries both)"""
+def app_translation_keys():
+    """The translation keys HyperDrive can look up: each of its languages, and the
+    language without its region (CountryHelper tries both)"""
     with open(MAPPING_FILE, encoding="utf-8") as f:
         languages = json.load(f).get("languages")
 
@@ -37,7 +37,7 @@ def tsh_translation_keys():
 
 
 def build(countries_json):
-    translation_keys = tsh_translation_keys()
+    translation_keys = app_translation_keys()
 
     countries = []
     for country in countries_json:

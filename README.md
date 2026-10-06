@@ -6,8 +6,7 @@
 
 A stream helper for fighting game tournaments!
 
-HyperDrive is based on [TournamentStreamHelper](https://github.com/joaorb64/TournamentStreamHelper)
-(TSH). It loads sets, players and brackets from your tournament and sends them to
+HyperDrive loads sets, players and brackets from your tournament and sends them to
 HTML overlays that you add to OBS or any other streaming software as browser sources.
 
 - **Tournament data** from start.gg, plus parry.gg in beta.
@@ -19,15 +18,14 @@ HTML overlays that you add to OBS or any other streaming software as browser sou
 - **Web pages for your phone or a second screen:** a remote scoreboard, stage strike and
   character select, served by HyperDrive itself.
 
-For setting up layouts in OBS and general usage, see the
-[TSH wiki](https://github.com/joaorb64/TournamentStreamHelper/wiki). Most of it applies
-to HyperDrive.
+To show a layout in OBS, add a Browser source with *Local file* checked, pick the
+layout's `.html` file in [`layout/`](layout) and set the size to 1920x1080.
 
 ## Download (Windows)
 
 1. Download `HyperDrive-windows.zip` from the
-   [releases page](https://github.com/Voidscape-Development/TSH-HyperDrive/releases).
-   The [`latest-build`](https://github.com/Voidscape-Development/TSH-HyperDrive/releases/tag/latest-build)
+   [releases page](https://github.com/Voidscape-Development/HyperDrive/releases).
+   The [`latest-build`](https://github.com/Voidscape-Development/HyperDrive/releases/tag/latest-build)
    prerelease is rebuilt on every change to `main`, if you want the newest version.
 2. Extract the zip and run `HyperDrive.exe`.
 
@@ -67,7 +65,7 @@ dependencies locked in `uv.lock`:
 uv run main.py
 ```
 
-`TSH.sh` (Linux and macOS) and `TSH_bat.bat` (Windows) do the same.
+`HyperDrive.sh` (Linux and macOS) and `HyperDrive.bat` (Windows) do the same.
 
 The stage strike, character select and remote scoreboard pages are a separate Vite
 app in [`stage_strike_app/`](stage_strike_app). Its build is committed, so you only need to
@@ -107,10 +105,9 @@ GitHub Actions does the rest:
 
 ## Credits
 
-- [TournamentStreamHelper](https://github.com/joaorb64/TournamentStreamHelper) by
-  João Ribeiro Bezerra and its contributors. HyperDrive is MIT licensed, like TSH; see
-  [`LICENSE`](LICENSE).
 - Country flags from [hampusborgos/country-flags](https://github.com/hampusborgos/country-flags),
   which are public domain. See [`assets/country_flag/README.md`](assets/country_flag/README.md).
-- Support the original TSH on its
-  [Discord](https://discord.gg/X9Sp2FkcHF) and [Ko-fi](https://ko-fi.com/W7W22YK26).
+
+## License
+
+HyperDrive is released under the MIT License. See [`LICENSE`](LICENSE).

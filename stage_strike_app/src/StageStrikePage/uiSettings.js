@@ -1,4 +1,4 @@
-const STORAGE_KEY = "tsh_stage_strike_ui_v2";
+const STORAGE_KEY = "hd_stage_strike_ui_v2";
 
 const DEFAULTS = {
   // Open the character select once each game's winner is reported

@@ -17,7 +17,7 @@ import {PlayerPanels} from "./PlayerPanels";
 import {ActionBar} from "./ActionBar";
 import {CharacterReportDialog, MissingCharacters} from "./CharacterReportDialog";
 import {CharacterSelectView} from "../CharacterSelectPage";
-import {useCharacters, useScoreboardParam, useStrikeData, useTeamParam} from "./useTshData";
+import {useCharacters, useScoreboardParam, useStrikeData, useTeamParam} from "./useHdData";
 import {
   CanConfirm,
   EMPTY_STATE,
@@ -95,7 +95,7 @@ export default function StageStrikePage() {
   }, []);
 
   const openCharacters = () => {
-    // Players or the character count may have changed in TSH since
+    // Players or the character count may have changed in HyperDrive since
     refresh();
     setCharactersOpen(true);
   };

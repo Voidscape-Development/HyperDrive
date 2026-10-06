@@ -12,12 +12,12 @@ import requests
 import requests.adapters
 from loguru import logger
 
-from ..Helpers.TSHCountryHelper import TSHCountryHelper
-from ..Helpers.TSHDictHelper import deep_get
-from ..Helpers.TSHDirHelper import TSHResolve
-from ..Helpers.TSHLocaleHelper import TSHLocaleHelper
-from ..TSHGameAssetManager import TSHGameAssetManager
-from ..TSHPlayerDB import TSHPlayerDB
+from ..GameAssetManager import GameAssetManager
+from ..Helpers.CountryHelper import CountryHelper
+from ..Helpers.DictHelper import deep_get
+from ..Helpers.DirHelper import ResolvePath
+from ..Helpers.LocaleHelper import LocaleHelper
+from ..PlayerDB import PlayerDB
 from ..Workers import Worker
 from .TournamentDataProvider import TournamentDataProvider
 
@@ -69,8 +69,8 @@ class StartGGDataProvider(TournamentDataProvider):
 
     player_seeds = {}
 
-    def __init__(self, url, threadpool, tshTdp) -> None:
-        super().__init__(url, threadpool, tshTdp)
+    def __init__(self, url, threadpool, dataManager) -> None:
+        super().__init__(url, threadpool, dataManager)
         self.name = "StartGG"
         self._mains_cache = {}
         # Players whose mains a bulk load (e.g. the bracket) needs, fetched
@@ -182,7 +182,7 @@ class StartGGDataProvider(TournamentDataProvider):
             videogame = deep_get(data, "data.event.videogame.id", None)
             if videogame:
                 self.videogame = videogame
-                self.tshTdp.signals.game_changed.emit(videogame)
+                self.dataManager.signals.game_changed.emit(videogame)
 
             finalData["tournamentName"] = deep_get(data, "data.event.tournament.name", "")
             finalData["eventName"] = deep_get(data, "data.event.name", "")
@@ -255,7 +255,7 @@ class StartGGDataProvider(TournamentDataProvider):
                     phaseObj["groups"].append(
                         {
                             "id": phaseGroup.get("id"),
-                            "name": TSHLocaleHelper.phaseNames.get("group").format(
+                            "name": LocaleHelper.phaseNames.get("group").format(
                                 phaseGroup.get("displayIdentifier")
                             ),
                             "bracketType": phaseGroup.get("bracketType"),
@@ -395,7 +395,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
     def GetTournamentPhaseGroup(self, id, progress_callback=None, cancel_event=None):
         """The phase group's entrants (by seed) and its sets, in the bracket
-        model's format (TSHBracketModel.FromProviderSets)."""
+        model's format (BracketModel.FromProviderSets)."""
         finalData = {}
 
         try:
@@ -512,7 +512,7 @@ class StartGGDataProvider(TournamentDataProvider):
     @staticmethod
     def _BuildGraphSets(seeds, sets):
         # The phase group's sets in the bracket model's format
-        # (TSHBracketModel.FromProviderSets), with players as their 1-based
+        # (BracketModel.FromProviderSets), with players as their 1-based
         # entrant index (by seed)
         seedIndex = {}
         entrantIndex = {}
@@ -600,10 +600,10 @@ class StartGGDataProvider(TournamentDataProvider):
                 if int(finalResult.get("round") or 0) < 0:
                     indicator = "qualifier_losers_indicator"
 
-                indicator = TSHLocaleHelper.matchNames.get(indicator)
+                indicator = LocaleHelper.matchNames.get(indicator)
 
                 winnerProgression = re.sub(r"\s*[\(\{\[].*?[\)\}\]]", "", winnerProgression).strip()
-                finalResult["round_name"] = TSHLocaleHelper.matchNames.get("qualifier").format(
+                finalResult["round_name"] = LocaleHelper.matchNames.get("qualifier").format(
                     winnerProgression, indicator
                 )
 
@@ -809,18 +809,18 @@ class StartGGDataProvider(TournamentDataProvider):
             "Quarter-Final": "single_elim_quarter_final",
         }
 
-        if name in roundMapping and TSHLocaleHelper.matchNames.get(roundMapping.get(name)):
-            return TSHLocaleHelper.matchNames.get(roundMapping.get(name))
+        if name in roundMapping and LocaleHelper.matchNames.get(roundMapping.get(name)):
+            return LocaleHelper.matchNames.get(roundMapping.get(name))
 
         try:
             roundNumber = name.rsplit(" ")[-1]
 
             if "Winners" in name:
-                return TSHLocaleHelper.matchNames.get("winners_round").format(roundNumber)
+                return LocaleHelper.matchNames.get("winners_round").format(roundNumber)
             elif "Losers" in name:
-                return TSHLocaleHelper.matchNames.get("losers_round").format(roundNumber)
+                return LocaleHelper.matchNames.get("losers_round").format(roundNumber)
             elif name.startswith("Round "):
-                return TSHLocaleHelper.matchNames.get("round").format(roundNumber)
+                return LocaleHelper.matchNames.get("round").format(roundNumber)
         except:
             logger.error(traceback.format_exc())
 
@@ -843,7 +843,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
             isPools = deep_get(_set, "phaseGroup.phase.groupCount", 0) > 1
             if isPools:
-                phase_name += " - " + TSHLocaleHelper.phaseNames.get("group").format(
+                phase_name += " - " + LocaleHelper.phaseNames.get("group").format(
                     deep_get(_set, "phaseGroup.displayIdentifier")
                 )
 
@@ -936,7 +936,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         if user.get("location"):
                             # Country to country code
                             if user.get("location").get("country"):
-                                for country in TSHCountryHelper.countries.values():
+                                for country in CountryHelper.countries.values():
                                     if user.get("location").get("country") == country.get(
                                         "en_name"
                                     ):
@@ -952,7 +952,7 @@ class StartGGDataProvider(TournamentDataProvider):
                             elif user.get("location").get("city") and playerData.get(
                                 "country_code"
                             ):
-                                stateCode = TSHCountryHelper.FindState(
+                                stateCode = CountryHelper.FindState(
                                     playerData["country_code"], user.get("location").get("city")
                                 )
                                 if stateCode:
@@ -1006,9 +1006,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
             stage = None
             if deep_get(game, "stage.id") is not None:
-                found = TSHGameAssetManager.instance.GetStageFromStartGGId(
-                    deep_get(game, "stage.id")
-                )
+                found = GameAssetManager.instance.GetStageFromStartGGId(deep_get(game, "stage.id"))
                 if found:
                     stage = found[1].get("codename")
 
@@ -1017,7 +1015,7 @@ class StartGGDataProvider(TournamentDataProvider):
                 entrantId = str(deep_get(selection, "entrant.id"))
                 if entrantId not in entrantIds or selection.get("selectionValue") is None:
                     continue
-                character = TSHGameAssetManager.instance.GetCharacterFromStartGGId(
+                character = GameAssetManager.instance.GetCharacterFromStartGGId(
                     selection.get("selectionValue")
                 )
                 if character:
@@ -1128,7 +1126,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
                         for stageCode in stageCodes:
                             stages.append(
-                                TSHGameAssetManager.instance.GetStageFromStartGGId(int(stageCode))[
+                                GameAssetManager.instance.GetStageFromStartGGId(int(stageCode))[
                                     1
                                 ].get("codename")
                             )
@@ -1145,7 +1143,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
                 if base.get("strikeList"):
                     for stage_code, entrant in base.get("strikeList").items():
-                        stage = TSHGameAssetManager.instance.GetStageFromStartGGId(int(stage_code))
+                        stage = GameAssetManager.instance.GetStageFromStartGGId(int(stage_code))
 
                         if stage:
                             codename = stage[1].get("codename")
@@ -1166,9 +1164,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         for stage_code in base.get("banList"):
                             if stage_code == None:
                                 continue
-                            stage = TSHGameAssetManager.instance.GetStageFromStartGGId(
-                                int(stage_code)
-                            )
+                            stage = GameAssetManager.instance.GetStageFromStartGGId(int(stage_code))
                             if stage:
                                 codename = stage[1].get("codename")
                                 strikedBy[banPlayer].append(codename)
@@ -1200,22 +1196,20 @@ class StartGGDataProvider(TournamentDataProvider):
         try:
             allStagesFinal = []
             for st in allStages:
-                stage = TSHGameAssetManager.instance.GetStageFromStartGGId(st)
+                stage = GameAssetManager.instance.GetStageFromStartGGId(st)
                 if stage:
                     allStagesFinal.append(stage[1])
 
             striked = []
             if strikedStages is not None:
                 for stage in strikedStages:
-                    stage = TSHGameAssetManager.instance.GetStageFromStartGGId(stage)
+                    stage = GameAssetManager.instance.GetStageFromStartGGId(stage)
                     if stage:
                         striked.append(stage[1].get("codename"))
 
             selected = ""
             if selectedStage is not None:
-                selectedStage = TSHGameAssetManager.instance.GetStageFromStartGGId(
-                    int(selectedStage)
-                )
+                selectedStage = GameAssetManager.instance.GetStageFromStartGGId(int(selectedStage))
                 if selectedStage:
                     selected = selectedStage[1].get("codename")
 
@@ -1250,7 +1244,7 @@ class StartGGDataProvider(TournamentDataProvider):
         for i, entrantChars in enumerate(selectedChars):
             for char in entrantChars:
                 entrants[i].append(
-                    {"mains": [TSHGameAssetManager.instance.GetCharacterFromStartGGId(char)[0], 0]}
+                    {"mains": [GameAssetManager.instance.GetCharacterFromStartGGId(char)[0], 0]}
                 )
 
         # If we don't have mains from the selection data, fallback to the characterIds attribute
@@ -1263,7 +1257,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         entrants[i] = [
                             {
                                 "mains": [
-                                    TSHGameAssetManager.instance.GetCharacterFromStartGGId(char)[0],
+                                    GameAssetManager.instance.GetCharacterFromStartGGId(char)[0],
                                     0,
                                 ]
                             }
@@ -1304,7 +1298,7 @@ class StartGGDataProvider(TournamentDataProvider):
     def ProcessFutureSet(self, _set, eventSlug):
         phase_name = deep_get(_set, "phaseGroup.phase.name")
         if deep_get(_set, "phaseGroup.phase.groupCount") > 1:
-            phase_name += " - " + TSHLocaleHelper.phaseNames.get("group").format(
+            phase_name += " - " + LocaleHelper.phaseNames.get("group").format(
                 deep_get(_set, "phaseGroup.displayIdentifier")
             )
 
@@ -1317,7 +1311,7 @@ class StartGGDataProvider(TournamentDataProvider):
             "match": StartGGDataProvider.TranslateRoundName(frt),
             "phase": phase_name,
             "best_of": total_games,
-            "best_of_text": TSHLocaleHelper.matchNames.get("best_of").format(total_games)
+            "best_of_text": LocaleHelper.matchNames.get("best_of").format(total_games)
             if total_games > 0
             else "",
             "state": _set.get("state"),
@@ -1351,7 +1345,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
                     countryCode = playerData.get("country_code", "")
                     stateCode = playerData.get("state_code", "")
-                    countryData = TSHCountryHelper.countries.get(countryCode)
+                    countryData = CountryHelper.countries.get(countryCode)
                     stateData = {}
                     if countryData:
                         states = countryData.get("states")
@@ -1365,7 +1359,7 @@ class StartGGDataProvider(TournamentDataProvider):
                             stateData.update({"asset": path})
 
                     playerData = {
-                        "country": TSHCountryHelper.GetBasicCountryInfo(countryCode),
+                        "country": CountryHelper.GetBasicCountryInfo(countryCode),
                         "state": stateData,
                         "name": playerName,
                         "team": team,
@@ -1512,7 +1506,7 @@ class StartGGDataProvider(TournamentDataProvider):
         worker = Worker(
             self.GetEntrantsWorker,
             **{
-                "gameId": TSHGameAssetManager.instance.selectedGame.get("smashgg_game_id"),
+                "gameId": GameAssetManager.instance.selectedGame.get("smashgg_game_id"),
                 "eventSlug": self.url.split("start.gg/")[1],
             },
         )
@@ -1586,12 +1580,12 @@ class StartGGDataProvider(TournamentDataProvider):
                     for idx, (char_id, _) in enumerate(
                         chars_by_entrant.get(entrant_id, Counter()).most_common(), 1
                     ):
-                        char = TSHGameAssetManager.instance.GetCharacterFromStartGGId(char_id)
+                        char = GameAssetManager.instance.GetCharacterFromStartGGId(char_id)
                         if not char:
                             continue
                         _key, char_info = char
                         codename = char_info.get("codename", _key)
-                        assets = TSHGameAssetManager.instance.GetCharacterAssets(codename, 0)
+                        assets = GameAssetManager.instance.GetCharacterAssets(codename, 0)
                         result[str(idx)] = {
                             "name": char_info.get("display_name", codename),
                             "codename": codename,
@@ -2033,12 +2027,12 @@ class StartGGDataProvider(TournamentDataProvider):
                 for idx, (char_id, _) in enumerate(
                     chars_by_entrant.get(eid, Counter()).most_common(), 1
                 ):
-                    char = TSHGameAssetManager.instance.GetCharacterFromStartGGId(char_id)
+                    char = GameAssetManager.instance.GetCharacterFromStartGGId(char_id)
                     if not char:
                         continue
                     _key, char_info = char
                     codename = char_info.get("codename", _key)
-                    assets = TSHGameAssetManager.instance.GetCharacterAssets(codename, 0)
+                    assets = GameAssetManager.instance.GetCharacterAssets(codename, 0)
                     result[str(idx)] = {
                         "name": char_info.get("display_name", codename),
                         "codename": codename,
@@ -2114,7 +2108,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         players.append(playerData)
 
             logger.info(f"Entrants processed: {len(players)}")
-            TSHPlayerDB.AddPlayers(players)
+            PlayerDB.AddPlayers(players)
 
             # The entrants query no longer carries each player's last set
             # (that sub-selection blew StartGG's complexity cap and forced
@@ -2135,7 +2129,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
     def _PrewarmMains(self, players, videogameId):
         try:
-            selected = TSHGameAssetManager.instance.selectedGame or {}
+            selected = GameAssetManager.instance.selectedGame or {}
             gameCodename = selected.get("codename")
             if not videogameId or not gameCodename:
                 return
@@ -2150,7 +2144,7 @@ class StartGGDataProvider(TournamentDataProvider):
                     if player.get("prefix")
                     else player.get("gamerTag")
                 )
-                dbMains = (TSHPlayerDB.database.get(tag) or {}).get("mains") or {}
+                dbMains = (PlayerDB.database.get(tag) or {}).get("mains") or {}
                 if isinstance(dbMains, str):
                     dbMains = orjson.loads(dbMains)
                 if dbMains.get(gameCodename):
@@ -2167,9 +2161,9 @@ class StartGGDataProvider(TournamentDataProvider):
                     time.sleep(self._prewarm_interval_secs)
 
                 # Stop if the user switched tournament or game meanwhile
-                if getattr(self.tshTdp, "provider", self) is not self:
+                if getattr(self.dataManager, "provider", self) is not self:
                     break
-                if (TSHGameAssetManager.instance.selectedGame or {}).get(
+                if (GameAssetManager.instance.selectedGame or {}).get(
                     "smashgg_game_id"
                 ) != videogameId:
                     break
@@ -2189,12 +2183,12 @@ class StartGGDataProvider(TournamentDataProvider):
                     )
                 # Save in batches so progress survives a closed app
                 if len(found) >= 25:
-                    TSHPlayerDB.AddPlayers(found)
+                    PlayerDB.AddPlayers(found)
                     found = []
                 time.sleep(self._prewarm_interval_secs)
 
             if found:
-                TSHPlayerDB.AddPlayers(found)
+                PlayerDB.AddPlayers(found)
             logger.info("start.gg mains pre-warm finished")
         except Exception:
             logger.error(traceback.format_exc())
@@ -2266,7 +2260,7 @@ class StartGGDataProvider(TournamentDataProvider):
             if user.get("location"):
                 # Country to country code
                 if user.get("location").get("country"):
-                    for country in TSHCountryHelper.countries.values():
+                    for country in CountryHelper.countries.values():
                         if user.get("location").get("country") == country.get("en_name"):
                             playerData["country_code"] = country.get("code")
                             break
@@ -2278,7 +2272,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData["state_code"] = user.get("location").get("state")
                 # State -- from city
                 elif user.get("location").get("city"):
-                    stateCode = TSHCountryHelper.FindState(
+                    stateCode = CountryHelper.FindState(
                         playerData.get("country_code", None),
                         user.get("location", {}).get("city", None),
                     )
@@ -2286,13 +2280,13 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData["state_code"] = stateCode
 
             if playerData.get("startggMains"):
-                if TSHGameAssetManager.instance.selectedGame:
-                    gameCodename = TSHGameAssetManager.instance.selectedGame.get("codename")
+                if GameAssetManager.instance.selectedGame:
+                    gameCodename = GameAssetManager.instance.selectedGame.get("codename")
 
                     mains = []
 
                     for sggmain in playerData.get("startggMains"):
-                        main = TSHGameAssetManager.instance.GetCharacterFromStartGGId(sggmain[0])
+                        main = GameAssetManager.instance.GetCharacterFromStartGGId(sggmain[0])
                         if main:
                             mains.append([main[0]])
 
@@ -2316,7 +2310,7 @@ class StartGGDataProvider(TournamentDataProvider):
         slug = playerData.get("startgg_user_slug")
         if not slug:
             return playerData
-        selected = TSHGameAssetManager.instance.selectedGame or {}
+        selected = GameAssetManager.instance.selectedGame or {}
         videogameId = selected.get("smashgg_game_id")
         if not videogameId:
             return playerData
@@ -2337,7 +2331,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
     def GetCachedMains(self, playerData):
         slug = (playerData or {}).get("startgg_user_slug")
-        videogameId = (TSHGameAssetManager.instance.selectedGame or {}).get("smashgg_game_id")
+        videogameId = (GameAssetManager.instance.selectedGame or {}).get("smashgg_game_id")
         if not slug or not videogameId:
             return None
         return self._mains_cache.get((slug, videogameId))
@@ -2347,14 +2341,14 @@ class StartGGDataProvider(TournamentDataProvider):
         key = (slug, videogameId)
 
         # Players that already have mains saved for this game don't need them
-        gameCodename = (TSHGameAssetManager.instance.selectedGame or {}).get("codename")
+        gameCodename = (GameAssetManager.instance.selectedGame or {}).get("codename")
         tag = (
             player.get("prefix") + " " + player.get("gamerTag")
             if player.get("prefix")
             else player.get("gamerTag")
         )
         try:
-            dbMains = (TSHPlayerDB.database.get(tag) or {}).get("mains") or {}
+            dbMains = (PlayerDB.database.get(tag) or {}).get("mains") or {}
             if isinstance(dbMains, str):
                 dbMains = orjson.loads(dbMains)
             if gameCodename and dbMains.get(gameCodename):
@@ -2419,9 +2413,9 @@ class StartGGDataProvider(TournamentDataProvider):
                 fetched = 0
                 try:
                     if found:
-                        TSHPlayerDB.AddPlayers(found)
+                        PlayerDB.AddPlayers(found)
                         found = []
-                    self.tshTdp.signals.player_mains_updated.emit()
+                    self.dataManager.signals.player_mains_updated.emit()
                 except Exception:
                     logger.error(traceback.format_exc())
 
@@ -2430,7 +2424,7 @@ class StartGGDataProvider(TournamentDataProvider):
         # user in isolation — see ProcessEntrantData/GetMatch which only
         # populate mains as a side effect of an event-scoped query).
         # Reuses ProcessEntrantData's selection-counting via a synthesized
-        # entrant, then runs the character-ID → TSH-codename mapping
+        # entrant, then runs the character-ID → HyperDrive-codename mapping
         # locally (the mapping is normally inside ProcessEntrantData's
         # `if user:` branch, which doesn't apply to a user-only synthesis).
         # Returns ({gameCodename: [[char_name], ...]}) or {}.
@@ -2458,13 +2452,13 @@ class StartGGDataProvider(TournamentDataProvider):
         startgg_mains = (
             StartGGDataProvider.ProcessEntrantData({"player": player}).get("startggMains") or []
         )
-        selected = TSHGameAssetManager.instance.selectedGame or {}
+        selected = GameAssetManager.instance.selectedGame or {}
         gameCodename = selected.get("codename")
         if not gameCodename:
             return {}
         mains = []
         for sggmain in startgg_mains:
-            mapped = TSHGameAssetManager.instance.GetCharacterFromStartGGId(sggmain[0])
+            mapped = GameAssetManager.instance.GetCharacterFromStartGGId(sggmain[0])
             if mapped:
                 mains.append([mapped[0]])
         return {gameCodename: mains} if mains else {}
@@ -2625,7 +2619,7 @@ class StartGGDataProvider(TournamentDataProvider):
         return url
 
 
-sggTdpDir = TSHResolve("src/TournamentDataProvider")
+sggTdpDir = ResolvePath("src/TournamentDataProvider")
 
 
 def readQueryFile(tdpdir, filename):

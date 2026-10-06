@@ -1,5 +1,5 @@
 """Downloads the game asset packs the preview sample data uses into
-user_data/games, the way TSH's asset downloader does.
+user_data/games, the way HyperDrive's asset downloader does.
 
 Usage: python scripts/previews/download_assets.py
 """

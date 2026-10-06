@@ -92,8 +92,8 @@ body {
   background: var(--strike-striked-color, transparent);
 }
 
-body.tsh-strike-hide-names .stage-name,
-body.tsh-strike-hide-striker .banned-by-name {
+body.hd-strike-hide-names .stage-name,
+body.hd-strike-hide-striker .banned-by-name {
   display: none;
 }
 

@@ -494,12 +494,12 @@ body {
   left: 0%;
 }
 
-.p1.character .tsh_character {
+.p1.character .hd_character {
   width: 100%;
   background: var(--p1-score-bg-color);
 }
 
-.tsh_character {
+.hd_character {
   border-radius: var(--border-radius);
   height: 100%;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.42))
@@ -521,7 +521,7 @@ body {
   z-index: -1;
 }
 
-.p2.character > .tsh_character {
+.p2.character > .hd_character {
   width: 100%;
   transform: scaleX(-1);
   background: var(--p2-score-bg-color);

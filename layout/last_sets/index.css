@@ -189,7 +189,7 @@ body {
   right: 0;
 }
 
-.character_icon .tsh_character > div:first-child {
+.character_icon .hd_character > div:first-child {
   mask-image: linear-gradient(to left, black 20%, transparent 100%);
   opacity: 0.8;
 }

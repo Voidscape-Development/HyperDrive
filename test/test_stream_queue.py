@@ -10,7 +10,7 @@ package = types.ModuleType("src")
 package.__path__ = [os.path.abspath("src")]
 sys.modules["src"] = package
 
-from src.TSHStreamQueue import *
+from src.StreamQueue import *
 
 
 def Set(id, state=1):

@@ -337,15 +337,15 @@ body {
   border-radius: var(--border-radius);
 }
 
-.tsh_character {
+.hd_character {
   overflow: hidden;
 }
 
-.tsh_character > div {
+.hd_character > div {
   opacity: 0.4;
 }
 
-.tsh_character::after {
+.hd_character::after {
   content: "";
   position: absolute;
   width: 100%;

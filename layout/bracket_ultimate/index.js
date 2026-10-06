@@ -33,7 +33,7 @@ LoadEverything().then(() => {
 
   var allWinners = false;
 
-  // TSHBracket.Signature() of what's drawn, to know when to redraw it
+  // HDBracket.Signature() of what's drawn, to know when to redraw it
   var lastSignature = null;
 
   function AnimateLine(element) {
@@ -135,14 +135,14 @@ LoadEverything().then(() => {
       }
 
       // Round robin and swiss: their rounds and standings instead
-      let pool = TSHBracket.IsPool(data.bracket.bracket);
+      let pool = HDBracket.IsPool(data.bracket.bracket);
       $("body").toggleClass("pool_view", pool);
       $(".standings_container").toggleClass("hidden", !pool);
       if (pool) {
         lastSignature = null;
-        await TSHBracket.RenderPool($(".pool_container"), data);
+        await HDBracket.RenderPool($(".pool_container"), data);
         $(".standings_container .standings").html(
-          await TSHBracket.StandingsHtml(data)
+          await HDBracket.StandingsHtml(data)
         );
         SetInnerHtml($(".header .title"), data.tournamentInfo.tournamentName);
         SetInnerHtml(
@@ -157,14 +157,14 @@ LoadEverything().then(() => {
 
       // The bracket as rounds (1, 2... winners, then the grand final and its
       // reset; -1, -2... losers), with byes filled in
-      bracket = TSHBracket.ToRounds(data.bracket.bracket, data.bracket.players.slot);
+      bracket = HDBracket.ToRounds(data.bracket.bracket, data.bracket.players.slot);
       players = data.bracket.players.slot;
 
       let progressionsOut = data.bracket.bracket.progressionsOut;
       // Players coming from another phase aren't exported any more
       let progressionsIn = 0;
       let winnersOnlyProgressions = undefined;
-      let signature = TSHBracket.Signature(data);
+      let signature = HDBracket.Signature(data);
 
       if (winnersOnlyProgressions === undefined) winnersOnlyProgressions = true;
 

@@ -449,7 +449,7 @@ body {
   flex-direction: column;
 }
 
-.character .tsh_character {
+.character .hd_character {
   -webkit-mask-image: -webkit-linear-gradient(
     left,
     #ffffff 0%,
@@ -458,7 +458,7 @@ body {
   );
 }
 
-.p2.character .tsh_character {
+.p2.character .hd_character {
   -webkit-mask-image: -webkit-linear-gradient(
     right,
     #ffffff 0%,
@@ -467,7 +467,7 @@ body {
   );
 }
 
-.p2.character .tsh_character div {
+.p2.character .hd_character div {
   transform: scaleX(-1);
 }
 

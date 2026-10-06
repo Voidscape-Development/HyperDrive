@@ -7,7 +7,6 @@ license = "MIT"
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "arabic-buckwalter-transliteration",
-    "atproto",
     "chardet",
     "charset-normalizer==3.4.1",
     "cutlet",
@@ -21,7 +20,6 @@ dependencies = [
     "parrygg>=0.1.6",
     "pillow",
     "py7zr",
-    "pycountry",
     "pynput==1.7.7",
     "pypinyin",
     "pyqt6",

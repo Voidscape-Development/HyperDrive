@@ -135,7 +135,7 @@ LoadEverything().then(() => {
             SetInnerHtml($(`.p${t + 1}.twitter`), player.pronoun.toUpperCase());
           }
         }
-        if(team.color && !tsh_settings["forceDefaultScoreColors"]) {
+        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
           document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
         }
       }

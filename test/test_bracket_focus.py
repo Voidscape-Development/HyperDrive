@@ -15,7 +15,7 @@ helpers = types.ModuleType("src.Helpers")
 helpers.__path__ = [os.path.abspath("src/Helpers")]
 sys.modules["src.Helpers"] = helpers
 
-from src.Helpers.TSHBracketFocusHelper import *
+from src.Helpers.BracketFocusHelper import *
 
 with open("scripts/previews/sample_state.json", encoding="utf-8") as f:
     SAMPLE = json.load(f)

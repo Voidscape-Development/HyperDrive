@@ -30,7 +30,7 @@ function SSD_GetTeams(score) {
     return {
       name: name || "P" + (t + 1),
       color:
-        team.color && !tsh_settings["forceDefaultScoreColors"]
+        team.color && !hd_settings["forceDefaultScoreColors"]
           ? team.color
           : `var(--p${t + 1}-score-bg-color)`,
     };

@@ -8,7 +8,7 @@ from qtpy.QtCore import QObject
 
 
 class TournamentDataProvider(QObject):
-    def __init__(self, url, threadpool, tshTdp) -> None:
+    def __init__(self, url, threadpool, dataManager) -> None:
         super().__init__(None)
 
         self.name = ""
@@ -17,7 +17,7 @@ class TournamentDataProvider(QObject):
         self.tournamentData = {}
         self.threadpool = threadpool
         self.videogame = None
-        self.tshTdp = tshTdp
+        self.dataManager = dataManager
 
     def GetIconURL(self):
         pass
@@ -95,7 +95,7 @@ class TournamentDataProvider(QObject):
 
     def EnrichPlayerData(self, playerData, blocking=True):
         # Hook for providers to lazily fill in fields when a player is
-        # loaded into a slot (called from TSHScoreboardPlayerWidget.SetData
+        # loaded into a slot (called from ScoreboardPlayerWidget.SetData
         # post-DB-merge). Default no-op; ParryGG overrides to fetch mains
         # from a linked start.gg account. With blocking=False, providers
         # must not do network requests here (it runs on the UI thread);

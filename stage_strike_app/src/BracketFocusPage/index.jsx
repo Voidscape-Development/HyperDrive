@@ -54,7 +54,7 @@ export default function BracketFocusPage() {
     const pickChannelRef = useRef(null);
 
     useEffect(() => {
-        document.title = `TSH ${i18n.t("bracket_focus")}`;
+        document.title = `HyperDrive ${i18n.t("bracket_focus")}`;
         const listener = () => forceUpdate((n) => n + 1);
         i18n.on("languageChanged", listener);
         return () => i18n.off("languageChanged", listener);

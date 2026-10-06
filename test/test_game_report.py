@@ -9,7 +9,7 @@ package = types.ModuleType("src")
 package.__path__ = [os.path.abspath("src")]
 sys.modules["src"] = package
 
-from src.TSHGameReport import *
+from src.GameReport import *
 
 
 def TestScoreSync():

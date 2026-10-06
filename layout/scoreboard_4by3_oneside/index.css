@@ -220,7 +220,7 @@ body {
   width: 100%;
 }
 
-.tsh_character > div:first-child {
+.hd_character > div:first-child {
   mask-image: linear-gradient(to left, black 40%, transparent 100%);
   opacity: 0.5;
 }
@@ -379,7 +379,7 @@ body {
   flex-shrink: 0;
 }
 
-.tsh_character {
+.hd_character {
   overflow: visible;
   position: relative;
 }

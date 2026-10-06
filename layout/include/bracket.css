@@ -140,9 +140,9 @@ body.standings_only .standings_container {
   border-radius: 2px;
 }
 
-body.tsh-standings-hide-game-diff .standings_table .st_game_diff,
-body.tsh-standings-hide-points .standings_table .st_points,
-body:not(.tsh-standings-show-buchholz) .standings_table .st_buchholz {
+body.hd-standings-hide-game-diff .standings_table .st_game_diff,
+body.hd-standings-hide-points .standings_table .st_points,
+body:not(.hd-standings-show-buchholz) .standings_table .st_buchholz {
   display: none;
 }
 
@@ -151,25 +151,25 @@ body:not(.tsh-standings-show-buchholz) .standings_table .st_buchholz {
   display: none;
 }
 
-body.tsh-bracket-show-identifier .set_identifier {
+body.hd-bracket-show-identifier .set_identifier {
   display: flex;
 }
 
-body.tsh-bracket-hide-avatar :is(.avatar, .online_avatar, .icon_image),
-body.tsh-bracket-hide-character .character_container,
-body.tsh-bracket-hide-country-flag .flagcountry,
-body.tsh-bracket-hide-state-flag .flagstate,
-body.tsh-bracket-hide-seed .seed,
-body.tsh-bracket-hide-round-names .round_name,
-body.tsh-bracket-hide-pending .pending_source {
+body.hd-bracket-hide-avatar :is(.avatar, .online_avatar, .icon_image),
+body.hd-bracket-hide-character .character_container,
+body.hd-bracket-hide-country-flag .flagcountry,
+body.hd-bracket-hide-state-flag .flagstate,
+body.hd-bracket-hide-seed .seed,
+body.hd-bracket-hide-round-names .round_name,
+body.hd-bracket-hide-pending .pending_source {
   display: none !important;
 }
 
-body:not(.tsh-bracket-no-dim-losers) .player.lost {
+body:not(.hd-bracket-no-dim-losers) .player.lost {
   filter: brightness(0.6);
 }
 
-/* Pools drawn by TSHBracket.RenderPool() */
+/* Pools drawn by HDBracket.RenderPool() */
 .pool_round {
   position: relative;
   display: flex;

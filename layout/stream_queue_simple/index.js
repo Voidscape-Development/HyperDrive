@@ -42,7 +42,7 @@ LoadEverything().then(() => {
         }
     }
 
-    assignDefault(config, tsh_settings);
+    assignDefault(config, hd_settings);
 
     if (!config.display){
         config.display = {};
@@ -281,12 +281,12 @@ LoadEverything().then(() => {
                 display_stream(data, oldData, config.stream)
             }
         } else {
-            let tsh_station = data.score[window.scoreboardNumber].station;
-            if (tsh_station){
+            let hd_station = data.score[window.scoreboardNumber].station;
+            if (hd_station){
                 if (data.score[window.scoreboardNumber].auto_update == "station"){
                     display_station(data, oldData);
                 } else {
-                    display_stream(data, oldData, tsh_station)
+                    display_stream(data, oldData, hd_station)
                 }
             } else if (config.default_stream) {
                 display_stream(data, oldData, config.default_stream);
@@ -300,13 +300,13 @@ LoadEverything().then(() => {
             !oldData.streamQueue ||
             JSON.stringify(data.streamQueue) !=
             JSON.stringify(oldData.score.streamQueue) || 
-            ( !tsh_settings.stream && oldData.score[window.scoreboardNumber].station != data.score[window.scoreboardNumber].station)
+            ( !hd_settings.stream && oldData.score[window.scoreboardNumber].station != data.score[window.scoreboardNumber].station)
         ) {
 
 
             
             if (!stream){
-                $(".stream_queue_content").html('<div class = "message">No stream (twitch username) selected. Enter one in TSH or set the "stream" or "default_stream" value in this layout\'s settings.json</div>');
+                $(".stream_queue_content").html('<div class = "message">No stream (twitch username) selected. Enter one in HyperDrive or set the "stream" or "default_stream" value in this layout\'s settings.json</div>');
                 return;
             }
         }

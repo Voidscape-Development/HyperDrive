@@ -2,8 +2,8 @@ import textwrap
 
 from qtpy.QtWidgets import *
 
+from ..ColorButton import ColorButton
 from ..SettingsManager import SettingsManager
-from ..TSHColorButton import TSHColorButton
 
 
 class SettingsWidget(QWidget):
@@ -111,7 +111,7 @@ class SettingsWidget(QWidget):
                 ]
             )
         elif type == "color":
-            settingWidget = TSHColorButton(
+            settingWidget = ColorButton(
                 color=SettingsManager.Get(self.settingsBase + "." + setting, defaultValue),
                 disable_right_click=True,
             )

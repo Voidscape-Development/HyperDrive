@@ -83,8 +83,8 @@ function GetRecommendedZoom(asset, width, height) {
   return 1;
 }
 
-document.addEventListener("tsh_update", (event) => {
-  $(".tsh_fade").each((i, e) => {
+document.addEventListener("hd_update", (event) => {
+  $(".hd_fade").each((i, e) => {
     let path = $(e).attr("data-source");
     let data = _.get(event.data, path + ".1.assets");
 
@@ -109,17 +109,17 @@ document.addEventListener("tsh_update", (event) => {
 async function CharacterDisplay(element, settings, event) {
   $(element).data(settings);
 
-  if (!$(element).hasClass("tsh_character_container")) {
-    $(element).addClass("tsh_character_container");
+  if (!$(element).hasClass("hd_character_container")) {
+    $(element).addClass("hd_character_container");
     if ($(element).get(0)) {
       await updateCharacterContainer($(element).get(0), event);
     }
   }
 }
 
-// When a tsh_update event is fired, we update the containers with tsh_character_container class
-document.addEventListener("tsh_update", async (event) => {
-  $(".tsh_character_container").each(async (i, e) => {
+// When a hd_update event is fired, we update the containers with hd_character_container class
+document.addEventListener("hd_update", async (event) => {
+  $(".hd_character_container").each(async (i, e) => {
     updateCharacterContainer(e, event);
   });
 });
@@ -129,8 +129,8 @@ document.addEventListener("tsh_update", async (event) => {
 function ResolveAssetSetting(key) {
   let current_game = _.get(data, "game.codename", "default");
 
-  let global_default_settings = _.get(tsh_settings, key + ".default", {});
-  let global_settings = _.get(tsh_settings, key + "." + current_game, {});
+  let global_default_settings = _.get(hd_settings, key + ".default", {});
+  let global_settings = _.get(hd_settings, key + "." + current_game, {});
 
   let settings = _.defaultsDeep(global_settings, global_default_settings);
 
@@ -236,7 +236,7 @@ async function updateCharacterContainer(e, event) {
 
   let changed = JSON.stringify(characters) != JSON.stringify(oldCharacters);
 
-  let firstRun = !$(e).hasClass("tsh_character_container_active");
+  let firstRun = !$(e).hasClass("hd_character_container_active");
 
   if (firstRun) {
     anim_out.duration = 0;
@@ -244,7 +244,7 @@ async function updateCharacterContainer(e, event) {
 
   if (changed || firstRun) {
     // Class used to detct if it's the first run
-    $(e).addClass("tsh_character_container_active");
+    $(e).addClass("hd_character_container_active");
 
     const callback = async () => {
       let loads = [];
@@ -262,8 +262,8 @@ async function updateCharacterContainer(e, event) {
             let character = player[j];
             if (!_.get(character, "codename")) continue;
             let _div = $(
-              // "<div class='tsh_character' style='opacity: 0;'><div class='tsh_character_img'></div><div class='tsh_variant_icon'></div></div>"
-              "<div class='tsh_character' style='opacity: 0;'><div class='tsh_character_img'></div></div>"
+              // "<div class='hd_character' style='opacity: 0;'><div class='hd_character_img'></div><div class='hd_variant_icon'></div></div>"
+              "<div class='hd_character' style='opacity: 0;'><div class='hd_character_img'></div></div>"
             );
             e.appendChild($(_div).get(0));
 
@@ -299,7 +299,7 @@ async function updateCharacterContainer(e, event) {
               );
             } else {
               loads.push(
-                CenterImage($(_div).children('.tsh_character_img'), asset, settingsClone)
+                CenterImage($(_div).children('.hd_character_img'), asset, settingsClone)
               );
             }
 
@@ -311,9 +311,9 @@ async function updateCharacterContainer(e, event) {
       await Promise.allSettled(loads);
 
       // Apply variant icons and character flipping after images are loaded
-      $(e).find(".tsh_character").each((i, charEl) => {
+      $(e).find(".hd_character").each((i, charEl) => {
         const variantPath = $(charEl).data('variant-icon-path');
-        const $variantIcon = $(charEl).find('.tsh_variant_icon');
+        const $variantIcon = $(charEl).find('.hd_variant_icon');
         $variantIcon.empty();
         if (variantPath) {
           const src = variantPath.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
@@ -324,35 +324,35 @@ async function updateCharacterContainer(e, event) {
 
         // Apply character flip if specified
         if (settings.flip_x) {
-          $(charEl).find('.tsh_character_img').css('transform', 'scaleX(-1)');
+          $(charEl).find('.hd_character_img').css('transform', 'scaleX(-1)');
         }
       });
 
-      if($(e) && $(e).children(".tsh_character").length > 0){
+      if($(e) && $(e).children(".hd_character").length > 0){
         anim_out.onComplete = null;
         if (document.hidden) {
-          gsap.killTweensOf($(e).children(".tsh_character"));
-          $(e).children(".tsh_character").css({
+          gsap.killTweensOf($(e).children(".hd_character"));
+          $(e).children(".hd_character").css({
             opacity: 1,
             visibility: "inherit",
           });
           return;
         }
-        gsap.fromTo($(e).children(".tsh_character"), anim_out, anim_in);
+        gsap.fromTo($(e).children(".hd_character"), anim_out, anim_in);
       }
     };
 
     if (document.hidden) {
-      gsap.killTweensOf($(e).children(".tsh_character"));
+      gsap.killTweensOf($(e).children(".hd_character"));
       await callback();
     } else if (firstRun) {
       // No need to fade out
       await callback();
     } else {
       // Fade out, then change data and fade in
-      if($(e) && $(e).children(".tsh_character").length > 0){
+      if($(e) && $(e).children(".hd_character").length > 0){
         anim_out.onComplete = ()=>callback();
-        await gsap.fromTo($(e).children(".tsh_character"), anim_in, anim_out)
+        await gsap.fromTo($(e).children(".hd_character"), anim_in, anim_out)
       } else {
         await callback();
       }
@@ -360,8 +360,8 @@ async function updateCharacterContainer(e, event) {
   }
 }
 
-document.addEventListener("tsh_update", (event) => {
-  $(".tsh_text").each((i, e) => {
+document.addEventListener("hd_update", (event) => {
+  $(".hd_text").each((i, e) => {
     let path = $(e).attr("data-source");
     let data = _.get(event.data, path);
 
@@ -415,7 +415,7 @@ const setContrast = (rgb) =>
     ? [0, 0, 0]
     : [255, 255, 255];
 
-/* $(`.p${t + 1}.character .tsh-center-image`).each((i, e) => {
+/* $(`.p${t + 1}.character .hd-center-image`).each((i, e) => {
   let img = new Image();
 
   img.src = $(e)

@@ -1694,7 +1694,7 @@
                   "variant": {}
                 }
               },
-              "mergedName": "TSH | Azure",
+              "mergedName": "HD | Azure",
               "mergedOnlyName": "Azure",
               "name": "Azure",
               "online_avatar": null,
@@ -1702,7 +1702,7 @@
               "real_name": "Ana Silva",
               "romanized_data": {
                 "name": "Azure",
-                "team": "TSH"
+                "team": "HD"
               },
               "seed": 1,
               "state": {
@@ -1713,8 +1713,8 @@
                 "name": "São Paulo",
                 "original_code": "SP"
               },
-              "team": "TSH",
-              "twitter": "azure_tsh"
+              "team": "HD",
+              "twitter": "azure_hd"
             }
           },
           "score": 0,
@@ -3181,7 +3181,7 @@
           "variant": {}
         }
       },
-      "mergedName": "TSH | Caster One",
+      "mergedName": "HD | Caster One",
       "mergedOnlyName": "Caster One",
       "name": "Caster One",
       "online_avatar": null,
@@ -3189,11 +3189,11 @@
       "real_name": "Alex Doe",
       "romanized_data": {
         "name": "Caster One",
-        "team": "TSH"
+        "team": "HD"
       },
       "seed": 0,
       "state": {},
-      "team": "TSH",
+      "team": "HD",
       "twitter": "casterone"
     },
     "2": {
@@ -5782,24 +5782,6 @@
       }
     }
   },
-  "notes": {
-    "notes_widget_1": {
-      "contents": "",
-      "title": ""
-    },
-    "notes_widget_2": {
-      "contents": "",
-      "title": ""
-    },
-    "notes_widget_3": {
-      "contents": "",
-      "title": ""
-    },
-    "notes_widget_4": {
-      "contents": "",
-      "title": ""
-    }
-  },
   "player_list": {
     "slot": {
       "1": {
@@ -5872,7 +5854,7 @@
                 "variant": {}
               }
             },
-            "mergedName": "TSH | Azure",
+            "mergedName": "HD | Azure",
             "mergedOnlyName": "Azure",
             "name": "Azure",
             "online_avatar": null,
@@ -5880,7 +5862,7 @@
             "real_name": "Ana Silva",
             "romanized_data": {
               "name": "Azure",
-              "team": "TSH"
+              "team": "HD"
             },
             "seed": 1,
             "state": {
@@ -5891,8 +5873,8 @@
               "name": "São Paulo",
               "original_code": "SP"
             },
-            "team": "TSH",
-            "twitter": "azure_tsh"
+            "team": "HD",
+            "twitter": "azure_hd"
           }
         },
         "score": 0,
@@ -6651,7 +6633,7 @@
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 1,
-            "tournament_name": "TSH Weekly #120",
+            "tournament_name": "HyperDrive Weekly #120",
             "tournament_picture": null
           },
           "2": {
@@ -6671,7 +6653,7 @@
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 3,
-            "tournament_name": "TSH Weekly #118",
+            "tournament_name": "HyperDrive Weekly #118",
             "tournament_picture": null
           }
         },
@@ -6683,7 +6665,7 @@
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 1,
-            "tournament_name": "TSH Weekly #120",
+            "tournament_name": "HyperDrive Weekly #120",
             "tournament_picture": null
           },
           "2": {
@@ -6703,7 +6685,7 @@
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 3,
-            "tournament_name": "TSH Weekly #118",
+            "tournament_name": "HyperDrive Weekly #118",
             "tournament_picture": null
           }
         }
@@ -6722,7 +6704,7 @@
             "player_name": "Azure",
             "player_score": 3,
             "player_seed": 1,
-            "player_team": "TSH",
+            "player_team": "HD",
             "round_name": "Winners Quarter-Final"
           },
           "2": {
@@ -6737,7 +6719,7 @@
             "player_name": "Azure",
             "player_score": 3,
             "player_seed": 1,
-            "player_team": "TSH",
+            "player_team": "HD",
             "round_name": "Winners Semi-Final"
           },
           "3": {
@@ -6752,7 +6734,7 @@
             "player_name": "Azure",
             "player_score": 2,
             "player_seed": 1,
-            "player_team": "TSH",
+            "player_team": "HD",
             "round_name": "Winners Final"
           }
         },
@@ -6822,7 +6804,7 @@
               2
             ],
             "timestamp": 1788000000,
-            "tournament": "TSH Weekly #120",
+            "tournament": "HyperDrive Weekly #120",
             "winner": 0
           },
           {
@@ -6837,7 +6819,7 @@
               3
             ],
             "timestamp": 1786800000,
-            "tournament": "TSH Weekly #118",
+            "tournament": "HyperDrive Weekly #118",
             "winner": 1
           },
           {
@@ -6923,7 +6905,7 @@
           "color": "#fe3636",
           "losers": false,
           "losersIndicator": "",
-          "mergedTeamName": "TSH | Azure",
+          "mergedTeamName": "HD | Azure",
           "player": {
             "1": {
               "avatar": null,
@@ -6991,7 +6973,7 @@
                   "variant": {}
                 }
               },
-              "mergedName": "TSH | Azure",
+              "mergedName": "HD | Azure",
               "mergedOnlyName": "Azure",
               "name": "Azure",
               "online_avatar": null,
@@ -6999,7 +6981,7 @@
               "real_name": "Ana Silva",
               "romanized_data": {
                 "name": "Azure",
-                "team": "TSH"
+                "team": "HD"
               },
               "seed": 1,
               "state": {
@@ -7010,8 +6992,8 @@
                 "name": "São Paulo",
                 "original_code": "SP"
               },
-              "team": "TSH",
-              "twitter": "azure_tsh"
+              "team": "HD",
+              "twitter": "azure_hd"
             }
           },
           "score": 2,
@@ -7209,7 +7191,7 @@
     "address": "1 Example Street, Springfield",
     "eventName": "Ultimate Singles",
     "numEntrants": 128,
-    "shortLink": "tsh-invitational-42",
-    "tournamentName": "TSH Invitational #42"
+    "shortLink": "hd-invitational-42",
+    "tournamentName": "HyperDrive Invitational #42"
   }
 }

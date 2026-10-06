@@ -293,7 +293,7 @@ body {
   width: 635px;
 }
 
-.tsh_character {
+.hd_character {
   overflow: hidden;
 }
 
@@ -323,8 +323,8 @@ body {
   border-radius: var(--parry-container-radius);
 }
 
-/* Layout theme colors (TSH > Layout themes, "Use this theme's colors in layouts") */
-body.tsh-theme-colors {
+/* Layout theme colors (HyperDrive > Layout themes, "Use this theme's colors in layouts") */
+body.hd-theme-colors {
   --parry-accent: var(--accent-color);
   --parry-accent-bg: color-mix(in srgb, var(--accent-color) 40%, transparent);
   --parry-container-bg: var(--bg-color);

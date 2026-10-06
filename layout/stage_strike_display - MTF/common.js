@@ -30,7 +30,7 @@ function SSD_GetTeams(score) {
     return {
       name: name || "P" + (t + 1),
       color:
-        team.color && !tsh_settings["forceDefaultScoreColors"]
+        team.color && !hd_settings["forceDefaultScoreColors"]
           ? team.color
           : `var(--p${t + 1}-score-bg-color)`,
     };
@@ -142,7 +142,7 @@ function SSD_ApplyMtfColors(data) {
   const score = data.score[window.scoreboardNumber];
   [1, 2].forEach((t) => {
     const team = score.team[String(t)];
-    if (team && team.color && !tsh_settings["forceDefaultScoreColors"]) {
+    if (team && team.color && !hd_settings["forceDefaultScoreColors"]) {
       document.querySelector(":root").style.setProperty(`--p${t}-score-bg-color`, team.color);
     }
   });

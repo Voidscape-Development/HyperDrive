@@ -125,7 +125,7 @@ LoadEverything().then(() => {
           if (set.nextWin && inArea.has(set.nextWin.set)) {
             const target = sets[set.nextWin.set];
             const to = SetElement(set.nextWin.set);
-            if (!to.offset() || TSHBracket.SetState(target, true) == "hidden") return;
+            if (!to.offset() || HDBracket.SetState(target, true) == "hidden") return;
             const a = point(from, "right");
             const b = point(to, "left");
             const mid = a[0] + (b[0] - a[0]) / 2;
@@ -165,7 +165,7 @@ LoadEverything().then(() => {
   function Build(data) {
     const bracket = data.bracket.bracket;
     const sets = bracket.sets || {};
-    const pool = TSHBracket.IsPool(bracket);
+    const pool = HDBracket.IsPool(bracket);
     setIndex = {};
 
     $("body").toggleClass("pool_view", pool);
@@ -175,8 +175,8 @@ LoadEverything().then(() => {
     let areas = [];
 
     if (pool) {
-      const byes = TSHBracket.ByesText(bracket);
-      const columns = TSHBracket.Columns(bracket, "pool").map((c) => ({
+      const byes = HDBracket.ByesText(bracket);
+      const columns = HDBracket.Columns(bracket, "pool").map((c) => ({
         ...c,
         side: "pool",
         byes: byes[c.key] || "",
@@ -185,7 +185,7 @@ LoadEverything().then(() => {
       Resize([columns], [$(".pool_container")]);
       areas = [columns];
     } else {
-      let { upper, lower } = TSHBracket.Areas(bracket);
+      let { upper, lower } = HDBracket.Areas(bracket);
       if (window.WINNERS_ONLY) lower = [];
       if (window.LOSERS_ONLY) upper = [];
       $("body").toggleClass("no_lower", lower.length == 0);
@@ -225,7 +225,7 @@ LoadEverything().then(() => {
   function ShowSet(id, set) {
     const anim = animations[id];
     if (!anim) return null;
-    const state = TSHBracket.SetState(set, window.ALWAYS_EXPAND || TSHBracket.IsPool(data.bracket.bracket));
+    const state = HDBracket.SetState(set, window.ALWAYS_EXPAND || HDBracket.IsPool(data.bracket.bracket));
     return anim.tweenTo(state);
   }
 
@@ -245,7 +245,7 @@ LoadEverything().then(() => {
       return;
     }
 
-    SetInnerHtml($(element).find(".name"), await TSHBracket.TeamName(team));
+    SetInnerHtml($(element).find(".name"), await HDBracket.TeamName(team));
     SetInnerHtml($(element).find(".seed"), playerExport.seed ? String(playerExport.seed) : "");
 
     const singles = Object.values(team.player || {}).length == 1;
@@ -294,7 +294,7 @@ LoadEverything().then(() => {
         .find((c) => c.key == key);
       SetInnerHtml($(this).find(".round_name"), column ? column.name : "");
     });
-    const byes = TSHBracket.ByesText(bracket);
+    const byes = HDBracket.ByesText(bracket);
     $(".pool_container .round").each(function () {
       const text = byes[$(this).attr("data-round")];
       SetInnerHtml($(this).find(".byes"), text ? `Bye: ${text}` : "");
@@ -306,10 +306,10 @@ LoadEverything().then(() => {
 
       SetInnerHtml(element.find(".set_identifier"), set.identifier || "");
 
-      const winner = TSHBracket.Winner(set);
+      const winner = HDBracket.Winner(set);
       for (const slot of [0, 1]) {
         const playerElement = element.find(`.slot_p_${slot}`);
-        SetInnerHtml(playerElement.find(".score"), TSHBracket.ScoreText(set, slot));
+        SetInnerHtml(playerElement.find(".score"), HDBracket.ScoreText(set, slot));
         playerElement.toggleClass("won", winner === slot);
         playerElement.toggleClass("lost", winner === 1 - slot);
         playerElement.toggleClass("draw", winner === "draw");
@@ -321,10 +321,10 @@ LoadEverything().then(() => {
   async function UpdateStandings(data) {
     if (!$(".standings_container").get(0)) return;
     const bracket = data.bracket.bracket;
-    const show = window.STANDINGS_ONLY || TSHBracket.IsPool(bracket);
+    const show = window.STANDINGS_ONLY || HDBracket.IsPool(bracket);
     $(".standings_container").toggleClass("hidden", !show);
     if (!show) return;
-    const html = await TSHBracket.StandingsHtml(data);
+    const html = await HDBracket.StandingsHtml(data);
     if ($(".standings_container").data("html") != html) {
       $(".standings_container").data("html", html);
       $(".standings_container .standings").html(html);
@@ -352,7 +352,7 @@ LoadEverything().then(() => {
     }
 
     if (!window.STANDINGS_ONLY) {
-      const signature = TSHBracket.Signature(data);
+      const signature = HDBracket.Signature(data);
       if (signature != lastSignature) {
         lastSignature = signature;
         Build(data);

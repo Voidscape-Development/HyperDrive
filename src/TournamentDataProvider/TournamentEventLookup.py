@@ -9,7 +9,7 @@ import orjson
 import requests
 from loguru import logger
 
-from ..Helpers.TSHDirHelper import TSHResolve
+from ..Helpers.DirHelper import ResolvePath
 
 STARTGG_GQL_URL = "https://www.start.gg/api/-/gql"
 STARTGG_URL = "https://www.start.gg/"
@@ -75,7 +75,7 @@ def ParseTournamentInput(text):
       {"kind": "event", "url": ...} - an event that can be loaded directly
       {"kind": "tournament", "provider": "startgg"|"parrygg"|None,
        "slug": ..., "short": bool} - pick one of its events first
-      None - not something TSH can load
+      None - not something HyperDrive can load
     A None provider is a bare slug, which could be on either site.
     """
     text = (text or "").strip()
@@ -136,7 +136,7 @@ def ParseTournamentLink(text):
     An event link has its end cut off to get its tournament, and is kept as
     "eventUrl" so the event picker can select that event. Used by the set
     tournament dialog and the select event button, which always pick from
-    the tournament's events. Returns None for text TSH can't load.
+    the tournament's events. Returns None for text HyperDrive can't load.
     """
     parsed = ParseTournamentInput(text)
     if parsed is None or parsed["kind"] == "tournament":
@@ -201,7 +201,7 @@ def FetchTournamentEvents(parsed, parryApiKey=None):
 
 
 def _ReadQuery(name):
-    with open(TSHResolve(f"src/TournamentDataProvider/StartGG{name}Query.txt")) as f:
+    with open(ResolvePath(f"src/TournamentDataProvider/StartGG{name}Query.txt")) as f:
         return f.read()
 
 

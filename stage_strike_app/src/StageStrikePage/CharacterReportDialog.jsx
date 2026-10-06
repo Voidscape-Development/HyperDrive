@@ -24,7 +24,7 @@ import {CharacterIcon, CharacterName, FindCharacter} from "./characterAssets";
 
 const slotKey = (team, player) => `${team.team}-${player.player}`;
 
-/** Whether any player has fewer characters set than TSH's character count */
+/** Whether any player has fewer characters set than HyperDrive's character count */
 export function MissingCharacters(teams, charactersPerPlayer) {
   const count = charactersPerPlayer ?? 1;
   return (teams ?? []).some((team) => (team?.players ?? []).some((player) => {
@@ -157,7 +157,7 @@ export function CharacterReportDialog({
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
 
-  // Follows TSH until something is changed here
+  // Follows HyperDrive until something is changed here
   useEffect(() => {
     if (open && !edited) {
       setSelections(initialSelections(teams, characters, count));
@@ -318,7 +318,7 @@ export function CharacterReportDialog({
       disabled={!complete || sending || !game}
       onClick={() => send(false)}
     >
-      {i18n.t("send_to_tsh")}
+      {i18n.t("send_to_hd")}
     </Button>
   </>;
 

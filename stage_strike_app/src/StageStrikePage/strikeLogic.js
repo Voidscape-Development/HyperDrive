@@ -1,5 +1,5 @@
-// The stage strike rules, mirroring TSHStageStrikeLogic.py, to show what
-// TSH will accept before asking it.
+// The stage strike rules, mirroring StageStrikeLogic.py, to show what
+// HyperDrive will accept before asking it.
 
 export const EMPTY_STATE = {
   currGame: 0,
