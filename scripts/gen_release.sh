@@ -42,7 +42,6 @@ cp -R stage_strike_app/build \
 
 rm -rf \
 	HyperDrive/assets/versions.json \
-	HyperDrive/assets/contributors.txt \
 	HyperDrive/layout/game_images \
 	HyperDrive/layout/game_screenshots
 

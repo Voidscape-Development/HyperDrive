@@ -16,7 +16,7 @@ try {
     Copy-Item -Recurse -Force "assets" "HyperDrive\assets"
 
     # Already embedded inside release exe
-    Remove-Item -Force -ErrorAction SilentlyContinue "HyperDrive\assets\versions.json", "HyperDrive\assets\contributors.txt"
+    Remove-Item -Force -ErrorAction SilentlyContinue "HyperDrive\assets\versions.json"
 
     # Copy layout excluding game_images, game_screenshots and symlinks
     $layout = (Resolve-Path "layout").Path

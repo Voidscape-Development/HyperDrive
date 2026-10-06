@@ -145,7 +145,6 @@ jobs:
           set PYTHONUTF8=1
           chcp 65001
           set PYTHONIOENCODING=utf-8
-          uv run --no-sync .\scripts\gen_contributors.py
           uv run --no-sync pyinstaller --noconfirm .\dependencies\tsh.spec
 
       # The complete application (executable, assets, layouts, user_data and

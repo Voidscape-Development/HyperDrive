@@ -15,7 +15,6 @@ a = Analysis(
         *collect_submodules('uvicorn'),
     ],
     datas=[
-        ('../assets/contributors.txt', 'assets'),
         ('../assets/versions.json', 'assets'),
         ('../src/i18n/tournament_term/*.json', 'src/i18n/tournament_term'),
 #       ('../src/i18n/round_names/*.json', 'src/i18n/round_names'),

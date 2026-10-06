@@ -7,6 +7,8 @@ from qtpy.QtWidgets import *
 
 from .Helpers.TSHDirHelper import TSHResolve
 
+REPOSITORY_URL = "https://github.com/Voidscape-Development/HyperDrive"
+
 
 class TSHAboutWidget(QDialog):
     def __init__(self, *args):
@@ -20,7 +22,7 @@ class TSHAboutWidget(QDialog):
         except Exception as e:
             version = "?"
 
-        self.findChild(QLabel, "tsh").setText(f"HyperDrive v{version}")
+        self.findChild(QLabel, "title").setText(f"HyperDrive v{version}")
 
         try:
             icon = QPixmap("./assets/icons/icon.png").scaledToWidth(128)
@@ -29,9 +31,11 @@ class TSHAboutWidget(QDialog):
 
         self.findChild(QLabel, "icon").setPixmap(icon)
 
-        try:
-            contributors = open(TSHResolve("assets/contributors.txt"), encoding="utf-8").readlines()
-        except Exception as e:
-            contributors = ["?"]
-
-        self.findChild(QTextEdit, "contributors").setMarkdown("\n".join(contributors))
+        links = [
+            (QApplication.translate("About", "Source code"), REPOSITORY_URL),
+            (QApplication.translate("About", "Releases"), f"{REPOSITORY_URL}/releases"),
+            (QApplication.translate("About", "Report an issue"), f"{REPOSITORY_URL}/issues"),
+        ]
+        self.findChild(QLabel, "links").setText(
+            " · ".join(f'<a href="{url}">{text}</a>' for text, url in links)
+        )
