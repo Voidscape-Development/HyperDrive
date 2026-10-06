@@ -9,6 +9,10 @@ class SettingsManager:
     settings = {}
     load_error: str | None = None
 
+    # Settings of removed features, dropped from settings.json on load.
+    # bsky_account held a Bluesky app password in plain text.
+    REMOVED_KEYS = ["bsky_account"]
+
     def SaveSettings():
         with open("./user_data/settings.json", "wb") as file:
             file.write(
@@ -27,6 +31,11 @@ class SettingsManager:
         except Exception as e:
             SettingsManager.settings = {}
             SettingsManager.load_error = f"./user_data/settings.json\n\n{e}"
+            return
+
+        removed = [SettingsManager.settings.pop(k, None) for k in SettingsManager.REMOVED_KEYS]
+        if any(r is not None for r in removed):
+            SettingsManager.SaveSettings()
 
     def Set(key: str, value):
         deep_set(SettingsManager.settings, key, value)

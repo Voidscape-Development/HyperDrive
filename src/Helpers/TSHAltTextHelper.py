@@ -27,35 +27,6 @@ def load_program_state():
     return data_json
 
 
-def generate_bsky_text(scoreboard_id=1, use_phase_name=True):
-    # atproto takes seconds to import, so only when posting
-    from atproto import client_utils
-
-    def transform_yt_into_bsky(description, data):
-        text = "\n".join(description.split("\n")[:-1]).strip("\n")
-        text = "🔴 " + QApplication.translate("altText", "LIVE NOW") + "\n\n" + text
-
-        link_text = QApplication.translate("altText", "Click here to watch")
-        link_url = data.get("score").get(str(scoreboard_id)).get("stream_url")
-        if link_url:
-            text += "\n\n"
-            result = client_utils.TextBuilder().text(text).link(link_text, link_url)
-            raw_text = text + link_text
-        else:
-            result = client_utils.TextBuilder().text(text)
-            raw_text = text
-        return (raw_text, result)
-
-    post_length_limit = 300
-    data = load_program_state()
-    title, description = generate_youtube(scoreboard_id, use_phase_name)
-    raw_text, builder = transform_yt_into_bsky(description, data)
-    if len(raw_text) > post_length_limit:
-        title, description = generate_youtube(scoreboard_id, use_phase_name, use_characters=False)
-        raw_text, builder = transform_yt_into_bsky(description, data)
-    return (raw_text, builder)
-
-
 def generate_youtube(
     scoreboard_id=1, use_phase_name=True, use_characters=True, replace_characters=[]
 ):
@@ -306,8 +277,6 @@ if __name__ == "__main__":
     print(colored("TEST MODE - TSHAltTextHelper.py", "red"))
     print("====")
     title, description = generate_youtube(1)
-    raw_bsky, builder = generate_bsky_text(1)
     print(colored("YouTube title: ", "yellow") + f"{title}")
     print(colored("\nDescription: \n", "yellow") + f"{description}")
     print(colored("\nTop 8 alt text: \n", "yellow") + f"{generate_top_n_alt_text()}")
-    print(colored("\nBluesky post: \n", "yellow") + f"{raw_bsky}")

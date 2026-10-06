@@ -11,7 +11,6 @@ from qtpy.QtWidgets import *
 
 from src.TSHColorButton import TSHColorButton
 
-from .Helpers.TSHBskyHelper import post_to_bsky
 from .Helpers.TSHDirHelper import TSHResolve
 from .Helpers.TSHVersionHelper import add_beta_label
 from .SettingsManager import SettingsManager
@@ -215,13 +214,6 @@ class TSHScoreboardWidget(QWidget):
             # self.thumbnailBtn.setPopupMode(QToolButton.InstantPopup)
             self.thumbnailBtn.clicked.connect(self.GenerateThumbnail)
 
-        if SettingsManager.Get("bsky_account.enable_bluesky", True):
-            self.bskyBtn = QPushButton(QApplication.translate("app", "Post to Bluesky") + " ")
-            self.bskyBtn.setIcon(ThemedIcon("assets/icons/bsky.svg"))
-            self.bskyBtn.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
-            col.layout().addWidget(self.bskyBtn, Qt.AlignmentFlag.AlignRight)
-            self.bskyBtn.clicked.connect(self.PostToBsky)
-
         # VISIBILITY
         col = QWidget()
         col.setLayout(QVBoxLayout())
@@ -285,19 +277,6 @@ class TSHScoreboardWidget(QWidget):
 
         self.innerWidget.layout().addWidget(bottomOptions)
 
-        if SettingsManager.Get("bsky_account.enable_bluesky", True):
-            self.streamUrl = QHBoxLayout()
-            self.streamUrlLabel = QLabel(QApplication.translate("app", "Stream URL") + " ")
-            self.streamUrl.layout().addWidget(self.streamUrlLabel)
-            self.streamUrlTextBox = QLineEdit()
-            self.streamUrl.layout().addWidget(self.streamUrlTextBox)
-            self.streamUrlTextBox.editingFinished.connect(
-                lambda element=self.streamUrlTextBox: StateManager.Set(
-                    f"score.{self.scoreboardNumber}.stream_url", element.text()
-                )
-            )
-            self.streamUrlTextBox.editingFinished.emit()
-            bottomOptions.layout().addLayout(self.streamUrl)
 
         self.btSelectSet = QPushButton(QApplication.translate("app", "Load set"))
         self.btSelectSet.setIcon(ThemedIcon("./assets/icons/list.svg"))
@@ -740,40 +719,6 @@ class TSHScoreboardWidget(QWidget):
                 msgBox.exec()
             else:
                 raise e
-
-    def PostToBsky(self):
-        thumbnailPath = self.GenerateThumbnail(quiet_mode=True)
-        if thumbnailPath:
-            msgBox = QMessageBox()
-            msgBox.setWindowIcon(QIcon("assets/icons/icon.png"))
-            msgBox.setWindowTitle(QApplication.translate("app", "TSH - Bluesky"))
-
-            try:
-                post_to_bsky(
-                    scoreboardNumber=self.scoreboardNumber,
-                    image_path=thumbnailPath.replace(".png", ".jpg"),
-                )
-                username = SettingsManager.Get("bsky_account", {}).get("username")
-                msgBox.setText(
-                    QApplication.translate(
-                        "app", "The post has successfully been sent to account {0}"
-                    ).format(username)
-                )
-                msgBox.setIcon(QMessageBox.NoIcon)
-                msgBox.exec()
-            except Exception as e:
-                msgBox.setText(QApplication.translate("app", "Warning"))
-                msgBox.setInformativeText(str(e))
-                msgBox.setIcon(QMessageBox.Warning)
-                msgBox.exec()
-            for rm_path in [
-                thumbnailPath,
-                thumbnailPath.replace(".png", ".jpg"),
-                thumbnailPath.replace(".png", "_desc.txt"),
-                thumbnailPath.replace(".png", "_title.txt"),
-            ]:
-                if os.path.exists(rm_path):
-                    os.remove(rm_path)
 
     def ToggleElements(self, action: QAction, elements):
         for pw in self.playerWidgets:
@@ -1370,10 +1315,6 @@ class TSHScoreboardWidget(QWidget):
             ]
             if reverseTeams:
                 losersContainers.reverse()
-
-            if SettingsManager.Get("bsky_account.enable_bluesky", True) and data.get("stream"):
-                self.streamUrlTextBox.setText(data.get("stream"))
-                self.streamUrlTextBox.editingFinished.emit()
 
             if data.get("team1losers") is not None:
                 losersContainers[0].setChecked(data.get("team1losers"))

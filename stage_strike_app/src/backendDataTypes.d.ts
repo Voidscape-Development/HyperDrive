@@ -37,7 +37,6 @@ export interface TSHScoreInfo {
     phase: string;
     set_id: number;
     station?: string;
-    stream_url?: string;
     team: Record<number, TSHTeamInfo>;
 }
 
