@@ -239,6 +239,78 @@ var HDBracket = {
     return html + "</tbody></table>";
   },
 
+  // A pool's players in seed order: [{id, seed, name}]
+  PoolPlayers(bracket) {
+    const found = {};
+    const add = (id, seed, name) => {
+      if (!id) return;
+      const known = found[id] || { id, seed: null, name: "" };
+      if (seed != null && known.seed == null) known.seed = seed;
+      if (name && !known.name) known.name = name;
+      found[id] = known;
+    };
+    Object.values(bracket.sets || {}).forEach((set) =>
+      (set.players || []).forEach((p) => p && add(p.id, p.seed, p.name))
+    );
+    (bracket.standings || []).forEach((row) => add(row.playerId, null, row.name));
+    return Object.values(found).sort(
+      (a, b) => (a.seed == null ? Infinity : a.seed) - (b.seed == null ? Infinity : b.seed) || String(a.id).localeCompare(String(b.id))
+    );
+  },
+
+  // A round robin grid: each player is a row and a column, the cell where
+  // two players meet holds their set's score from the row player's side, and
+  // the cells where a player meets themselves are blank
+  async GridHtml(data) {
+    const bracket = _.get(data, "bracket.bracket", {});
+    const players = _.get(data, "bracket.players.slot", {});
+    const list = HDBracket.PoolPlayers(bracket);
+
+    // "a|b": [set, slot of a]; a later set between the same two players wins
+    const meetings = {};
+    Object.values(bracket.sets || {}).forEach((set) => {
+      const [a, b] = (set.players || []).map((p) => p && p.id);
+      if (!a || !b) return;
+      meetings[`${a}|${b}`] = [set, 0];
+      meetings[`${b}|${a}`] = [set, 1];
+    });
+
+    const names = {};
+    for (const p of list) {
+      const team = players[p.id];
+      names[p.id] = team ? await HDBracket.TeamName(team) : _.escape(p.name);
+    }
+
+    let html = `<table class="rr_grid" style="--rr-count: ${list.length}"><thead><tr><th class="rr_corner"></th>`;
+    for (const p of list) {
+      html += `<th class="rr_col_name" data-player="${_.escape(p.id)}"><span>${names[p.id]}</span></th>`;
+    }
+    html += `</tr></thead><tbody>`;
+    for (const row of list) {
+      html += `<tr data-player="${_.escape(row.id)}"><th class="rr_row_name">${HDBracket.FlagHtml(players[row.id])}<span>${names[row.id]}</span></th>`;
+      for (const col of list) {
+        if (row.id == col.id) {
+          html += `<td class="rr_cell rr_self"></td>`;
+          continue;
+        }
+        const meeting = meetings[`${row.id}|${col.id}`];
+        if (!meeting) {
+          html += `<td class="rr_cell rr_none"></td>`;
+          continue;
+        }
+        const [set, slot] = meeting;
+        const mine = HDBracket.ScoreText(set, slot);
+        const theirs = HDBracket.ScoreText(set, 1 - slot);
+        const winner = HDBracket.Winner(set);
+        const result = winner === "draw" ? "draw" : winner === slot ? "won" : winner === 1 - slot ? "lost" : "";
+        const score = mine !== "" || theirs !== "" ? `${mine || 0}<span class="rr_dash">-</span>${theirs || 0}` : "";
+        html += `<td class="rr_cell rr_set ${result} ${set.completed ? "completed" : ""}" data-set="${_.escape(set.id)}">${score}</td>`;
+      }
+      html += `</tr>`;
+    }
+    return html + `</tbody></table>`;
+  },
+
   FlagHtml(team) {
     const player = team ? Object.values(team.player || {})[0] : null;
     if (!player || Object.keys(team.player || {}).length != 1) return "";

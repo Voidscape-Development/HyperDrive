@@ -243,3 +243,107 @@ body:not(.hd-bracket-no-dim-losers) .player.lost {
   font-weight: normal;
   opacity: 0.6;
 }
+
+/* Round robin grid drawn by HDBracket.GridHtml() */
+.grid_container {
+  display: none;
+}
+
+body.grid_only .grid_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: calc(var(--title-size, 100px) + 20px);
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+}
+
+body.grid_only .grid_container.hidden {
+  display: none;
+}
+
+.rr_grid {
+  --rr-cell-width: clamp(56px, calc(70vw / var(--rr-count, 4)), 200px);
+  --rr-cell-height: clamp(28px, calc(70vh / (var(--rr-count, 4) + 1)), 72px);
+  font-family: var(--font);
+  font-size: calc(var(--rr-cell-height) * 0.42);
+  border-collapse: separate;
+  border-spacing: 6px;
+  color: var(--text-color);
+}
+
+.rr_grid th {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rr_grid .rr_col_name {
+  max-width: var(--rr-cell-width);
+  white-space: normal;
+  line-height: 1.1;
+  padding: 0 4px 4px;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.rr_grid .rr_row_name {
+  max-width: 24vw;
+  padding-right: 10px;
+  text-align: right;
+}
+
+.rr_grid .rr_row_name .flag {
+  height: 0.8em;
+  width: auto;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.rr_grid .rr_cell {
+  width: var(--rr-cell-width);
+  height: var(--rr-cell-height);
+  box-sizing: border-box;
+  border-radius: calc(var(--border-radius) / 2);
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  background: var(--chip-bg, var(--bg-fill, var(--bg-color)));
+  color: var(--chip-color, var(--text-color));
+}
+
+.rr_grid .rr_self {
+  background: var(--chip-bg, var(--bg-fill, var(--bg-color)));
+  opacity: 0.35;
+}
+
+.rr_grid .rr_none {
+  opacity: 0.6;
+}
+
+.rr_grid .rr_dash {
+  margin: 0 0.35em;
+  opacity: 0.7;
+}
+
+.rr_grid .rr_set.won {
+  background: var(--bracket-winner-color, var(--accent-color));
+}
+
+.rr_grid .rr_set.lost {
+  background: var(--bracket-score-bg, var(--p1-score-bg-color));
+  color: var(--p1-score-color);
+}
+
+.rr_grid .rr_set:not(.completed) {
+  box-shadow: inset 0 0 0 2px var(--bracket-winner-color, var(--accent-color));
+}
+
+.rr_grid .rr_set.completed:not(.won):not(.lost) {
+  box-shadow: none;
+}
