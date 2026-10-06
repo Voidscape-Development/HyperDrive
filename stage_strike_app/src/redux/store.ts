@@ -31,7 +31,6 @@ export const tshStore = configureStore({
                         ds.tshCharacters.characters[k].skins = `<${objLen(ds.tshCharacters.characters[k].skins)} skins>`
                     }
                     ds.tshState.tshState.bracket = "omitted";
-                    ds.tshState.tshState.notes = "omitted";
                     ds.tshState.tshState.player_list = "omitted";
                 } catch {}
             });

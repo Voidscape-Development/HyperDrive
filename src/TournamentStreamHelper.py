@@ -145,7 +145,6 @@ from .TSHBracketWidget import TSHBracketWidget
 from .TSHCommentaryWidget import TSHCommentaryWidget
 from .TSHGameAssetManager import TSHGameAssetManager
 from .TSHHotkeys import TSHHotkeys
-from .TSHNotesWidget import TSHNotesWidget
 from .TSHPlayerDB import TSHPlayerDB
 from .TSHPlayerDBWindow import TSHPlayerDBWindow
 from .TSHPlayerListWidget import TSHPlayerListWidget
@@ -443,11 +442,6 @@ class Window(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, playerList)
         self.dockWidgets.append(playerList)
 
-        notes = TSHNotesWidget()
-        notes.setObjectName(QApplication.translate("app", "Additional Notes"))
-        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, notes)
-        self.dockWidgets.append(notes)
-
         self.tabifyDockWidget(self.scoreboard, self.stageWidget)
         self.tabifyDockWidget(self.scoreboard, commentary)
         self.tabifyDockWidget(self.scoreboard, tournamentInfo)
@@ -455,7 +449,6 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, playerList)
         self.tabifyDockWidget(self.scoreboard, bracket)
         self.tabifyDockWidget(self.scoreboard, streamQueue)
-        self.tabifyDockWidget(self.scoreboard, notes)
         self.scoreboard.raise_()
 
         # Game
@@ -627,7 +620,6 @@ class Window(QMainWindow):
         toggleWidgets.addAction(playerList.toggleViewAction())
         toggleWidgets.addAction(bracket.toggleViewAction())
         toggleWidgets.addAction(streamQueue.toggleViewAction())
-        toggleWidgets.addAction(notes.toggleViewAction())
 
         self.optionsBt.menu().addSeparator()
 

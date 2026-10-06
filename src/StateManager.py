@@ -551,6 +551,8 @@ class StateManager:
         try:
             with open("./out/program_state.json", "rb") as file:
                 StateManager.state = orjson.loads(file.read())
+                # Left behind by the removed Additional Notes widget
+                StateManager.state.pop("notes", None)
                 # Only changed paths are copied to lastSavedState from now on,
                 # so it must start out matching the loaded state
                 StateManager.lastSavedState = deep_clone(StateManager.state)
