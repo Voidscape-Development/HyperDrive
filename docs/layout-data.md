@@ -1,7 +1,7 @@
 # Layout data: bracket, stream queue, games, team battle, custom player data and layout themes
 
 What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
-Stream Queue widget, the scoreboard's Games tab, the Crew/Team Battle window, the
+Stream Queue widget, the scoreboard's Games window, the Crew/Team Battle window, the
 players' custom data and the layout theme in use.
 
 ## `bracket`

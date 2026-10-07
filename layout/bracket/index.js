@@ -90,12 +90,37 @@ LoadEverything().then(() => {
 
   function ColumnsHtml(columns, sets) {
     let html = "";
+    const shownIds = (column) => (column ? column.sets.filter((id) => sets[id]) : []);
     columns.forEach((column, c) => {
       html += `<div class="round round_${c + 1} side_${column.side || "pool"}" data-round="${_.escape(column.key)}">`;
       html += `<div class="round_name"><div class="text"></div></div>`;
-      column.sets.forEach((id) => {
-        if (sets[id]) html += SetHtml(id, sets[id]);
-      });
+      const ids = shownIds(column);
+      const nextIds = shownIds(columns[c + 1]);
+      const playIn =
+        column.side != "pool" &&
+        columns[c + 1] &&
+        columns[c + 1].side == column.side &&
+        ids.length < nextIds.length &&
+        ids.every((id) => sets[id].nextWin && nextIds.includes(sets[id].nextWin.set));
+      if (playIn) {
+        // A play-in round: each set level with the slot its winner goes to,
+        // with spacers where the next round's sets have no play-in
+        nextIds.forEach((nextId) => {
+          const feeders = ids.filter((id) => sets[id].nextWin.set == nextId);
+          if (feeders.length == 0) html += `<div class="set_spacer"></div>`;
+          if (feeders.length == 1) {
+            const slot = sets[feeders[0]].nextWin.slot || 0;
+            html += `<div class="play_in play_in_slot_${slot}">${SetHtml(feeders[0], sets[feeders[0]])}</div>`;
+          }
+          if (feeders.length > 1) {
+            html += `<div class="play_in">${feeders.map((id) => SetHtml(id, sets[id])).join("")}</div>`;
+          }
+        });
+      } else {
+        ids.forEach((id) => {
+          html += SetHtml(id, sets[id]);
+        });
+      }
       if (column.byes) {
         html += `<div class="byes"><div class="text"></div></div>`;
       }
@@ -143,6 +168,15 @@ LoadEverything().then(() => {
   }
 
   // Fits the sets in the height there is
+  // Spacers as tall as a set, and play-in sets moved level with the slot
+  // they feed (a slot is the top or bottom half of the set)
+  function AlignPlayIns() {
+    const height = $(".round > .slot, .play_in > .slot").first().outerHeight() || 0;
+    $(".set_spacer").css("height", height);
+    $(".play_in_slot_0 > .slot").css("top", -height / 4);
+    $(".play_in_slot_1 > .slot").css("top", height / 4);
+  }
+
   function Resize(columnsList, containers) {
     let size = 32;
     $(":root").css("--player-height", size);
@@ -193,6 +227,7 @@ LoadEverything().then(() => {
       $(".winners_container").html(ColumnsHtml(upper, sets));
       $(".losers_container").html(ColumnsHtml(lower, sets));
       Resize([upper, lower], [$(".winners_container"), $(".losers_container")]);
+      AlignPlayIns();
       areas = [upper, lower];
     }
 

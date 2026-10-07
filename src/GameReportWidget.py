@@ -1,4 +1,4 @@
-# The scoreboard's Games tab: the result, stage and characters of each game
+# The scoreboard's Games window: the result, stage and characters of each game
 # of the set, which the scoreboard's score follows, and reporting the set to
 # start.gg (see StartGGReporter).
 #

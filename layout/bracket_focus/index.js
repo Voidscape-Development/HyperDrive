@@ -90,6 +90,7 @@ LoadEverything().then(() => {
     const thirdPlace = [];
     const area = new Set(columns.flatMap((column) => column.sets));
 
+    const shown = [];
     columns.forEach((column) => {
       if (column.side == "third_place") {
         thirdPlace.push(column);
@@ -100,14 +101,36 @@ LoadEverything().then(() => {
       const x = MARGIN + c * (SET_W + COLUMN_GAP);
       lastX = x;
       c += 1;
+      shown.push({ column, ids, x });
+    });
+
+    // Play-in rounds (fewer sets than the round after them) are placed
+    // last, each set level with the slot its winner goes to
+    let playIns = 0;
+    while (
+      playIns + 1 < shown.length &&
+      shown[playIns].column.side == shown[playIns + 1].column.side &&
+      shown[playIns].ids.length < shown[playIns + 1].ids.length
+    ) {
+      playIns += 1;
+    }
+    const order = shown.slice(playIns).concat(shown.slice(0, playIns).reverse());
+
+    order.forEach(({ column, ids, x }, i) => {
+      const playIn = i >= shown.length - playIns;
       let cursor = top + HEADER_H;
       let firstY = null;
       ids.forEach((id) => {
         const feeders = Object.keys(result.sets).filter(
           (f) => area.has(f) && sets[f].nextWin && sets[f].nextWin.set == id
         );
+        const next = sets[id].nextWin;
+        const target = playIn && next ? result.sets[next.set] : null;
         let y = cursor;
-        if (feeders.length) {
+        if (target) {
+          // Centered on the slot's row, the top or bottom half of the set
+          y = Math.max(cursor, target.y + (((next.slot || 0) * 2 - 1) * SET_H) / 4);
+        } else if (feeders.length) {
           y = Math.max(cursor, _.mean(feeders.map((f) => result.sets[f].y)));
         } else if (column.side == "grand_final" && result.lastGrandFinal != null) {
           // The reset, level with the grand final

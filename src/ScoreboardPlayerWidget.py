@@ -33,6 +33,22 @@ class ScoreboardPlayerWidgetSignals(QObject):
 
 
 class ScoreboardPlayerWidget(QGroupBox):
+    # Fields folded away when the player's details are hidden: the tag,
+    # sponsor and characters stay
+    DETAIL_ELEMENTS = [
+        "seedLabel",
+        "seed",
+        "real_name",
+        "pronoun",
+        "twitterLabel",
+        "twitter",
+        "birthday",
+        "locationLabel",
+        "country",
+        "state",
+        "custom_textbox",
+    ]
+
     countries = None
     countryModel = None
     characterModel = None
@@ -139,6 +155,18 @@ class ScoreboardPlayerWidget(QGroupBox):
         self.btMoveDown.setFixedSize(24, 24)
         self.btMoveDown.setIcon(ThemedIcon("./assets/icons/arrow_down.svg"))
         titleContainer.addWidget(self.btMoveDown)
+
+        # Shows or folds away the fields after the tag and characters
+        self.hiddenElements = set()
+        self.displayElements = set()
+        self.detailsShown = True
+        self.bottomButtons = [self.save_bt, self.delete_bt, self.media_bt, self.clear_bt]
+        self.detailsButton = QToolButton()
+        self.detailsButton.setAutoRaise(True)
+        self.detailsButton.setFixedSize(24, 24)
+        self.detailsButton.clicked.connect(lambda: self.SetDetailsShown(not self.detailsShown))
+        titleContainer.insertWidget(0, self.detailsButton)
+        self.UpdateDetailsButton()
 
         self.SetIndex(index, teamNumber)
 
@@ -546,6 +574,45 @@ class ScoreboardPlayerWidget(QGroupBox):
                         container.setMaximumWidth(120)
 
         self.CharactersChanged(includeMains=True)
+
+    def SetElementVisible(self, name, visible):
+        """Shows or hides one of the fields from the display options"""
+        self.displayElements.add(name)
+        if visible:
+            self.hiddenElements.discard(name)
+        else:
+            self.hiddenElements.add(name)
+        self.UpdateVisibility()
+
+    def SetDetailsShown(self, shown):
+        self.detailsShown = shown
+        self.UpdateDetailsButton()
+        self.UpdateVisibility()
+
+    def UpdateDetailsButton(self):
+        self.detailsButton.setIcon(
+            ThemedIcon(
+                "assets/icons/arrow_down.svg"
+                if self.detailsShown
+                else "assets/icons/arrow_right.svg"
+            )
+        )
+        self.detailsButton.setToolTip(
+            QApplication.translate("app", "Hide details")
+            if self.detailsShown
+            else QApplication.translate("app", "Show details")
+        )
+
+    def UpdateVisibility(self):
+        names = self.displayElements | set(ScoreboardPlayerWidget.DETAIL_ELEMENTS)
+        for name in names:
+            widget = self.findChild(QWidget, name)
+            if widget is None:
+                continue
+            folded = not self.detailsShown and name in ScoreboardPlayerWidget.DETAIL_ELEMENTS
+            widget.setVisible(name not in self.hiddenElements and not folded)
+        for button in self.bottomButtons:
+            button.setVisible(self.detailsShown)
 
     def SwapCharacters(self, index1: int, index2: int):
         with StateManager.SaveBlock():

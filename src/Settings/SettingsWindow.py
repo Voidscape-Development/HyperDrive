@@ -388,6 +388,15 @@ class SettingsWindow(QDialog):
             )
         )
 
+        displaySettings.append(
+            (
+                QApplication.translate("settings.compact_players", "Compact Player Cards"),
+                "compact_players",
+                "checkbox",
+                False,
+            )
+        )
+
         self.add_setting_widget(
             QApplication.translate("settings", "Default Display Options"),
             SettingsWidget("display_options", displaySettings),
@@ -428,7 +437,7 @@ class SettingsWindow(QDialog):
                 None,
                 QApplication.translate(
                     "settings.api_keys",
-                    "Needed to report sets to start.gg from the scoreboard's Games tab. Create a token at start.gg > Developer Settings, with an account that's an admin of the tournament.",
+                    "Needed to report sets to start.gg from the scoreboard's Games window. Create a token at start.gg > Developer Settings, with an account that's an admin of the tournament.",
                 )
                 + "\n"
                 + QApplication.translate(
@@ -443,7 +452,7 @@ class SettingsWindow(QDialog):
             SettingsWidget("api_keys", APIKeySettings),
         )
 
-        # Reporting sets to start.gg from the scoreboard's Games tab
+        # Reporting sets to start.gg from the scoreboard's Games window
         reportingSettings = []
         reportingSettings.append(
             (

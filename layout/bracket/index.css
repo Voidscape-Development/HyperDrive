@@ -148,6 +148,18 @@ body {
   background-color: var(--bg-color);
 }
 
+/* Play-in rounds: their sets next to the slot they feed, spacers where
+   there's no play-in */
+.play_in {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.set_spacer {
+  visibility: hidden;
+}
+
 .slot {
   position: relative;
   display: flex;
