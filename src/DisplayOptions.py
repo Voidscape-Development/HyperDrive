@@ -35,6 +35,9 @@ def ApplyHiddenElements(playerWidget, hidden):
     object names to hide, everything else from the list is shown."""
     for element in PlayerDisplayElements():
         for name in element[1]:
+            if hasattr(playerWidget, "SetElementVisible"):
+                playerWidget.SetElementVisible(name, name not in hidden)
+                continue
             widget = playerWidget.findChild(QWidget, name)
             if widget is not None:
                 widget.setVisible(name not in hidden)

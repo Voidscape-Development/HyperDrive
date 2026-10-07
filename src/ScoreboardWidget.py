@@ -168,13 +168,7 @@ class ScoreboardWidget(QWidget):
         self.scrollArea.setWidget(self.innerWidget)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setFrameShape(QFrame.Shape.NoFrame)
-        self.scrollArea.setStyleSheet("QTabWidget::pane { margin: 0px,0px,0px,0px }")
-
-        # The scoreboard, and the games of its set
-        self.innerTabs = QTabWidget()
-        self.innerTabs.setDocumentMode(True)
-        self.innerTabs.addTab(self.scrollArea, QApplication.translate("app", "Scoreboard"))
-        self.layout().addWidget(self.innerTabs)
+        self.layout().addWidget(self.scrollArea)
 
         topOptions = QWidget()
         topOptions.setLayout(QHBoxLayout())
@@ -243,6 +237,14 @@ class ScoreboardWidget(QWidget):
                     action, element[1]
                 )
             )
+
+        # Player cards with only the tag, sponsor and characters; each card
+        # can still show its other fields
+        menu.addSeparator()
+        self.compactAction = menu.addAction(QApplication.translate("app", "Compact player cards"))
+        self.compactAction.setCheckable(True)
+        self.compactAction.setChecked(SettingsManager.Get("display_options.compact_players", False))
+        self.compactAction.toggled.connect(self.SetCompactPlayers)
 
         self.playerWidgets: list[ScoreboardPlayerWidget] = []
         self.team1playerWidgets: list[ScoreboardPlayerWidget] = []
@@ -489,7 +491,25 @@ class ScoreboardWidget(QWidget):
         self.gameReport = GameReportWidget(self)
         self.gameReport.signals.scoreChanged.connect(self.StageResultsToScore)
         self.gameReport.signals.setReported.connect(self.SetOver)
-        self.innerTabs.addTab(self.gameReport, QApplication.translate("app", "Games"))
+
+        # The games of the set, in a window of their own
+        self.gamesWindow = QDialog(self)
+        self.gamesWindow.setWindowTitle(
+            QApplication.translate("app", "Games - Scoreboard {0}").format(self.scoreboardNumber)
+        )
+        self.gamesWindow.setLayout(QVBoxLayout())
+        self.gamesWindow.layout().addWidget(self.gameReport)
+        self.gamesWindow.resize(900, 600)
+
+        self.btGames = QPushButton(QApplication.translate("app", "GAMES"))
+        self.btGames.setIcon(ThemedIcon("assets/icons/list.svg"))
+        self.btGames.setToolTip(
+            QApplication.translate(
+                "app", "The result, stage and characters of each game of the set"
+            )
+        )
+        self.btGames.clicked.connect(self.OpenGames)
+        self.scoreColumn.findChild(QGroupBox, "scoreGroupBox").layout().addWidget(self.btGames)
 
         self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.connect(self.ExportBestOf)
         self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.emit(0)
@@ -671,7 +691,16 @@ class ScoreboardWidget(QWidget):
     def ToggleElements(self, action: QAction, elements):
         for pw in self.playerWidgets:
             for element in elements:
-                pw.findChild(QWidget, element).setVisible(action.isChecked())
+                pw.SetElementVisible(element, action.isChecked())
+
+    def SetCompactPlayers(self, compact):
+        for pw in self.playerWidgets:
+            pw.SetDetailsShown(not compact)
+
+    def OpenGames(self):
+        self.gamesWindow.show()
+        self.gamesWindow.raise_()
+        self.gamesWindow.activateWindow()
 
     def UpdateBottomButtons(self):
         if TournamentDataManager.instance.provider and TournamentDataManager.instance.provider.url:
@@ -716,6 +745,7 @@ class ScoreboardWidget(QWidget):
 
             self.team1column.findChild(QScrollArea).widget().layout().addWidget(p)
             p.SetCharactersPerPlayer(self.charNumber.value())
+            p.SetDetailsShown(not self.compactAction.isChecked())
             self.team1column.findChild(QCheckBox, "losers").toggled.connect(
                 lambda: [
                     p.SetLosers,
@@ -761,6 +791,7 @@ class ScoreboardWidget(QWidget):
 
             self.team2column.findChild(QScrollArea).widget().layout().addWidget(p)
             p.SetCharactersPerPlayer(self.charNumber.value())
+            p.SetDetailsShown(not self.compactAction.isChecked())
             self.team2column.findChild(QCheckBox, "losers").toggled.connect(
                 lambda: [
                     p.SetLosers,
@@ -856,7 +887,7 @@ class ScoreboardWidget(QWidget):
             self.SwapStats()
 
             # Scores. Signals are blocked because each score change would
-            # make the games tab add/remove wins (and rebuild itself), losing
+            # make the games window add/remove wins (and rebuild itself), losing
             # which games were won; gameReport.Swap() below swaps them as is.
             scoreLeft = self.scoreColumn.findChild(QSpinBox, "score_left").value()
             scoreRight = self.scoreColumn.findChild(QSpinBox, "score_right").value()

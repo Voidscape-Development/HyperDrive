@@ -490,7 +490,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             list — one entry per game with ``team1_chars``/``team2_chars``
             (lists of character dicts or None, one per participant) and an
             optional ``winner`` (1 or 2). Consumed by
-            the scoreboard's Games tab.
+            the scoreboard's Games window.
           * ``mains_by_user`` maps ``user_id`` -> character key (en_name) for
             the character that user played in the most recent game they appear
             in, used to preselect each player's character on the scoreboard.

@@ -187,7 +187,7 @@ class CommentaryWidget(QDockWidget):
     def ToggleElements(self, action: QAction, elements):
         for pw in self.commentaryWidgets:
             for element in elements:
-                pw.findChild(QWidget, element).setVisible(action.isChecked())
+                pw.SetElementVisible(element, action.isChecked())
 
     def SetCharacterNumber(self, value):
         for pw in self.commentaryWidgets:
