@@ -24,6 +24,7 @@ os.environ["QT_API"] = "PyQt6"
 
 from qasync import QEventLoop  # noqa: E402
 from qtpy.QtCore import QTimer  # noqa: E402
+from qtpy.QtWidgets import QLineEdit  # noqa: E402
 
 import src  # noqa: E402
 from src.BracketWidget import BracketWidget  # noqa: E402
@@ -32,6 +33,7 @@ from src.Helpers.DynamicExport import DynamicExport  # noqa: E402
 from src.PlayerListWidget import PlayerListWidget  # noqa: E402
 from src.ScoreboardManager import ScoreboardManager  # noqa: E402
 from src.StateManager import StateManager  # noqa: E402
+from src.TeamBattleWidget import TeamBattleWidget  # noqa: E402
 from src.TournamentDataManager import TournamentDataManager  # noqa: E402
 from src.WebServer import WebServer  # noqa: E402
 
@@ -123,6 +125,27 @@ def set_player_list(window):
     playerList.LoadFromStandings(standings)
 
 
+def set_team_battle():
+    """A 4 on 4 Stock Pool crew battle, part way through"""
+    sb = SAMPLE["team_battle"]
+    widget = TeamBattleWidget.instance
+    widget.playerNumber.setValue(len(sb["teams"][0]["players"]))
+    widget.SetBattleValue(sb["stocks"])
+    for team, data in enumerate(sb["teams"], start=1):
+        teamName = widget.TeamColumn(team).findChild(QLineEdit, "teamName")
+        teamName.setText(data["name"])
+        teamName.editingFinished.emit()
+        for pw, index in zip(widget.Players(team), data["players"]):
+            pw.SetData(player(index))
+    widget.phaseCombo.setCurrentText(sb["phase"])
+    widget.PhaseExport()
+    widget.matchCombo.setCurrentText(sb["match"])
+    widget.MatchExport()
+    # Each team starts with their first player; take the stocks in order
+    for team in sb["stocks_taken_by"]:
+        widget.TeamScored(team)
+
+
 def set_bracket():
     widget = BracketWidget.instance
     widget.playerList.LoadFromStandings(
@@ -164,6 +187,7 @@ def main():
         set_stats,
         set_commentary,
         lambda: set_player_list(window),
+        set_team_battle,
         set_bracket,
     ]
 

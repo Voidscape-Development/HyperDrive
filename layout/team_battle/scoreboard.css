@@ -1,0 +1,318 @@
+/* In-game scoreboard, at the top center */
+
+#scoreboard {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1280px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55));
+}
+
+/* ── Main bar ─────────────────────────────────────────────── */
+
+.sb_main {
+  display: grid;
+  grid-template-columns: 1fr 250px 1fr;
+  height: 72px;
+}
+
+.sb_team {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.sb_team.t2 {
+  flex-direction: row-reverse;
+}
+
+.sb_panel {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 18px 0 28px;
+}
+
+.t2 .sb_panel {
+  flex-direction: row-reverse;
+  padding: 0 28px 0 18px;
+}
+
+/* The angled team color plate */
+.sb_panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, var(--team-dark) 0%, var(--team) 75%);
+  border-bottom: 4px solid var(--team-light);
+  transform: skewX(var(--tb-skew));
+  transform-origin: bottom;
+}
+
+.t2 .sb_panel::before {
+  background: linear-gradient(270deg, var(--team-dark) 0%, var(--team) 75%);
+  transform: skewX(calc(var(--tb-skew) * -1));
+}
+
+.sb_logo {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  font-size: 52px;
+}
+
+.sb_name {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: 36px;
+  letter-spacing: 0.5px;
+}
+
+.sb_score {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 52px;
+  padding: 0 6px;
+  background: rgba(0, 0, 0, 0.35);
+  transform: skewX(var(--tb-skew));
+}
+
+.t2 .sb_score {
+  transform: skewX(calc(var(--tb-skew) * -1));
+}
+
+.sb_score_label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--tb-dim);
+  -webkit-text-stroke: 0;
+}
+
+.sb_score_value {
+  font-size: 28px;
+}
+
+/* Stocks or players left */
+.sb_big {
+  position: relative;
+  flex: none;
+  width: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  -webkit-text-stroke: 0;
+  z-index: 1;
+}
+
+.sb_big::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #fff;
+  border-bottom: 4px solid var(--team);
+  transform: skewX(var(--tb-skew));
+}
+
+.t2 .sb_big::before {
+  transform: skewX(calc(var(--tb-skew) * -1));
+}
+
+.sb_big_value {
+  display: inline-block;
+  font-size: 58px;
+  margin-top: -4px;
+}
+
+.sb_big_label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: -6px;
+  color: var(--team-dark);
+}
+
+/* Phase, match and the rule */
+.sb_center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 14px;
+  background: var(--tb-panel);
+  border-bottom: 4px solid var(--accent-color);
+  z-index: 2;
+}
+
+.sb_phase {
+  width: 100%;
+  height: 32px;
+  font-family: var(--tb-display-font);
+  font-weight: 700;
+  font-size: 26px;
+  text-transform: uppercase;
+}
+
+.sb_rule {
+  width: 100%;
+  height: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--tb-dim);
+  -webkit-text-stroke: 0;
+}
+
+/* ── Active player and roster ─────────────────────────────── */
+
+.sb_sub {
+  display: grid;
+  grid-template-columns: 1fr 250px 1fr;
+}
+
+.sb_side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding-right: 14px;
+}
+
+.sb_side.t2 {
+  align-items: flex-start;
+  padding-right: 0;
+  padding-left: 14px;
+}
+
+.sb_active {
+  position: relative;
+  width: 440px;
+  height: 50px;
+  overflow: hidden;
+  --x-width: 6px;
+  --x-angle: 6deg;
+  --x-length: 104%;
+}
+
+.sb_active::before {
+  content: "";
+  position: absolute;
+  inset: 0 10px;
+  background: linear-gradient(180deg, var(--tb-panel-2), var(--tb-panel));
+  border-bottom: 3px solid var(--team);
+  transform: skewX(var(--tb-skew));
+}
+
+.t2 .sb_active::before {
+  transform: skewX(calc(var(--tb-skew) * -1));
+}
+
+.sb_active.empty {
+  visibility: hidden;
+}
+
+.sb_active_inner {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 26px;
+}
+
+.t2 .sb_active_inner {
+  flex-direction: row-reverse;
+}
+
+.sb_char {
+  width: 40px;
+  height: 40px;
+  flex: none;
+}
+
+.sb_char img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.7));
+}
+
+.sb_player_name {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.sb_pips {
+  flex: none;
+  --pip-size: 26px;
+  --pip-gap: 3px;
+}
+
+body.first_to .sb_pips {
+  --pip-size: 16px;
+  --pip-gap: 5px;
+}
+
+.t2 .sb_pips {
+  flex-direction: row-reverse;
+}
+
+/* The roster: a character icon per player */
+.sb_roster {
+  display: flex;
+  gap: 5px;
+  padding: 0 24px;
+}
+
+.t2 .sb_roster {
+  flex-direction: row;
+}
+
+.mini {
+  position: relative;
+  width: var(--mini-size, 28px);
+  height: var(--mini-size, 28px);
+  background: rgba(10, 10, 16, 0.75);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-sizing: border-box;
+  --x-width: 3px;
+  --x-length: 120%;
+  --x-angle: 45deg;
+}
+
+.mini img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mini.no_icon img {
+  visibility: hidden;
+}
+
+.mini.active {
+  border-color: var(--team-light);
+  background: var(--team);
+  box-shadow: 0 0 10px var(--team);
+}

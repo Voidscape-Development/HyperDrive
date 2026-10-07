@@ -13,7 +13,7 @@ package = types.ModuleType("src")
 package.__path__ = [os.path.abspath("src")]
 sys.modules["src"] = package
 
-from qtpy.QtWidgets import QApplication
+from qtpy.QtWidgets import QApplication, QLineEdit
 
 app = QApplication(sys.argv)
 
@@ -61,6 +61,7 @@ check(stocks(1) == [3, 3, 3] and stocks(2) == [3, 3, 3], "new players get the st
 check(active(1) == [True, False, False], "a team starts with their first player")
 check(StateManager.Get("team_battle.team.1.active_player") == 1, "exports the active player")
 check(StateManager.Get("team_battle.team1_spinner-total") == 9, "exports the stocks left")
+check(StateManager.Get("team_battle.battle_value") == 3, "exports the stocks players start with")
 
 for _ in range(3):
     w.signals.team1_stock_up.emit()
@@ -106,6 +107,7 @@ check(stocks(1)[0] == 3 and not eliminated(1)[0], "clearing a player doesn't eli
 w.modeCombo.setCurrentIndex(1)
 check(w.battleMode is TeamBattleModeEnum.FIRST_TO, "switches to First To")
 check(w.livesNumber.value() == 2, "uses the First To amount from the settings")
+check(StateManager.Get("team_battle.battle_value") == 2, "exports the First To amount")
 check(stocks(1) == [0, 0, 0] and eliminated(2) == [False] * 3, "switching resets the players")
 
 w.ResetEverything()
@@ -130,6 +132,25 @@ check(active(2) == [False, False, True] and stocks(1)[0] == 0, "auto advance in 
 w.playerNumber.setValue(2)
 check(len(w.Players(1)) == 2, "removes players")
 check("3" not in StateManager.Get("team_battle.team.1.player"), "removed players' data")
+
+# Team name and logo
+teamName = w.team1column.findChild(QLineEdit, "teamName")
+teamName.setText("No Logo Team")
+teamName.editingFinished.emit()
+check(StateManager.Get("team_battle.team.1.sponsor") == "No Logo Team", "exports the team name")
+check(StateManager.Get("team_battle.team.1.logo") is None, "no logo for a team without one")
+os.makedirs("./user_data/team_logo", exist_ok=True)
+logo = "./user_data/team_logo/test battle team.png"
+with open(logo, "wb") as f:
+    f.write(b"")
+try:
+    teamName.setText("Test Battle Team")
+    teamName.editingFinished.emit()
+    check(StateManager.Get("team_battle.team.1.logo") == logo, "exports the team logo")
+finally:
+    os.remove(logo)
+w.RefreshTeamLogos()
+check(StateManager.Get("team_battle.team.1.logo") is None, "a removed logo is unset")
 
 if failures:
     print(f"{failures} check(s) failed")

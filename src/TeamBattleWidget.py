@@ -1,3 +1,5 @@
+import os
+
 from loguru import logger
 from qtpy import uic
 from qtpy.QtCore import *
@@ -7,6 +9,7 @@ from qtpy.QtWidgets import *
 from .ColorButton import ColorButton
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
+from .Helpers.MediaHelper import MediaHelper
 from .Helpers.SponsorHelper import SponsorHelper
 from .Helpers.VersionHelper import add_beta_label
 from .SettingsManager import SettingsManager
@@ -267,7 +270,7 @@ class TeamBattleWidget(QDockWidget):
         self.team1column = uic.loadUi(ResolvePath("src/layout/BattleTeam.ui"))
         self.team1column.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.team1column.findChild(QLineEdit, "teamName").editingFinished.connect(
-            self.Team1SponsorExport
+            lambda: self.TeamNameExport(1)
         )
         DEFAULT_TEAM1_COLOR = SettingsManager.Get("general.team_1_default_color", "#fe3636")
         self.colorButton1 = ColorButton(color=DEFAULT_TEAM1_COLOR, ignore_same_color=False)
@@ -287,7 +290,7 @@ class TeamBattleWidget(QDockWidget):
         self.team2column = uic.loadUi(ResolvePath("src/layout/BattleTeam.ui"))
         self.team2column.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.team2column.findChild(QLineEdit, "teamName").editingFinished.connect(
-            self.Team2SponsorExport
+            lambda: self.TeamNameExport(2)
         )
         DEFAULT_TEAM2_COLOR = SettingsManager.Get("general.team_2_default_color", "#2e89ff")
         self.colorButton2 = ColorButton(color=DEFAULT_TEAM2_COLOR, ignore_same_color=False)
@@ -320,6 +323,8 @@ class TeamBattleWidget(QDockWidget):
         self.signals.reset_all_stocks.connect(self.ResetAllStocks)
         self.signals.reset_everything.connect(self.ResetEverything)
         self.signals.dynamicSpinner_changed.connect(self.TotalScoreExport)
+        # A team logo was changed in the Player Database window
+        MediaHelper.signals.changed.connect(self.RefreshTeamLogos)
 
         self.signals.team1_next_active_player.connect(self.Team1NextUp)
         self.signals.team2_next_active_player.connect(self.Team2NextUp)
@@ -741,17 +746,26 @@ class TeamBattleWidget(QDockWidget):
     # EXPORTS
     # =====================================================
 
-    def Team1SponsorExport(self):
-        path = f"team_battle.team.{1}"
-        team = self.team1column.findChild(QLineEdit, "teamName").text()
-        StateManager.Set(path + ".sponsor", team)
-        SponsorHelper.ExportValidSponsors(team, path)
+    def TeamColumn(self, team: int) -> QWidget:
+        return self.team1column if team == 1 else self.team2column
 
-    def Team2SponsorExport(self):
-        path = f"team_battle.team.{2}"
-        team = self.team2column.findChild(QLineEdit, "teamName").text()
-        StateManager.Set(path + ".sponsor", team)
-        SponsorHelper.ExportValidSponsors(team, path)
+    def TeamNameExport(self, team: int):
+        path = f"team_battle.team.{team}"
+        name = self.TeamColumn(team).findChild(QLineEdit, "teamName").text()
+        StateManager.Set(path + ".sponsor", name)
+        SponsorHelper.ExportValidSponsors(name, path)
+        self.ExportTeamLogo(team, name)
+
+    def ExportTeamLogo(self, team: int, name: str):
+        logo = MediaHelper.TeamLogoPath(name) if name else None
+        StateManager.Set(
+            f"team_battle.team.{team}.logo",
+            logo if logo and os.path.exists(logo) else None,
+        )
+
+    def RefreshTeamLogos(self):
+        for team in [1, 2]:
+            self.ExportTeamLogo(team, self.TeamColumn(team).findChild(QLineEdit, "teamName").text())
 
     def PhaseExport(self):
         StateManager.Set("team_battle.phase", self.phaseCombo.currentText())
@@ -760,6 +774,8 @@ class TeamBattleWidget(QDockWidget):
         StateManager.Set("team_battle.match", self.matchCombo.currentText())
 
     def TotalScoreExport(self):
+        # The Stocks or First To amount every player starts from
+        StateManager.Set("team_battle.battle_value", self.livesNumber.value())
         self.Team1TotalScoreExport()
         self.Team2TotalScoreExport()
 

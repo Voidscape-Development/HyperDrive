@@ -7144,23 +7144,77 @@
   },
   "team_battle": {
     "battle_mode": "STOCK_POOL",
-    "match": "",
-    "phase": "",
+    "battle_value": 3,
+    "match": "Crew Battle",
+    "phase": "Top 8",
     "team": {
       "1": {
+        "active_player": 1,
         "color": "#fe3636",
+        "logo": null,
         "player": {
           "1": {
+            "active": true,
+            "avatar": null,
             "character": {
               "1": {
-                "assets": {},
-                "name": "",
-                "skin": -1,
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_palutena_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_palutena_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 280,
+                      "y": 161
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "palutena",
+                "display_name": "Palutena",
+                "en_name": "Palutena",
+                "modded": false,
+                "name": "Palutena",
+                "skin": 0,
                 "variant": {}
               }
             },
-            "country": {},
+            "country": {
+              "asset": "./assets/country_flag/br.svg",
+              "code": "BR",
+              "display_name": "Brazil",
+              "en_name": "Brazil",
+              "latitude": "-10.00000000",
+              "longitude": "-55.00000000",
+              "name": "Brazil"
+            },
+            "custom": {
+              "bio": "Two-time HyperDrive Invitational champion"
+            },
             "dead": false,
+            "dynamic_spinner": 1,
             "mains": {
               "1": {
                 "assets": {},
@@ -7169,24 +7223,335 @@
                 "variant": {}
               }
             },
-            "state": {}
+            "mergedName": "HD | Azure",
+            "mergedOnlyName": "Azure",
+            "name": "Azure",
+            "online_avatar": null,
+            "pronoun": "she/her",
+            "state": {
+              "asset": "./assets/state_flag/BR/SP.png",
+              "code": "SP",
+              "latitude": "-23.55051990",
+              "longitude": "-46.63330940",
+              "name": "São Paulo",
+              "original_code": "SP"
+            },
+            "team": "HD",
+            "twitter": "azure_hd"
+          },
+          "2": {
+            "avatar": null,
+            "character": {
+              "1": {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pikachu_03.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_pikachu_03.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 246,
+                      "y": 195
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "pikachu",
+                "display_name": "Pikachu",
+                "en_name": "Pikachu",
+                "modded": false,
+                "name": "Pikachu",
+                "skin": 3,
+                "variant": {}
+              }
+            },
+            "country": {
+              "asset": "./assets/country_flag/us.svg",
+              "code": "US",
+              "display_name": "United States",
+              "en_name": "United States",
+              "latitude": "38.00000000",
+              "longitude": "-97.00000000",
+              "name": "United States"
+            },
+            "dead": false,
+            "dynamic_spinner": 3,
+            "mains": {
+              "1": {
+                "assets": {},
+                "name": "",
+                "skin": -1,
+                "variant": {}
+              }
+            },
+            "mergedName": "Marlowe",
+            "mergedOnlyName": "Marlowe",
+            "name": "Marlowe",
+            "online_avatar": null,
+            "pronoun": "she/her",
+            "state": {
+              "asset": "./assets/state_flag/US/CA.png",
+              "code": "CA",
+              "latitude": "36.70146310",
+              "longitude": "-118.75599700",
+              "name": "California",
+              "original_code": "CA"
+            },
+            "twitter": "marlowe"
+          },
+          "3": {
+            "avatar": null,
+            "character": {
+              "1": {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_peach_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_peach_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 250,
+                      "y": 178
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "peach",
+                "display_name": "Peach",
+                "en_name": "Peach",
+                "modded": false,
+                "name": "Peach",
+                "skin": 0,
+                "variant": {}
+              }
+            },
+            "country": {
+              "asset": "./assets/country_flag/mx.svg",
+              "code": "MX",
+              "display_name": "Mexico",
+              "en_name": "Mexico",
+              "latitude": "23.00000000",
+              "longitude": "-102.00000000",
+              "name": "Mexico"
+            },
+            "dead": false,
+            "dynamic_spinner": 3,
+            "mains": {
+              "1": {
+                "assets": {},
+                "name": "",
+                "skin": -1,
+                "variant": {}
+              }
+            },
+            "mergedName": "Ember",
+            "mergedOnlyName": "Ember",
+            "name": "Ember",
+            "online_avatar": null,
+            "pronoun": "she/her",
+            "state": {
+              "asset": "./assets/state_flag/MX/JAL.png",
+              "code": "JAL",
+              "latitude": "20.33333310",
+              "longitude": "-103.66666710",
+              "name": "Jalisco",
+              "original_code": "JAL"
+            },
+            "twitter": "ember"
+          },
+          "4": {
+            "avatar": null,
+            "character": {
+              "1": {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pickel_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_pickel_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 262,
+                      "y": 165
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "pickel",
+                "display_name": "Steve",
+                "en_name": "Steve",
+                "modded": false,
+                "name": "Steve",
+                "skin": 0,
+                "variant": {}
+              }
+            },
+            "country": {
+              "asset": "./assets/country_flag/fr.svg",
+              "code": "FR",
+              "display_name": "France",
+              "en_name": "France",
+              "latitude": "46.00000000",
+              "longitude": "2.00000000",
+              "name": "France"
+            },
+            "dead": false,
+            "dynamic_spinner": 3,
+            "mains": {
+              "1": {
+                "assets": {},
+                "name": "",
+                "skin": -1,
+                "variant": {}
+              }
+            },
+            "mergedName": "Pixel",
+            "mergedOnlyName": "Pixel",
+            "name": "Pixel",
+            "online_avatar": null,
+            "pronoun": "he/him",
+            "state": {
+              "asset": "./assets/state_flag/FR/IDF.png",
+              "code": "IDF",
+              "latitude": "48.64430570",
+              "longitude": "2.75378630",
+              "name": "Île-de-France",
+              "original_code": "IDF"
+            },
+            "twitter": "pixel"
           }
-        }
+        },
+        "sponsor": "Voltage"
       },
       "2": {
+        "active_player": 2,
         "color": "#2e89ff",
+        "logo": null,
         "player": {
           "1": {
+            "active": false,
+            "avatar": null,
             "character": {
               "1": {
-                "assets": {},
-                "name": "",
-                "skin": -1,
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_sonic_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_sonic_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 255,
+                      "y": 207
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "sonic",
+                "display_name": "Sonic",
+                "en_name": "Sonic",
+                "modded": false,
+                "name": "Sonic",
+                "skin": 0,
                 "variant": {}
               }
             },
-            "country": {},
-            "dead": false,
+            "country": {
+              "asset": "./assets/country_flag/jp.svg",
+              "code": "JP",
+              "display_name": "Japan",
+              "en_name": "Japan",
+              "latitude": "36.00000000",
+              "longitude": "138.00000000",
+              "name": "Japan"
+            },
+            "custom": {
+              "bio": "Undefeated in winners side this season"
+            },
+            "dead": true,
+            "dynamic_spinner": 0,
             "mains": {
               "1": {
                 "assets": {},
@@ -7195,14 +7560,276 @@
                 "variant": {}
               }
             },
-            "state": {}
+            "mergedName": "GG | Kestrel",
+            "mergedOnlyName": "Kestrel",
+            "name": "Kestrel",
+            "online_avatar": null,
+            "pronoun": "he/him",
+            "state": {
+              "asset": "./assets/state_flag/JP/13.png",
+              "code": "13",
+              "latitude": "35.67686010",
+              "longitude": "139.76389470",
+              "name": "Tokyo",
+              "original_code": "13"
+            },
+            "team": "GG",
+            "twitter": "kestrel_gg"
+          },
+          "2": {
+            "active": true,
+            "avatar": null,
+            "character": {
+              "1": {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_wolf_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_wolf_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 245,
+                      "y": 170
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "wolf",
+                "display_name": "Wolf",
+                "en_name": "Wolf",
+                "modded": false,
+                "name": "Wolf",
+                "skin": 0,
+                "variant": {}
+              }
+            },
+            "country": {
+              "asset": "./assets/country_flag/ca.svg",
+              "code": "CA",
+              "display_name": "Canada",
+              "en_name": "Canada",
+              "latitude": "60.00000000",
+              "longitude": "-95.00000000",
+              "name": "Canada"
+            },
+            "dead": false,
+            "dynamic_spinner": 2,
+            "mains": {
+              "1": {
+                "assets": {},
+                "name": "",
+                "skin": -1,
+                "variant": {}
+              }
+            },
+            "mergedName": "NX | Quill",
+            "mergedOnlyName": "Quill",
+            "name": "Quill",
+            "online_avatar": null,
+            "pronoun": "they/them",
+            "state": {
+              "asset": "./assets/state_flag/CA/ON.png",
+              "code": "ON",
+              "latitude": "50.00067800",
+              "longitude": "-86.00097700",
+              "name": "Ontario",
+              "original_code": "ON"
+            },
+            "team": "NX",
+            "twitter": "quill_nx"
+          },
+          "3": {
+            "avatar": null,
+            "character": {
+              "1": {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_ken_01.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_ken_01.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 244,
+                      "y": 165
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "ken",
+                "display_name": "Ken",
+                "en_name": "Ken",
+                "modded": false,
+                "name": "Ken",
+                "skin": 1,
+                "variant": {}
+              }
+            },
+            "country": {
+              "asset": "./assets/country_flag/se.svg",
+              "code": "SE",
+              "display_name": "Sweden",
+              "en_name": "Sweden",
+              "latitude": "62.00000000",
+              "longitude": "15.00000000",
+              "name": "Sweden"
+            },
+            "dead": false,
+            "dynamic_spinner": 3,
+            "mains": {
+              "1": {
+                "assets": {},
+                "name": "",
+                "skin": -1,
+                "variant": {}
+              }
+            },
+            "mergedName": "VX | Tundra",
+            "mergedOnlyName": "Tundra",
+            "name": "Tundra",
+            "online_avatar": null,
+            "pronoun": "he/him",
+            "state": {
+              "asset": "./assets/state_flag/SE/AB.png",
+              "code": "AB",
+              "latitude": "59.33361730",
+              "longitude": "18.02769730",
+              "name": "Stockholm",
+              "original_code": "AB"
+            },
+            "team": "VX",
+            "twitter": "tundra_vx"
+          },
+          "4": {
+            "avatar": null,
+            "character": {
+              "1": {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_eflame_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_eflame_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 188,
+                      "y": 177
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "eflame",
+                "display_name": "Pyra / Mythra",
+                "en_name": "Pyra / Mythra",
+                "modded": false,
+                "name": "Pyra / Mythra",
+                "skin": 0,
+                "variant": {}
+              }
+            },
+            "country": {
+              "asset": "./assets/country_flag/gb.svg",
+              "code": "GB",
+              "display_name": "United Kingdom",
+              "en_name": "United Kingdom",
+              "latitude": "54.00000000",
+              "longitude": "-2.00000000",
+              "name": "United Kingdom"
+            },
+            "dead": false,
+            "dynamic_spinner": 3,
+            "mains": {
+              "1": {
+                "assets": {},
+                "name": "",
+                "skin": -1,
+                "variant": {}
+              }
+            },
+            "mergedName": "RB | Saffron",
+            "mergedOnlyName": "Saffron",
+            "name": "Saffron",
+            "online_avatar": null,
+            "pronoun": "she/her",
+            "state": {
+              "asset": "./assets/state_flag/GB/ENG.png",
+              "code": "ENG",
+              "latitude": "52.53102140",
+              "longitude": "-1.26490620",
+              "name": "England",
+              "original_code": "ENG"
+            },
+            "team": "RB",
+            "twitter": "saffron_rb"
           }
-        }
+        },
+        "sponsor": "Nightfall"
       }
     },
-    "team1_spinner-total": 0,
+    "team1_spinner-total": 10,
     "team1_total-score": 0,
-    "team2_spinner-total": 0,
+    "team2_spinner-total": 8,
     "team2_total-score": 0
   },
   "tournamentInfo": {

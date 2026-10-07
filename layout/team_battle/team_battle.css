@@ -1,0 +1,235 @@
+/* Shared by the Team Battle layouts */
+
+@font-face {
+  font-family: "TBDisplay";
+  src: url("../fonts/Saira/Saira_Condensed-BlackItalic.ttf") format("truetype");
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: "TBDisplay";
+  src: url("../fonts/Saira/Saira_Condensed-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+}
+
+:root {
+  /* Team colors, set by the layout from the Crew/Team Battle window */
+  --t1-color: var(--p1-score-bg-color);
+  --t2-color: var(--p2-score-bg-color);
+  --t1-dark: oklch(from var(--t1-color) calc(l * 0.45) c h);
+  --t2-dark: oklch(from var(--t2-color) calc(l * 0.45) c h);
+  --t1-light: oklch(from var(--t1-color) calc(l + 0.15) c h);
+  --t2-light: oklch(from var(--t2-color) calc(l + 0.15) c h);
+
+  --tb-panel: rgb(14, 13, 22);
+  --tb-panel-2: rgb(28, 27, 40);
+  --tb-text: var(--text-color);
+  --tb-dim: rgba(255, 255, 255, 0.55);
+  --tb-x-color: #ff2a3d;
+  --tb-display-font: "TBDisplay", var(--font);
+  --tb-skew: -12deg;
+}
+
+body {
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--tb-text);
+}
+
+.t1 {
+  --team: var(--t1-color);
+  --team-dark: var(--t1-dark);
+  --team-light: var(--t1-light);
+}
+
+.t2 {
+  --team: var(--t2-color);
+  --team-dark: var(--t2-dark);
+  --team-light: var(--t2-light);
+}
+
+.display {
+  font-family: var(--tb-display-font);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* Sponsor before a tag */
+.sponsor {
+  color: var(--team-light, var(--tb-dim));
+  margin-right: 0.3em;
+  font-weight: 700;
+}
+
+/* ── Pips: stocks left, or games won ─────────────────────── */
+
+.pips {
+  display: flex;
+  align-items: center;
+  gap: var(--pip-gap, 4px);
+}
+
+.pip {
+  width: var(--pip-size, 16px);
+  height: var(--pip-size, 16px);
+  flex: none;
+  display: grid;
+  place-items: center;
+  transform: skewX(var(--tb-skew));
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-sizing: border-box;
+}
+
+.pip.lit {
+  background: var(--team);
+  border-color: var(--team-light);
+  box-shadow: 0 0 10px var(--team);
+}
+
+/* Stock icons: no box, the character's icon */
+.pip.icon {
+  transform: none;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.pip.icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+}
+
+.pip.icon.spent img {
+  filter: grayscale(1) brightness(0.45);
+  opacity: 0.45;
+}
+
+/* ── Eliminated ──────────────────────────────────────────── */
+
+.x_mark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  z-index: 20;
+}
+
+.x_mark::before,
+.x_mark::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--x-length, 120%);
+  height: var(--x-width, 8px);
+  background: var(--tb-x-color);
+  box-shadow: 0 0 12px rgba(255, 42, 61, 0.8), 0 0 0 2px rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+}
+
+.x_mark::before {
+  transform: translate(-50%, -50%) rotate(var(--x-angle, 28deg));
+}
+
+.x_mark::after {
+  transform: translate(-50%, -50%) rotate(calc(var(--x-angle, 28deg) * -1));
+}
+
+.dead .fades_when_dead {
+  filter: grayscale(1) brightness(0.5);
+}
+
+/* ── Active sweep ────────────────────────────────────────── */
+
+.sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  /* Moved across by its background position, see TBSweep() */
+  background: linear-gradient(
+      100deg,
+      transparent 42%,
+      rgba(255, 255, 255, 0.55) 50%,
+      transparent 58%
+    )
+    no-repeat;
+  background-size: 300% 100%;
+  z-index: 15;
+}
+
+/* ── Team logo, or its initial ───────────────────────────── */
+
+.logo {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.logo .logo_img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logo:has(.logo_initial) {
+  background: rgba(0, 0, 0, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-sizing: border-box;
+  transform: skewX(var(--tb-skew));
+}
+
+.logo .logo_initial {
+  transform: skewX(calc(var(--tb-skew) * -1));
+  font-family: var(--tb-display-font);
+  font-weight: 900;
+  font-size: 0.7em;
+  line-height: 1;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+/* ── Chips: flag and pronouns ───────────────────────────── */
+
+.chips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 8px;
+  border-radius: var(--border-radius-chip);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.8em;
+  line-height: 1.4;
+  white-space: nowrap;
+  -webkit-text-stroke: 0;
+}
+
+.chip .flagcountry {
+  height: 0.95em;
+  border-radius: 2px;
+}
+
+body.hd-hide-pronouns .chip.pronoun,
+body.hd-hide-country-flag .chip.flag {
+  display: none;
+}
+
+body.hd-text-upper .tag,
+body.hd-text-upper .sponsor {
+  text-transform: uppercase;
+}
