@@ -507,15 +507,30 @@ class BracketView(QGraphicsView):
         height = MatchItem.ROW_HEIGHT * 2 + 1
         positions = {}
         bottom = top
-        for ci, column in enumerate(self.bracket.Columns(side)):
+        columns = self.bracket.Columns(side)
+
+        # Play-in rounds (fewer sets than the round after them) are placed
+        # last, each set level with the slot its winner goes to
+        playIns = 0
+        while playIns + 1 < len(columns) and len(columns[playIns]) < len(columns[playIns + 1]):
+            playIns += 1
+        order = list(range(playIns, len(columns))) + list(range(playIns - 1, -1, -1))
+
+        for ci in order:
+            column = columns[ci]
             x = left + ci * (MatchItem.WIDTH + BracketView.COLUMN_GAP)
             self._AddHeader(side, column[0].column, x, top)
             cursor = top + BracketView.HEADER_HEIGHT
             for m in column:
-                feeders = [positions[p] for p in self.bracket._Prereqs(m) if p in positions]
                 y = cursor
-                if feeders:
-                    y = max(cursor, sum(f[1] for f in feeders) / len(feeders))
+                target = positions.get(m.nextWin[0]) if ci < playIns and m.nextWin else None
+                if target is not None:
+                    slotCenter = target[1] + m.nextWin[1] * (MatchItem.ROW_HEIGHT + 1)
+                    y = max(cursor, slotCenter + MatchItem.ROW_HEIGHT / 2 - height / 2)
+                else:
+                    feeders = [positions[p] for p in self.bracket._Prereqs(m) if p in positions]
+                    if feeders:
+                        y = max(cursor, sum(f[1] for f in feeders) / len(feeders))
                 positions[m.id] = (x, y)
                 self._AddMatch(m, x, y)
                 cursor = y + height + BracketView.ROW_GAP
