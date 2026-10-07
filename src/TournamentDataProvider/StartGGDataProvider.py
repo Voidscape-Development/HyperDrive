@@ -2539,8 +2539,12 @@ class StartGGDataProvider(TournamentDataProvider):
                 )
 
                 sets = deep_get(standing, "entrant.paginatedSets.nodes")
+                seed = deep_get(standing, "entrant.initialSeedNum")
                 for entrant in participants:
-                    team["players"].append(StartGGDataProvider.ProcessEntrantData(entrant, sets))
+                    playerData = StartGGDataProvider.ProcessEntrantData(entrant, sets)
+                    if isinstance(seed, int):
+                        playerData["seed"] = seed
+                    team["players"].append(playerData)
 
                 teams.append(team)
             return teams

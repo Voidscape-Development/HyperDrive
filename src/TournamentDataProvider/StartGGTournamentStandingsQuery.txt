@@ -9,6 +9,7 @@ query TournamentStandingsQuery($eventSlug: String!, $playerNumber: Int!) {
 				entrant {
 					id
 					name
+					initialSeedNum
 					participants {
 						player {
 							id
