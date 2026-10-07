@@ -1,5 +1,6 @@
 # Checks StartGGDataProvider.GetStandings: placements are fetched in parallel,
-# come back in placement order, and nothing past the last entrant is asked for.
+# come back in placement order with their seeds, and nothing past the last
+# entrant is asked for.
 # Run from the repository root: python test/test_startgg_standings.py
 import os
 import sys
@@ -35,6 +36,7 @@ def Standing(placement, total):
                             },
                             "entrant": {
                                 "name": f"Entrant {placement}",
+                                "initialSeedNum": placement + 10,
                                 "participants": [
                                     {"player": {"id": placement, "gamerTag": f"P{placement}"}}
                                 ],
@@ -72,6 +74,7 @@ def TestOrderAndProgress():
     teams = provider.GetStandings(16, lambda n, t: progress.append((n, t)), None)
     assert [t["players"][0]["gamerTag"] for t in teams] == [f"P{i}" for i in range(1, 17)]
     assert [t["wins"] for t in teams] == list(range(1, 17))
+    assert [t["players"][0]["seed"] for t in teams] == list(range(11, 27))
     assert sorted(provider.asked) == list(range(1, 17))
     assert progress[-1] == (16, 16) and len(progress) == 16
     print("TestOrderAndProgress: OK")

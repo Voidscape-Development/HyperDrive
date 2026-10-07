@@ -571,6 +571,17 @@ class ScoreboardWidget(QWidget):
             ThemedIcon("assets/icons/undo.svg")
         )
 
+        self.scoreColumn.findChild(QPushButton, "btClearAll").clicked.connect(self.ClearAllClicked)
+        self.scoreColumn.findChild(QPushButton, "btClearAll").setIcon(
+            ThemedIcon("assets/icons/cancel.svg")
+        )
+        self.scoreColumn.findChild(QPushButton, "btClearAll").setToolTip(
+            QApplication.translate(
+                "app",
+                "Clear the players, scores, phase and match, and unlink the loaded set",
+            )
+        )
+
         # Add default and user tournament phase title files
         self.scoreColumn.findChild(QComboBox, "phase").addItem("")
         LocaleHelper.LoadPhaseNamesToWidget(self.scoreColumn.findChild(QComboBox, "phase"))
@@ -955,6 +966,28 @@ class ScoreboardWidget(QWidget):
     def ResetScore(self):
         self.scoreColumn.findChild(QSpinBox, "score_left").setValue(0)
         self.scoreColumn.findChild(QSpinBox, "score_right").setValue(0)
+
+    def ClearAllClicked(self):
+        answer = QMessageBox.question(
+            self,
+            QApplication.translate("app", "Clear All"),
+            QApplication.translate(
+                "app",
+                "Clear the players, scores, phase and match of this scoreboard, and unlink the loaded set?",
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            self.ClearAll()
+
+    # Back to an empty scoreboard. Team names and colors are kept
+    def ClearAll(self):
+        with StateManager.SaveBlock():
+            self.StopAutoUpdate(clear_variables=True)
+            self.CommandClearAll()
+            self.ClearScore()
+            StateManager.Unset(f"score.{self.scoreboardNumber}.stage_strike")
 
     def RunAutoUpdate(self, done):
         data = self.autoUpdateData or {}

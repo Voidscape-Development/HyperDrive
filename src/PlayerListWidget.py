@@ -1,12 +1,24 @@
+import traceback
+
+from loguru import logger
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
-from src.Helpers.AltTextHelper import add_alt_text_tooltip_to_button, generate_top_n_alt_text
+from src.Helpers.AltTextHelper import (
+    TEMPLATE_PLACEHOLDERS,
+    add_alt_text_tooltip_to_button,
+    default_templates,
+    generate_alt_text,
+    load_options,
+    load_program_state,
+    save_options,
+)
 
 from .DisplayOptions import DisplayOptionsButton
 from .GameAssetManager import GameAssetManager
 from .PlayerList import PlayerList
+from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .TournamentDataManager import TournamentDataManager
 
@@ -139,28 +151,128 @@ class PlayerListWidget(QDockWidget):
         self.loadFromStandingsBt.setText(QApplication.translate("app", "Load tournament standings"))
 
     def AltTextWindow(self):
-        def copy_text():
-            textbox.selectAll()
-            textbox.copy()
+        options = load_options()
+        try:
+            data = load_program_state()
+        except:
+            logger.error(traceback.format_exc())
+            data = {}
+        bracketLink = SettingsManager.Get("TOURNAMENT_URL", "") or ""
 
-        messagebox = QDialog()
+        messagebox = QDialog(self)
         messagebox.setWindowTitle(QApplication.translate("app", "Descriptive Text for Results"))
-        vbox = QVBoxLayout()
-        messagebox.setLayout(vbox)
-        textbox = QTextEdit()
-        text_data = generate_top_n_alt_text().strip("\n")
-        textbox.setText(text_data)
+        messagebox.resize(1000, 650)
+        messagebox.setLayout(QHBoxLayout())
+
+        tabs = QTabWidget()
+        messagebox.layout().addWidget(tabs, 2)
+
+        right = QVBoxLayout()
+        messagebox.layout().addLayout(right, 3)
+        textbox = QPlainTextEdit()
         textbox.setReadOnly(True)
-        vbox.layout().addWidget(textbox)
-
-        hbox = QHBoxLayout()
-        vbox.layout().addLayout(hbox)
-
+        right.addWidget(textbox)
         copyTextButton = QPushButton(QApplication.translate("app", "Copy text"))
-        copyTextButton.clicked.connect(copy_text)
-        hbox.layout().addWidget(copyTextButton)
+        copyTextButton.clicked.connect(
+            lambda: QApplication.clipboard().setText(textbox.toPlainText())
+        )
+        right.addWidget(copyTextButton)
+
+        def refresh():
+            options["mode"] = "template" if tabs.currentIndex() == 1 else "simple"
+            textbox.setPlainText(generate_alt_text(data, options, bracket_link=bracketLink))
+
+        def textEdit(key, height=60):
+            edit = QPlainTextEdit(options.get(key, ""))
+            edit.setFixedHeight(height)
+
+            def changed():
+                options[key] = edit.toPlainText()
+                refresh()
+
+            edit.textChanged.connect(changed)
+            return edit
+
+        # Simple: pick what is shown
+        simple = QWidget()
+        simple.setLayout(QVBoxLayout())
+        checkboxes = [
+            ("show_date", QApplication.translate("app", "Date")),
+            ("show_game", QApplication.translate("app", "Game")),
+            ("show_bracket_link", QApplication.translate("app", "Bracket link")),
+            ("show_seed", QApplication.translate("app", "Seed")),
+            ("show_country", QApplication.translate("app", "Country")),
+            ("show_characters", QApplication.translate("app", "Characters")),
+            ("show_variants", QApplication.translate("app", "Character variants")),
+            ("show_twitter", QApplication.translate("app", "Twitter")),
+            ("show_pronoun", QApplication.translate("app", "Pronouns")),
+            ("show_commentators", QApplication.translate("app", "Commentators")),
+        ]
+        grid = QGridLayout()
+        simple.layout().addLayout(grid)
+        for i, (key, label) in enumerate(checkboxes):
+            checkbox = QCheckBox(label)
+            checkbox.setChecked(bool(options.get(key)))
+            checkbox.toggled.connect(
+                lambda checked, key=key: [options.__setitem__(key, checked), refresh()]
+            )
+            grid.addWidget(checkbox, i // 2, i % 2)
+        simple.layout().addWidget(QLabel(QApplication.translate("app", "Text at the top")))
+        simple.layout().addWidget(textEdit("header_text"))
+        simple.layout().addWidget(QLabel(QApplication.translate("app", "Text at the bottom")))
+        simple.layout().addWidget(textEdit("footer_text"))
+        simple.layout().addStretch()
+        tabs.addTab(simple, QApplication.translate("app", "Simple"))
+
+        # Template: write the text, with {placeholders}
+        template = QWidget()
+        template.setLayout(QVBoxLayout())
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(template)
+        helpLabel = QLabel(
+            QApplication.translate(
+                "app",
+                "{name} is replaced by the value. A part in [[ ]] is only shown when every value in it is filled in, for example [[ ({twitter})]].",
+            )
+        )
+        helpLabel.setWordWrap(True)
+        template.layout().addWidget(helpLabel)
+        templateParts = [
+            ("header", QApplication.translate("app", "Header")),
+            ("entry", QApplication.translate("app", "Each placement")),
+            ("player", QApplication.translate("app", "Each player")),
+            ("footer", QApplication.translate("app", "Footer")),
+        ]
+        templateEdits = {}
+        for part, label in templateParts:
+            title = QLabel(f"<b>{label}</b>")
+            template.layout().addWidget(title)
+            placeholders = QLabel(" ".join("{" + p + "}" for p in TEMPLATE_PLACEHOLDERS[part]))
+            placeholders.setWordWrap(True)
+            placeholders.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            template.layout().addWidget(placeholders)
+            templateEdits[part] = textEdit(
+                f"template_{part}", 50 if part in ("entry", "player") else 90
+            )
+            template.layout().addWidget(templateEdits[part])
+
+        def resetTemplates():
+            for part, text in default_templates().items():
+                templateEdits[part].setPlainText(text)
+
+        resetButton = QPushButton(QApplication.translate("app", "Reset templates"))
+        resetButton.clicked.connect(resetTemplates)
+        template.layout().addWidget(resetButton)
+        template.layout().addStretch()
+        tabs.addTab(scroll, QApplication.translate("app", "Template"))
+
+        tabs.setCurrentIndex(1 if options.get("mode") == "template" else 0)
+        tabs.currentChanged.connect(refresh)
+        refresh()
 
         messagebox.exec()
+        save_options(options)
 
     def LoadFromStandings(self, data):
         if not data:
