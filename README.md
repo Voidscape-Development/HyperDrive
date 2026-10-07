@@ -12,6 +12,8 @@ HTML overlays that you add to OBS or any other streaming software as browser sou
 - **Tournament data** from start.gg, plus parry.gg in beta.
 - **Scoreboards** for players, teams and commentators, with a stream queue, a bracket
   view and player stats such as recent sets and head-to-head.
+- **Crew/team battles** (Stock Pool or First To), with an in-game scoreboard, a roster
+  board and a versus screen in [`layout/team_battle`](layout/team_battle).
 - **More than 40 layouts** in [`layout/`](layout): scoreboards, brackets, top 8s, versus
   screens, stream queues and maps. They share theme options that you can change from the app.
 - **A local player database** that you can edit in the app or from a browser.

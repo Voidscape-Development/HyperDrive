@@ -19,6 +19,39 @@
       2
     ]
   },
+  "team_battle": {
+    "stocks": 3,
+    "phase": "Top 8",
+    "match": "Crew Battle",
+    "teams": [
+      {
+        "name": "Voltage",
+        "players": [
+          1,
+          3,
+          5,
+          7
+        ]
+      },
+      {
+        "name": "Nightfall",
+        "players": [
+          2,
+          4,
+          6,
+          8
+        ]
+      }
+    ],
+    "stocks_taken_by": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      1
+    ]
+  },
   "commentators": [
     {
       "prefix": "HD",

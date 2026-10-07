@@ -1,0 +1,350 @@
+/* Versus splash, full screen */
+
+#versus {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg-color);
+}
+
+/* ── Background: the two team colors, split on a slant ──── */
+
+.vs_bg {
+  position: absolute;
+  inset: 0;
+}
+
+.vs_bg.t1 {
+  background:
+    linear-gradient(160deg, var(--team) 0%, var(--team-dark) 70%, rgb(10, 10, 16) 100%);
+  clip-path: polygon(0 0, 55% 0, 45% 100%, 0 100%);
+}
+
+.vs_bg.t2 {
+  background:
+    linear-gradient(200deg, var(--team) 0%, var(--team-dark) 70%, rgb(10, 10, 16) 100%);
+  clip-path: polygon(55% 0, 100% 0, 100% 100%, 45% 100%);
+}
+
+/* Diagonal stripes over each side */
+.vs_bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -60deg,
+    rgba(255, 255, 255, 0.05) 0 18px,
+    transparent 18px 60px
+  );
+}
+
+.vs_slash {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 50%;
+  width: 26px;
+  margin-left: -13px;
+  background: #fff;
+  transform: rotate(5.7deg);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+}
+
+/* ── Top ──────────────────────────────────────────────────── */
+
+.vs_top {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  width: 1000px;
+  margin-left: -500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0 10px;
+  z-index: 4;
+}
+
+/* A dark plate, so the slash doesn't cross the title */
+.vs_top::before {
+  content: "";
+  position: absolute;
+  inset: 0 60px;
+  z-index: -1;
+  background: var(--tb-panel);
+  border-bottom: 4px solid var(--accent-color);
+  transform: skewX(var(--tb-skew));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.vs_tournament {
+  width: 100%;
+  height: 52px;
+  font-size: 48px;
+}
+
+.vs_phase {
+  width: 100%;
+  height: 32px;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── Teams ────────────────────────────────────────────────── */
+
+.vs_team {
+  position: absolute;
+  top: 140px;
+  width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+.vs_team.t1 {
+  left: 70px;
+}
+
+.vs_team.t2 {
+  right: 70px;
+}
+
+.vs_logo {
+  width: 210px;
+  height: 210px;
+  font-size: 200px;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+}
+
+.vs_name {
+  width: 100%;
+  height: 128px;
+  font-size: 124px;
+  text-shadow: 0 8px 0 var(--team-dark), 0 14px 30px rgba(0, 0, 0, 0.6);
+}
+
+.vs_numbers {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.vs_big {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0 22px;
+  height: 66px;
+  color: #111;
+  -webkit-text-stroke: 0;
+}
+
+.vs_big::before,
+.vs_score::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: skewX(var(--tb-skew));
+}
+
+.vs_big::before {
+  background: #fff;
+}
+
+.vs_big_value {
+  display: inline-block;
+  font-size: 66px;
+}
+
+.vs_big_label {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--team-dark);
+}
+
+.vs_score {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  height: 52px;
+}
+
+.vs_score::before {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.vs_score_label {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--tb-dim);
+}
+
+.vs_score_value {
+  display: inline-block;
+  font-size: 40px;
+}
+
+/* ── VS ───────────────────────────────────────────────────── */
+
+.vs_mid {
+  position: absolute;
+  top: 250px;
+  left: 50%;
+  width: 340px;
+  margin-left: -170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 3;
+}
+
+.vs_vs {
+  font-size: 230px;
+  color: #fff;
+  text-shadow:
+    -8px 0 0 var(--t1-color),
+    8px 0 0 var(--t2-color),
+    0 16px 40px rgba(0, 0, 0, 0.7);
+}
+
+.vs_rule {
+  width: 100%;
+  height: 40px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: var(--tb-panel);
+  border-bottom: 3px solid var(--accent-color);
+}
+
+/* ── Rosters ──────────────────────────────────────────────── */
+
+.vs_rosters {
+  position: absolute;
+  left: 60px;
+  right: 60px;
+  bottom: 50px;
+  height: 340px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 90px;
+  z-index: 2;
+}
+
+.vs_roster {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--card-gap, 14px);
+  min-width: 0;
+}
+
+.vs_roster.t2 {
+  flex-direction: row-reverse;
+}
+
+.vs_card {
+  --w: var(--card-w, 180px);
+  position: relative;
+  width: var(--w);
+  flex: none;
+  --x-width: calc(var(--w) * 0.06);
+  --x-length: 110%;
+  --x-angle: 58deg;
+}
+
+.vs_card_frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--tb-panel-2), var(--tb-panel));
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+}
+
+.vs_card.active .vs_card_frame {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 3px var(--team),
+    0 0 34px var(--team);
+}
+
+.vs_render {
+  position: absolute;
+  inset: 0 0 64px 0;
+  overflow: hidden;
+  isolation: isolate;
+  z-index: 0;
+}
+
+.vs_num {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  font-size: clamp(22px, calc(var(--w) * 0.22), 44px);
+  color: var(--team-light);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+  z-index: 3;
+}
+
+.t2 .vs_num {
+  left: auto;
+  right: 10px;
+}
+
+.vs_plate {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--team);
+  border-top: 3px solid var(--team-light);
+  z-index: 2;
+}
+
+.vs_card.active .vs_plate {
+  background: linear-gradient(180deg, var(--team-light), var(--team));
+}
+
+.vs_player_name {
+  width: 92%;
+  height: 30px;
+  font-size: clamp(16px, calc(var(--w) * 0.14), 28px);
+  font-weight: 700;
+}
+
+.vs_player_name .sponsor {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.vs_pips {
+  --pip-size: clamp(12px, calc(var(--w) * 0.11), 20px);
+  --pip-gap: 2px;
+}
+
+.vs_pips .pip.lit:not(.icon) {
+  background: #fff;
+  border-color: #fff;
+  box-shadow: none;
+}

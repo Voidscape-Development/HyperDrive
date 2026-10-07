@@ -1,8 +1,8 @@
-# Layout data: bracket, stream queue, games, custom player data and layout themes
+# Layout data: bracket, stream queue, games, team battle, custom player data and layout themes
 
 What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
-Stream Queue widget, the scoreboard's Games tab, the players' custom data and the
-layout theme in use.
+Stream Queue widget, the scoreboard's Games tab, the Crew/Team Battle window, the
+players' custom data and the layout theme in use.
 
 ## `bracket`
 
@@ -174,6 +174,24 @@ page shows the same character select when there's no ruleset.
 Picks are sent to `POST /character_select_report?scoreboard=N[&team=T]` with
 `{"characters": {team: {player: [[character, skin], ...]}}}`; it answers 409
 `ALREADY_PICKED` until the score changes.
+
+## `team_battle`
+
+The Crew/Team Battle window:
+
+| Key | |
+| - | - |
+| `battle_mode` | `STOCK_POOL` or `FIRST_TO` |
+| `battle_value` | The stocks every player starts with (Stock Pool), or the games to win (First To) |
+| `phase`, `match` | |
+| `team.T` | `{sponsor, color, logo, sponsor_logo, active_player, player}`: `sponsor` is the team's name, `logo` its logo from `user_data/team_logo/` (or `null`), `active_player` the number of the player playing |
+| `team.T.player.P` | A player, as on the scoreboard, plus `dynamic_spinner` (their stocks left, or games won against the current opponent), `active` and `dead` (eliminated) |
+| `team1_spinner-total`, `team2_spinner-total` | Every player's `dynamic_spinner`, added up |
+| `team1_total-score`, `team2_total-score` | The team scores set in the window |
+
+The layouts in [`layout/team_battle`](../layout/team_battle) show it: a scoreboard
+for in game, a roster board and a versus screen, each in a Stock Pool
+(`*_stock.html`) and a First To (`*_first_to.html`) version.
 
 ## Custom player data: `custom`
 
