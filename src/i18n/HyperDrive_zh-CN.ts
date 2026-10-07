@@ -276,6 +276,11 @@
         <translation>交换位置</translation>
     </message>
     <message>
+        <location filename="../layout/ScoreboardScore.ui" line="222"/>
+        <source>CLEAR ALL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../layout/ScoreboardStage.ui" line="45"/>
         <source>Ruleset Name</source>
         <translation>规则名称</translation>
@@ -703,16 +708,28 @@
         <translation>点击此处观看</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="63"/>
+        <location filename="../Helpers/AltTextHelper.py" line="84"/>
+        <location filename="../Helpers/AltTextHelper.py" line="273"/>
         <source>Game:</source>
         <translation>游戏：</translation>
+    </message>
+    <message>
+        <location filename="../Helpers/AltTextHelper.py" line="275"/>
+        <source>Bracket:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Helpers/AltTextHelper.py" line="305"/>
+        <source>Seed {0}</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>VS</source>
         <translation>VS</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="140"/>
+        <location filename="../Helpers/AltTextHelper.py" line="90"/>
+        <location filename="../Helpers/AltTextHelper.py" line="311"/>
         <source>Commentators:</source>
         <translation>解说：</translation>
     </message>
@@ -721,12 +738,13 @@
         <translation>直播由HyperDrive提供：</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="64"/>
+        <location filename="../Helpers/AltTextHelper.py" line="86"/>
+        <location filename="../Helpers/AltTextHelper.py" line="277"/>
         <source>Standings:</source>
         <translation>排名：</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="146"/>
+        <location filename="../Helpers/AltTextHelper.py" line="77"/>
         <source>Stream powered by HyperDrive</source>
         <translation>直播由HyperDrive提供</translation>
     </message>
@@ -789,7 +807,7 @@
         <translation>解说</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="29"/>
+        <location filename="../PlayerListWidget.py" line="41"/>
         <location filename="../HyperDrive.py" line="442"/>
         <source>Player List</source>
         <translation>选手列表</translation>
@@ -1224,13 +1242,13 @@
         <translation>下载失败：</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="52"/>
+        <location filename="../PlayerListWidget.py" line="64"/>
         <location filename="../BracketWidget.py" line="426"/>
         <source>Number of slots</source>
         <translation>选手/队伍数量</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="60"/>
+        <location filename="../PlayerListWidget.py" line="72"/>
         <location filename="../BracketWidget.py" line="429"/>
         <source>Players per slot</source>
         <translation>每个队伍的选手数量</translation>
@@ -1257,7 +1275,7 @@
     </message>
     <message>
         <location filename="../CommentaryWidget.py" line="52"/>
-        <location filename="../PlayerListWidget.py" line="68"/>
+        <location filename="../PlayerListWidget.py" line="80"/>
         <location filename="../ScoreboardWidget.py" line="183"/>
         <location filename="../BracketWidget.py" line="434"/>
         <source>Characters per player</source>
@@ -1269,36 +1287,106 @@
         <translation>解说人数</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="81"/>
+        <location filename="../PlayerListWidget.py" line="93"/>
         <source>Show scores</source>
         <translation>显示比分</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="87"/>
-        <location filename="../PlayerListWidget.py" line="139"/>
+        <location filename="../PlayerListWidget.py" line="99"/>
+        <location filename="../PlayerListWidget.py" line="151"/>
         <source>Load tournament standings</source>
         <translation>加载赛事排名</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="93"/>
+        <location filename="../PlayerListWidget.py" line="105"/>
         <source>Generate Descriptive Text for Results</source>
         <translation>生成赛果描述文本</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="124"/>
-        <location filename="../PlayerListWidget.py" line="134"/>
+        <location filename="../PlayerListWidget.py" line="136"/>
+        <location filename="../PlayerListWidget.py" line="146"/>
         <source>Loading standings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="147"/>
+        <location filename="../PlayerListWidget.py" line="163"/>
         <source>Descriptive Text for Results</source>
         <translation>赛果描述文本</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="159"/>
+        <location filename="../PlayerListWidget.py" line="175"/>
         <source>Copy text</source>
         <translation>复制文本</translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="200"/>
+        <source>Date</source>
+        <translation type="unfinished">日期</translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="202"/>
+        <source>Bracket link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="206"/>
+        <source>Character variants</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="209"/>
+        <source>Commentators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="220"/>
+        <source>Text at the top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="222"/>
+        <source>Text at the bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="225"/>
+        <source>Simple</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="234"/>
+        <source>{name} is replaced by the value. A part in [[ ]] is only shown when every value in it is filled in, for example [[ ({twitter})]].</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="242"/>
+        <source>Header</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="243"/>
+        <source>Each placement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="244"/>
+        <source>Each player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="245"/>
+        <source>Footer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="264"/>
+        <source>Reset templates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerListWidget.py" line="268"/>
+        <source>Template</source>
+        <translation type="unfinished">模板</translation>
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="83"/>
@@ -1461,6 +1549,7 @@
         <location filename="../DisplayOptions.py" line="15"/>
         <location filename="../PlayerDBWindow.py" line="215"/>
         <location filename="../PlayerDBWindow.py" line="302"/>
+        <location filename="../PlayerListWidget.py" line="207"/>
         <location filename="../ScoreboardWidget.py" line="215"/>
         <location filename="../TeamBattleWidget.py" line="220"/>
         <source>Twitter</source>
@@ -1471,6 +1560,7 @@
         <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../PlayerDBWindow.py" line="675"/>
         <location filename="../PlayerDBWindow.py" line="761"/>
+        <location filename="../PlayerListWidget.py" line="203"/>
         <location filename="../ScoreboardWidget.py" line="216"/>
         <location filename="../BracketWidget.py" line="903"/>
         <source>Seed</source>
@@ -1494,6 +1584,7 @@
     <message>
         <location filename="../CommentaryWidget.py" line="78"/>
         <location filename="../DisplayOptions.py" line="23"/>
+        <location filename="../PlayerListWidget.py" line="205"/>
         <location filename="../ScoreboardWidget.py" line="223"/>
         <location filename="../TeamBattleWidget.py" line="156"/>
         <location filename="../TeamBattleWidget.py" line="226"/>
@@ -1505,6 +1596,7 @@
         <location filename="../DisplayOptions.py" line="24"/>
         <location filename="../PlayerDBWindow.py" line="213"/>
         <location filename="../PlayerDBWindow.py" line="300"/>
+        <location filename="../PlayerListWidget.py" line="208"/>
         <location filename="../ScoreboardWidget.py" line="224"/>
         <location filename="../TeamBattleWidget.py" line="227"/>
         <source>Pronouns</source>
@@ -1524,7 +1616,7 @@
     </message>
     <message>
         <location filename="../ScoreboardWidget.py" line="267"/>
-        <location filename="../ScoreboardWidget.py" line="715"/>
+        <location filename="../ScoreboardWidget.py" line="726"/>
         <source>Load set</source>
         <translation>加载对局</translation>
     </message>
@@ -1601,6 +1693,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../PlayerListWidget.py" line="201"/>
         <location filename="../GameReportWidget.py" line="158"/>
         <source>Game</source>
         <translation type="unfinished"></translation>
@@ -1799,22 +1892,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="708"/>
+        <location filename="../ScoreboardWidget.py" line="579"/>
+        <source>Clear the players, scores, phase and match, and unlink the loaded set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="719"/>
         <source>Load set from {0}</source>
         <translation>从{0}中加载对局</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1010"/>
+        <location filename="../ScoreboardWidget.py" line="973"/>
+        <source>Clear All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="974"/>
+        <source>Clear the players, scores, phase and match of this scoreboard, and unlink the loaded set?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1043"/>
         <source>Auto update (Set)</source>
         <translation>自动更新（对局）</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1013"/>
+        <location filename="../ScoreboardWidget.py" line="1046"/>
         <source>Auto update (Stream [{0}])</source>
         <translation>自动更新（直播【{0}】）</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1019"/>
+        <location filename="../ScoreboardWidget.py" line="1052"/>
         <source>Auto update (Station [{0}])</source>
         <translation>自动更新（赛台【{0}】）</translation>
     </message>
@@ -1823,7 +1931,7 @@
         <translation>自动更新（用户）</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1024"/>
+        <location filename="../ScoreboardWidget.py" line="1057"/>
         <source>Auto update</source>
         <translation>自动更新</translation>
     </message>
@@ -1990,6 +2098,7 @@
     <message>
         <location filename="../PlayerDBWindow.py" line="220"/>
         <location filename="../PlayerDBWindow.py" line="301"/>
+        <location filename="../PlayerListWidget.py" line="204"/>
         <source>Country</source>
         <translation type="unfinished">地区</translation>
     </message>
@@ -4810,7 +4919,7 @@ Drop an image here.</source>
 <context>
     <name>tips</name>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="13"/>
+        <location filename="../Helpers/AltTextHelper.py" line="68"/>
         <source>Descriptive text (also known as Alt text) describes images for blind and low-vision users, and helps give context around images to everyone. As such, we highly recommend adding it to your image uploads on your websites and social media posts.</source>
         <translation>描述文本（也叫替代文本/Alt文本）为了盲人和低视力用户解释图像内容,也能帮助所以用户了解图像的上下文。因此,我们强烈建议你在网站和社交媒体上传图片时添加该内容。</translation>
     </message>
