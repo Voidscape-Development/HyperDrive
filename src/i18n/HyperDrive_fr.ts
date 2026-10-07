@@ -2189,7 +2189,7 @@
     </message>
     <message>
         <location filename="../HyperDrive.py" line="398"/>
-        <location filename="../TeamBattleWidget.py" line="82"/>
+        <location filename="../TeamBattleWidget.py" line="85"/>
         <source>Crew/Team Battle</source>
         <translation>Combat en équipe</translation>
     </message>
@@ -2211,7 +2211,7 @@
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="72"/>
-        <location filename="../TeamBattleWidget.py" line="185"/>
+        <location filename="../TeamBattleWidget.py" line="188"/>
         <location filename="../BracketWidget.py" line="102"/>
         <location filename="../SelectSetWindow.py" line="100"/>
         <source>Phase</source>
@@ -2221,24 +2221,24 @@
         <location filename="../StreamQueueWidget.py" line="73"/>
         <location filename="../StreamQueueWidget.py" line="173"/>
         <location filename="../StreamQueueWidget.py" line="393"/>
-        <location filename="../TeamBattleWidget.py" line="186"/>
+        <location filename="../TeamBattleWidget.py" line="189"/>
         <location filename="../SelectSetWindow.py" line="101"/>
         <source>Match</source>
         <translation>Match</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="100"/>
-        <location filename="../TeamBattleWidget.py" line="358"/>
+        <location filename="../TeamBattleWidget.py" line="103"/>
+        <location filename="../TeamBattleWidget.py" line="363"/>
         <source>Stocks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="129"/>
+        <location filename="../TeamBattleWidget.py" line="132"/>
         <source>Reset Player Mode Values</source>
         <translation>Réinitialiser les valeurs joueur</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="133"/>
+        <location filename="../TeamBattleWidget.py" line="136"/>
         <source>Reset Battle Mode</source>
         <translation>Réinitialiser le mode de combat</translation>
     </message>
@@ -2504,8 +2504,8 @@
         <location filename="../StreamQueueWidget.py" line="174"/>
         <location filename="../DisplayOptions.py" line="64"/>
         <location filename="../PlayerDBWindow.py" line="885"/>
-        <location filename="../TeamBattleWidget.py" line="152"/>
-        <location filename="../TeamBattleWidget.py" line="214"/>
+        <location filename="../TeamBattleWidget.py" line="155"/>
+        <location filename="../TeamBattleWidget.py" line="217"/>
         <location filename="../BracketWidget.py" line="164"/>
         <location filename="../BracketWidget.py" line="291"/>
         <source>Players</source>
@@ -2518,22 +2518,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="154"/>
+        <location filename="../TeamBattleWidget.py" line="157"/>
         <source>Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="237"/>
+        <location filename="../TeamBattleWidget.py" line="240"/>
         <source>Auto advance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="239"/>
+        <location filename="../TeamBattleWidget.py" line="242"/>
         <source>When the active player is eliminated, make the team&apos;s next player in line active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="360"/>
+        <location filename="../TeamBattleWidget.py" line="365"/>
         <source>First To</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2594,7 +2594,7 @@
         <location filename="../PlayerDBWindow.py" line="215"/>
         <location filename="../PlayerDBWindow.py" line="302"/>
         <location filename="../ScoreboardWidget.py" line="221"/>
-        <location filename="../TeamBattleWidget.py" line="217"/>
+        <location filename="../TeamBattleWidget.py" line="220"/>
         <source>Twitter</source>
         <translation>Twitter</translation>
     </message>
@@ -2602,7 +2602,7 @@
         <location filename="../CommentaryWidget.py" line="74"/>
         <location filename="../DisplayOptions.py" line="19"/>
         <location filename="../ScoreboardWidget.py" line="225"/>
-        <location filename="../TeamBattleWidget.py" line="219"/>
+        <location filename="../TeamBattleWidget.py" line="222"/>
         <source>Location</source>
         <translation>Lieu</translation>
     </message>
@@ -2610,8 +2610,8 @@
         <location filename="../CommentaryWidget.py" line="78"/>
         <location filename="../DisplayOptions.py" line="23"/>
         <location filename="../ScoreboardWidget.py" line="229"/>
-        <location filename="../TeamBattleWidget.py" line="153"/>
-        <location filename="../TeamBattleWidget.py" line="223"/>
+        <location filename="../TeamBattleWidget.py" line="156"/>
+        <location filename="../TeamBattleWidget.py" line="226"/>
         <source>Characters</source>
         <translation>Personnages</translation>
     </message>
@@ -2621,7 +2621,7 @@
         <location filename="../PlayerDBWindow.py" line="213"/>
         <location filename="../PlayerDBWindow.py" line="300"/>
         <location filename="../ScoreboardWidget.py" line="230"/>
-        <location filename="../TeamBattleWidget.py" line="224"/>
+        <location filename="../TeamBattleWidget.py" line="227"/>
         <source>Pronouns</source>
         <translation>Pronoms</translation>
     </message>
