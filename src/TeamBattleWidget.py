@@ -259,7 +259,7 @@ class TeamBattleWidget(QDockWidget):
 
         scrollArea = QScrollArea()
         scrollArea.setFrameShadow(QFrame.Shadow.Plain)
-        scrollArea.setFrameShape(QFrame.Shape.Panel)
+        scrollArea.setFrameShape(QFrame.Shape.NoFrame)
         scrollArea.setWidgetResizable(True)
 
         self.widgetArea = QWidget()
