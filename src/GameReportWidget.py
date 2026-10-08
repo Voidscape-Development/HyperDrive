@@ -47,8 +47,6 @@ class GameReportSignals(QObject):
     scoreChanged = Signal(int, int)
     # The set was reported to start.gg (set id)
     setReported = Signal(str)
-    # The games or the reporting status changed (after each export)
-    changed = Signal()
 
 
 class GameReportWidget(QWidget):
@@ -692,17 +690,3 @@ class GameReportWidget(QWidget):
                 )
         except Exception:
             logger.error(traceback.format_exc())
-        self.signals.changed.emit()
-
-    def Games(self):
-        """The winner of each game: 1 or 2 for a team, 0 for a draw, None
-        if not played yet."""
-        return [g.get("winner") for g in self.report.games]
-
-    def FocusGame(self, index):
-        """Scrolls to a game and puts the focus on it."""
-        if 0 <= index < len(self.rows):
-            button = self.rows[index]["winners"].get(1)
-            if button is not None:
-                self.gamesArea.ensureWidgetVisible(button)
-                button.setFocus()
