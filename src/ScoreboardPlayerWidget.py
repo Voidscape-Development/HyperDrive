@@ -567,10 +567,27 @@ class ScoreboardPlayerWidget(QFrame):
         if source is None:
             return
         event.acceptProposedAction()
-        if self.onDropSwap is not None:
-            self.onDropSwap(source, self)
-        else:
-            source.SwapWith(self)
+        self.MoveHere(source)
+
+    def MoveHere(self, source):
+        """Moves source's player to this row's place, shifting the players
+        between them by one, through swaps of neighboring rows."""
+        rows = [
+            w
+            for w in self.parentWidget().children()
+            if isinstance(w, ScoreboardPlayerWidget) and not w.isHidden()
+        ]
+        rows.sort(key=lambda w: (w.y(), w.x()))
+        if source not in rows or self not in rows:
+            return
+        start, end = rows.index(source), rows.index(self)
+        step = 1 if end > start else -1
+        for i in range(start, end, step):
+            a, b = rows[i], rows[i + step]
+            if self.onDropSwap is not None:
+                self.onDropSwap(a, b)
+            else:
+                a.SwapWith(b)
 
     # =====================================================
     # PLAYER DATABASE
