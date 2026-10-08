@@ -160,28 +160,19 @@ p, li { white-space: pre-wrap; }
     <name>Form</name>
     <message>
         <location filename="../layout/ScoreboardStage.ui" line="14"/>
-        <location filename="../layout/ScoreboardScore.ui" line="20"/>
-        <location filename="../layout/ScoreboardPlayer.ui" line="25"/>
-        <location filename="../layout/TeamPlayer.ui" line="25"/>
-        <location filename="../layout/ScoreboardTeam.ui" line="20"/>
-        <location filename="../layout/BattleTeam.ui" line="26"/>
         <source>Form</source>
         <translation>Formulário</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardTeam.ui" line="57"/>
         <source>TEAM</source>
         <translation>TIME</translation>
     </message>
     <message>
         <location filename="../PlayerListSlotWidget.py" line="33"/>
-        <location filename="../layout/ScoreboardTeam.ui" line="73"/>
-        <location filename="../layout/BattleTeam.ui" line="60"/>
         <source>Team Name</source>
         <translation>Nome do Time</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardTeam.ui" line="100"/>
         <source>LOSERS</source>
         <translation>LOSERS</translation>
     </message>
@@ -282,29 +273,22 @@ p, li { white-space: pre-wrap; }
         <translation>Validação</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="66"/>
-        <location filename="../layout/TeamPlayer.ui" line="117"/>
         <source>LOCATION</source>
         <translation>LOCAL</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="245"/>
         <source>Birthday?</source>
         <translation>Aniversário?</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="274"/>
         <source>SEED</source>
         <translation>SEED</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="308"/>
         <source>Real Name</source>
         <translation>Nome Real</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="326"/>
-        <location filename="../layout/TeamPlayer.ui" line="230"/>
         <source>Pronouns</source>
         <translation>Pronomes</translation>
     </message>
@@ -317,14 +301,10 @@ p, li { white-space: pre-wrap; }
         <translation>PATROCINADOR/TAG</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="211"/>
-        <location filename="../layout/TeamPlayer.ui" line="194"/>
         <source>TWITTER</source>
         <translation>TWITTER</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="232"/>
-        <location filename="../layout/TeamPlayer.ui" line="212"/>
         <source>Handle Only</source>
         <translation>Somente o handle</translation>
     </message>
@@ -333,8 +313,6 @@ p, li { white-space: pre-wrap; }
         <translation>PRONOMES</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="341"/>
-        <location filename="../layout/TeamPlayer.ui" line="89"/>
         <source>CHARACTERS</source>
         <translation>PERSONAGENS</translation>
     </message>
@@ -343,13 +321,10 @@ p, li { white-space: pre-wrap; }
         <translation>NOME REAL</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="143"/>
         <source>PLAYER</source>
         <translation>JOGADOR</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="170"/>
-        <location filename="../layout/TeamPlayer.ui" line="62"/>
         <source>Sponsor</source>
         <translation>Patrocinador</translation>
     </message>
@@ -358,20 +333,14 @@ p, li { white-space: pre-wrap; }
         <translation>Equipe</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="182"/>
-        <location filename="../layout/TeamPlayer.ui" line="74"/>
         <source>GamerTag</source>
         <translation>GamerTag</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="90"/>
-        <location filename="../layout/TeamPlayer.ui" line="141"/>
         <source>Region</source>
         <translation>País</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardPlayer.ui" line="114"/>
-        <location filename="../layout/TeamPlayer.ui" line="165"/>
         <source>Country</source>
         <translation>Região</translation>
     </message>
@@ -564,50 +533,36 @@ p, li { white-space: pre-wrap; }
         <translation>Atualizar pré-visualização</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardScore.ui" line="41"/>
-        <location filename="../layout/ScoreboardScore.ui" line="171"/>
         <source>SCORE</source>
         <translation>PLACAR</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardScore.ui" line="58"/>
         <source>PHASE</source>
         <translation>FASE</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardScore.ui" line="80"/>
         <source>Pool A, Bracket, Top 8, etc</source>
         <translation>Grupo A, Chave, Top 8, etc</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardScore.ui" line="97"/>
         <source>MATCH</source>
         <translation>PARTIDA</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardScore.ui" line="119"/>
         <source>Winners Finals, Losers Semis, etc</source>
         <translation>Final, Semifinal da Repescagem, etc</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardScore.ui" line="139"/>
         <source>BEST OF</source>
         <translation>MELHOR DE</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardScore.ui" line="208"/>
         <source>RESET SCORE</source>
         <translation>RESETAR PLACAR</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardScore.ui" line="215"/>
         <source>SWAP TEAMS</source>
         <translation>INVERTER TIMES</translation>
-    </message>
-    <message>
-        <location filename="../layout/ScoreboardScore.ui" line="222"/>
-        <source>CLEAR ALL</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Scale: {0}</source>
@@ -618,26 +573,18 @@ p, li { white-space: pre-wrap; }
         <translation>Deslocamento da posição dos olhos: ({0}, {1})</translation>
     </message>
     <message>
-        <location filename="../layout/BattleTeam.ui" line="87"/>
         <source>SPONSORS?</source>
         <translation>PATROCINADORES?</translation>
     </message>
     <message>
-        <location filename="../layout/TeamPlayer.ui" line="247"/>
         <source>ACTIVE</source>
         <translation>ATIVO</translation>
-    </message>
-    <message>
-        <location filename="../layout/TeamPlayer.ui" line="260"/>
-        <source>ELIMINATED</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Eliminated</source>
         <translation>Eliminado</translation>
     </message>
     <message>
-        <location filename="../layout/TeamPlayer.ui" line="285"/>
         <source>STOCKS/LIVES</source>
         <translation>STOCKS/VIDAS</translation>
     </message>
@@ -808,8 +755,8 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="152"/>
         <location filename="../StreamQueueWidget.py" line="363"/>
         <location filename="../ScoreboardManager.py" line="59"/>
-        <location filename="../ScoreboardManager.py" line="98"/>
-        <location filename="../ScoreboardManager.py" line="111"/>
+        <location filename="../ScoreboardManager.py" line="130"/>
+        <location filename="../ScoreboardManager.py" line="143"/>
         <source>Scoreboard</source>
         <translation>Placar</translation>
     </message>
@@ -1457,7 +1404,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../CommentaryWidget.py" line="52"/>
         <location filename="../PlayerListWidget.py" line="80"/>
-        <location filename="../ScoreboardWidget.py" line="183"/>
+        <location filename="../ScoreboardWidget.py" line="485"/>
         <location filename="../BracketWidget.py" line="434"/>
         <source>Characters per player</source>
         <translation>Personagens por jogador</translation>
@@ -1565,60 +1512,119 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">Template</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="83"/>
-        <location filename="../CommentaryWidget.py" line="81"/>
-        <location filename="../DisplayOptions.py" line="26"/>
-        <location filename="../ScoreboardWidget.py" line="226"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="285"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="288"/>
+        <location filename="../CommentaryWidget.py" line="80"/>
+        <location filename="../DisplayOptions.py" line="25"/>
+        <location filename="../ScoreboardWidget.py" line="503"/>
         <source>Additional information</source>
         <translation>Informações adicionais</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="104"/>
-        <location filename="../ScoreboardPlayerWidget.py" line="1065"/>
         <source>Save new player</source>
         <translation>Salvar novo jogador</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="114"/>
         <source>Delete player entry</source>
         <translation>Deletar jogador</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="129"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="317"/>
         <source>Media...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="133"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="320"/>
         <source>Avatar, sponsor logos and custom data of this player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="89"/>
-        <location filename="../ScoreboardPlayerWidget.py" line="139"/>
         <source>Clear</source>
         <translation>Limpar</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="440"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="890"/>
         <location filename="../BracketView.py" line="164"/>
+        <location filename="../TeamBattleWidget.py" line="409"/>
         <location filename="../SelectSetWindow.py" line="102"/>
         <location filename="../SelectSetWindow.py" line="103"/>
         <source>Player {0}</source>
         <translation>Jogador {0}</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="601"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="530"/>
         <source>Hide details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="603"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="192"/>
+        <source>Tag (searches the player database)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="216"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="532"/>
         <source>Show details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="1063"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="275"/>
+        <source>State / region</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="311"/>
+        <source>Add to player database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="325"/>
+        <location filename="../ScoreboardWidget.py" line="438"/>
+        <location filename="../TeamBattleWidget.py" line="204"/>
+        <source>More</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="330"/>
+        <source>Clear this player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="335"/>
+        <source>Reload from the player database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="341"/>
+        <source>Delete from the player database...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="489"/>
+        <source>skin {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="505"/>
+        <source>Saving to the player database...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="508"/>
+        <source>Saved in the player database. Your edits are saved automatically.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="616"/>
+        <source>Delete player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="617"/>
+        <source>Delete {0} from the player database? The scoreboard keeps them.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Update player</source>
         <translation>Atualizar jogador</translation>
     </message>
@@ -1778,19 +1784,21 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../StreamQueueWidget.py" line="75"/>
         <location filename="../SelectStationWindow.py" line="77"/>
+        <location filename="../ScoreboardWidget.py" line="952"/>
         <location filename="../SelectSetWindow.py" line="98"/>
         <source>Stream</source>
         <translation>Stream</translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="175"/>
+        <location filename="../ScoreboardWidget.py" line="954"/>
         <location filename="../SelectSetWindow.py" line="99"/>
         <source>Station</source>
         <translation>Estação</translation>
     </message>
     <message>
         <location filename="../HyperDrive.py" line="398"/>
-        <location filename="../TeamBattleWidget.py" line="85"/>
+        <location filename="../TeamBattleWidget.py" line="84"/>
         <source>Crew/Team Battle</source>
         <translation>Crew/Team Battle</translation>
     </message>
@@ -1812,7 +1820,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="72"/>
-        <location filename="../TeamBattleWidget.py" line="188"/>
+        <location filename="../ScoreboardWidget.py" line="830"/>
+        <location filename="../TeamBattleWidget.py" line="225"/>
         <location filename="../BracketWidget.py" line="102"/>
         <location filename="../SelectSetWindow.py" line="100"/>
         <source>Phase</source>
@@ -1822,24 +1831,25 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="73"/>
         <location filename="../StreamQueueWidget.py" line="173"/>
         <location filename="../StreamQueueWidget.py" line="393"/>
-        <location filename="../TeamBattleWidget.py" line="189"/>
+        <location filename="../ScoreboardWidget.py" line="831"/>
+        <location filename="../TeamBattleWidget.py" line="226"/>
         <location filename="../SelectSetWindow.py" line="101"/>
         <source>Match</source>
         <translation>Partida</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="103"/>
-        <location filename="../TeamBattleWidget.py" line="363"/>
+        <location filename="../TeamBattleWidget.py" line="102"/>
+        <location filename="../TeamBattleWidget.py" line="444"/>
         <source>Stocks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="132"/>
+        <location filename="../TeamBattleWidget.py" line="210"/>
         <source>Reset Player Mode Values</source>
         <translation>Resetar Valores do Modo de Jogador</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="136"/>
+        <location filename="../TeamBattleWidget.py" line="215"/>
         <source>Reset Battle Mode</source>
         <translation>Resetar Modo de Batalha</translation>
     </message>
@@ -1896,6 +1906,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">Deletar</translation>
     </message>
     <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="185"/>
         <location filename="../PlayerDBWindow.py" line="207"/>
         <location filename="../PlayerMediaTabs.py" line="182"/>
         <source>Sponsor</source>
@@ -1908,6 +1919,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="264"/>
         <location filename="../PlayerDBWindow.py" line="220"/>
         <location filename="../PlayerDBWindow.py" line="301"/>
         <location filename="../PlayerListWidget.py" line="204"/>
@@ -1988,6 +2000,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../PlayerDBWindow.py" line="298"/>
         <location filename="../PlayerDBWindow.py" line="759"/>
         <location filename="../BracketView.py" line="301"/>
+        <location filename="../PlayerRowParts.py" line="258"/>
         <source>Player</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2106,6 +2119,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="351"/>
+        <location filename="../ScoreboardWidget.py" line="923"/>
         <source>{0} players</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2211,6 +2225,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="513"/>
         <location filename="../PlayerDBWindow.py" line="784"/>
         <location filename="../PlayerMediaTabs.py" line="371"/>
         <source>Not in the player database</source>
@@ -2259,17 +2274,17 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayOptions.py" line="61"/>
+        <location filename="../DisplayOptions.py" line="60"/>
         <source>Display options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="74"/>
         <location filename="../StreamQueueWidget.py" line="174"/>
-        <location filename="../DisplayOptions.py" line="67"/>
+        <location filename="../DisplayOptions.py" line="66"/>
         <location filename="../PlayerDBWindow.py" line="885"/>
-        <location filename="../TeamBattleWidget.py" line="155"/>
-        <location filename="../TeamBattleWidget.py" line="217"/>
+        <location filename="../TeamBattleWidget.py" line="156"/>
+        <location filename="../TeamBattleWidget.py" line="179"/>
         <location filename="../BracketWidget.py" line="164"/>
         <location filename="../BracketWidget.py" line="291"/>
         <source>Players</source>
@@ -2282,22 +2297,57 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="157"/>
-        <source>Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../TeamBattleWidget.py" line="240"/>
+        <location filename="../TeamBattleWidget.py" line="159"/>
         <source>Auto advance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="242"/>
+        <location filename="../TeamBattleWidget.py" line="161"/>
         <source>When the active player is eliminated, make the team&apos;s next player in line active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="365"/>
+        <location filename="../TeamBattleWidget.py" line="336"/>
+        <source>SPONSORS?</source>
+        <translation type="unfinished">PATROCINADORES?</translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="339"/>
+        <source>Show or hide the players&apos; sponsor fields</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="349"/>
+        <source>The team&apos;s score, for layouts that show one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="366"/>
+        <source>+ Add a player to each team</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="400"/>
+        <source>Stocks left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="402"/>
+        <source>Games won</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="406"/>
+        <source>{0} of {1} players left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="412"/>
+        <source>Active: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="446"/>
         <source>First To</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2343,229 +2393,232 @@ p, li { white-space: pre-wrap; }
         <translation>Grupo {0}</translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="95"/>
+        <location filename="../GameReportWidget.py" line="97"/>
         <source>Report set to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="97"/>
+        <location filename="../GameReportWidget.py" line="99"/>
         <source>Sends the set&apos;s result and its games to start.gg, ending the set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="103"/>
+        <location filename="../GameReportWidget.py" line="105"/>
         <source>Retry</source>
         <translation type="unfinished">Tentar novamente</translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="106"/>
+        <location filename="../GameReportWidget.py" line="108"/>
         <source>Send games now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="108"/>
+        <location filename="../GameReportWidget.py" line="110"/>
         <source>Sends the games played so far to start.gg without ending the set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="115"/>
+        <location filename="../GameReportWidget.py" line="117"/>
         <source>Check token</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="117"/>
+        <location filename="../GameReportWidget.py" line="119"/>
         <source>Checks the start.gg API token set in Settings &gt; API Keys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="123"/>
-        <location filename="../GameReportWidget.py" line="591"/>
+        <location filename="../GameReportWidget.py" line="125"/>
+        <location filename="../GameReportWidget.py" line="593"/>
         <source>Clear games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="126"/>
+        <location filename="../GameReportWidget.py" line="128"/>
         <source>Reset on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="128"/>
+        <location filename="../GameReportWidget.py" line="130"/>
         <source>Resets the set on start.gg, so it can be reported again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerListWidget.py" line="201"/>
-        <location filename="../GameReportWidget.py" line="158"/>
+        <location filename="../GameReportWidget.py" line="160"/>
         <source>Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="162"/>
-        <location filename="../GameReportWidget.py" line="494"/>
+        <location filename="../GameReportWidget.py" line="164"/>
+        <location filename="../GameReportWidget.py" line="496"/>
         <source>Team 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="166"/>
-        <location filename="../GameReportWidget.py" line="497"/>
+        <location filename="../GameReportWidget.py" line="168"/>
+        <location filename="../GameReportWidget.py" line="499"/>
         <source>Team 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="237"/>
+        <location filename="../GameReportWidget.py" line="239"/>
         <source>Draw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="262"/>
+        <location filename="../GameReportWidget.py" line="264"/>
+        <location filename="../ScoreboardWidget.py" line="230"/>
+        <location filename="../ScoreboardWidget.py" line="910"/>
         <source>Team {0}</source>
         <translation>Equipe {0}</translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="434"/>
-        <location filename="../GameReportWidget.py" line="552"/>
+        <location filename="../GameReportWidget.py" line="436"/>
+        <location filename="../GameReportWidget.py" line="554"/>
         <source>Set a start.gg API token in Settings &gt; API Keys to report sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="438"/>
+        <location filename="../GameReportWidget.py" line="440"/>
         <source>Load a set from start.gg to report it</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="440"/>
+        <location filename="../GameReportWidget.py" line="442"/>
         <source>This set&apos;s bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="444"/>
+        <location filename="../GameReportWidget.py" line="446"/>
         <source>Waiting for the set&apos;s players from start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="481"/>
-        <location filename="../GameReportWidget.py" line="487"/>
-        <location filename="../GameReportWidget.py" line="501"/>
+        <location filename="../GameReportWidget.py" line="483"/>
+        <location filename="../GameReportWidget.py" line="489"/>
+        <location filename="../GameReportWidget.py" line="503"/>
         <source>Report set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="488"/>
+        <location filename="../GameReportWidget.py" line="490"/>
         <source>The set has no winner yet: the score is tied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="502"/>
+        <location filename="../GameReportWidget.py" line="504"/>
         <source>Report {0} {1} - {2} {3} to start.gg?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="506"/>
+        <location filename="../GameReportWidget.py" line="508"/>
         <source>{0} game(s) with their characters and stages will be sent.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="521"/>
-        <location filename="../GameReportWidget.py" line="525"/>
+        <location filename="../GameReportWidget.py" line="523"/>
+        <location filename="../GameReportWidget.py" line="527"/>
         <source>Reset set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="526"/>
+        <location filename="../GameReportWidget.py" line="528"/>
         <source>Reset this set on start.gg? Its result and games there are cleared (sets that depend on it too). The games here are kept.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="551"/>
-        <location filename="../GameReportWidget.py" line="567"/>
-        <location filename="../GameReportWidget.py" line="580"/>
+        <location filename="../GameReportWidget.py" line="553"/>
+        <location filename="../GameReportWidget.py" line="569"/>
+        <location filename="../GameReportWidget.py" line="582"/>
         <source>start.gg API token</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="568"/>
+        <location filename="../GameReportWidget.py" line="570"/>
         <source>The token works. It belongs to {0}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="572"/>
+        <location filename="../GameReportWidget.py" line="574"/>
         <source>Sets can only be reported if this account is an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="581"/>
+        <location filename="../GameReportWidget.py" line="583"/>
         <source>The token doesn&apos;t work: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="592"/>
+        <location filename="../GameReportWidget.py" line="594"/>
         <source>Clear the results, stages and characters of every game?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="615"/>
+        <location filename="../GameReportWidget.py" line="617"/>
         <source>No set loaded from start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="618"/>
+        <location filename="../GameReportWidget.py" line="620"/>
         <source>start.gg set {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="625"/>
+        <location filename="../GameReportWidget.py" line="627"/>
         <source>Waiting to send...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="626"/>
+        <location filename="../GameReportWidget.py" line="628"/>
         <source>Sending to start.gg...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="627"/>
+        <location filename="../GameReportWidget.py" line="629"/>
         <source>Games sent to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="628"/>
+        <location filename="../GameReportWidget.py" line="630"/>
         <source>Reported to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="629"/>
+        <location filename="../GameReportWidget.py" line="631"/>
         <source>Couldn&apos;t reach start.gg.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="630"/>
+        <location filename="../GameReportWidget.py" line="632"/>
         <source>start.gg error:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="646"/>
+        <location filename="../GameReportWidget.py" line="648"/>
         <source>This set is finished on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="648"/>
+        <location filename="../GameReportWidget.py" line="650"/>
         <source>Games are sent when the set is reported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerListSlotWidget.py" line="43"/>
         <location filename="../BracketView.py" line="302"/>
+        <location filename="../TeamBattleWidget.py" line="346"/>
         <source>Score</source>
         <translation>Placar</translation>
     </message>
     <message>
         <location filename="../HyperDrive.py" line="413"/>
-        <location filename="../GameReportWidget.py" line="160"/>
+        <location filename="../GameReportWidget.py" line="162"/>
         <source>Stage</source>
         <translation>Stage</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="192"/>
+        <location filename="../ScoreboardWidget.py" line="482"/>
         <source>Players per team</source>
         <translation>Jogadores por time</translation>
     </message>
@@ -2574,121 +2627,329 @@ p, li { white-space: pre-wrap; }
         <translation>Gerar Thumbnail</translation>
     </message>
     <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="247"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="248"/>
         <location filename="../CommentaryWidget.py" line="69"/>
         <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../PlayerDBWindow.py" line="211"/>
         <location filename="../PlayerDBWindow.py" line="299"/>
-        <location filename="../ScoreboardWidget.py" line="214"/>
+        <location filename="../ScoreboardWidget.py" line="492"/>
         <source>Real Name</source>
         <translation>Nome Real</translation>
     </message>
     <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="257"/>
+        <source>Handle Only</source>
+        <translation type="unfinished">Somente o handle</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="258"/>
         <location filename="../CommentaryWidget.py" line="70"/>
         <location filename="../DisplayOptions.py" line="15"/>
         <location filename="../PlayerDBWindow.py" line="215"/>
         <location filename="../PlayerDBWindow.py" line="302"/>
         <location filename="../PlayerListWidget.py" line="207"/>
-        <location filename="../ScoreboardWidget.py" line="215"/>
-        <location filename="../TeamBattleWidget.py" line="220"/>
+        <location filename="../ScoreboardWidget.py" line="493"/>
+        <location filename="../TeamBattleWidget.py" line="181"/>
         <source>Twitter</source>
         <translation>Twitter</translation>
     </message>
     <message>
+        <location filename="../ScoreboardPlayerWidget.py" line="169"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="243"/>
         <location filename="../CommentaryWidget.py" line="71"/>
         <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../PlayerDBWindow.py" line="675"/>
         <location filename="../PlayerDBWindow.py" line="761"/>
         <location filename="../PlayerListWidget.py" line="203"/>
-        <location filename="../ScoreboardWidget.py" line="216"/>
+        <location filename="../ScoreboardWidget.py" line="494"/>
         <location filename="../BracketWidget.py" line="903"/>
         <source>Seed</source>
         <translation>Seed</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="72"/>
-        <location filename="../DisplayOptions.py" line="17"/>
-        <location filename="../ScoreboardWidget.py" line="217"/>
         <source>Birthday</source>
         <translation>Aniversário</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="74"/>
-        <location filename="../DisplayOptions.py" line="19"/>
-        <location filename="../ScoreboardWidget.py" line="219"/>
-        <location filename="../TeamBattleWidget.py" line="222"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="269"/>
+        <location filename="../CommentaryWidget.py" line="73"/>
+        <location filename="../DisplayOptions.py" line="18"/>
+        <location filename="../ScoreboardWidget.py" line="496"/>
+        <location filename="../TeamBattleWidget.py" line="183"/>
         <source>Location</source>
         <translation>Local</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="78"/>
-        <location filename="../DisplayOptions.py" line="23"/>
+        <location filename="../CommentaryWidget.py" line="77"/>
+        <location filename="../DisplayOptions.py" line="22"/>
         <location filename="../PlayerListWidget.py" line="205"/>
-        <location filename="../ScoreboardWidget.py" line="223"/>
-        <location filename="../TeamBattleWidget.py" line="156"/>
-        <location filename="../TeamBattleWidget.py" line="226"/>
+        <location filename="../ScoreboardWidget.py" line="500"/>
+        <location filename="../TeamBattleWidget.py" line="157"/>
+        <location filename="../TeamBattleWidget.py" line="187"/>
         <source>Characters</source>
         <translation>Personagens</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="79"/>
-        <location filename="../DisplayOptions.py" line="24"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="252"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="253"/>
+        <location filename="../CommentaryWidget.py" line="78"/>
+        <location filename="../DisplayOptions.py" line="23"/>
         <location filename="../PlayerDBWindow.py" line="213"/>
         <location filename="../PlayerDBWindow.py" line="300"/>
         <location filename="../PlayerListWidget.py" line="208"/>
-        <location filename="../ScoreboardWidget.py" line="224"/>
-        <location filename="../TeamBattleWidget.py" line="227"/>
+        <location filename="../ScoreboardWidget.py" line="501"/>
+        <location filename="../TeamBattleWidget.py" line="188"/>
         <source>Pronouns</source>
         <translation>Pronomes</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="244"/>
-        <source>Compact player cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ScoreboardWidget.py" line="267"/>
-        <location filename="../ScoreboardWidget.py" line="726"/>
+        <location filename="../ScoreboardWidget.py" line="411"/>
+        <location filename="../ScoreboardWidget.py" line="886"/>
         <source>Load set</source>
         <translation>Carregar set</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="277"/>
+        <location filename="../ScoreboardWidget.py" line="422"/>
         <source>Track sets from a stream or station</source>
         <translation>Seguir os sets de um stream ou uma estação</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="320"/>
-        <location filename="../ScoreboardWidget.py" line="394"/>
+        <location filename="../ScoreboardWidget.py" line="580"/>
         <source>TEAM {0}</source>
         <translation>TIME {0}</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="498"/>
+        <location filename="../ScoreboardWidget.py" line="325"/>
         <source>Games - Scoreboard {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="504"/>
-        <source>GAMES</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ScoreboardWidget.py" line="507"/>
+        <location filename="../ScoreboardWidget.py" line="761"/>
         <source>The result, stage and characters of each game of the set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="579"/>
+        <location filename="../ScoreboardWidget.py" line="462"/>
         <source>Clear the players, scores, phase and match, and unlink the loaded set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="973"/>
+        <location filename="../ScoreboardWidget.py" line="400"/>
+        <location filename="../ScoreboardWidget.py" line="1090"/>
+        <source>Pause auto update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="405"/>
+        <source>Unlink the set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="418"/>
+        <location filename="../ScoreboardWidget.py" line="888"/>
+        <source>Track station</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="429"/>
+        <source>Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="444"/>
+        <source>Games...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="449"/>
+        <source>Copy the remote scoreboard address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="453"/>
+        <source>Rename this scoreboard...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="458"/>
+        <source>Clear all...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="490"/>
+        <location filename="../TeamBattleWidget.py" line="174"/>
+        <source>Player fields</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="522"/>
+        <source>Open every player&apos;s details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="562"/>
+        <source>Team color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="586"/>
+        <location filename="../TeamBattleWidget.py" line="317"/>
+        <source>Team Name</source>
+        <translation type="unfinished">Nome do Time</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="596"/>
+        <source>Losers side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="628"/>
+        <source>Score +1 (can also be set on a hotkey)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="633"/>
+        <source>Score -1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="703"/>
+        <source>Best of {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="718"/>
+        <source>Best of</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="743"/>
+        <source>Swap teams</source>
+        <translation type="unfinished">Inverter times</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="749"/>
+        <source>Reset score</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="807"/>
+        <source>Review and report...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="822"/>
+        <source>Pool A, Bracket, Top 8, etc</source>
+        <translation type="unfinished">Grupo A, Chave, Top 8, etc</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="828"/>
+        <source>Winners Finals, Losers Semis, etc</source>
+        <translation type="unfinished">Final, Semifinal da Repescagem, etc</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="851"/>
+        <source>Copy address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="921"/>
+        <source>{0} player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="959"/>
+        <source>manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="990"/>
+        <source>Game {0}: won by {1}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="995"/>
+        <source>Game {0}: draw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="999"/>
+        <source>click to open it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1021"/>
+        <source>{0} wins {1}–{2}. Report the set to start.gg?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1036"/>
+        <source>Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1038"/>
+        <source>Not linked to a set. Load one, or edit by hand.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1055"/>
+        <source>Stream [{0}]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1061"/>
+        <source>Station [{0}]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1066"/>
+        <source>Auto update off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1068"/>
+        <source>Auto update paused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1075"/>
+        <source>Updates in {0}s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1088"/>
+        <source>Resume auto update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1118"/>
+        <source>Rename scoreboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1119"/>
+        <source>Name (empty for the default name)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1152"/>
+        <source>First to {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1251"/>
+        <source>Set a tournament first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="1440"/>
         <source>Clear All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="974"/>
+        <location filename="../ScoreboardWidget.py" line="1441"/>
         <source>Clear the players, scores, phase and match of this scoreboard, and unlink the loaded set?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2701,7 +2962,7 @@ p, li { white-space: pre-wrap; }
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="719"/>
+        <location filename="../ScoreboardWidget.py" line="1246"/>
         <source>Load set from {0}</source>
         <translation>Carregar set do {0}</translation>
     </message>
@@ -2726,7 +2987,7 @@ p, li { white-space: pre-wrap; }
         <translation>URL da transmissão</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="283"/>
+        <location filename="../ScoreboardWidget.py" line="842"/>
         <source>Open {0} in a browser to edit the scoreboard remotely.</source>
         <translation>Abra {0} em um navegador para editar o placar remotamente.</translation>
     </message>
@@ -2736,7 +2997,8 @@ p, li { white-space: pre-wrap; }
         <translation>beta</translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="182"/>
+        <location filename="../GameReportWidget.py" line="184"/>
+        <location filename="../ScoreboardWidget.py" line="998"/>
         <source>Game {0}</source>
         <translation>Jogo {0}</translation>
     </message>
@@ -2761,17 +3023,14 @@ p, li { white-space: pre-wrap; }
         <translation>O post foi enviado com sucesso para a conta {0}</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1043"/>
         <source>Auto update (Set)</source>
         <translation>Atualização automática (Set)</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1046"/>
         <source>Auto update (Stream [{0}])</source>
         <translation>Atualização automática (Stream [{0}])</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1052"/>
         <source>Auto update (Station [{0}])</source>
         <translation>Atualização automática (Estação [{0}])</translation>
     </message>
@@ -2780,7 +3039,6 @@ p, li { white-space: pre-wrap; }
         <translation>Atualização automática (Usuário)</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1057"/>
         <source>Auto update</source>
         <translation>Atualização automática</translation>
     </message>
@@ -2889,12 +3147,62 @@ p, li { white-space: pre-wrap; }
         <translation>A conta do Bluesky não foi configurada corretamente</translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="172"/>
+        <location filename="../TeamPlayerWidget.py" line="97"/>
+        <source>ACTIVE</source>
+        <translation type="unfinished">ATIVO</translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="101"/>
+        <source>The team&apos;s player who is playing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="102"/>
+        <source>OUT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="106"/>
+        <source>Eliminated</source>
+        <translation type="unfinished">Eliminado</translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="183"/>
+        <source>{0} of {1} stocks left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="187"/>
+        <source>{0} games won (first to {1})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="192"/>
+        <source>Lose a stock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="194"/>
+        <source>Remove a game won</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="197"/>
+        <source>Give a stock back</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="199"/>
+        <source>Win a game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="221"/>
         <source>STOCKS/LIVES</source>
         <translation>STOCKS/VIDAS</translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="174"/>
+        <location filename="../TeamPlayerWidget.py" line="223"/>
         <source>GAMES WON</source>
         <translation>JOGOS GANHOS</translation>
     </message>
@@ -3043,6 +3351,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="206"/>
         <location filename="../StreamQueueWidget.py" line="422"/>
         <location filename="../PlayerMediaTabs.py" line="214"/>
+        <location filename="../PlayerRowParts.py" line="335"/>
         <location filename="../BracketWidget.py" line="269"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
@@ -3235,6 +3544,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../ScoreboardWidget.py" line="759"/>
         <location filename="../BracketWidget.py" line="909"/>
         <source>Games</source>
         <translation type="unfinished"></translation>
@@ -3315,11 +3625,13 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="199"/>
+        <location filename="../PlayerRowParts.py" line="130"/>
         <source>Move up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="203"/>
+        <location filename="../PlayerRowParts.py" line="131"/>
         <source>Move down</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3466,6 +3778,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="605"/>
+        <location filename="../ScoreboardWidget.py" line="1072"/>
         <source>Updating...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3929,6 +4242,51 @@ Drop an image here.</source>
         <source>A team on the scoreboard gets the logo named after its team name. Drop images here to add them.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="124"/>
+        <source>Drag to reorder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="178"/>
+        <source>+ Character</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="180"/>
+        <source>Pick a character</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="259"/>
+        <source>{0} · character {1}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="268"/>
+        <source>Mains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="285"/>
+        <source>Search characters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="309"/>
+        <source>Skin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="323"/>
+        <source>Variant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerRowParts.py" line="340"/>
+        <source>Done</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>layout_options</name>
@@ -4308,17 +4666,17 @@ Drop an image here.</source>
         <translation>Teclas de atalho</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="401"/>
+        <location filename="../Settings/SettingsWindow.py" line="392"/>
         <source>Default Display Options</source>
         <translation>Opções de Exibição Padrão</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="406"/>
+        <location filename="../Settings/SettingsWindow.py" line="397"/>
         <source>Match &amp; Phase Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="409"/>
+        <location filename="../Settings/SettingsWindow.py" line="400"/>
         <source>Pronouns</source>
         <translation type="unfinished">Pronomes</translation>
     </message>
@@ -4327,12 +4685,12 @@ Drop an image here.</source>
         <translation>Bluesky</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="451"/>
+        <location filename="../Settings/SettingsWindow.py" line="442"/>
         <source>API Keys</source>
         <translation>Chaves de API</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="493"/>
+        <location filename="../Settings/SettingsWindow.py" line="484"/>
         <source>start.gg Reporting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4346,28 +4704,28 @@ Drop an image here.</source>
 <context>
     <name>settings.api_keys</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="415"/>
+        <location filename="../Settings/SettingsWindow.py" line="406"/>
         <source>ParryGG</source>
         <translation>ParryGG</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="420"/>
+        <location filename="../Settings/SettingsWindow.py" line="411"/>
         <source>You can get an API Key from parry.gg/api-keys</source>
         <translation>Você pode obter uma Chave de API em parry.gg/api-keys</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="424"/>
-        <location filename="../Settings/SettingsWindow.py" line="443"/>
+        <location filename="../Settings/SettingsWindow.py" line="415"/>
+        <location filename="../Settings/SettingsWindow.py" line="434"/>
         <source>Please note that the API Key will be stored in plain text on your computer</source>
         <translation>Note que a Chave de API será salva no seu computador em forma de texto</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="433"/>
+        <location filename="../Settings/SettingsWindow.py" line="424"/>
         <source>start.gg (reporting sets)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="438"/>
+        <location filename="../Settings/SettingsWindow.py" line="429"/>
         <source>Needed to report sets to start.gg from the scoreboard&apos;s Games window. Create a token at start.gg &gt; Developer Settings, with an account that&apos;s an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4640,7 +4998,7 @@ Drop an image here.</source>
 <context>
     <name>settings.compact_players</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="393"/>
+        <location filename="../Settings/SettingsWindow.py" line="384"/>
         <source>Compact Player Cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4911,7 +5269,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_additional</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="384"/>
+        <location filename="../Settings/SettingsWindow.py" line="375"/>
         <source>Show Additional Info</source>
         <translation>Mostrar Informações Adicionais</translation>
     </message>
@@ -4919,7 +5277,6 @@ Drop an image here.</source>
 <context>
     <name>settings.show_birthday</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="348"/>
         <source>Show Birthday</source>
         <translation>Mostrar Aniversário</translation>
     </message>
@@ -4927,7 +5284,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_characters</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="366"/>
+        <location filename="../Settings/SettingsWindow.py" line="357"/>
         <source>Show Characters</source>
         <translation>Mostrar Personagens</translation>
     </message>
@@ -4942,7 +5299,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_location</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="357"/>
+        <location filename="../Settings/SettingsWindow.py" line="348"/>
         <source>Show Location</source>
         <translation>Mostrar Localização</translation>
     </message>
@@ -4958,7 +5315,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_pronouns</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="375"/>
+        <location filename="../Settings/SettingsWindow.py" line="366"/>
         <source>Show Pronouns</source>
         <translation>Mostrar Pronomes</translation>
     </message>
@@ -4982,22 +5339,22 @@ Drop an image here.</source>
 <context>
     <name>settings.startgg_reporting</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="459"/>
+        <location filename="../Settings/SettingsWindow.py" line="450"/>
         <source>Send each game to start.gg as it&apos;s played (otherwise games are sent when the set is reported)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="467"/>
+        <location filename="../Settings/SettingsWindow.py" line="458"/>
         <source>Lets viewers follow the set on start.gg live. Uses one request per change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="475"/>
+        <location filename="../Settings/SettingsWindow.py" line="466"/>
         <source>Mark sets as in progress on start.gg when they&apos;re loaded on a scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="486"/>
+        <location filename="../Settings/SettingsWindow.py" line="477"/>
         <source>Ask before reporting a set</source>
         <translation type="unfinished"></translation>
     </message>
