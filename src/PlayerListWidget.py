@@ -16,9 +16,9 @@ from src.Helpers.AltTextHelper import (
 )
 
 from .DisplayOptions import DisplayOptionsButton
+from .FlowLayout import FlowLayout
 from .GameAssetManager import GameAssetManager
 from .PlayerList import PlayerList
-from .PlayerRowParts import FlowLayout
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .TournamentDataManager import TournamentDataManager

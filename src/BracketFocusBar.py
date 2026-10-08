@@ -8,8 +8,8 @@ from qtpy.QtWidgets import *
 
 from .BracketFocus import BracketFocus
 from .BracketView import BracketView
+from .FlowLayout import FlowLayout
 from .Helpers.BracketFocusHelper import *
-from .PlayerRowParts import FlowLayout
 from .SettingsManager import SettingsManager
 
 

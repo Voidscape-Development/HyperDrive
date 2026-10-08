@@ -1,16 +1,17 @@
 import os
 
 from loguru import logger
+from qtpy import uic
 from qtpy.QtCore import *
 from qtpy.QtGui import QAction
 from qtpy.QtWidgets import *
 
 from .ColorButton import ColorButton
+from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.MediaHelper import MediaHelper
 from .Helpers.SponsorHelper import SponsorHelper
 from .Helpers.VersionHelper import add_beta_label
-from .PlayerRowParts import EyebrowLabel, FlowLayout, SetRole, SmallFont
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
@@ -128,33 +129,113 @@ class TeamBattleWidget(QDockWidget):
         LocaleHelper.LoadMatchNamesToWidget(self.matchCombo)
         LocaleHelper.signals.termsChanged.connect(self.ReloadTournamentTerms)
 
-        # The rules, in one bar
-        rules = QFrame()
-        SetRole(rules, "card")
-        rules.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Maximum)
-        # Wraps to more rows in a narrow dock
-        rulesLayout = FlowLayout(rules, spacing=8)
-        rulesLayout.setContentsMargins(10, 6, 6, 6)
+        resetValues = QPushButton(QApplication.translate("app", "Reset Player Mode Values"))
+        resetValues.setFixedHeight(24)
+        resetValues.clicked.connect(self.ResetAllStocks)
 
-        def group(*widgets):
-            box = QWidget()
-            layout = QHBoxLayout(box)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(6)
-            for w in widgets:
-                layout.addWidget(w)
-            rulesLayout.addWidget(box)
+        resetEverything = QPushButton(QApplication.translate("app", "Reset Battle Mode"))
+        resetEverything.setFixedHeight(24)
+        resetEverything.clicked.connect(self.ResetEverything)
 
-        self.widget.layout().addWidget(rules)
+        # Top toolbar row
+        row = QWidget()
+        rowLayout = QHBoxLayout(row)
+        rowLayout.setContentsMargins(4, 2, 4, 2)
+        rowLayout.setSpacing(10)
+        row.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
+        self.widget.layout().addWidget(row, 0, Qt.AlignmentFlag.AlignTop)
 
-        self.livesNumber.setFixedWidth(56)
-        self.playerNumber.setFixedWidth(56)
-        self.playerNumber.setMaximum(99)
-        self.characterNumber.setFixedWidth(56)
-        group(self.modeCombo)
-        group(self.lifeLabel, self.livesNumber)
-        group(QLabel(QApplication.translate("app", "Players")), self.playerNumber)
-        group(QLabel(QApplication.translate("app", "Characters")), self.characterNumber)
+        # Group 1: Match Rules (Players, Characters, Mode, Stocks)
+        rulesCol = QWidget()
+        rulesLayout = QGridLayout(rulesCol)
+        rulesLayout.setContentsMargins(0, 0, 0, 0)
+        rulesLayout.setHorizontalSpacing(6)
+        rulesLayout.setVerticalSpacing(3)
+
+        playerLabel = QLabel(QApplication.translate("app", "Players"))
+        charLabel = QLabel(QApplication.translate("app", "Characters"))
+        modeLabel = QLabel(QApplication.translate("app", "Mode"))
+
+        rulesLayout.addWidget(
+            playerLabel, 0, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        rulesLayout.addWidget(self.playerNumber, 0, 1, Qt.AlignmentFlag.AlignVCenter)
+        rulesLayout.addWidget(
+            modeLabel, 0, 2, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        rulesLayout.addWidget(self.modeCombo, 0, 3, Qt.AlignmentFlag.AlignVCenter)
+
+        rulesLayout.addWidget(
+            charLabel, 1, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        rulesLayout.addWidget(self.characterNumber, 1, 1, Qt.AlignmentFlag.AlignVCenter)
+        rulesLayout.addWidget(
+            self.lifeLabel, 1, 2, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        rulesLayout.addWidget(
+            self.livesNumber, 1, 3, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
+
+        rowLayout.addWidget(rulesCol)
+
+        # Group 2: Tournament Info (Phase, Match)
+        infoCol = QWidget()
+        infoLayout = QGridLayout(infoCol)
+        infoLayout.setContentsMargins(0, 0, 0, 0)
+        infoLayout.setHorizontalSpacing(6)
+        infoLayout.setVerticalSpacing(3)
+
+        phaseLabel = QLabel(QApplication.translate("app", "Phase"))
+        matchLabel = QLabel(QApplication.translate("app", "Match"))
+
+        infoLayout.addWidget(
+            phaseLabel, 0, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        infoLayout.addWidget(self.phaseCombo, 0, 1, Qt.AlignmentFlag.AlignVCenter)
+        infoLayout.addWidget(
+            matchLabel, 1, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        infoLayout.addWidget(self.matchCombo, 1, 1, Qt.AlignmentFlag.AlignVCenter)
+
+        rowLayout.addWidget(infoCol)
+
+        # Group 3: Actions & Visibility
+        actionsCol = QWidget()
+        actionsLayout = QGridLayout(actionsCol)
+        actionsLayout.setContentsMargins(0, 0, 0, 0)
+        actionsLayout.setHorizontalSpacing(6)
+        actionsLayout.setVerticalSpacing(3)
+
+        self.eyeBt = QToolButton()
+        self.eyeBt.setIcon(ThemedIcon("assets/icons/eye.svg"))
+        self.eyeBt.setFixedSize(26, 26)
+        self.eyeBt.setIconSize(QSize(18, 18))
+        self.eyeBt.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        menu = QMenu()
+        self.eyeBt.setMenu(menu)
+
+        menu.addSection(QApplication.translate("app", "Players"))
+
+        self.elements = [
+            [QApplication.translate("app", "Twitter"), ["twitter", "twitterLabel"], "show_social"],
+            [
+                QApplication.translate("app", "Location"),
+                ["locationLabel", "state", "country"],
+                "show_location",
+            ],
+            [QApplication.translate("app", "Characters"), ["characters"], "show_characters"],
+            [QApplication.translate("app", "Pronouns"), ["pronoun"], "show_pronouns"],
+        ]
+        for element in self.elements:
+            action: QAction = self.eyeBt.menu().addAction(element[0])
+            action.setCheckable(True)
+            action.setChecked(SettingsManager.Get(f"display_options.{element[2]}", True))
+            action.toggled.connect(
+                lambda toggled, action=action, element=element: [
+                    self.ToggleElements(action, element[1]),
+                    SettingsManager.Set(f"display_options.{element[2]}", toggled),
+                ]
+            )
 
         self.autoAdvance = QCheckBox(QApplication.translate("app", "Auto advance"))
         self.autoAdvance.setToolTip(
@@ -168,98 +249,75 @@ class TeamBattleWidget(QDockWidget):
             lambda checked: SettingsManager.Set("team_battle.auto_advance", checked)
         )
 
-        self.eyeBt = QToolButton()
-        SetRole(self.eyeBt, "icon")
-        self.eyeBt.setIcon(ThemedIcon("assets/icons/eye.svg"))
-        self.eyeBt.setToolTip(QApplication.translate("app", "Player fields"))
-        self.eyeBt.setFixedSize(30, 30)
-        self.eyeBt.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-        menu = QMenu(self.eyeBt)
-        self.eyeBt.setMenu(menu)
-        menu.addSection(QApplication.translate("app", "Players"))
-        self.elements = [
-            [QApplication.translate("app", "Twitter"), ["twitter", "twitterLabel"], "show_social"],
-            [
-                QApplication.translate("app", "Location"),
-                ["locationLabel", "state", "country"],
-                "show_location",
-            ],
-            [QApplication.translate("app", "Characters"), ["characters"], "show_characters"],
-            [QApplication.translate("app", "Pronouns"), ["pronoun"], "show_pronouns"],
-        ]
-        for element in self.elements:
-            action: QAction = menu.addAction(element[0])
-            action.setCheckable(True)
-            action.setChecked(SettingsManager.Get(f"display_options.{element[2]}", True))
-            action.toggled.connect(
-                lambda toggled, action=action, element=element: [
-                    self.ToggleElements(action, element[1]),
-                    SettingsManager.Set(f"display_options.{element[2]}", toggled),
-                ]
-            )
+        actionsLayout.addWidget(resetValues, 0, 0)
+        actionsLayout.addWidget(self.eyeBt, 0, 1, 2, 1, Qt.AlignmentFlag.AlignVCenter)
+        actionsLayout.addWidget(resetEverything, 1, 0)
+        actionsLayout.addWidget(self.autoAdvance, 0, 2, 2, 1, Qt.AlignmentFlag.AlignVCenter)
 
-        moreBt = QToolButton()
-        SetRole(moreBt, "icon")
-        moreBt.setIcon(ThemedIcon("assets/icons/more.svg"))
-        moreBt.setToolTip(QApplication.translate("app", "More"))
-        moreBt.setFixedSize(30, 30)
-        moreBt.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-        moreMenu = QMenu(moreBt)
-        moreMenu.addAction(
-            ThemedIcon("assets/icons/undo.svg"),
-            QApplication.translate("app", "Reset Player Mode Values"),
-            self.ResetAllStocks,
-        )
-        moreMenu.addAction(
-            ThemedIcon("assets/icons/cancel.svg"),
-            QApplication.translate("app", "Reset Battle Mode"),
-            self.ResetEverything,
-        )
-        moreBt.setMenu(moreMenu)
-        group(self.autoAdvance, self.eyeBt, moreBt)
-
-        # Phase and match
-        roundRow = QGridLayout()
-        roundRow.setHorizontalSpacing(8)
-        roundRow.setVerticalSpacing(2)
-        roundRow.addWidget(EyebrowLabel(QApplication.translate("app", "Phase")), 0, 0)
-        roundRow.addWidget(EyebrowLabel(QApplication.translate("app", "Match")), 0, 1)
-        roundRow.addWidget(self.phaseCombo, 1, 0)
-        roundRow.addWidget(self.matchCombo, 1, 1)
-        roundRow.setColumnStretch(0, 1)
-        roundRow.setColumnStretch(1, 1)
-        self.widget.layout().addLayout(roundRow)
+        rowLayout.addWidget(actionsCol)
+        rowLayout.addStretch()
 
         scrollArea = QScrollArea()
         scrollArea.setFrameShadow(QFrame.Shadow.Plain)
         scrollArea.setFrameShape(QFrame.Shape.NoFrame)
         scrollArea.setWidgetResizable(True)
-        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.widgetArea = QWidget()
-        areaLayout = QVBoxLayout(self.widgetArea)
-        areaLayout.setContentsMargins(0, 0, 0, 0)
-        self.lanesLayout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.lanesLayout.setSpacing(10)
-        areaLayout.addLayout(self.lanesLayout)
-        areaLayout.addStretch()
+        self.widgetArea.setLayout(QHBoxLayout())
+        self.widgetArea.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         scrollArea.setWidget(self.widgetArea)
 
-        self.teamLists = []
-        self.teamTotals = []
-        self.teamActive = []
-        self.team1column = self.BuildTeamColumn(1)
-        self.team2column = self.BuildTeamColumn(2)
-        self.colorButton1 = self.team1column.colorButton
-        self.colorButton2 = self.team2column.colorButton
-        self.team1score = self.team1column.score
-        self.team2score = self.team2column.score
-        self.RefreshTeamColor(1)
-        self.RefreshTeamColor(2)
+        self.team1column = uic.loadUi(ResolvePath("src/layout/BattleTeam.ui"))
+        self.team1column.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.team1column.findChild(QLineEdit, "teamName").editingFinished.connect(
+            lambda: self.TeamNameExport(1)
+        )
+        DEFAULT_TEAM1_COLOR = SettingsManager.Get("general.team_1_default_color", "#fe3636")
+        self.colorButton1 = ColorButton(color=DEFAULT_TEAM1_COLOR, ignore_same_color=False)
+        self.team1column.findChild(QHBoxLayout, "team_header").layout().insertWidget(
+            0, self.colorButton1
+        )
+        self.colorButton1.colorChanged.connect(
+            lambda color: StateManager.Set(f"team_battle.team.{1}.color", color)
+        )
+        self.colorButton1.setColor(DEFAULT_TEAM1_COLOR)
+        self.team1score = QSpinBox()
+        self.team1column.findChild(QHBoxLayout, "team_header").layout().addWidget(self.team1score)
+        self.team1score.valueChanged.connect(self.Team1TotalScoreExport)
         self.team1score.valueChanged.emit(0)
+        self.widgetArea.layout().addWidget(self.team1column)
+
+        self.team2column = uic.loadUi(ResolvePath("src/layout/BattleTeam.ui"))
+        self.team2column.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.team2column.findChild(QLineEdit, "teamName").editingFinished.connect(
+            lambda: self.TeamNameExport(2)
+        )
+        DEFAULT_TEAM2_COLOR = SettingsManager.Get("general.team_2_default_color", "#2e89ff")
+        self.colorButton2 = ColorButton(color=DEFAULT_TEAM2_COLOR, ignore_same_color=False)
+        self.team2column.findChild(QHBoxLayout, "team_header").layout().insertWidget(
+            0, self.colorButton2
+        )
+        self.colorButton2.colorChanged.connect(
+            lambda color: StateManager.Set(f"team_battle.team.{2}.color", color)
+        )
+        self.colorButton2.setColor(DEFAULT_TEAM2_COLOR)
+        self.team2score = QSpinBox()
+        self.team2column.findChild(QHBoxLayout, "team_header").layout().addWidget(self.team2score)
+        self.team2score.valueChanged.connect(self.Team2TotalScoreExport)
         self.team2score.valueChanged.emit(0)
+        self.widgetArea.layout().addWidget(self.team2column)
 
         self.widget.layout().addWidget(scrollArea, 1)
+
+        self.team1score.valueChanged.connect(self.Team1TotalScoreExport)
+        self.team2score.valueChanged.connect(self.Team2TotalScoreExport)
+
+        self.team1column.findChild(QCheckBox, "separateSponsors").toggled.connect(
+            self.ToggleSponsorsForTeam1
+        )
+        self.team2column.findChild(QCheckBox, "separateSponsors").toggled.connect(
+            self.ToggleSponsorsForTeam2
+        )
 
         # Hook into Signals for Control
         self.signals.reset_all_stocks.connect(self.ResetAllStocks)
@@ -281,145 +339,6 @@ class TeamBattleWidget(QDockWidget):
         self.SwitchBattleMode()
         self.playerNumber.setValue(1)
         self.characterNumber.setValue(1)
-
-    def BuildTeamColumn(self, team: int) -> QWidget:
-        """A team: its color, name, total and active player, then its
-        players."""
-        column = QWidget()
-        column.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        layout = QVBoxLayout(column)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(6)
-
-        header = QFrame()
-        header.setObjectName(f"crewTeam{team}")
-        SetRole(header, "card")
-        grid = QGridLayout(header)
-        grid.setContentsMargins(12, 8, 10, 8)
-        grid.setHorizontalSpacing(8)
-        grid.setVerticalSpacing(2)
-
-        default = SettingsManager.Get(
-            f"general.team_{team}_default_color", "#fe3636" if team == 1 else "#2e89ff"
-        )
-        colorButton = ColorButton(color=default, ignore_same_color=False)
-        colorButton.setFixedSize(28, 28)
-        colorButton.colorChanged.connect(
-            lambda color, team=team: [
-                StateManager.Set(f"team_battle.team.{team}.color", color),
-                self.RefreshTeamColor(team),
-            ]
-        )
-        grid.addWidget(colorButton, 0, 0, 2, 1)
-
-        teamName = QLineEdit()
-        teamName.setObjectName("teamName")
-        teamName.setPlaceholderText(QApplication.translate("app", "Team Name"))
-        SetRole(teamName, "inline")
-        SmallFont(teamName, 1.3, bold=True)
-        teamName.editingFinished.connect(lambda team=team: self.TeamNameExport(team))
-        grid.addWidget(teamName, 0, 1)
-
-        active = QLabel()
-        SetRole(active, "muted")
-        SmallFont(active, 0.9)
-        active.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        grid.addWidget(active, 1, 1)
-
-        totals = QLabel()
-        SmallFont(totals, 1.6, bold=True)
-        totals.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        grid.addWidget(totals, 0, 2, 2, 1)
-
-        options = QHBoxLayout()
-        options.setSpacing(6)
-        separateSponsors = QCheckBox(QApplication.translate("app", "SPONSORS?"))
-        separateSponsors.setObjectName("separateSponsors")
-        separateSponsors.setToolTip(
-            QApplication.translate("app", "Show or hide the players' sponsor fields")
-        )
-        separateSponsors.toggled.connect(
-            self.ToggleSponsorsForTeam1 if team == 1 else self.ToggleSponsorsForTeam2
-        )
-        options.addWidget(separateSponsors)
-        options.addStretch()
-        scoreLabel = EyebrowLabel(QApplication.translate("app", "Score"))
-        score = QSpinBox()
-        score.setToolTip(
-            QApplication.translate("app", "The team's score, for layouts that show one")
-        )
-        score.valueChanged.connect(
-            self.Team1TotalScoreExport if team == 1 else self.Team2TotalScoreExport
-        )
-        options.addWidget(scoreLabel)
-        options.addWidget(score)
-        grid.addLayout(options, 2, 0, 1, 3)
-        grid.setColumnStretch(1, 1)
-        layout.addWidget(header)
-
-        players = QWidget()
-        playersLayout = QVBoxLayout(players)
-        playersLayout.setContentsMargins(0, 0, 0, 0)
-        playersLayout.setSpacing(6)
-        layout.addWidget(players)
-
-        add = QPushButton(QApplication.translate("app", "+ Add a player to each team"))
-        SetRole(add, "ghost")
-        add.clicked.connect(lambda: self.playerNumber.setValue(self.playerNumber.value() + 1))
-        layout.addWidget(add)
-        layout.addStretch()
-
-        self.lanesLayout.addWidget(column, 1)
-        self.teamLists.append(players)
-        self.teamTotals.append(totals)
-        self.teamActive.append(active)
-
-        column.colorButton = colorButton
-        column.score = score
-        column.header = header
-        colorButton.setColor(default)
-        return column
-
-    def RefreshTeamColor(self, team: int):
-        column = getattr(self, f"team{team}column", None)
-        if column is None:
-            return
-        color = column.colorButton.color() or "#888888"
-        column.header.setStyleSheet(f"QFrame#crewTeam{team} {{ border-left: 4px solid {color}; }}")
-
-    def RefreshTeamSummary(self, team: int):
-        """The team's stocks left (or games won), players left and active
-        player, at the top of its list."""
-        if not hasattr(self, "teamTotals"):
-            return
-        players = self.Players(team)
-        left = sum(1 for p in players if not p.IsEliminated())
-        total = sum(p.GetSpinnerValue() for p in players)
-        self.teamTotals[team - 1].setText(str(total))
-        self.teamTotals[team - 1].setToolTip(
-            QApplication.translate("app", "Stocks left")
-            if self.battleMode is TeamBattleModeEnum.STOCK_POOL
-            else QApplication.translate("app", "Games won")
-        )
-        activePlayer = self.ActivePlayer(team)
-        parts = [
-            QApplication.translate("app", "{0} of {1} players left").format(left, len(players))
-        ]
-        if activePlayer is not None:
-            tag = activePlayer.findChild(QLineEdit, "name").text() or QApplication.translate(
-                "app", "Player {0}"
-            ).format(players.index(activePlayer) + 1)
-            parts.append(QApplication.translate("app", "Active: {0}").format(tag))
-        self.teamActive[team - 1].setText("  ·  ".join(parts))
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        if hasattr(self, "lanesLayout"):
-            self.lanesLayout.setDirection(
-                QBoxLayout.Direction.TopToBottom
-                if self.width() < 820
-                else QBoxLayout.Direction.LeftToRight
-            )
 
     def ReloadTournamentTerms(self):
         # The match and phase names were edited in the settings
@@ -531,9 +450,7 @@ class TeamBattleWidget(QDockWidget):
         )
         self.playerWidgets.append(p)
 
-        self.teamLists[team - 1].layout().addWidget(p)
-        p.onDropSwap = self.SwapPlayers
-        p.instanceSignals.dataChanged.connect(lambda team=team: self.RefreshTeamSummary(team))
+        column.findChild(QScrollArea).widget().layout().addWidget(p)
         p.SetCharactersPerPlayer(self.characterNumber.value())
 
         if column.findChild(QCheckBox, "separateSponsors").isChecked():
@@ -640,12 +557,16 @@ class TeamBattleWidget(QDockWidget):
             for element in self.elements:
                 visible = SettingsManager.Get(f"display_options.{element[2]}", True)
                 for el in element[1]:
-                    pw.SetElementVisible(el, visible)
+                    w = pw.findChild(QWidget, el)
+                    if w:
+                        w.setVisible(visible)
 
     def ToggleElements(self, action: QAction, elements):
         for pw in self.playerWidgets:
             for element in elements:
-                pw.SetElementVisible(element, action.isChecked())
+                w = pw.findChild(QWidget, element)
+                if w:
+                    w.setVisible(action.isChecked())
 
     # =====================================================
     # ACTIVE PLAYERS
@@ -672,7 +593,6 @@ class TeamBattleWidget(QDockWidget):
             f"team_battle.team.{team}.active_player", index + 1 if index >= 0 else None
         )
 
-        self.RefreshTeamSummary(team)
         if index != oldIndex:
             if team == 1:
                 self.signals.team1_active_player_changed.emit(index)
@@ -736,7 +656,6 @@ class TeamBattleWidget(QDockWidget):
         self.NextActivePlayer(2)
 
     def PlayerEliminatedChanged(self, team: int, p: TeamPlayerWidget, dead: bool):
-        self.RefreshTeamSummary(team)
         if self.swapping or self.bulkUpdate:
             return
         if dead and p is self.ActivePlayer(team) and self.autoAdvance.isChecked():
@@ -866,7 +785,6 @@ class TeamBattleWidget(QDockWidget):
             scoreCount += player.GetSpinnerValue()
         StateManager.Set("team_battle.team1_spinner-total", scoreCount)
         StateManager.Set("team_battle.team1_total-score", self.team1score.value())
-        self.RefreshTeamSummary(1)
 
     def Team2TotalScoreExport(self):
         scoreCount = 0
@@ -874,4 +792,3 @@ class TeamBattleWidget(QDockWidget):
             scoreCount += player.GetSpinnerValue()
         StateManager.Set("team_battle.team2_spinner-total", scoreCount)
         StateManager.Set("team_battle.team2_total-score", self.team2score.value())
-        self.RefreshTeamSummary(2)

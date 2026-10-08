@@ -20,10 +20,10 @@ from .BracketFocusBar import BracketFocusBar
 from .BracketModel import *
 from .BracketView import BracketView, SourceText
 from .DisplayOptions import DisplayOptionsButton
+from .FlowLayout import FlowLayout
 from .GameAssetManager import GameAssetManager
 from .Hotkeys import Hotkeys
 from .PlayerList import PlayerList
-from .PlayerRowParts import FlowLayout
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .Theme import ThemedIcon

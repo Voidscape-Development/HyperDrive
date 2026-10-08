@@ -1,219 +1,170 @@
+import os
+import threading
+import traceback
+
+from loguru import logger
+from qtpy import uic
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
-from .PlayerRowParts import SetRole, SetStyleProperty, SmallFont
-from .ScoreboardPlayerWidget import ScoreboardPlayerWidget, ScoreboardPlayerWidgetSignals
+from .GameAssetManager import GameAssetManager
+from .Helpers.BadWordFilter import BadWordFilter
+from .Helpers.CountryHelper import CountryHelper
+from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
+from .Helpers.DirHelper import ResolvePath
+from .Helpers.DynamicExport import DynamicExport
+from .Helpers.PronounHelper import PronounHelper
+from .PlayerDB import PlayerDB
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
-from .Theme import Theme
+from .Theme import ThemedIcon
 
 
-class TeamPlayerWidgetSignals(ScoreboardPlayerWidgetSignals):
+class TeamPlayerWidgetSignals(QObject):
+    playerId_changed = Signal()
     dynamicSpinner_changed = Signal()
     activeStatus_changed = Signal(int)
     deathStatus_changed = Signal(int)
     toggleDeathTrigger = Signal(bool)
 
 
-class StockPips(QWidget):
-    """The player's stocks as dots (Stock Pool), or games won (First To)."""
+class TeamPlayerWidget(QGroupBox):
+    countries = None
+    countryModel = None
+    characterModel = None
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.value = 0
-        self.maximum = 0
-        self.dots = True
-        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-
-    def SetValue(self, value, maximum, dots):
-        self.value, self.maximum, self.dots = value, maximum, dots
-        self.updateGeometry()
-        self.update()
-
-    def sizeHint(self):
-        if self.dots and 0 < self.maximum <= 8:
-            return QSize(self.maximum * 12, 20)
-        return QSize(32, 20)
-
-    def paintEvent(self, event):
-        colors = Theme.Colors()
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        if self.dots and 0 < self.maximum <= 8:
-            for i in range(self.maximum):
-                rect = QRectF(i * 12 + 1.5, 5.5, 9, 9)
-                if i < self.value:
-                    painter.setPen(Qt.PenStyle.NoPen)
-                    painter.setBrush(colors["accent"])
-                else:
-                    painter.setPen(QPen(colors["border"], 1.5))
-                    painter.setBrush(Qt.BrushStyle.NoBrush)
-                painter.drawEllipse(rect)
-        else:
-            font = QFont(self.font())
-            font.setBold(True)
-            font.setPointSizeF(font.pointSizeF() * 1.25)
-            painter.setFont(font)
-            painter.setPen(colors["text"])
-            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.value))
-
-
-class TeamPlayerWidget(ScoreboardPlayerWidget):
-    """A Crew/Team Battle player: the scoreboard's player row with the
-    battle controls in it. ACTIVE marks who is playing, OUT who is
-    eliminated, and the stocks left (Stock Pool) or games won (First To)
-    sit at the end of the row."""
-
-    SignalsClass = TeamPlayerWidgetSignals
+    dataLock = threading.RLock()
 
     defaultSpinnerValue = 0
     battleMode: TeamBattleModeEnum = TeamBattleModeEnum.STOCK_POOL
     dynamicSpinner: QSpinBox = None
 
     def __init__(self, index=0, teamNumber=0, path="", *args):
-        # Loading a player into the slot keeps their stocks/games
-        self.keepBattleValues = False
+        super().__init__(*args)
 
-        self.battleControls = QWidget()
-        super().__init__(index, teamNumber, path, "", *args)
+        self.instanceSignals = TeamPlayerWidgetSignals()
 
-        # Seeds don't matter in a crew battle
-        for name in ("seed", "seedLabel"):
-            self.SetElementVisible(name, False)
+        self.path = path
 
-        # ---------- battle controls, in the row ----------
-        controls = QHBoxLayout(self.battleControls)
-        controls.setContentsMargins(0, 0, 0, 0)
-        controls.setSpacing(4)
+        self.index = index
+        self.teamNumber = teamNumber
 
-        self.order = QLabel()
-        SetRole(self.order, "muted")
-        SmallFont(self.order, 0.85)
-        self.order.setMinimumWidth(16)
-        self.order.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.header.layout().insertWidget(1, self.order)
+        self.losers = False
 
-        active = QCheckBox(QApplication.translate("app", "ACTIVE"))
-        active.setObjectName("activePlayer")
-        SetRole(active, "pill", tone="accent")
-        SmallFont(active, 0.8, bold=True)
-        active.setToolTip(QApplication.translate("app", "The team's player who is playing"))
-        dead = QCheckBox(QApplication.translate("app", "OUT"))
-        dead.setObjectName("dead")
-        SetRole(dead, "pill", tone="danger")
-        SmallFont(dead, 0.8, bold=True)
-        dead.setToolTip(QApplication.translate("app", "Eliminated"))
-        statusRow = QHBoxLayout()
-        statusRow.setContentsMargins(0, 2, 0, 0)
-        statusRow.setSpacing(4)
-        statusRow.addWidget(active)
-        statusRow.addWidget(dead)
-        statusRow.addStretch()
-        # Under the tag and its summary
-        self.whoLayout.addLayout(statusRow)
+        uic.loadUi(ResolvePath("src/layout/TeamPlayer.ui"), self)
 
-        self.dynamicSpinner = QSpinBox()
-        self.dynamicSpinner.setObjectName("dynamicSpinner")
-        self.dynamicSpinner.hide()
-        self.dynamicLabel = QLabel(self)
-        self.dynamicLabel.setObjectName("dynamicLabel")
-        self.dynamicLabel.hide()
+        self.dynamicSpinner = self.findChild(QSpinBox, "dynamicSpinner")
 
-        self.minusBt = QPushButton("−")
-        self.minusBt.setFixedSize(24, 24)
-        self.minusBt.setStyleSheet("padding: 0px;")
-        self.minusBt.clicked.connect(lambda: self.ChangeSpinner(-1))
-        self.pips = StockPips()
-        self.plusBt = QPushButton("+")
-        self.plusBt.setFixedSize(24, 24)
-        self.plusBt.setStyleSheet("padding: 0px;")
-        self.plusBt.clicked.connect(lambda: self.ChangeSpinner(1))
-        controls.addWidget(self.minusBt)
-        controls.addWidget(self.pips)
-        controls.addWidget(self.plusBt)
-        controls.addWidget(self.dynamicSpinner)
-        # Before the database dot and the details button
-        self.header.layout().insertWidget(self.header.layout().count() - 2, self.battleControls)
+        # custom_textbox_layout = QHBoxLayout()
+        # self.custom_textbox = QPlainTextEdit()
+        # custom_textbox_layout.addWidget(self.custom_textbox)
+        # self.layout().addLayout(custom_textbox_layout, 98, 2, 1, 1)
+        # self.custom_textbox.setObjectName("custom_textbox")
+        # self.custom_textbox.setMaximumHeight(100)
+        # self.custom_textbox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        # self.custom_textbox.setPlaceholderText(QApplication.translate("app", "Additional information"))
+        # self.custom_textbox.textChanged.connect(
+        #         lambda element=self.custom_textbox: [
+        #             StateManager.Set(
+        #                 f"{self.path}.{element.objectName()}", element.toPlainText()),
+        #             self.instanceSignals.dataChanged.emit()
+        #         ])
 
-        self.dimEffect = QGraphicsOpacityEffect(self.header)
-        self.dimEffect.setOpacity(0.5)
-        self.dimEffect.setEnabled(False)
-        self.header.setGraphicsEffect(self.dimEffect)
+        self.character_container = self.findChild(QWidget, "characters")
 
-        dead.toggled.connect(
+        self.LoadCountries()
+
+        CountryHelper.signals.countriesUpdated.connect(self.LoadCountries)
+
+        self.character_elements = []
+
+        # Clear and Move up/down
+        titleContainer = self.findChild(QHBoxLayout, "titleContainer")
+        titleContainer.setSpacing(4)
+
+        self.clear_bt = QPushButton()
+        self.clear_bt.setFixedSize(24, 24)
+        self.clear_bt.setIcon(ThemedIcon("assets/icons/undo.svg"))
+        self.clear_bt.setToolTip(QApplication.translate("app", "Clear"))
+        self.clear_bt.clicked.connect(self.Clear)
+        titleContainer.addWidget(self.clear_bt)
+
+        self.btMoveUp = QPushButton()
+        self.btMoveUp.setFixedSize(24, 24)
+        self.btMoveUp.setIcon(ThemedIcon("./assets/icons/arrow_up.svg"))
+        titleContainer.addWidget(self.btMoveUp)
+        self.btMoveDown = QPushButton()
+        self.btMoveDown.setFixedSize(24, 24)
+        self.btMoveDown.setIcon(ThemedIcon("./assets/icons/arrow_down.svg"))
+        titleContainer.addWidget(self.btMoveDown)
+
+        self.SetIndex(index, teamNumber)
+
+        self.lastExportedName = ""
+
+        self.findChild(QLineEdit, "name").editingFinished.connect(self.NameChanged)
+        self.findChild(QLineEdit, "team").editingFinished.connect(self.NameChanged)
+
+        for c in self.findChildren(QLineEdit):
+            c.editingFinished.connect(
+                lambda element=c: [
+                    StateManager.Set(
+                        f"{self.path}.{element.objectName() if element.objectName() != 'qt_spinbox_lineedit' else element.parent().objectName()}",
+                        element.text(),
+                    ),
+                    # self.instanceSignals.dataChanged.emit()
+                ]
+            )
+
+        for c in self.findChildren(QComboBox):
+            c.currentIndexChanged.connect(
+                lambda text, element=c: [self.ComboBoxIndexChanged(element)]
+            )
+            c.currentIndexChanged.emit(0)
+
+        self.findChild(QCheckBox, "dead").toggled.connect(
             lambda state: [
                 self.ExportEliminatedStatus(),
-                self.RefreshBattleState(),
                 self.instanceSignals.deathStatus_changed.emit(int(state)),
             ]
         )
 
-        active.toggled.connect(
+        self.findChild(QCheckBox, "activePlayer").toggled.connect(
             lambda state: [
                 self.ExportActiveStatus(),
-                self.RefreshBattleState(),
                 self.instanceSignals.activeStatus_changed.emit(int(state)),
             ]
         )
 
         self.dynamicSpinner.valueChanged.connect(self.instanceSignals.dynamicSpinner_changed.emit)
         self.dynamicSpinner.valueChanged.connect(self.SpinnerHandling)
-        self.dynamicSpinner.valueChanged.connect(self.RefreshBattleState)
 
-        self.SetIndex(index, teamNumber)
+        self.SetCharactersPerPlayer(1)
+
+        PlayerDB.signals.db_updated.connect(self.SetupAutocomplete)
+        self.SetupAutocomplete()
+
+        GameAssetManager.instance.signals.onLoad.connect(self.ReloadCharacters)
+
+        self.pronoun_completer = QCompleter()
+        self.findChild(QLineEdit, "pronoun").setCompleter(self.pronoun_completer)
+        self.pronoun_completer.setModel(PronounHelper.Model())
+
+        self.ToggleSponsorDisplay()
         self.SetEliminatedStatus()
-        self.RefreshBattleState()
 
     def GetIndex(self):
         return self.index
-
-    def SetIndex(self, index: int, team: int):
-        super().SetIndex(index, team)
-        if hasattr(self, "order"):
-            self.order.setText(str(index))
-
-    def RefreshBattleState(self, *args):
-        if not hasattr(self, "pips"):
-            return
-        maximum = self.defaultSpinnerValue
-        stock = self.battleMode is TeamBattleModeEnum.STOCK_POOL
-        self.pips.SetValue(self.dynamicSpinner.value(), maximum, stock)
-        self.pips.setToolTip(
-            QApplication.translate("app", "{0} of {1} stocks left").format(
-                self.dynamicSpinner.value(), maximum
-            )
-            if stock
-            else QApplication.translate("app", "{0} games won (first to {1})").format(
-                self.dynamicSpinner.value(), maximum
-            )
-        )
-        self.minusBt.setToolTip(
-            QApplication.translate("app", "Lose a stock")
-            if stock
-            else QApplication.translate("app", "Remove a game won")
-        )
-        self.plusBt.setToolTip(
-            QApplication.translate("app", "Give a stock back")
-            if stock
-            else QApplication.translate("app", "Win a game")
-        )
-        SetStyleProperty(self, "active", self.IsActive() and not self.IsEliminated())
-        self.dimEffect.setEnabled(self.IsEliminated())
-        name = self.findChild(QLineEdit, "name")
-        font = QFont(name.font())
-        font.setStrikeOut(self.IsEliminated())
-        name.setFont(font)
-
-    def ChangeSpinner(self, delta):
-        self.dynamicSpinner.setValue(self.dynamicSpinner.value() + delta)
 
     # =====================================================
     # BATTLE SPECIFIC CALLS
     # =====================================================
     def ToggleSponsorDisplay(self):
-        team = self.findChild(QLineEdit, "team")
-        team.setVisible(team.isHidden())
+        if self.findChild(QLineEdit, "team").isHidden():
+            self.findChild(QLineEdit, "team").show()
+        else:
+            self.findChild(QLineEdit, "team").hide()
 
     def SetBattleMode(self, mode: TeamBattleModeEnum):
         self.battleMode = mode
@@ -221,17 +172,19 @@ class TeamPlayerWidget(ScoreboardPlayerWidget):
             self.SetDynamicSpinnerLabelText(QApplication.translate("app", "STOCKS/LIVES"))
         elif self.battleMode is TeamBattleModeEnum.FIRST_TO:
             self.SetDynamicSpinnerLabelText(QApplication.translate("app", "GAMES WON"))
-        self.RefreshBattleState()
 
     def SetDefaultSpinnerValue(self, value: int):
         self.defaultSpinnerValue = value
-        self.dynamicSpinner.setMaximum(value)
+        if self.battleMode is TeamBattleModeEnum.STOCK_POOL:
+            self.dynamicSpinner.setMaximum(value)
+        elif self.battleMode is TeamBattleModeEnum.FIRST_TO:
+            self.dynamicSpinner.setMaximum(value)
+            # self.dynamicSpinner.setMaximum(99)
         self.ResetDynamicSpinner()
-        self.RefreshBattleState()
 
     # Changes based on battle mode
     def SetDynamicSpinnerLabelText(self, text: str):
-        self.dynamicLabel.setText(text)
+        self.findChild(QLabel, "dynamicLabel").setText(text)
 
     def GetSpinnerValue(self):
         return self.dynamicSpinner.value()
@@ -249,6 +202,7 @@ class TeamPlayerWidget(ScoreboardPlayerWidget):
     def SetActiveStatus(self, status: bool):
         self.findChild(QCheckBox, "activePlayer").setChecked(status)
         self.ExportActiveStatus()
+        return
 
     def IsEliminated(self):
         return self.findChild(QCheckBox, "dead").isChecked()
@@ -256,6 +210,7 @@ class TeamPlayerWidget(ScoreboardPlayerWidget):
     def SetEliminatedStatus(self, status: bool = False):
         self.findChild(QCheckBox, "dead").setChecked(status)
         self.ExportEliminatedStatus()
+        return
 
     def SpinnerHandling(self):
         value = self.dynamicSpinner
@@ -305,46 +260,659 @@ class TeamPlayerWidget(ScoreboardPlayerWidget):
         StateManager.Set(
             f"{self.path}.active", self.findChild(QCheckBox, "activePlayer").isChecked()
         )
+        return
 
     def ExportEliminatedStatus(self):
         StateManager.Set(f"{self.path}.dead", self.findChild(QCheckBox, "dead").isChecked())
+        return
 
-    # =====================================================
-    # DATA
-    # =====================================================
-    def SwapWith(self, other: TeamPlayerWidget, emitIdChanged=True):
-        """Swaps the players, with their active and eliminated state and
-        their stocks or games."""
+    def CharactersChanged(self, includeMains=False):
+        with self.dataLock:
+            characters = {}
+
+            for i, (element, character, color, variant) in enumerate(self.character_elements):
+                data = character.currentData()
+
+                if data == None:
+                    data = {}
+
+                if character.currentData() == None:
+                    data = {"name": character.currentText()}
+
+                if color.currentData() and color.currentData().get("name", ""):
+                    data["name"] = color.currentData().get("name", "")
+
+                if color.currentData() and color.currentData().get("en_name", ""):
+                    data["en_name"] = color.currentData().get("en_name", "")
+
+                if color.currentData() and character.currentData():
+                    data["assets"] = color.currentData().get("assets", {})
+
+                if data.get("assets") == None:
+                    data["assets"] = {}
+
+                data["skin"] = color.currentIndex()
+                if variant.currentData():
+                    data["variant"] = variant.currentData()
+                else:
+                    data["variant"] = {}
+
+                characters[i + 1] = data
+
+            StateManager.Set(f"{self.path}.character", characters)
+
+            if includeMains:
+                StateManager.Set(f"{self.path}.mains", characters)
+
+    def ComboBoxIndexChanged(self, element: QComboBox):
+        StateManager.Set(f"{self.path}.{element.objectName()}", element.currentData())
+
+    def NameChanged(self):
+        with self.dataLock:
+            team = self.findChild(QLineEdit, "team").text()
+            name = self.findChild(QLineEdit, "name").text()
+            merged = team + " " + name
+
+            if merged != self.lastExportedName:
+                self.ExportMergedName()
+                self.ExportPlayerImages()
+                # self.ExportPlayerId()
+
+            self.lastExportedName = merged
+
+    def ExportMergedName(self):
+        with self.dataLock:
+            team = self.findChild(QLineEdit, "team").text()
+            name = self.findChild(QLineEdit, "name").text()
+            merged = ""
+            nameOnlyMerged = ""
+
+            if team != "":
+                merged += team + " | "
+
+            merged += name
+            nameOnlyMerged += name
+
+            StateManager.Set(f"{self.path}.mergedName", merged)
+            StateManager.Set(f"{self.path}.mergedOnlyName", nameOnlyMerged)
+
+    def ExportPlayerImages(self, onlineAvatar=None):
+        with self.dataLock:
+            team = self.findChild(QLineEdit, "team").text()
+            name = self.findChild(QLineEdit, "name").text()
+
+            StateManager.Set(f"{self.path}.online_avatar", onlineAvatar)
+
+            # Local avatar, sponsor logos and custom data, kept up to date
+            DynamicExport.ExportPlayerMedia(name, team, self.path)
+
+    def ExportPlayerCity(self, city=""):
+        with self.dataLock:
+            if StateManager.Get(f"{self.path}.city") != city:
+                StateManager.Set(f"{self.path}.city", city)
+
+    def SwapWith(self, other: TeamPlayerWidget):
         if self == other:
+            logger.info("Swapping player with themselves")
             return
-        values = [self.dynamicSpinner.value(), other.dynamicSpinner.value()]
-        super().SwapWith(other, emitIdChanged=emitIdChanged)
-        self.dynamicSpinner.setValue(values[1])
-        other.dynamicSpinner.setValue(values[0])
-        for w in (self, other):
-            w.ExportActiveStatus()
-            w.ExportEliminatedStatus()
-            w.RefreshBattleState()
-
-    def SetData(self, data, dontLoadFromDB=False, clear=True, no_mains=False, enrichBlocking=True):
-        self.keepBattleValues = True
         try:
-            super().SetData(data, dontLoadFromDB, clear, no_mains, enrichBlocking)
+            StateManager.BlockSaving()
+            with self.dataLock:
+                with other.dataLock:
+                    tmpData = []
+
+                    # Save state
+                    for w in [self, other]:
+                        data = {}
+                        for widget in w.findChildren(QWidget):
+                            if type(widget) == QLineEdit:
+                                data[widget.objectName()] = widget.text()
+                            if type(widget) == QComboBox:
+                                data[widget.objectName()] = widget.currentIndex()
+                            if type(widget) == QPlainTextEdit:
+                                data[widget.objectName()] = widget.toPlainText()
+                            if type(widget) == QCheckBox:
+                                data[widget.objectName()] = widget.isChecked()
+                            if type(widget) == QSpinBox:
+                                data[widget.objectName()] = widget.value()
+                        data["online_avatar"] = StateManager.Get(f"{w.path}.online_avatar")
+                        data["id"] = StateManager.Get(f"{w.path}.id")
+                        data["city"] = StateManager.Get(f"{w.path}.city")
+                        tmpData.append(data)
+
+                    # Load state
+                    for i, w in enumerate([other, self]):
+                        for objName in tmpData[i]:
+                            widget = w.findChild(QWidget, objName)
+                            if widget:
+                                if type(widget) == QLineEdit:
+                                    widget.setText(tmpData[i][objName])
+                                    widget.editingFinished.emit()
+                                if type(widget) == QComboBox:
+                                    widget.setCurrentIndex(tmpData[i][objName])
+                                if type(widget) == QPlainTextEdit:
+                                    widget.setPlainText(tmpData[i][objName])
+                                if type(widget) == QCheckBox:
+                                    widget.setChecked(tmpData[i][objName])
+                                if type(widget) == QSpinBox:
+                                    widget.setValue(tmpData[i][objName])
+                        QCoreApplication.processEvents()
+                        w.ExportPlayerImages(tmpData[i]["online_avatar"])
+                        # w.ExportPlayerId(tmpData[i]["id"])
+                        StateManager.Set(f"{w.path}.city", tmpData[i]["city"])
+                        w.ExportActiveStatus()
+                        w.ExportEliminatedStatus()
         finally:
-            self.keepBattleValues = False
+            StateManager.ReleaseSaving()
+
+    def SetIndex(self, index: int, team: int):
+        self.index = index
+        self.teamNumber = team
+
+    def SetStocksPerPlayer(self, number):
+        while len(self.character_elements) < number:
+            character_element = QWidget()
+            character_element.setLayout(QHBoxLayout())
+            character_element.layout().setSpacing(4)
+            character_element.layout().setContentsMargins(0, 0, 0, 0)
+            player_character = QComboBox()
+            player_character.setEditable(True)
+            character_element.layout().addWidget(player_character)
+            player_character.setMinimumWidth(60)
+            player_character.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            player_character.view().setMinimumWidth(60)
+            player_character.completer().setCompletionMode(QCompleter.PopupCompletion)
+            player_character.completer().popup().setMinimumWidth(250)
+            player_character.setModel(GameAssetManager.instance.characterModel)
+            player_character.setIconSize(QSize(24, 24))
+            player_character.setFixedHeight(32)
+            player_character.setFont(QFont(player_character.font().family(), 9))
+            player_character.lineEdit().setFont(QFont(player_character.font().family(), 9))
+
+            # Add line to characters
+            self.character_container.layout().addWidget(character_element)
+
+            player_character.setCurrentIndex(0)
+
+            player_character.setObjectName(f"character_{len(self.character_elements)}")
+
+        while len(self.character_elements) > number:
+            self.character_elements[-1][0].setParent(None)
+            self.character_elements.pop()
+
+        if self.character_container.findChild(QComboBox, "variants") is not None:
+            if len(GameAssetManager.instance.variants) <= 0:
+                for container in self.findChildren(QComboBox, "variants"):
+                    container.setVisible(False)
+            else:
+                for container in self.findChildren(QComboBox, "variants"):
+                    container.setVisible(True)
+
+        self.CharactersChanged(includeMains=True)
+
+    def SetCharactersPerPlayer(self, number):
+        while len(self.character_elements) < number:
+            character_element = QWidget()
+            character_element.setLayout(QHBoxLayout())
+            character_element.layout().setSpacing(4)
+            character_element.layout().setContentsMargins(0, 0, 0, 0)
+            player_character = QComboBox()
+            player_character.setEditable(True)
+            character_element.layout().addWidget(player_character)
+            player_character.setMinimumWidth(60)
+            player_character.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            player_character.view().setMinimumWidth(60)
+            player_character.completer().setCompletionMode(QCompleter.PopupCompletion)
+            player_character.completer().popup().setMinimumWidth(250)
+            player_character.setModel(GameAssetManager.instance.characterModel)
+            player_character.setIconSize(QSize(24, 24))
+            player_character.setFixedHeight(32)
+            player_character.setFont(QFont(player_character.font().family(), 9))
+            player_character.lineEdit().setFont(QFont(player_character.font().family(), 9))
+
+            player_character_color = QComboBox()
+            character_element.layout().addWidget(player_character_color)
+            player_character_color.setIconSize(QSize(48, 48))
+            player_character_color.setFixedHeight(32)
+            player_character_color.setMinimumWidth(64)
+            player_character_color.setMaximumWidth(120)
+            player_character_color.setFont(QFont(player_character_color.font().family(), 9))
+            view = QListView()
+            view.setIconSize(QSize(128, 128))
+            player_character_color.setView(view)
+            player_character_color.setEditable(True)
+            player_character_color.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            player_character_color.completer().setCompletionMode(QCompleter.PopupCompletion)
+            # self.player_character_color.activated.connect(self.CharacterChanged)
+            # self.CharacterChanged()
+
+            # Add variant
+            player_variant = QComboBox()
+            player_variant.setObjectName("variants")
+            character_element.layout().addWidget(player_variant)
+            player_variant.setIconSize(QSize(24, 24))
+            player_variant.setFixedHeight(32)
+            player_variant.setMinimumWidth(60)
+            player_variant.setMaximumWidth(120)
+            player_variant.setFont(QFont(player_variant.font().family(), 9))
+            player_variant.setModel(GameAssetManager.instance.variantModel)
+            view = QListView()
+            view.setIconSize(QSize(24, 24))
+            player_variant.setView(view)
+            player_variant.setEditable(True)
+            player_variant.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            player_variant.completer().setCompletionMode(QCompleter.PopupCompletion)
+
+            if len(GameAssetManager.instance.variants) <= 0:
+                player_variant.setVisible(False)
+
+            # Move up/down
+            btMoveUp = QPushButton()
+            btMoveUp.setFixedSize(24, 24)
+            btMoveUp.setIcon(ThemedIcon("./assets/icons/arrow_up.svg"))
+            character_element.layout().addWidget(btMoveUp)
+            btMoveUp.clicked.connect(
+                lambda x=None, index=len(self.character_elements): self.SwapCharacters(
+                    index, index - 1
+                )
+            )
+            btMoveDown = QPushButton()
+            btMoveDown.setFixedSize(24, 24)
+            btMoveDown.setIcon(ThemedIcon("./assets/icons/arrow_down.svg"))
+            character_element.layout().addWidget(btMoveDown)
+            btMoveDown.clicked.connect(
+                lambda x=None, index=len(self.character_elements): self.SwapCharacters(
+                    index, index + 1
+                )
+            )
+
+            # Add line to characters
+            self.character_container.layout().addWidget(character_element)
+
+            self.character_elements.append(
+                [character_element, player_character, player_character_color, player_variant]
+            )
+
+            player_character.currentIndexChanged.connect(
+                lambda x, element=player_character, target=player_character_color: [
+                    self.LoadSkinOptions(element, target),
+                    self.CharactersChanged(),
+                ]
+            )
+
+            player_character_color.currentIndexChanged.connect(
+                lambda index, element=player_character: [self.CharactersChanged()]
+            )
+
+            player_variant.currentIndexChanged.connect(
+                lambda index, element=player_character: [self.CharactersChanged()]
+            )
+
+            player_character.setCurrentIndex(0)
+            player_character_color.setCurrentIndex(0)
+            player_variant.setCurrentIndex(0)
+
+            player_character.setObjectName(f"character_{len(self.character_elements)}")
+            player_character_color.setObjectName(f"character_color_{len(self.character_elements)}")
+
+        while len(self.character_elements) > number:
+            self.character_elements[-1][0].setParent(None)
+            self.character_elements.pop()
+
+        if self.character_container.findChild(QComboBox, "variants") is not None:
+            if len(GameAssetManager.instance.variants) <= 0:
+                for container in self.findChildren(QComboBox, "variants"):
+                    container.setVisible(False)
+            else:
+                for container in self.findChildren(QComboBox, "variants"):
+                    container.setVisible(True)
+
+        self.CharactersChanged(includeMains=True)
+
+    def SwapCharacters(self, index1: int, index2: int):
+        with StateManager.SaveBlock():
+            self.DoSwapCharacters(index1, index2)
+
+    def DoSwapCharacters(self, index1: int, index2: int):
+        if index2 > len(self.character_elements) - 1:
+            index2 = 0
+
+        char1 = self.character_elements[index1]
+        char2 = self.character_elements[index2]
+
+        # Save index1 settings
+        tmp = [char1[1].currentText(), char1[2].currentIndex()]
+
+        # Set index1 to index2
+        # Character
+        found = char1[1].findText(char2[1].currentText())
+        if found != -1:
+            char1[1].setCurrentIndex(found)
+        else:
+            char1[1].setCurrentText(char2[1].currentText())
+
+        # Color
+        char1[2].setCurrentIndex(char2[2].currentIndex())
+
+        # Set index2 to temp (index1)
+        # Character
+        found = char2[1].findText(tmp[0])
+        if found != -1:
+            char2[1].setCurrentIndex(found)
+        else:
+            char2[1].setCurrentText(tmp[0])
+
+        # Color
+        char2[2].setCurrentIndex(tmp[1])
+
+        self.CharactersChanged()
+
+    def LoadCountries(self):
+        try:
+            if CountryHelper.countryModel == None:
+                CountryHelper.LoadCountries()
+
+            countryCompleter = QCompleter(CountryHelper.countryModel)
+
+            country: QComboBox = self.findChild(QComboBox, "country")
+            country.setCompleter(countryCompleter)
+            country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            country.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            country.view().setMinimumWidth(60)
+            country.completer().setCompletionMode(QCompleter.PopupCompletion)
+            country.completer().popup().setMinimumWidth(300)
+            country.setModel(CountryHelper.countryModel)
+            country.setFont(QFont(country.font().family(), 9))
+            country.lineEdit().setFont(QFont(country.font().family(), 9))
+
+            country.currentIndexChanged.connect(self.LoadStates)
+
+            state: QComboBox = self.findChild(QComboBox, "state")
+            state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            state.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            state.view().setMinimumWidth(60)
+            state.completer().setCompletionMode(QCompleter.PopupCompletion)
+            state.completer().popup().setMinimumWidth(300)
+            state.setFont(QFont(state.font().family(), 9))
+            state.lineEdit().setFont(QFont(state.font().family(), 9))
+
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            exit()
+
+    def LoadStates(self, index):
+        country: QComboBox = self.findChild(QComboBox, "country")
+
+        countryData = None
+        if country.currentData(Qt.ItemDataRole.UserRole) != None:
+            countryData = CountryHelper.countries.get(
+                country.currentData(Qt.ItemDataRole.UserRole).get("code"), {}
+            )
+
+        stateModel = QStandardItemModel()
+
+        noState = QStandardItem()
+        noState.setData({}, Qt.ItemDataRole.UserRole)
+        stateModel.appendRow(noState)
+
+        states = countryData.get("states")
+
+        if states is not None:
+            for i, state_code in enumerate(states.keys()):
+                item = QStandardItem()
+                # Windows has some weird thing with files named CON.png. In case a state code is CON,
+                # we try to load _CON.png instead
+                path = f"./assets/state_flag/{countryData.get('code')}/{'_CON' if state_code == 'CON' else state_code}.png"
+
+                if not os.path.exists(path):
+                    path = None
+
+                states[state_code].update({"asset": path})
+                item.setIcon(QIcon(path))
+                item.setData(states[state_code], Qt.ItemDataRole.UserRole)
+                item.setData(
+                    f"{states[state_code]['name']} ({state_code})", Qt.ItemDataRole.EditRole
+                )
+                stateModel.appendRow(item)
+
+        state: QComboBox = self.findChild(QComboBox, "state")
+        state.setModel(stateModel)
+        state.setCurrentIndex(0)
+
+    def LoadSkinOptions(self, element, target):
+        characterData = element.currentData()
+
+        if characterData:
+            target.setModel(GameAssetManager.instance.skinModels.get(characterData.get("en_name")))
+        else:
+            target.setModel(QStandardItemModel())
+
+    def ReloadCharacters(self):
+        if len(GameAssetManager.instance.variants) <= 0:
+            for container in self.findChildren(QComboBox, "variants"):
+                container.setVisible(False)
+        else:
+            for container in self.findChildren(QComboBox, "variants"):
+                container.setVisible(True)
+        for c in self.character_elements:
+            c[1].setModel(GameAssetManager.instance.characterModel)
+            c[1].setIconSize(QSize(24, 24))
+            c[1].setFixedHeight(32)
+            c[3].setModel(GameAssetManager.instance.variantModel)
+
+    def SetupAutocomplete(self):
+        if PlayerDB.model:
+            self.findChild(QLineEdit, "name").setCompleter(CustomPlayerCompleter(PlayerDB.model))
+            self.findChild(QLineEdit, "name").completer().activated[QModelIndex].connect(
+                lambda x: self.SetData(x.data(Qt.ItemDataRole.UserRole)) if x is not None else None,
+                Qt.QueuedConnection,
+            )
+            self.findChild(QLineEdit, "name").completer().setCaseSensitivity(
+                Qt.CaseSensitivity.CaseInsensitive
+            )
+            self.findChild(QLineEdit, "name").completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            self.findChild(QLineEdit, "name").completer().setModel(PlayerDB.model)
+
+    def SetData(self, data, dontLoadFromDB=False, clear=True, no_mains=False):
+        self.dataLock.acquire()
+
+        logger.debug(f"Setting data for {self.path}: {data}")
+
+        # BlockSaving() lives inside the try so that the finally below always
+        # releases it, even if one of the calls in between raises.
+        try:
+            StateManager.BlockSaving()
+
+            if clear:
+                # Loading a player into the slot keeps their stocks/games
+                self.Clear(no_mains=no_mains, keep_battle_values=True)
+
+            # Load player data from DB; will be overwriten by incoming data
+            if not dontLoadFromDB:
+                tag = (
+                    data.get("prefix") + " " + data.get("gamerTag")
+                    if data.get("prefix")
+                    else data.get("gamerTag")
+                )
+
+                item = PlayerDB.GetPlayer(tag)
+                if item is not None:
+                    self.SetData(item, dontLoadFromDB=True, clear=False, no_mains=no_mains)
+
+            name = self.findChild(QWidget, "name")
+            if data.get("gamerTag") and data.get("gamerTag") != name.text():
+                data["gamerTag"] = BadWordFilter.Censor(data["gamerTag"], data.get("country_code"))
+                name.setText(f"{data.get('gamerTag')}")
+                name.editingFinished.emit()
+
+            team = self.findChild(QWidget, "team")
+            if data.get("prefix") and data.get("prefix") != team.text():
+                data["prefix"] = BadWordFilter.Censor(data["prefix"], data.get("country_code"))
+                team.setText(f"{data.get('prefix')}")
+                team.editingFinished.emit()
+
+            if data.get("avatar"):
+                self.ExportPlayerImages(data.get("avatar"))
+
+            # if data.get("id"):
+            #     self.ExportPlayerId(data.get("id"))
+
+            if data.get("city"):
+                self.ExportPlayerCity(data.get("city", ""))
+
+            twitter = self.findChild(QWidget, "twitter")
+            if data.get("twitter") and data.get("twitter") != twitter.text():
+                data["twitter"] = BadWordFilter.Censor(data["twitter"], data.get("country_code"))
+                twitter.setText(f"{data.get('twitter')}")
+                twitter.editingFinished.emit()
+
+            # if data.get("custom_textbox") and data.get("custom_textbox") != self.custom_textbox.toPlainText():
+            #     data["custom_textbox"] = BadWordFilter.Censor(
+            #         data["custom_textbox"], data.get("country_code"))
+            #     self.custom_textbox.setPlainText(
+            #         f'{data.get("custom_textbox")}'.replace("\\n", "\n"))
+            #     self.custom_textbox.textChanged.emit()
+
+            pronoun = self.findChild(QWidget, "pronoun")
+            if data.get("pronoun") and data.get("pronoun") != pronoun.text():
+                data["pronoun"] = BadWordFilter.Censor(data["pronoun"], data.get("country_code"))
+                pronoun.setText(f"{data.get('pronoun')}")
+                pronoun.editingFinished.emit()
+
+            if data.get("country_code"):
+                countryElement: QComboBox = self.findChild(QComboBox, "country")
+                countryIndex = 0
+                for i in range(CountryHelper.countryModel.rowCount()):
+                    item = CountryHelper.countryModel.item(i).data(Qt.ItemDataRole.UserRole)
+                    if item:
+                        if data.get("country_code") == item.get("code"):
+                            countryIndex = i
+                            break
+                if countryElement.currentIndex() != countryIndex:
+                    countryElement.setCurrentIndex(countryIndex)
+
+            if data.get("state_code"):
+                countryElement: QComboBox = self.findChild(QComboBox, "country")
+                stateElement: QComboBox = self.findChild(QComboBox, "state")
+                stateIndex = 0
+                for i in range(stateElement.model().rowCount()):
+                    item = stateElement.model().item(i).data(Qt.ItemDataRole.UserRole)
+                    if item:
+                        if data.get("state_code") == item.get("original_code"):
+                            stateIndex = i
+                            break
+                if stateElement.currentIndex() != stateIndex:
+                    stateElement.setCurrentIndex(stateIndex)
+
+            if data.get("mains") and no_mains != True:
+                if type(data.get("mains")) == list:
+                    for element in self.character_elements:
+                        character_element = element[1]
+                        characterIndex = 0
+                        for i in range(character_element.model().rowCount()):
+                            item = character_element.model().item(i).data(Qt.ItemDataRole.UserRole)
+                            if item:
+                                if item.get("en_name") == data.get("mains")[0]:
+                                    characterIndex = i
+                                    break
+                        character_element.setCurrentIndex(characterIndex)
+                elif type(data.get("mains")) == dict:
+                    mains = data.get("mains").get(
+                        GameAssetManager.instance.selectedGame.get("codename"), []
+                    )
+
+                    for i, main in enumerate(mains):
+                        if i < len(self.character_elements):
+                            character_element = self.character_elements[i][1]
+                            color_element = self.character_elements[i][2]
+                            variant_element = self.character_elements[i][3]
+                            characterIndex = 0
+                            for i in range(character_element.model().rowCount()):
+                                item = (
+                                    character_element.model().item(i).data(Qt.ItemDataRole.UserRole)
+                                )
+                                if item:
+                                    if item.get("en_name") == main[0]:
+                                        characterIndex = i
+                                        break
+                            if character_element.currentIndex() != characterIndex:
+                                character_element.setCurrentIndex(characterIndex)
+                            if len(main) > 1:
+                                if color_element.currentIndex() != int(main[1]):
+                                    color_element.setCurrentIndex(int(main[1]))
+                            else:
+                                if color_element.currentIndex() != 0:
+                                    color_element.setCurrentIndex(0)
+
+                            variantIndex = 0
+                            if variant_element:
+                                for i in range(variant_element.model().rowCount()):
+                                    item = (
+                                        variant_element.model()
+                                        .item(i)
+                                        .data(Qt.ItemDataRole.UserRole)
+                                    )
+                                    if item:
+                                        if len(main) >= 3:
+                                            if item.get("en_name") == main[2]:
+                                                variantIndex = i
+                                                break
+                                        else:
+                                            variantIndex = 0
+                                            break
+                            else:
+                                variantIndex = 0
+                            if variant_element.currentIndex() != variantIndex:
+                                variant_element.setCurrentIndex(variantIndex)
+
+            if data.get("city"):
+                StateManager.Set(f"{self.path}.city", data.get("city", ""))
+        finally:
+            StateManager.ReleaseSaving()
+            self.dataLock.release()
+
+    def GetCurrentPlayerTag(self):
+        gamerTag = self.findChild(QWidget, "name").text()
+        prefix = self.findChild(QWidget, "team").text()
+        return prefix + " " + gamerTag if prefix else gamerTag
 
     def Clear(self, no_mains=False, keep_battle_values=False):
         with StateManager.SaveBlock():
             self.DoClear(no_mains=no_mains, keep_battle_values=keep_battle_values)
 
     def DoClear(self, no_mains=False, keep_battle_values=False):
-        keep = keep_battle_values or self.keepBattleValues
-        value = self.dynamicSpinner.value()
-        # Setting the stocks to 0 would eliminate the player: the row's
-        # clear doesn't touch them, they go back to the mode's starting value
-        with QSignalBlocker(self.dynamicSpinner):
-            super().DoClear(no_mains=no_mains)
-            self.dynamicSpinner.setValue(value)
-        if not keep:
-            self.ResetDynamicSpinner()
-        self.RefreshBattleState()
+        with self.dataLock:
+            for c in self.findChildren(QLineEdit):
+                if c.objectName() != "" and c.objectName() != "qt_spinbox_lineedit":
+                    if c.text() != "":
+                        c.setText("")
+                        c.editingFinished.emit()
+
+            for c in self.findChildren(QSpinBox):
+                # Setting the stocks to 0 would eliminate the player: go back
+                # to the battle mode's starting value instead
+                if c is self.dynamicSpinner:
+                    if not keep_battle_values:
+                        self.ResetDynamicSpinner()
+                    continue
+                c.setValue(0)
+                c.lineEdit().editingFinished.emit()
+
+            for c in self.findChildren(QPlainTextEdit):
+                if c.toPlainText() != "":
+                    c.clear()
+                    c.textChanged.emit()
+
+            for c in self.findChildren(QComboBox):
+                if no_mains:
+                    for charelem in self.character_elements:
+                        for i in range(len(charelem)):
+                            if charelem[i] == c:
+                                break
+                        else:
+                            c.setCurrentIndex(0)
+                        continue  # only executed if the inner loop DID break
+                else:
+                    c.setCurrentIndex(0)

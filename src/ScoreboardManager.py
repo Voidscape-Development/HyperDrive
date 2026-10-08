@@ -58,20 +58,6 @@ class ScoreboardManager(QDockWidget):
                 self.tabs.addTab(
                     scoreboard, QApplication.translate("app", "Scoreboard") + " " + str(amount)
                 )
-                # The teams, score and set source, next to the tab's name
-                summary = QLabel()
-                summary.setProperty("hdRole", "muted")
-                font = QFont(summary.font())
-                font.setPointSizeF(max(7.0, font.pointSizeF() * 0.85))
-                summary.setFont(font)
-                summary.setContentsMargins(0, 0, 6, 0)
-                self.tabs.tabBar().setTabButton(
-                    self.tabs.count() - 1, QTabBar.ButtonPosition.RightSide, summary
-                )
-                scoreboardObj.signals.SummaryChanged.connect(
-                    lambda obj=scoreboardObj, label=summary: self.UpdateSummary(obj, label)
-                )
-                self.UpdateSummary(scoreboardObj, summary)
                 added = amount
             else:
                 logger.info("Scoreboard Manager - Removing Scoreboard " + str(amount + 1))
@@ -88,24 +74,6 @@ class ScoreboardManager(QDockWidget):
             self.signals.ScoreboardAdded.emit(added)
         if removed is not None:
             self.signals.ScoreboardRemoved.emit(removed)
-
-    def UpdateSummary(self, scoreboard, label):
-        try:
-            text = scoreboard.Summary()
-        except RuntimeError:
-            # The scoreboard is being deleted
-            return
-        metrics = label.fontMetrics()
-        label.setText(metrics.elidedText(text, Qt.TextElideMode.ElideRight, 260))
-        label.setFixedWidth(metrics.horizontalAdvance(label.text()) + 8)
-        label.setToolTip(text)
-        index = (
-            self.scoreboardholder.index(scoreboard) if scoreboard in self.scoreboardholder else -1
-        )
-        if index >= 0:
-            self.tabs.setTabToolTip(index, text)
-            # Setting the text again makes the tab take the label's new width
-            self.tabs.setTabText(index, self.tabs.tabText(index))
 
     def GetScoreboard(self, number):
         if int(number) - 1 < len(self.scoreboardholder):
