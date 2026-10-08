@@ -345,15 +345,6 @@ class SettingsWindow(QDialog):
 
         displaySettings.append(
             (
-                QApplication.translate("settings.show_birthday", "Show Birthday"),
-                "show_birthday",
-                "checkbox",
-                True,
-            )
-        )
-
-        displaySettings.append(
-            (
                 QApplication.translate("settings.show_location", "Show Location"),
                 "show_location",
                 "checkbox",

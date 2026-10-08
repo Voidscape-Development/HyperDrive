@@ -706,5 +706,89 @@ class Theme:
 
         QCheckBox, QRadioButton {{ spacing: 6px; }}
         QStatusBar {{ background: {c["window"]}; color: {c["muted"]}; }}
+
+        /* Scoreboard, player rows and the docks built from them. Widgets
+           pick these with the hdRole property */
+        QFrame[hdRole="card"], QFrame[hdRole="playerRow"] {{
+            background: {c["surface"]}; border: 1px solid {c["border"]}; border-radius: {r + 2}px;
+        }}
+        QFrame[hdRole="playerRow"][open="true"] {{ border-color: {c["accent"]}; }}
+        QFrame[hdRole="playerRow"][active="true"] {{ border-color: {c["accent"]}; }}
+        QFrame[hdRole="playerRow"][dropTarget="true"] {{ border: 1px dashed {c["accent"]}; }}
+        QFrame[hdRole="playerRow"] QLabel, QFrame[hdRole="card"] QLabel {{ background: transparent; }}
+        QFrame[hdRole="divider"] {{ background: {c["border"]}; border: none; max-height: 1px; min-height: 1px; }}
+        QLineEdit[hdRole="inline"] {{
+            background: transparent; border: 1px solid transparent; padding: 1px 3px;
+        }}
+        QLineEdit[hdRole="inline"]:hover {{ border-color: {c["border"]}; }}
+        QLineEdit[hdRole="inline"]:focus {{ border-color: {c["accent"]}; background: {c["window"]}; }}
+        QLineEdit[hdRole="inlineMuted"] {{
+            background: transparent; border: 1px solid transparent; padding: 1px 3px; color: {c["muted"]};
+        }}
+        QLineEdit[hdRole="inlineMuted"]:hover {{ border-color: {c["border"]}; }}
+        QLineEdit[hdRole="inlineMuted"]:focus {{ border-color: {c["accent"]}; color: {c["text"]}; }}
+        QLabel[hdRole="muted"] {{ color: {c["muted"]}; }}
+        QLabel[hdRole="eyebrow"] {{ color: {c["muted"]}; }}
+        QLabel[hdRole="badge"] {{
+            background: {c["raised"]}; color: {c["muted"]};
+            border-radius: {min(r, 4)}px; padding: 1px 5px;
+        }}
+        QToolButton[hdRole="chip"] {{
+            background: {c["raised"]}; border: 1px solid {c["border"]};
+            border-radius: 14px; padding: 2px 8px 2px 3px;
+        }}
+        QToolButton[hdRole="chip"][empty="true"] {{
+            background: transparent; border-style: dashed; color: {c["muted"]}; padding: 2px 8px;
+        }}
+        QToolButton[hdRole="ghost"], QPushButton[hdRole="ghost"] {{
+            background: transparent; border-color: transparent;
+        }}
+        QToolButton[hdRole="ghost"]:hover, QPushButton[hdRole="ghost"]:hover {{
+            background: {c["raised"]}; border-color: {c["border"]};
+        }}
+        QToolButton[hdRole="ghost"]::menu-indicator {{ image: none; width: 0px; }}
+        QToolButton[hdRole="icon"]::menu-indicator {{ image: none; width: 0px; }}
+        QPushButton[hdRole="primary"], QToolButton[hdRole="primary"] {{
+            background: {c["accent"]}; color: {c["onAccent"]}; border-color: {c["accent"]};
+        }}
+        QPushButton[hdRole="primary"]:hover, QToolButton[hdRole="primary"]:hover {{
+            background: {c["accentHover"]};
+        }}
+        QPushButton[hdRole="segment"] {{ padding: 2px 8px; border-radius: 0px; }}
+        QPushButton[hdRole="segment"][first="true"] {{
+            border-top-left-radius: {r}px; border-bottom-left-radius: {r}px;
+        }}
+        QPushButton[hdRole="segment"][last="true"] {{
+            border-top-right-radius: {r}px; border-bottom-right-radius: {r}px;
+        }}
+        QPushButton[hdRole="segment"]:checked {{
+            background: {c["accent"]}; color: {c["onAccent"]}; border-color: {c["accent"]};
+        }}
+        QCheckBox[hdRole="pill"] {{
+            color: {c["muted"]}; border: 1px solid {c["border"]};
+            border-radius: {min(r, 4)}px; padding: 1px 6px;
+        }}
+        QCheckBox[hdRole="pill"]::indicator {{ width: 0px; height: 0px; border: none; }}
+        QCheckBox[hdRole="pill"]:checked {{
+            background: #e2a93b; color: #14151b; border-color: #e2a93b;
+        }}
+        QCheckBox[hdRole="pill"][tone="accent"]:checked {{
+            background: {c["accent"]}; color: {c["onAccent"]}; border-color: {c["accent"]};
+        }}
+        QCheckBox[hdRole="pill"][tone="danger"]:checked {{
+            background: #c4314b; color: #ffffff; border-color: #c4314b;
+        }}
+        QSpinBox[hdRole="score"] {{
+            background: transparent; border: 1px solid transparent; padding: 0px;
+        }}
+        QSpinBox[hdRole="score"]:hover {{ border-color: {c["border"]}; }}
+        QSpinBox[hdRole="score"]:focus {{ border-color: {c["accent"]}; }}
+        QPushButton[hdRole="pip"] {{
+            background: {c["raised"]}; border: 1px solid {c["border"]};
+            border-radius: 3px; padding: 0px;
+        }}
+        QFrame[hdRole="banner"] {{
+            background: {c["accentSoft"]}; border: 1px solid {c["accent"]}; border-radius: {r + 2}px;
+        }}
         """
         )
