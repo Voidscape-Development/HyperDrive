@@ -131,11 +131,10 @@ class DragGrip(QLabel):
         menu.addAction(QApplication.translate("app", "Move down"), self.row.btMoveDown.click)
         menu.exec(self.mapToGlobal(pos))
 
-    # The grip's clicks are its own: passed on, they'd open or close the row
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.pressPos = event.position().toPoint()
-        event.accept()
+        super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         if self.pressPos is None or not (event.buttons() & Qt.MouseButton.LeftButton):
@@ -152,7 +151,7 @@ class DragGrip(QLabel):
 
     def mouseReleaseEvent(self, event):
         self.pressPos = None
-        event.accept()
+        super().mouseReleaseEvent(event)
 
 
 class CharacterChip(QToolButton):
@@ -426,17 +425,6 @@ class FlowLayout(QLayout):
 
     def addItem(self, item):
         self.items.append(item)
-
-    def addGroup(self, *widgets):
-        """Adds widgets that wrap together, like a label and its field."""
-        group = QWidget()
-        layout = QHBoxLayout(group)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(self.spacing())
-        for widget in widgets:
-            layout.addWidget(widget)
-        self.addWidget(group)
-        return group
 
     def count(self):
         return len(self.items)

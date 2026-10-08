@@ -23,7 +23,6 @@ from .DisplayOptions import DisplayOptionsButton
 from .GameAssetManager import GameAssetManager
 from .Hotkeys import Hotkeys
 from .PlayerList import PlayerList
-from .PlayerRowParts import FlowLayout
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .Theme import ThemedIcon
@@ -98,12 +97,13 @@ class BracketWidget(QDockWidget):
         self.setWidget(contents)
 
         # Loading from start.gg
-        # The bars wrap their controls, so they don't set the window's width
-        providerRow = FlowLayout()
+        providerRow = QHBoxLayout()
         contents.layout().addLayout(providerRow)
+        providerRow.addWidget(QLabel(QApplication.translate("app", "Phase")))
         self.phaseSelection = QComboBox()
         self.phaseSelection.setMinimumWidth(160)
         self.phaseSelection.currentIndexChanged.connect(self.UpdatePhaseGroups)
+        providerRow.addWidget(self.phaseSelection)
         self.btRefreshPhase = QPushButton()
         self.btRefreshPhase.setIcon(ThemedIcon("./assets/icons/undo.svg"))
         self.btRefreshPhase.setToolTip(QApplication.translate("app", "Reload the phases"))
@@ -114,16 +114,11 @@ class BracketWidget(QDockWidget):
                 else None
             )
         )
-        providerRow.addGroup(
-            QLabel(QApplication.translate("app", "Phase")),
-            self.phaseSelection,
-            self.btRefreshPhase,
-        )
+        providerRow.addWidget(self.btRefreshPhase)
+        providerRow.addWidget(QLabel(QApplication.translate("app", "Phase Group")))
         self.phaseGroupSelection = QComboBox()
         self.phaseGroupSelection.setMinimumWidth(120)
-        providerRow.addGroup(
-            QLabel(QApplication.translate("app", "Phase Group")), self.phaseGroupSelection
-        )
+        providerRow.addWidget(self.phaseGroupSelection)
         self.btLoadPhaseGroup = QPushButton(QApplication.translate("app", "Load"))
         self.btLoadPhaseGroup.setIcon(ThemedIcon("./assets/icons/undo.svg"))
         self.btLoadPhaseGroup.setToolTip(
@@ -143,10 +138,11 @@ class BracketWidget(QDockWidget):
         )
         self.btRefreshSets.clicked.connect(lambda: self.RefreshSets())
         providerRow.addWidget(self.btRefreshSets)
+        providerRow.addStretch()
         Hotkeys.signals.refresh_phase_group.connect(self.PhaseGroupChanged)
 
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
-        contents.layout().addWidget(self.splitter, 1)
+        contents.layout().addWidget(self.splitter)
 
         # The player list changes as it's built, which updates these
         self.view = BracketView()
@@ -160,20 +156,12 @@ class BracketWidget(QDockWidget):
 
         # Left: phases, phase options and the player list
         left = QTabWidget()
-        left.setMinimumWidth(200)
+        left.setMinimumWidth(280)
         self.splitter.addWidget(left)
         self.sidePanel = left
 
-        # The tabs scroll, so the window can be smaller than their contents
-        def Scrolling(tab):
-            scroll = QScrollArea()
-            scroll.setWidgetResizable(True)
-            scroll.setFrameShape(QFrame.Shape.NoFrame)
-            scroll.setWidget(tab)
-            return scroll
-
-        left.addTab(Scrolling(self.BuildPhasesTab()), QApplication.translate("app", "Phases"))
-        left.addTab(Scrolling(self.BuildPlayersTab()), QApplication.translate("app", "Players"))
+        left.addTab(self.BuildPhasesTab(), QApplication.translate("app", "Phases"))
+        left.addTab(self.BuildPlayersTab(), QApplication.translate("app", "Players"))
 
         # Right: the bracket
         right = QWidget()
@@ -181,18 +169,20 @@ class BracketWidget(QDockWidget):
         right.layout().setContentsMargins(0, 0, 0, 0)
         self.splitter.addWidget(right)
 
-        viewBar = FlowLayout()
+        viewBar = QHBoxLayout()
         right.layout().addLayout(viewBar)
         self.btToggleSide = QPushButton()
         self.btToggleSide.setCheckable(True)
         self.btToggleSide.setIcon(ThemedIcon("./assets/icons/people.svg"))
         self.btToggleSide.setToolTip(QApplication.translate("app", "Show or hide the side panel"))
         self.btToggleSide.toggled.connect(self.SetSidePanelHidden)
+        viewBar.addWidget(self.btToggleSide)
         self.phaseTitle = QLabel()
         font = self.phaseTitle.font()
         font.setBold(True)
         self.phaseTitle.setFont(font)
-        viewBar.addGroup(self.btToggleSide, self.phaseTitle)
+        viewBar.addWidget(self.phaseTitle)
+        viewBar.addStretch()
 
         self.limitExport = QCheckBox(QApplication.translate("app", "Only show the top"))
         self.limitExport.setToolTip(
@@ -202,6 +192,7 @@ class BracketWidget(QDockWidget):
             )
         )
         self.limitExport.toggled.connect(self.ExportOptionsChanged)
+        viewBar.addWidget(self.limitExport)
         Hotkeys.signals.limit_export.connect(
             lambda: self.limitExport.setChecked(not self.limitExport.isChecked())
         )
@@ -210,7 +201,7 @@ class BracketWidget(QDockWidget):
         self.limitExportNumber.setMaximum(1024)
         self.limitExportNumber.setValue(8)
         self.limitExportNumber.valueChanged.connect(self.ExportOptionsChanged)
-        viewBar.addGroup(self.limitExport, self.limitExportNumber)
+        viewBar.addWidget(self.limitExportNumber)
 
         self.btClearEdits = QPushButton(QApplication.translate("app", "Clear manual changes"))
         self.btClearEdits.setToolTip(
@@ -232,7 +223,7 @@ class BracketWidget(QDockWidget):
         right.layout().addWidget(self.focusBar)
 
         viewSplitter = QSplitter(Qt.Orientation.Vertical)
-        right.layout().addWidget(viewSplitter, 1)
+        right.layout().addWidget(viewSplitter)
 
         viewSplitter.addWidget(self.view)
         viewSplitter.addWidget(self.standingsTable)
