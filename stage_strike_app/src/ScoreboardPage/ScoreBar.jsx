@@ -1,6 +1,16 @@
 import React from "react";
-import {Box, Chip, IconButton, Paper, Stack, Typography} from "@mui/material";
-import {Add, Remove} from "@mui/icons-material";
+import {
+    Box,
+    Chip,
+    IconButton,
+    Paper,
+    Stack,
+    ToggleButton,
+    ToggleButtonGroup,
+    Tooltip,
+    Typography,
+} from "@mui/material";
+import {Add, Remove, RestartAlt, SwapHoriz} from "@mui/icons-material";
 import i18n from "../i18n/config";
 import {api} from "./api";
 
@@ -100,6 +110,78 @@ function TeamScore({scoreboardNumber, teamNumber, team, maxScore, align}) {
 }
 
 /**
+ * Between the teams, like on the desktop: the best of, a pip per game in
+ * the color of the team that won it, and swapping teams or resetting the
+ * score.
+ */
+function SetFormat({scoreboardNumber, score}) {
+    const teams = score?.team ?? {};
+    const bestOf = Number(score?.best_of) || 0;
+    const games = Object.keys(score?.games ?? {})
+        .sort((a, b) => Number(a) - Number(b))
+        .map((k) => score.games[k]);
+    const pipCount = Math.max(bestOf, games.length);
+    const run = (call) => () => call(scoreboardNumber).catch(() => {});
+
+    return (
+        <Stack alignItems={"center"} gap={0.75} sx={{flexShrink: 0}}>
+            <ToggleButtonGroup
+                size={"small"}
+                exclusive
+                value={bestOf}
+                onChange={(e, value) => api.setInfo(scoreboardNumber, {bestOf: value ?? 0}).catch(() => {})}
+                aria-label={i18n.t("best_of", {value: ""}).trim()}
+            >
+                {[1, 3, 5, 7].map((value) => (
+                    <ToggleButton key={value} value={value} sx={{px: 1, py: 0.25, fontWeight: 600}}>
+                        BO{value}
+                    </ToggleButton>
+                ))}
+            </ToggleButtonGroup>
+            {pipCount > 0 && (
+                <Stack direction={"row"} gap={0.5}>
+                    {Array.from({length: pipCount}, (_, i) => {
+                        const winner = games[i]?.winner;
+                        const color = winner === 1 || winner === 2
+                            ? (teams[String(winner)]?.color || 'text.secondary')
+                            : null;
+                        const label = winner === 1 || winner === 2
+                            ? i18n.t("game_n_won", {value: i + 1, team: teamDisplayName(teams[String(winner)], winner)})
+                            : i18n.t("game_n", {value: i + 1});
+                        return (
+                            <Tooltip key={i} title={label}>
+                                <Box sx={{
+                                    width: 14, height: 14, borderRadius: '3px',
+                                    border: 1, borderColor: color ?? 'divider',
+                                    bgcolor: color ?? 'action.hover',
+                                }}/>
+                            </Tooltip>
+                        );
+                    })}
+                </Stack>
+            )}
+            <Stack direction={"row"} alignItems={"center"} gap={0.5}>
+                {bestOf > 0 && (
+                    <Typography variant={"caption"} color={"text.secondary"}>
+                        {i18n.t("first_to", {value: Math.floor(bestOf / 2) + 1})}
+                    </Typography>
+                )}
+                <Tooltip title={i18n.t("swap_teams")}>
+                    <IconButton size={"small"} aria-label={i18n.t("swap_teams")} onClick={run(api.swapTeams)}>
+                        <SwapHoriz fontSize={"small"}/>
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title={i18n.t("reset_score")}>
+                    <IconButton size={"small"} aria-label={i18n.t("reset_score")} onClick={run(api.resetScores)}>
+                        <RestartAlt fontSize={"small"}/>
+                    </IconButton>
+                </Tooltip>
+            </Stack>
+        </Stack>
+    );
+}
+
+/**
  * The current score, kept at the top of the page. Teams are shown as they
  * are on the scoreboard: team 1 on the left.
  */
@@ -107,11 +189,7 @@ export default function ScoreBar({scoreboardNumber, score}) {
     const teams = score?.team ?? {};
     const bestOf = Number(score?.best_of) || 0;
     const maxScore = bestOf > 0 ? Math.floor(bestOf / 2) + 1 : null;
-    const details = [
-        score?.phase,
-        score?.match,
-        bestOf > 0 ? i18n.t("best_of", {value: bestOf}) : null,
-    ].filter(Boolean).join(" · ");
+    const details = [score?.phase, score?.match].filter(Boolean).join(" · ");
 
     return (
         <Paper
@@ -138,10 +216,16 @@ export default function ScoreBar({scoreboardNumber, score}) {
             <Stack direction={"row"} alignItems={"center"} gap={{xs: 1, sm: 3}}>
                 <TeamScore scoreboardNumber={scoreboardNumber} teamNumber={1} team={teams["1"]}
                            maxScore={maxScore} align={"left"}/>
-                <Box sx={{color: 'text.disabled', fontWeight: 700, display: {xs: 'none', sm: 'block'}}}>–</Box>
+                <Box sx={{display: {xs: 'none', sm: 'block'}}}>
+                    <SetFormat scoreboardNumber={scoreboardNumber} score={score}/>
+                </Box>
                 <TeamScore scoreboardNumber={scoreboardNumber} teamNumber={2} team={teams["2"]}
                            maxScore={maxScore} align={"right"}/>
             </Stack>
+            {/* On phones it goes under the teams */}
+            <Box sx={{display: {xs: 'block', sm: 'none'}, mt: 1}}>
+                <SetFormat scoreboardNumber={scoreboardNumber} score={score}/>
+            </Box>
         </Paper>
     );
 }

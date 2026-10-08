@@ -74,7 +74,7 @@ export default function Team({scoreboardNumber, hdTeamId, team}) {
                             teamId={teamId}
                             teamKey={key}
                             player={team.player[key]}
-                            defaultExpanded={playerKeys.length <= 2}
+                            defaultExpanded={false}
                         />
                     ))}
                 </Stack>

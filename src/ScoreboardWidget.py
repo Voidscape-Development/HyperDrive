@@ -4,7 +4,6 @@ import socket
 from copy import deepcopy
 
 from loguru import logger
-from qtpy import uic
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
@@ -14,12 +13,12 @@ from src.ColorButton import ColorButton
 from .GameAssetManager import GameAssetManager
 from .GameReportWidget import GameReportWidget
 from .Helpers.DictHelper import deep_get
-from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.MediaHelper import MediaHelper
 from .Helpers.VersionHelper import add_beta_label
 from .Hotkeys import Hotkeys
 from .PlayerDB import PlayerDB
+from .PlayerRowParts import EyebrowLabel, IconButton, SetRole, SmallFont
 from .Scheduler import (
     SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
     SCOREBOARD_AUTO_UPDATE_GROUP,
@@ -92,6 +91,14 @@ class ScoreboardWidgetSignals(QObject):
     # The set on the scoreboard is over (reported here or finished on
     # start.gg), with its id
     SetFinished = Signal(object)
+    # The players, score or set source changed: the tab's summary follows
+    SummaryChanged = Signal()
+
+
+# Width of the scoreboard under which the two teams' players stack
+LANES_STACK_WIDTH = 820
+# Width under which the set bar's buttons only show their icon
+BUTTON_TEXT_WIDTH = 560
 
 
 class ScoreboardWidget(QWidget):
@@ -143,6 +150,8 @@ class ScoreboardWidget(QWidget):
 
         # The set (or stream/station/user selection) being auto updated
         self.autoUpdateData = None
+        # Auto update paused from the set bar, the set stays linked
+        self.autoUpdatePaused = False
         self.autoUpdateJob = f"scoreboard_{self.scoreboardNumber}_auto_update"
         Scheduler.instance.Register(
             self.autoUpdateJob,
@@ -158,63 +167,331 @@ class ScoreboardWidget(QWidget):
         Scheduler.instance.signals.job_state_changed.connect(self.AutoUpdateJobStateChanged)
         Scheduler.instance.signals.tick.connect(self.UpdateTimeLeftTimer)
 
+        self.playerWidgets: list[ScoreboardPlayerWidget] = []
+        self.team1playerWidgets: list[ScoreboardPlayerWidget] = []
+        self.team2playerWidgets: list[ScoreboardPlayerWidget] = []
+
+        self.team1swaps = []
+        self.team2swaps = []
+
+        self.teamsSwapped = False
+        # Sets that were over, so that's only told once per set
+        self.finishedSets = set()
+        # Set while data from start.gg is applied, so it isn't taken for
+        # changes made here
+        self.applyingProviderData = False
+
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.setLayout(QVBoxLayout())
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(6)
 
-        self.innerWidget = QWidget()
-        self.innerWidget.setLayout(QVBoxLayout())
+        # The set, the score and the round stay at the top while the
+        # players scroll. scoreColumn holds the score, best of, phase and
+        # match fields (the web API finds them in it by name)
+        self.scoreColumn = QWidget()
+        top = QVBoxLayout(self.scoreColumn)
+        top.setContentsMargins(0, 0, 0, 0)
+        top.setSpacing(8)
+        root.addWidget(self.scoreColumn)
 
+        self.BuildSetBar(top)
+        self.BuildScoreBar(top)
+        self.BuildBanner(top)
+        self.BuildRound(top)
+
+        # The players
         self.scrollArea = QScrollArea()
-        self.scrollArea.setWidget(self.innerWidget)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setFrameShape(QFrame.Shape.NoFrame)
-        self.layout().addWidget(self.scrollArea)
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        root.addWidget(self.scrollArea, 1)
 
-        topOptions = QWidget()
-        topOptions.setLayout(QHBoxLayout())
-        topOptions.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        self.innerWidget = QWidget()
+        inner = QVBoxLayout(self.innerWidget)
+        inner.setContentsMargins(0, 0, 0, 0)
+        self.scrollArea.setWidget(self.innerWidget)
 
-        self.innerWidget.layout().addWidget(topOptions)
+        self.lanesLayout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.lanesLayout.setSpacing(10)
+        inner.addLayout(self.lanesLayout)
+        inner.addStretch()
+        self.laneHeaders = []
+        self.laneCounts = []
+        self.laneLists = []
+        for t in (1, 2):
+            # Both lanes take half the width, whatever their players hold
+            laneWidget = QWidget()
+            laneWidget.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+            lane = QVBoxLayout(laneWidget)
+            lane.setContentsMargins(0, 0, 0, 0)
+            lane.setSpacing(6)
+            head = QHBoxLayout()
+            header = EyebrowLabel(QApplication.translate("app", "Team {0}").format(t))
+            count = EyebrowLabel("")
+            head.addWidget(header)
+            head.addStretch()
+            head.addWidget(count)
+            lane.addLayout(head)
+            players = QWidget()
+            playersLayout = QVBoxLayout(players)
+            playersLayout.setContentsMargins(0, 0, 0, 0)
+            playersLayout.setSpacing(6)
+            lane.addWidget(players)
+            lane.addStretch()
+            self.lanesLayout.addWidget(laneWidget, 1)
+            self.laneHeaders.append(header)
+            self.laneCounts.append(count)
+            self.laneLists.append(players)
 
-        col = QWidget()
-        col.setLayout(QVBoxLayout())
-        topOptions.layout().addWidget(col)
-        self.charNumber = QSpinBox()
-        col.layout().addWidget(QLabel(QApplication.translate("app", "Characters per player")))
-        col.layout().addWidget(self.charNumber)
-        self.charNumber.valueChanged.connect(self.SetCharacterNumber)
+        self.BuildStatusLine(root)
 
-        col = QWidget()
-        col.setLayout(QVBoxLayout())
-        topOptions.layout().addWidget(col)
-        topOptions.layout().addStretch()
+        TournamentDataManager.instance.signals.tournament_changed.connect(self.UpdateBottomButtons)
+        TournamentDataManager.instance.signals.tournament_changed.emit()
+
+        self.selectSetWindow = SelectSetWindow(self)
+        self.selectStationWindow = SelectStationWindow(self)
+
+        # Exports of the team fields
+        for t in (0, 1):
+            team = t + 1
+            self.teamNameEdits[t].editingFinished.connect(
+                lambda team=team, t=t: StateManager.Set(
+                    f"score.{self.scoreboardNumber}.team.{team}.teamName",
+                    self.teamNameEdits[t].text(),
+                )
+            )
+            self.teamNameEdits[t].editingFinished.emit()
+            self.losersChecks[t].toggled.connect(
+                lambda state, team=team: StateManager.Set(
+                    f"score.{self.scoreboardNumber}.team.{team}.losers", state
+                )
+            )
+            self.losersChecks[t].toggled.connect(
+                lambda state, team=team, t=t: self.ExportLosersStatus(
+                    str(team), self.teamNameEdits[t].text(), state
+                )
+            )
+            self.losersChecks[t].toggled.emit(False)
+            self.teamNameEdits[t].editingFinished.connect(
+                lambda team=team, t=t: [
+                    self.ExportTeamLogo(str(team), self.teamNameEdits[t].text()),
+                    self.ExportLosersStatus(
+                        str(team), self.teamNameEdits[t].text(), self.losersChecks[t].isChecked()
+                    ),
+                    self.RefreshTeamLabels(),
+                ]
+            )
+
+        StateManager.Unset(f"score.{self.scoreboardNumber}.team.1.player")
+        StateManager.Unset(f"score.{self.scoreboardNumber}.team.2.player")
+        StateManager.Unset(f"score.{self.scoreboardNumber}.stage_strike")
+        self.playerNumber.setValue(1)
+        self.SetPlayersPerTeam(self.playerNumber.value())
+        self.charNumber.setValue(1)
+
+        for c in (self.phaseCombo, self.matchCombo):
+            c.lineEdit().editingFinished.connect(
+                lambda element=c: [
+                    StateManager.Set(
+                        f"score.{self.scoreboardNumber}.{element.objectName()}",
+                        element.currentText(),
+                    ),
+                    self.signals.SummaryChanged.emit(),
+                ]
+            )
+            c.currentIndexChanged.connect(
+                lambda x, element=c: [
+                    StateManager.Set(
+                        f"score.{self.scoreboardNumber}.{element.objectName()}",
+                        element.currentText(),
+                    )
+                ]
+            )
+            c.lineEdit().editingFinished.emit()
+
+        self.colorMenu1.setVisible(StateManager.Get("game.has_colors", False))
+        self.colorMenu2.setVisible(StateManager.Get("game.has_colors", False))
+
+        # Games of the set, and reporting it to start.gg
+        self.gameReport = GameReportWidget(self)
+        self.gameReport.signals.scoreChanged.connect(self.StageResultsToScore)
+        self.gameReport.signals.setReported.connect(self.SetOver)
+        self.gameReport.signals.changed.connect(self.RefreshPips)
+
+        # The games of the set, in a window of their own
+        self.gamesWindow = QDialog(self)
+        self.gamesWindow.setWindowTitle(
+            QApplication.translate("app", "Games - Scoreboard {0}").format(self.scoreboardNumber)
+        )
+        self.gamesWindow.setLayout(QVBoxLayout())
+        self.gamesWindow.layout().addWidget(self.gameReport)
+        self.gamesWindow.resize(900, 600)
+
+        self.bestOfSpin.valueChanged.connect(self.ExportBestOf)
+        self.bestOfSpin.valueChanged.emit(0)
+
+        for t in (0, 1):
+            self.scoreSpins[t].valueChanged.connect(
+                lambda value, t=t: [
+                    StateManager.Set(f"score.{self.scoreboardNumber}.team.{t + 1}.score", value),
+                    self.gameReport.ScoreChanged(t, value),
+                    self.ScoreDisplayChanged(),
+                ]
+            )
+            self.scoreSpins[t].valueChanged.emit(0)
+
+        MediaHelper.signals.changed.connect(self.RefreshTeamLogos)
+
+        # Add default and user tournament phase title files
+        self.phaseCombo.addItem("")
+        LocaleHelper.LoadPhaseNamesToWidget(self.phaseCombo)
+
+        self.matchCombo.addItem("")
+        LocaleHelper.LoadMatchNamesToWidget(self.matchCombo)
+        LocaleHelper.signals.termsChanged.connect(self.ReloadTournamentTerms)
+
+        GameAssetManager.instance.signals.onLoad.connect(
+            lambda: [
+                self.SetDefaultsFromAssets(),
+                self.bestOfSpin.valueChanged.emit(self.bestOfSpin.value()),
+                self.colorMenu1.setModel(GameAssetManager.instance.colorModel),
+                self.colorMenu2.setModel(GameAssetManager.instance.colorModel),
+                self.colorMenu1.setVisible(StateManager.Get("game.has_colors", False)),
+                self.colorMenu2.setVisible(StateManager.Get("game.has_colors", False)),
+            ]
+        )
+
+        self.RefreshTeamLabels()
+        self.RefreshSource()
+        self.RefreshPips()
+
+    # =====================================================
+    # BUILDING THE PARTS
+    # =====================================================
+    def BuildSetBar(self, parent):
+        """Where the scoreboard's set comes from: the linked set or
+        station, its auto update, and the buttons to load another."""
+        bar = QHBoxLayout()
+        bar.setSpacing(6)
+        parent.addLayout(bar)
+
+        self.sourceFrame = QFrame()
+        SetRole(self.sourceFrame, "card")
+        source = QHBoxLayout(self.sourceFrame)
+        source.setContentsMargins(10, 4, 4, 4)
+        source.setSpacing(8)
+        self.sourceDot = QLabel()
+        self.sourceDot.setFixedSize(8, 8)
+        source.addWidget(self.sourceDot)
+        texts = QVBoxLayout()
+        texts.setSpacing(0)
+        self.sourceTitle = QLabel()
+        SmallFont(self.sourceTitle, 1.0, bold=True)
+        self.sourceTitle.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self.sourceSub = QLabel()
+        SetRole(self.sourceSub, "muted")
+        SmallFont(self.sourceSub, 0.85)
+        self.sourceSub.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        texts.addWidget(self.sourceTitle)
+        texts.addWidget(self.sourceSub)
+        source.addLayout(texts, 1)
+        self.pauseBt = IconButton(
+            "assets/icons/pause.svg", QApplication.translate("app", "Pause auto update")
+        )
+        self.pauseBt.clicked.connect(self.ToggleAutoUpdatePause)
+        source.addWidget(self.pauseBt)
+        self.timerCancelBt = IconButton(
+            "assets/icons/cancel.svg", QApplication.translate("app", "Unlink the set")
+        )
+        self.timerCancelBt.clicked.connect(lambda: self.StopAutoUpdate(clear_variables=True))
+        source.addWidget(self.timerCancelBt)
+        bar.addWidget(self.sourceFrame, 1)
+
+        self.btSelectSet = QPushButton(QApplication.translate("app", "Load set"))
+        self.btSelectSet.setIcon(ThemedIcon("./assets/icons/list.svg"))
+        self.btSelectSet.setEnabled(False)
+        self.btSelectSet.setMinimumWidth(34)
+        self.btSelectSet.clicked.connect(self.signals.SetSelection.emit)
+        bar.addWidget(self.btSelectSet)
+
+        self.btLoadStationSet = QPushButton(QApplication.translate("app", "Track station"))
+        self.btLoadStationSet.setIcon(ThemedIcon("./assets/icons/station.svg"))
+        self.btLoadStationSet.setMinimumWidth(34)
+        self.btLoadStationSet.setToolTip(
+            QApplication.translate("app", "Track sets from a stream or station")
+        )
+        self.btLoadStationSet.clicked.connect(self.signals.StationSelection.emit)
+        bar.addWidget(self.btLoadStationSet)
+
+        self.formatBt = IconButton(
+            "assets/icons/settings.svg",
+            QApplication.translate("app", "Format"),
+            role="icon",
+            size=32,
+        )
+        self.formatBt.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.formatBt.setMenu(self.BuildFormatMenu())
+        bar.addWidget(self.formatBt)
+
+        self.moreBt = IconButton(
+            "assets/icons/more.svg", QApplication.translate("app", "More"), role="icon", size=32
+        )
+        self.moreBt.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        moreMenu = QMenu(self.moreBt)
+        moreMenu.addAction(
+            ThemedIcon("assets/icons/list.svg"),
+            QApplication.translate("app", "Games..."),
+            lambda: self.OpenGames(),
+        )
+        moreMenu.addAction(
+            ThemedIcon("assets/icons/copy.svg"),
+            QApplication.translate("app", "Copy the remote scoreboard address"),
+            self.CopyRemoteLink,
+        )
+        moreMenu.addAction(
+            QApplication.translate("app", "Rename this scoreboard..."), self.RenameScoreboard
+        )
+        moreMenu.addSeparator()
+        clearAll = moreMenu.addAction(
+            ThemedIcon("assets/icons/cancel.svg"),
+            QApplication.translate("app", "Clear all..."),
+            self.ClearAllClicked,
+        )
+        clearAll.setToolTip(
+            QApplication.translate(
+                "app",
+                "Clear the players, scores, phase and match, and unlink the loaded set",
+            )
+        )
+        moreMenu.setToolTipsVisible(True)
+        self.moreBt.setMenu(moreMenu)
+        bar.addWidget(self.moreBt)
+
+    def BuildFormatMenu(self):
+        """Players per team, characters per player and the player fields."""
+        menu = QMenu(self)
+        menu.setToolTipsVisible(True)
+
+        panel = QWidget()
+        form = QFormLayout(panel)
+        form.setContentsMargins(10, 6, 10, 6)
         self.playerNumber = QSpinBox()
-        col.layout().addWidget(QLabel(QApplication.translate("app", "Players per team")))
-        col.layout().addWidget(self.playerNumber)
+        self.playerNumber.setRange(1, 16)
         self.playerNumber.valueChanged.connect(self.SetPlayersPerTeam)
+        form.addRow(QApplication.translate("app", "Players per team"), self.playerNumber)
+        self.charNumber = QSpinBox()
+        self.charNumber.valueChanged.connect(self.SetCharacterNumber)
+        form.addRow(QApplication.translate("app", "Characters per player"), self.charNumber)
+        panelAction = QWidgetAction(menu)
+        panelAction.setDefaultWidget(panel)
+        menu.addAction(panelAction)
 
-        # VISIBILITY
-        col = QWidget()
-        col.setLayout(QVBoxLayout())
-        col.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
-        col.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
-        topOptions.layout().addWidget(col)
-
-        self.eyeBt = QToolButton()
-        self.eyeBt.setIcon(ThemedIcon("assets/icons/eye.svg"))
-        self.eyeBt.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
-        col.layout().addWidget(self.eyeBt, Qt.AlignmentFlag.AlignRight)
-        self.eyeBt.setPopupMode(QToolButton.InstantPopup)
-        menu = QMenu()
-        self.eyeBt.setMenu(menu)
-
-        menu.addSection("Players")
-
+        menu.addSection(QApplication.translate("app", "Player fields"))
         self.elements = [
             [QApplication.translate("app", "Real Name"), ["real_name"], "show_name"],
             [QApplication.translate("app", "Twitter"), ["twitter", "twitterLabel"], "show_social"],
             [QApplication.translate("app", "Seed"), ["seed", "seedLabel"], "show_seed"],
-            [QApplication.translate("app", "Birthday"), ["birthday"], "show_birthday"],
             [
                 QApplication.translate("app", "Location"),
                 ["locationLabel", "state", "country"],
@@ -228,8 +505,9 @@ class ScoreboardWidget(QWidget):
                 "show_additional",
             ],
         ]
+        self.elementActions = []
         for element in self.elements:
-            action: QAction = self.eyeBt.menu().addAction(element[0])
+            action: QAction = menu.addAction(element[0])
             action.setCheckable(True)
             action.setChecked(SettingsManager.Get(f"display_options.{element[2]}", True))
             action.toggled.connect(
@@ -237,186 +515,165 @@ class ScoreboardWidget(QWidget):
                     action, element[1]
                 )
             )
+            self.elementActions.append(action)
 
-        # Player cards with only the tag, sponsor and characters; each card
-        # can still show its other fields
         menu.addSeparator()
-        self.compactAction = menu.addAction(QApplication.translate("app", "Compact player cards"))
-        self.compactAction.setCheckable(True)
-        self.compactAction.setChecked(SettingsManager.Get("display_options.compact_players", False))
-        self.compactAction.toggled.connect(self.SetCompactPlayers)
-
-        self.playerWidgets: list[ScoreboardPlayerWidget] = []
-        self.team1playerWidgets: list[ScoreboardPlayerWidget] = []
-        self.team2playerWidgets: list[ScoreboardPlayerWidget] = []
-
-        self.team1swaps = []
-        self.team2swaps = []
-
-        self.columns = QWidget()
-        self.columns.setLayout(QHBoxLayout())
-        self.innerWidget.layout().addWidget(self.columns)
-
-        bottomOptions = QWidget()
-        bottomOptions.setLayout(QVBoxLayout())
-        bottomOptions.layout().setContentsMargins(0, 0, 0, 0)
-        bottomOptions.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
-
-        self.innerWidget.layout().addWidget(bottomOptions)
-
-        self.btSelectSet = QPushButton(QApplication.translate("app", "Load set"))
-        self.btSelectSet.setIcon(ThemedIcon("./assets/icons/list.svg"))
-        self.btSelectSet.setEnabled(False)
-        bottomOptions.layout().addWidget(self.btSelectSet)
-        self.btSelectSet.clicked.connect(self.signals.SetSelection.emit)
-
-        hbox = QHBoxLayout()
-        bottomOptions.layout().addLayout(hbox)
-
-        self.btLoadStationSet = QPushButton(
-            QApplication.translate("app", "Track sets from a stream or station")
+        self.expandAction = menu.addAction(
+            QApplication.translate("app", "Open every player's details")
         )
-        self.btLoadStationSet.setIcon(ThemedIcon("./assets/icons/station.svg"))
-        hbox.addWidget(self.btLoadStationSet)
-        self.btLoadStationSet.clicked.connect(self.signals.StationSelection.emit)
+        self.expandAction.setCheckable(True)
+        self.expandAction.setChecked(SettingsManager.Get("display_options.expand_players", False))
+        self.expandAction.toggled.connect(self.SetExpandPlayers)
+        return menu
 
-        self.remoteScoreboardLabel = QApplication.translate(
-            "app", "Open {0} in a browser to edit the scoreboard remotely."
-        ).format(
-            f"<a href='http://{self.GetIP()}:{SettingsManager.Get('general.webserver_port', 5500)}/scoreboard'>http://{self.GetIP()}:{SettingsManager.Get('general.webserver_port', 5500)}/scoreboard</a>"
-        )
-        self.remoteScoreboardLabel = add_beta_label(self.remoteScoreboardLabel, "web_score")
-        self.remoteScoreboardLabel = QLabel(self.remoteScoreboardLabel)
+    def BuildScoreBar(self, parent):
+        """The two teams with their score, and the set's format between them."""
+        self.hero = QGridLayout()
+        self.hero.setSpacing(8)
+        parent.addLayout(self.hero)
 
-        self.remoteScoreboardLabel.setOpenExternalLinks(True)
-        bottomOptions.layout().addWidget(self.remoteScoreboardLabel)
-
-        TournamentDataManager.instance.signals.tournament_changed.connect(self.UpdateBottomButtons)
-        TournamentDataManager.instance.signals.tournament_changed.emit()
-
-        self.selectSetWindow = SelectSetWindow(self)
-        self.selectStationWindow = SelectStationWindow(self)
-
-        self.timerLayout = QWidget()
-        self.timerLayout.setLayout(QHBoxLayout())
-        self.timerLayout.layout().setContentsMargins(0, 0, 0, 0)
-        self.timerLayout.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
-        self.timerLayout.layout().setAlignment(Qt.AlignmentFlag.AlignCenter)
-        bottomOptions.layout().addWidget(self.timerLayout)
-        self.labelAutoUpdate = QLabel("Auto update")
-        self.timerLayout.layout().addWidget(self.labelAutoUpdate)
-        self.timerTime = QLabel("0")
-        self.timerLayout.layout().addWidget(self.timerTime)
-        self.timerCancelBt = QPushButton()
-        self.timerCancelBt.setIcon(ThemedIcon("assets/icons/cancel.svg"))
-        self.timerCancelBt.setIconSize(QSize(12, 12))
-        self.timerCancelBt.clicked.connect(lambda: self.StopAutoUpdate(clear_variables=True))
-        self.timerLayout.layout().addWidget(self.timerCancelBt)
-        self.timerLayout.setVisible(False)
-
-        self.team1column = uic.loadUi(ResolvePath("src/layout/ScoreboardTeam.ui"))
-        self.columns.layout().addWidget(self.team1column)
-        self.team1column.findChild(QLabel, "teamLabel").setText(
-            QApplication.translate("app", "TEAM {0}").format(1)
-        )
-        self.team1column.findChild(QLabel, "teamLabel").setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.Minimum
-        )
-
-        colorGroup1 = QWidget()
-        colorGroup1.setLayout(QHBoxLayout())
-        colorGroup1.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.teamSides = []
+        self.teamNameEdits = []
+        self.teamLabels = []
+        self.teamHints = []
+        self.losersChecks = []
+        self.scoreSpins = []
+        self.colorGroups = []
 
         DEFAULT_TEAM1_COLOR = SettingsManager.Get("general.team_1_default_color", "#fe3636")
+        DEFAULT_TEAM2_COLOR = SettingsManager.Get("general.team_2_default_color", "#2e89ff")
         self.colorButton1 = ColorButton(color=DEFAULT_TEAM1_COLOR)
-        # self.colorButton1.setText(QApplication.translate("app", "COLOR"))
+        self.colorButton2 = ColorButton(color=DEFAULT_TEAM2_COLOR)
+
+        for t, colorButton in enumerate((self.colorButton1, self.colorButton2)):
+            side = QFrame()
+            side.setObjectName(f"teamSide{t + 1}")
+            SetRole(side, "card")
+            side.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+            layout = QHBoxLayout(side)
+            layout.setContentsMargins(12, 8, 10, 8)
+            layout.setSpacing(8)
+
+            colorGroup = QWidget()
+            colorLayout = QVBoxLayout(colorGroup)
+            colorLayout.setContentsMargins(0, 0, 0, 0)
+            colorLayout.setSpacing(2)
+            colorButton.setFixedSize(28, 28)
+            colorButton.setToolTip(QApplication.translate("app", "Team color"))
+            colorLayout.addWidget(colorButton, 0, Qt.AlignmentFlag.AlignCenter)
+            colorMenu = QComboBox()
+            colorMenu.setVisible(False)
+            colorMenu.setModel(GameAssetManager.instance.colorModel)
+            colorMenu.setEditable(True)
+            colorMenu.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            colorMenu.completer().setCompletionMode(QCompleter.PopupCompletion)
+            colorMenu.setMaximumWidth(150)
+            colorMenu.setIconSize(QSize(24, 24))
+            colorLayout.addWidget(colorMenu)
+            if t == 0:
+                self.colorMenu1 = colorMenu
+            else:
+                self.colorMenu2 = colorMenu
+
+            ident = QVBoxLayout()
+            ident.setSpacing(2)
+            teamLabel = QLabel(QApplication.translate("app", "TEAM {0}").format(t + 1))
+            teamLabel.setObjectName("teamLabel")
+            SmallFont(teamLabel, 1.45, bold=True)
+            teamLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+            teamName = QLineEdit()
+            teamName.setObjectName("teamName")
+            teamName.setPlaceholderText(QApplication.translate("app", "Team Name"))
+            SetRole(teamName, "inline")
+            SmallFont(teamName, 1.3, bold=True)
+            teamName.setVisible(False)
+            teamName.setMinimumWidth(40)
+            meta = QHBoxLayout()
+            meta.setSpacing(6)
+            losers = QCheckBox("[L]")
+            losers.setObjectName("losers")
+            SetRole(losers, "pill")
+            losers.setToolTip(QApplication.translate("app", "Losers side"))
+            hint = QLabel()
+            SetRole(hint, "muted")
+            SmallFont(hint, 0.85)
+            hint.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+            ident.addWidget(teamLabel)
+            ident.addWidget(teamName)
+            if t == 0:
+                meta.addWidget(losers)
+                meta.addWidget(hint, 1)
+            else:
+                meta.addWidget(hint, 1)
+                meta.addWidget(losers)
+                teamLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                teamName.setAlignment(Qt.AlignmentFlag.AlignRight)
+                hint.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            ident.addLayout(meta)
+
+            score = QSpinBox()
+            score.setObjectName("score_left" if t == 0 else "score_right")
+            SetRole(score, "score")
+            score.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+            score.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            score.setMaximum(999)
+            SmallFont(score, 2.6, bold=True)
+            score.setFixedWidth(64)
+            buttons = QVBoxLayout()
+            buttons.setSpacing(4)
+            up = QPushButton("+")
+            SetRole(up, "primary")
+            up.setFixedSize(30, 26)
+            up.setStyleSheet("padding: 0px;")
+            up.setToolTip(QApplication.translate("app", "Score +1 (can also be set on a hotkey)"))
+            up.clicked.connect(lambda checked=False, t=t: self.CommandScoreChange(t, 1))
+            down = QPushButton("−")
+            down.setFixedSize(30, 26)
+            down.setStyleSheet("padding: 0px;")
+            down.setToolTip(QApplication.translate("app", "Score -1"))
+            down.clicked.connect(lambda checked=False, t=t: self.CommandScoreChange(t, -1))
+            buttons.addWidget(up)
+            buttons.addWidget(down)
+
+            if t == 0:
+                layout.addWidget(colorGroup)
+                layout.addLayout(ident, 1)
+                layout.addLayout(buttons)
+                layout.addWidget(score)
+            else:
+                layout.addWidget(score)
+                layout.addLayout(buttons)
+                layout.addLayout(ident, 1)
+                layout.addWidget(colorGroup)
+
+            self.teamSides.append(side)
+            self.teamNameEdits.append(teamName)
+            self.teamLabels.append(teamLabel)
+            self.teamHints.append(hint)
+            self.losersChecks.append(losers)
+            self.scoreSpins.append(score)
+            self.colorGroups.append(colorGroup)
+
         self.colorButton1.colorChanged.connect(
-            lambda color: StateManager.Set(f"score.{self.scoreboardNumber}.team.1.color", color)
+            lambda color: [
+                StateManager.Set(f"score.{self.scoreboardNumber}.team.1.color", color),
+                self.RefreshTeamColors(),
+            ]
+        )
+        self.colorButton2.colorChanged.connect(
+            lambda color: [
+                StateManager.Set(f"score.{self.scoreboardNumber}.team.2.color", color),
+                self.RefreshTeamColors(),
+            ]
         )
         self.CommandTeamColor(0, DEFAULT_TEAM1_COLOR)
-
-        self.colorMenu1 = QComboBox()
-        self.colorMenu1.setVisible(False)
-        self.colorMenu1.setModel(GameAssetManager.instance.colorModel)
-        self.colorMenu1.setEditable(True)
-        self.colorMenu1.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-        self.colorMenu1.completer().setCompletionMode(QCompleter.PopupCompletion)
-        self.colorMenu1.setMaximumWidth(200)
-        self.colorMenu1.setIconSize(QSize(24, 24))
-
-        colorGroup1.layout().addWidget(self.colorButton1)
-        colorGroup1.layout().addWidget(self.colorMenu1)
-
+        self.CommandTeamColor(1, DEFAULT_TEAM2_COLOR)
         self.colorMenu1.currentIndexChanged.connect(
             lambda element=self.colorMenu1: [
                 self.CommandTeamColor(0, element),
                 self.CommandTeamColor(1, element, force_opponent=True),
             ]
         )
-
-        self.team1column.findChild(QHBoxLayout, "horizontalLayout_2").layout().insertWidget(
-            0, colorGroup1
-        )
-        self.team1column.findChild(QScrollArea).setWidget(QWidget())
-        self.team1column.findChild(QScrollArea).widget().setLayout(QVBoxLayout())
-
-        for c in self.team1column.findChildren(QLineEdit):
-            c.editingFinished.connect(
-                lambda element=c: [
-                    StateManager.Set(
-                        f"score.{self.scoreboardNumber}.team.1.{element.objectName()}",
-                        element.text(),
-                    )
-                ]
-            )
-            c.editingFinished.emit()
-
-        for c in self.team1column.findChildren(QCheckBox):
-            c.toggled.connect(
-                lambda state, element=c: [
-                    StateManager.Set(
-                        f"score.{self.scoreboardNumber}.team.1.{element.objectName()}", state
-                    )
-                ]
-            )
-            c.toggled.emit(False)
-
-        self.scoreColumn = uic.loadUi(ResolvePath("src/layout/ScoreboardScore.ui"))
-        self.columns.layout().addWidget(self.scoreColumn)
-
-        colorGroup2 = QWidget()
-        colorGroup2.setLayout(QHBoxLayout())
-        colorGroup2.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-
-        self.team2column = uic.loadUi(ResolvePath("src/layout/ScoreboardTeam.ui"))
-        self.columns.layout().addWidget(self.team2column)
-        self.team2column.findChild(QLabel, "teamLabel").setText(
-            QApplication.translate("app", "TEAM {0}").format(2)
-        )
-        self.team2column.findChild(QLabel, "teamLabel").setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.Minimum
-        )
-
-        DEFAULT_TEAM2_COLOR = SettingsManager.Get("general.team_2_default_color", "#2e89ff")
-        self.colorButton2 = ColorButton(color=DEFAULT_TEAM2_COLOR)
-        self.colorButton2.colorChanged.connect(
-            lambda color: StateManager.Set(f"score.{self.scoreboardNumber}.team.2.color", color)
-        )
-        # self.colorButton2.setText(QApplication.translate("app", "COLOR"))
-        self.CommandTeamColor(1, DEFAULT_TEAM2_COLOR)
-
-        self.colorMenu2 = QComboBox()
-        self.colorMenu2.setVisible(False)
-        self.colorMenu2.setModel(GameAssetManager.instance.colorModel)
-        self.colorMenu2.setEditable(True)
-        self.colorMenu2.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-        self.colorMenu2.completer().setCompletionMode(QCompleter.PopupCompletion)
-        self.colorMenu2.setMaximumWidth(200)
-        self.colorMenu2.setIconSize(QSize(24, 24))
-
-        colorGroup2.layout().addWidget(self.colorButton2)
-        colorGroup2.layout().addWidget(self.colorMenu2)
-
         self.colorMenu2.currentIndexChanged.connect(
             lambda element=self.colorMenu2: [
                 self.CommandTeamColor(1, element),
@@ -424,193 +681,451 @@ class ScoreboardWidget(QWidget):
             ]
         )
 
-        self.team2column.findChild(QHBoxLayout, "horizontalLayout_2").layout().insertWidget(
-            0, colorGroup2
+        # The set's format, between the teams
+        self.center = QFrame()
+        SetRole(self.center, "card")
+        self.center.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        center = QVBoxLayout(self.center)
+        center.setContentsMargins(10, 6, 10, 6)
+        center.setSpacing(6)
+
+        boRow = QHBoxLayout()
+        boRow.setSpacing(0)
+        boRow.addStretch()
+        self.boButtons = {}
+        self.boGroup = QButtonGroup(self)
+        self.boGroup.setExclusive(False)
+        values = (1, 3, 5, 7)
+        for i, value in enumerate(values):
+            button = QPushButton(f"BO{value}")
+            SetRole(button, "segment", first=i == 0, last=i == len(values) - 1)
+            button.setCheckable(True)
+            button.setToolTip(QApplication.translate("app", "Best of {0}").format(value))
+            button.clicked.connect(
+                lambda checked, value=value: self.bestOfSpin.setValue(value if checked else 0)
+            )
+            self.boGroup.addButton(button)
+            self.boButtons[value] = button
+            boRow.addWidget(button)
+        boRow.addSpacing(6)
+        # Any other best of, and the value the web API and start.gg set
+        self.bestOfSpin = QSpinBox()
+        self.bestOfSpin.setObjectName("best_of")
+        self.bestOfSpin.setPrefix("BO")
+        self.bestOfSpin.setSpecialValueText("BO –")
+        self.bestOfSpin.setMaximum(99)
+        self.bestOfSpin.setFixedWidth(70)
+        self.bestOfSpin.setToolTip(QApplication.translate("app", "Best of"))
+        boRow.addWidget(self.bestOfSpin)
+        boRow.addStretch()
+        center.addLayout(boRow)
+
+        self.pipsLayout = QHBoxLayout()
+        self.pipsLayout.setSpacing(4)
+        self.pipsWidget = QWidget()
+        self.pipsWidget.setLayout(self.pipsLayout)
+        self.pipsLayout.setContentsMargins(0, 0, 0, 0)
+        pipsRow = QHBoxLayout()
+        pipsRow.addStretch()
+        pipsRow.addWidget(self.pipsWidget)
+        pipsRow.addStretch()
+        center.addLayout(pipsRow)
+        self.pips = []
+
+        actions = QHBoxLayout()
+        actions.setSpacing(4)
+        actions.addStretch()
+        self.ftLabel = QLabel()
+        SetRole(self.ftLabel, "muted")
+        SmallFont(self.ftLabel, 0.85)
+        actions.addWidget(self.ftLabel)
+        self.btSwapTeams = IconButton(
+            "assets/icons/swap.svg", QApplication.translate("app", "Swap teams")
         )
-
-        self.team2column.findChild(QScrollArea).setWidget(QWidget())
-        self.team2column.findChild(QScrollArea).widget().setLayout(QVBoxLayout())
-
-        for c in self.team2column.findChildren(QLineEdit):
-            c.editingFinished.connect(
-                lambda element=c: [
-                    StateManager.Set(
-                        f"score.{self.scoreboardNumber}.team.2.{element.objectName()}",
-                        element.text(),
-                    )
-                ]
-            )
-            c.editingFinished.emit()
-
-        for c in self.team2column.findChildren(QCheckBox):
-            c.toggled.connect(
-                lambda state, element=c: [
-                    StateManager.Set(
-                        f"score.{self.scoreboardNumber}.team.2.{element.objectName()}", state
-                    )
-                ]
-            )
-            c.toggled.emit(False)
-
-        StateManager.Unset(f"score.{self.scoreboardNumber}.team.1.player")
-        StateManager.Unset(f"score.{self.scoreboardNumber}.team.2.player")
-        StateManager.Unset(f"score.{self.scoreboardNumber}.stage_strike")
-        self.playerNumber.setValue(1)
-        self.charNumber.setValue(1)
-
-        for c in self.scoreColumn.findChildren(QComboBox):
-            c.lineEdit().editingFinished.connect(
-                lambda element=c: [
-                    StateManager.Set(
-                        f"score.{self.scoreboardNumber}.{element.objectName()}",
-                        element.currentText(),
-                    )
-                ]
-            )
-            c.currentIndexChanged.connect(
-                lambda x, element=c: [
-                    StateManager.Set(
-                        f"score.{self.scoreboardNumber}.{element.objectName()}",
-                        element.currentText(),
-                    )
-                ]
-            )
-            c.lineEdit().editingFinished.emit()
-            c.lineEdit().setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.colorMenu1.setVisible(StateManager.Get("game.has_colors", False))
-        self.colorMenu2.setVisible(StateManager.Get("game.has_colors", False))
-
-        # Sets that were over, so that's only told once per set
-        self.finishedSets = set()
-        # Set while data from start.gg is applied, so it isn't taken for
-        # changes made here
-        self.applyingProviderData = False
-
-        # Games of the set, and reporting it to start.gg
-        self.gameReport = GameReportWidget(self)
-        self.gameReport.signals.scoreChanged.connect(self.StageResultsToScore)
-        self.gameReport.signals.setReported.connect(self.SetOver)
-
-        # The games of the set, in a window of their own
-        self.gamesWindow = QDialog(self)
-        self.gamesWindow.setWindowTitle(
-            QApplication.translate("app", "Games - Scoreboard {0}").format(self.scoreboardNumber)
+        self.btSwapTeams.setObjectName("btSwapTeams")
+        self.btSwapTeams.clicked.connect(self.SwapTeams)
+        actions.addWidget(self.btSwapTeams)
+        self.btResetScore = IconButton(
+            "assets/icons/undo.svg", QApplication.translate("app", "Reset score")
         )
-        self.gamesWindow.setLayout(QVBoxLayout())
-        self.gamesWindow.layout().addWidget(self.gameReport)
-        self.gamesWindow.resize(900, 600)
-
-        self.btGames = QPushButton(QApplication.translate("app", "GAMES"))
-        self.btGames.setIcon(ThemedIcon("assets/icons/list.svg"))
+        self.btResetScore.setObjectName("btResetScore")
+        self.btResetScore.clicked.connect(
+            lambda: [
+                self.ResetScore(),
+                self.bestOfSpin.valueChanged.emit(self.bestOfSpin.value()),
+            ]
+        )
+        actions.addWidget(self.btResetScore)
+        self.btGames = IconButton("assets/icons/list.svg", QApplication.translate("app", "Games"))
         self.btGames.setToolTip(
             QApplication.translate(
                 "app", "The result, stage and characters of each game of the set"
             )
         )
-        self.btGames.clicked.connect(self.OpenGames)
-        self.scoreColumn.findChild(QGroupBox, "scoreGroupBox").layout().addWidget(self.btGames)
+        self.btGames.clicked.connect(lambda: self.OpenGames())
+        actions.addWidget(self.btGames)
+        actions.addStretch()
+        center.addLayout(actions)
 
-        self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.connect(self.ExportBestOf)
-        self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.emit(0)
+        self.ArrangeScoreBar(stacked=False, centerOnTop=False)
 
-        self.scoreColumn.findChild(QSpinBox, "score_left").valueChanged.connect(
-            lambda value: [
-                StateManager.Set(f"score.{self.scoreboardNumber}.team.1.score", value),
-                self.gameReport.ScoreChanged(0, value),
-            ]
-        )
-        self.scoreColumn.findChild(QSpinBox, "score_left").valueChanged.emit(0)
+    def ArrangeScoreBar(self, stacked, centerOnTop):
+        for w in (self.teamSides[0], self.center, self.teamSides[1]):
+            self.hero.removeWidget(w)
+        for col in range(3):
+            self.hero.setColumnStretch(col, 0)
+            self.hero.setColumnMinimumWidth(col, 0)
+        if stacked:
+            self.hero.addWidget(self.center, 0, 0)
+            self.hero.addWidget(self.teamSides[0], 1, 0)
+            self.hero.addWidget(self.teamSides[1], 2, 0)
+            self.hero.setColumnStretch(0, 1)
+        elif centerOnTop:
+            self.hero.addWidget(self.center, 0, 0, 1, 2)
+            self.hero.addWidget(self.teamSides[0], 1, 0)
+            self.hero.addWidget(self.teamSides[1], 1, 1)
+            self.hero.setColumnStretch(0, 1)
+            self.hero.setColumnStretch(1, 1)
+        else:
+            self.hero.addWidget(self.teamSides[0], 0, 0)
+            self.hero.addWidget(self.center, 0, 1)
+            self.hero.addWidget(self.teamSides[1], 0, 2)
+            # The center can shrink to nothing: keep it at its own width
+            self.hero.setColumnMinimumWidth(1, self.center.sizeHint().width())
+            self.hero.setColumnStretch(0, 1)
+            self.hero.setColumnStretch(2, 1)
 
-        self.scoreColumn.findChild(QSpinBox, "score_right").valueChanged.connect(
-            lambda value: [
-                StateManager.Set(f"score.{self.scoreboardNumber}.team.2.score", value),
-                self.gameReport.ScoreChanged(1, value),
-            ]
-        )
-        self.scoreColumn.findChild(QSpinBox, "score_right").valueChanged.emit(0)
+    def BuildBanner(self, parent):
+        """Shown when a team has won the set, until it is reported."""
+        self.banner = QFrame()
+        SetRole(self.banner, "banner")
+        layout = QHBoxLayout(self.banner)
+        layout.setContentsMargins(10, 6, 6, 6)
+        self.bannerLabel = QLabel()
+        self.bannerLabel.setWordWrap(True)
+        layout.addWidget(self.bannerLabel, 1)
+        review = QPushButton(QApplication.translate("app", "Review and report..."))
+        SetRole(review, "primary")
+        review.clicked.connect(lambda: self.OpenGames())
+        layout.addWidget(review)
+        self.banner.hide()
+        parent.addWidget(self.banner)
 
-        self.team1column.findChild(QLineEdit, "teamName").editingFinished.connect(
-            lambda: [
-                self.ExportTeamLogo("1", self.team1column.findChild(QLineEdit, "teamName").text()),
-                self.ExportLosersStatus(
-                    "1",
-                    self.team1column.findChild(QLineEdit, "teamName").text(),
-                    self.team1column.findChild(QCheckBox, "losers").isChecked(),
-                ),
-            ]
+    def BuildRound(self, parent):
+        row = QGridLayout()
+        row.setHorizontalSpacing(8)
+        row.setVerticalSpacing(2)
+        self.phaseCombo = QComboBox()
+        self.phaseCombo.setObjectName("phase")
+        self.phaseCombo.setEditable(True)
+        self.phaseCombo.lineEdit().setPlaceholderText(
+            QApplication.translate("app", "Pool A, Bracket, Top 8, etc")
         )
-        self.team2column.findChild(QLineEdit, "teamName").editingFinished.connect(
-            lambda: [
-                self.ExportTeamLogo("2", self.team2column.findChild(QLineEdit, "teamName").text()),
-                self.ExportLosersStatus(
-                    "2",
-                    self.team2column.findChild(QLineEdit, "teamName").text(),
-                    self.team2column.findChild(QCheckBox, "losers").isChecked(),
-                ),
-            ]
+        self.matchCombo = QComboBox()
+        self.matchCombo.setObjectName("match")
+        self.matchCombo.setEditable(True)
+        self.matchCombo.lineEdit().setPlaceholderText(
+            QApplication.translate("app", "Winners Finals, Losers Semis, etc")
         )
-        MediaHelper.signals.changed.connect(self.RefreshTeamLogos)
+        row.addWidget(EyebrowLabel(QApplication.translate("app", "Phase")), 0, 0)
+        row.addWidget(EyebrowLabel(QApplication.translate("app", "Match")), 0, 1)
+        row.addWidget(self.phaseCombo, 1, 0)
+        row.addWidget(self.matchCombo, 1, 1)
+        row.setColumnStretch(0, 1)
+        row.setColumnStretch(1, 1)
+        parent.addLayout(row)
 
-        self.teamsSwapped = False
+    def BuildStatusLine(self, parent):
+        line = QHBoxLayout()
+        line.setContentsMargins(2, 0, 2, 0)
+        self.remoteScoreboardUrl = f"http://{self.GetIP()}:{SettingsManager.Get('general.webserver_port', 5500)}/scoreboard"
+        text = QApplication.translate(
+            "app", "Open {0} in a browser to edit the scoreboard remotely."
+        ).format(f"<a href='{self.remoteScoreboardUrl}'>{self.remoteScoreboardUrl}</a>")
+        self.remoteScoreboardLabel = QLabel(add_beta_label(text, "web_score"))
+        self.remoteScoreboardLabel.setOpenExternalLinks(True)
+        self.remoteScoreboardLabel.setWordWrap(True)
+        SetRole(self.remoteScoreboardLabel, "muted")
+        SmallFont(self.remoteScoreboardLabel, 0.9)
+        line.addWidget(self.remoteScoreboardLabel, 1)
+        copy = IconButton("assets/icons/copy.svg", QApplication.translate("app", "Copy address"))
+        copy.clicked.connect(self.CopyRemoteLink)
+        line.addWidget(copy)
+        parent.addLayout(line)
 
-        self.scoreColumn.findChild(QPushButton, "btSwapTeams").clicked.connect(self.SwapTeams)
-        self.scoreColumn.findChild(QPushButton, "btSwapTeams").setIcon(
-            ThemedIcon("assets/icons/swap.svg")
+    # =====================================================
+    # LAYOUT AND DISPLAY
+    # =====================================================
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.ArrangeForWidth(self.width())
+
+    def ArrangeForWidth(self, width):
+        """Stacks the lanes and the score bar when they don't fit side by
+        side. Their parts can shrink to nothing, so the dock can be made
+        narrow, and they stack before they get squeezed."""
+        spacing = self.hero.spacing()
+        sides = [side.sizeHint().width() for side in self.teamSides]
+        center = self.center.sizeHint().width()
+        lanesStacked = width < LANES_STACK_WIDTH
+        if width >= sides[0] + center + sides[1] + 2 * spacing and not lanesStacked:
+            centerOnTop, scoreStacked = False, False
+        elif width >= max(center, sides[0] + sides[1] + spacing):
+            centerOnTop, scoreStacked = True, False
+        else:
+            centerOnTop, scoreStacked = False, True
+        # Only the buttons' icons in a narrow dock
+        iconsOnly = width < BUTTON_TEXT_WIDTH
+        state = (lanesStacked, scoreStacked, centerOnTop, iconsOnly)
+        if state == getattr(self, "_layoutState", None):
+            return
+        self._layoutState = state
+        self.lanesLayout.setDirection(
+            QBoxLayout.Direction.TopToBottom if lanesStacked else QBoxLayout.Direction.LeftToRight
+        )
+        self.btSelectSet.setText("" if iconsOnly else QApplication.translate("app", "Load set"))
+        self.btLoadStationSet.setText(
+            "" if iconsOnly else QApplication.translate("app", "Track station")
+        )
+        self.ArrangeScoreBar(stacked=scoreStacked, centerOnTop=centerOnTop)
+
+    def RefreshTeamColors(self):
+        for t, button in enumerate((self.colorButton1, self.colorButton2)):
+            color = button.color() or "#888888"
+            side = "left" if t == 0 else "right"
+            self.teamSides[t].setStyleSheet(
+                f"QFrame#teamSide{t + 1} {{ border-{side}: 4px solid {color}; }}"
+            )
+        self.RefreshPips()
+
+    def RefreshTeamLabels(self):
+        """The name on each side: the team name with 2+ players, else the
+        player's tag. The hint under it lists the players."""
+        multi = self.playerNumber.value() > 1
+        for t, players in enumerate((self.team1playerWidgets, self.team2playerWidgets)):
+            tags = [p.findChild(QLineEdit, "name").text() for p in players]
+            tags = [tag for tag in tags if tag]
+            self.teamNameEdits[t].setVisible(multi)
+            self.teamLabels[t].setVisible(not multi)
+            fallback = QApplication.translate("app", "Team {0}").format(t + 1)
+            if not multi:
+                self.teamLabels[t].setText(tags[0] if tags else fallback)
+                self.teamHints[t].setText(fallback)
+            else:
+                self.teamHints[t].setText(" / ".join(tags) if tags else fallback)
+            name = self.teamNameEdits[t].text() if multi else ""
+            self.laneHeaders[t].setText((name or fallback).upper())
+            count = len(players)
+            self.laneCounts[t].setText(
+                (
+                    QApplication.translate("app", "{0} player")
+                    if count == 1
+                    else QApplication.translate("app", "{0} players")
+                )
+                .format(count)
+                .upper()
+            )
+        self.signals.SummaryChanged.emit()
+
+    def TeamDisplayName(self, t):
+        if self.playerNumber.value() > 1 and self.teamNameEdits[t].text():
+            return self.teamNameEdits[t].text()
+        return (
+            self.teamLabels[t].text()
+            if self.playerNumber.value() == 1
+            else self.teamHints[t].text()
         )
 
-        self.scoreColumn.findChild(QPushButton, "btResetScore").clicked.connect(
-            lambda: [
-                self.ResetScore(),
-                self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.emit(
-                    self.scoreColumn.findChild(QSpinBox, "best_of").value()
-                ),
-            ]
-        )
-        self.scoreColumn.findChild(QPushButton, "btResetScore").setIcon(
-            ThemedIcon("assets/icons/undo.svg")
-        )
+    def Summary(self):
+        """One line for the scoreboard's tab: the teams, the score and where
+        the set comes from."""
+        score = f"{self.scoreSpins[0].value()}–{self.scoreSpins[1].value()}"
+        names = [self.TeamDisplayName(0), self.TeamDisplayName(1)]
+        text = f"{names[0]} {score} {names[1]}"
+        source = self.SourceShortText()
+        return f"{text} · {source}" if source else text
 
-        self.scoreColumn.findChild(QPushButton, "btClearAll").clicked.connect(self.ClearAllClicked)
-        self.scoreColumn.findChild(QPushButton, "btClearAll").setIcon(
-            ThemedIcon("assets/icons/cancel.svg")
-        )
-        self.scoreColumn.findChild(QPushButton, "btClearAll").setToolTip(
-            QApplication.translate(
-                "app",
-                "Clear the players, scores, phase and match, and unlink the loaded set",
+    def SourceShortText(self):
+        data = self.autoUpdateData or {}
+        if data.get("auto_update") in ("stream", "station") and self.lastStationSelected:
+            kind = (
+                QApplication.translate("app", "Stream")
+                if data.get("auto_update") == "stream"
+                else QApplication.translate("app", "Station")
+            )
+            return f"{kind} {self.lastStationSelected.get('identifier')}"
+        if self.lastSetSelected:
+            return ""
+        return QApplication.translate("app", "manual")
+
+    def ScoreDisplayChanged(self):
+        self.RefreshBanner()
+        self.signals.SummaryChanged.emit()
+
+    def RefreshPips(self):
+        """A pip per game, filled with the color of the team that won it."""
+        if not hasattr(self, "gameReport"):
+            return
+        games = self.gameReport.Games()
+        count = max(self.bestOfSpin.value(), len(games))
+        while len(self.pips) < count:
+            pip = QPushButton()
+            SetRole(pip, "pip")
+            pip.setFixedSize(16, 16)
+            pip.setCursor(Qt.CursorShape.PointingHandCursor)
+            index = len(self.pips)
+            pip.clicked.connect(lambda checked=False, index=index: self.OpenGames(index))
+            self.pipsLayout.addWidget(pip)
+            self.pips.append(pip)
+        while len(self.pips) > count:
+            pip = self.pips.pop()
+            pip.setParent(None)
+            pip.deleteLater()
+        colors = [self.colorButton1.color(), self.colorButton2.color()]
+        for i, pip in enumerate(self.pips):
+            winner = games[i] if i < len(games) else None
+            if winner in (1, 2):
+                color = colors[winner - 1] or "#888888"
+                pip.setStyleSheet(f"background: {color}; border-color: {color};")
+                tip = QApplication.translate("app", "Game {0}: won by {1}").format(
+                    i + 1, self.TeamDisplayName(winner - 1)
+                )
+            elif winner == 0:
+                pip.setStyleSheet("background: #9298ab;")
+                tip = QApplication.translate("app", "Game {0}: draw").format(i + 1)
+            else:
+                pip.setStyleSheet("")
+                tip = QApplication.translate("app", "Game {0}").format(i + 1)
+            pip.setToolTip(tip + " · " + QApplication.translate("app", "click to open it"))
+        self.pipsWidget.setVisible(count > 0)
+        self.RefreshBanner()
+
+    def RefreshBanner(self):
+        if not hasattr(self, "banner"):
+            return
+        bestOf = self.bestOfSpin.value()
+        firstTo = math.ceil(bestOf / 2) if bestOf > 0 else 0
+        scores = [s.value() for s in self.scoreSpins]
+        winner = None
+        if firstTo > 0:
+            if scores[0] >= firstTo and scores[0] > scores[1]:
+                winner = 0
+            elif scores[1] >= firstTo and scores[1] > scores[0]:
+                winner = 1
+        linked = self.lastSetSelected is not None
+        reported = str(self.lastSetSelected) in self.finishedSets
+        if winner is None or not linked or reported:
+            self.banner.hide()
+            return
+        self.bannerLabel.setText(
+            QApplication.translate("app", "{0} wins {1}–{2}. Report the set to start.gg?").format(
+                self.TeamDisplayName(winner), max(scores), min(scores)
             )
         )
+        self.banner.show()
 
-        # Add default and user tournament phase title files
-        self.scoreColumn.findChild(QComboBox, "phase").addItem("")
-        LocaleHelper.LoadPhaseNamesToWidget(self.scoreColumn.findChild(QComboBox, "phase"))
+    def RefreshSource(self):
+        """The set bar: the linked set or station and its auto update."""
+        if not hasattr(self, "sourceTitle"):
+            return
+        data = self.autoUpdateData or {}
+        linked = self.lastSetSelected is not None or bool(data)
+        color = "#4cc283" if linked and not self.autoUpdatePaused else "#9298ab"
+        self.sourceDot.setStyleSheet(f"background: {color}; border-radius: 4px;")
+        if not linked:
+            self.sourceTitle.setText(QApplication.translate("app", "Manual"))
+            self.sourceSub.setText(
+                QApplication.translate("app", "Not linked to a set. Load one, or edit by hand.")
+            )
+        else:
+            parts = []
+            provider = TournamentDataManager.instance.provider
+            name = getattr(provider, "name", None) if provider else None
+            if name:
+                parts.append(str(name))
+            if self.matchCombo.currentText():
+                parts.append(self.matchCombo.currentText())
+            names = [self.TeamDisplayName(0), self.TeamDisplayName(1)]
+            parts.append(f"{names[0]} vs {names[1]}")
+            self.sourceTitle.setText(" · ".join(parts))
 
-        self.scoreColumn.findChild(QComboBox, "match").addItem("")
-        LocaleHelper.LoadMatchNamesToWidget(self.scoreColumn.findChild(QComboBox, "match"))
-        LocaleHelper.signals.termsChanged.connect(self.ReloadTournamentTerms)
-
-        GameAssetManager.instance.signals.onLoad.connect(
-            lambda: [
-                self.SetDefaultsFromAssets(),
-                self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.emit(
-                    self.scoreColumn.findChild(QSpinBox, "best_of").value()
-                ),
-                self.colorMenu1.setModel(GameAssetManager.instance.colorModel),
-                self.colorMenu2.setModel(GameAssetManager.instance.colorModel),
-                self.colorMenu1.setVisible(StateManager.Get("game.has_colors", False)),
-                self.colorMenu2.setVisible(StateManager.Get("game.has_colors", False)),
-            ]
+            sub = []
+            if data.get("auto_update") == "stream" and self.lastStationSelected:
+                sub.append(
+                    QApplication.translate("app", "Stream [{0}]").format(
+                        self.lastStationSelected.get("identifier")
+                    )
+                )
+            elif data.get("auto_update") == "station" and self.lastStationSelected:
+                sub.append(
+                    QApplication.translate("app", "Station [{0}]").format(
+                        self.lastStationSelected.get("identifier")
+                    )
+                )
+            if not data:
+                sub.append(QApplication.translate("app", "Auto update off"))
+            elif self.autoUpdatePaused:
+                sub.append(QApplication.translate("app", "Auto update paused"))
+            else:
+                remaining = Scheduler.instance.RemainingMs(self.autoUpdateJob)
+                if remaining is None:
+                    sub.append(QApplication.translate("app", "Updating..."))
+                else:
+                    sub.append(
+                        QApplication.translate("app", "Updates in {0}s").format(
+                            math.ceil(remaining / 1000)
+                        )
+                    )
+            self.sourceSub.setText(" · ".join(sub))
+        self.sourceFrame.setToolTip(self.sourceTitle.text())
+        self.pauseBt.setVisible(bool(data))
+        self.pauseBt.setIcon(
+            ThemedIcon(
+                "assets/icons/play.svg" if self.autoUpdatePaused else "assets/icons/pause.svg"
+            )
         )
+        self.pauseBt.setToolTip(
+            QApplication.translate("app", "Resume auto update")
+            if self.autoUpdatePaused
+            else QApplication.translate("app", "Pause auto update")
+        )
+        self.timerCancelBt.setVisible(linked)
+        self.btSelectSet.setProperty("hdRole", None if linked else "primary")
+        self.btSelectSet.style().unpolish(self.btSelectSet)
+        self.btSelectSet.style().polish(self.btSelectSet)
+
+    def ToggleAutoUpdatePause(self):
+        if not self.autoUpdateData:
+            return
+        self.autoUpdatePaused = not self.autoUpdatePaused
+        if self.autoUpdatePaused:
+            Scheduler.instance.Stop(self.autoUpdateJob)
+        else:
+            Scheduler.instance.Start(self.autoUpdateJob)
+        self.RefreshSource()
+
+    def CopyRemoteLink(self):
+        QApplication.clipboard().setText(self.remoteScoreboardUrl)
+
+    def RenameScoreboard(self):
+        # Imported here: the manager imports this module
+        from .ScoreboardManager import ScoreboardManager
+
+        manager = ScoreboardManager.instance
+        current = manager.GetTabName(self.scoreboardNumber)
+        name, ok = QInputDialog.getText(
+            self,
+            QApplication.translate("app", "Rename scoreboard"),
+            QApplication.translate("app", "Name (empty for the default name)"),
+            text=current,
+        )
+        if ok:
+            manager.SetTabName(self.scoreboardNumber, name.strip())
 
     def ReloadTournamentTerms(self):
         # The match and phase names were edited in the settings
-        LocaleHelper.RefreshNamesInWidget(
-            self.scoreColumn.findChild(QComboBox, "phase"), LocaleHelper.LoadPhaseNamesToWidget
-        )
-        LocaleHelper.RefreshNamesInWidget(
-            self.scoreColumn.findChild(QComboBox, "match"), LocaleHelper.LoadMatchNamesToWidget
-        )
+        LocaleHelper.RefreshNamesInWidget(self.phaseCombo, LocaleHelper.LoadPhaseNamesToWidget)
+        LocaleHelper.RefreshNamesInWidget(self.matchCombo, LocaleHelper.LoadMatchNamesToWidget)
 
     def ExportBestOf(self, value):
         with StateManager.SaveBlock():
@@ -631,14 +1146,22 @@ class ScoreboardWidget(QWidget):
                 else "",
             )
             self.gameReport.SetBestOf(value)
+        for bo, button in self.boButtons.items():
+            button.setChecked(bo == value)
+        self.ftLabel.setText(
+            QApplication.translate("app", "First to {0}").format(math.ceil(value / 2))
+            if value > 0
+            else ""
+        )
+        self.RefreshPips()
 
     def StageResultsToScore(self, team_1_score, team_2_score):
-        with QSignalBlocker(self.scoreColumn.findChild(QSpinBox, "score_left")):
-            self.scoreColumn.findChild(QSpinBox, "score_left").setValue(team_1_score)
+        with QSignalBlocker(self.scoreSpins[0]):
+            self.scoreSpins[0].setValue(team_1_score)
             StateManager.Set(f"score.{self.scoreboardNumber}.team.1.score", team_1_score)
 
-        with QSignalBlocker(self.scoreColumn.findChild(QSpinBox, "score_right")):
-            self.scoreColumn.findChild(QSpinBox, "score_right").setValue(team_2_score)
+        with QSignalBlocker(self.scoreSpins[1]):
+            self.scoreSpins[1].setValue(team_2_score)
             StateManager.Set(f"score.{self.scoreboardNumber}.team.2.score", team_2_score)
 
     def closeEvent(self, event):
@@ -662,8 +1185,8 @@ class ScoreboardWidget(QWidget):
 
     def RefreshTeamLogos(self):
         """After a team logo is changed in the Player Database window"""
-        for team, column in (("1", self.team1column), ("2", self.team2column)):
-            self.ExportTeamLogo(team, column.findChild(QLineEdit, "teamName").text())
+        for t in (0, 1):
+            self.ExportTeamLogo(str(t + 1), self.teamNameEdits[t].text())
 
     def ExportLosersStatus(self, team, team_name, is_in_losers):
         merged_team_name = deepcopy(team_name)
@@ -704,155 +1227,109 @@ class ScoreboardWidget(QWidget):
             for element in elements:
                 pw.SetElementVisible(element, action.isChecked())
 
-    def SetCompactPlayers(self, compact):
+    def SetExpandPlayers(self, expand):
+        SettingsManager.Set("display_options.expand_players", expand)
         for pw in self.playerWidgets:
-            pw.SetDetailsShown(not compact)
+            pw.SetDetailsShown(expand)
 
-    def OpenGames(self):
+    def OpenGames(self, index=None):
         self.gamesWindow.show()
         self.gamesWindow.raise_()
         self.gamesWindow.activateWindow()
+        if index is not None:
+            self.gameReport.FocusGame(index)
 
     def UpdateBottomButtons(self):
-        if TournamentDataManager.instance.provider and TournamentDataManager.instance.provider.url:
-            self.btSelectSet.setText(
-                QApplication.translate("app", "Load set from {0}").format(
-                    TournamentDataManager.instance.provider.url
-                )
+        provider = TournamentDataManager.instance.provider
+        if provider and provider.url:
+            self.btSelectSet.setToolTip(
+                QApplication.translate("app", "Load set from {0}").format(provider.url)
             )
             self.btSelectSet.setEnabled(True)
             self.btLoadStationSet.setEnabled(True)
         else:
-            self.btSelectSet.setText(QApplication.translate("app", "Load set"))
+            self.btSelectSet.setToolTip(QApplication.translate("app", "Set a tournament first"))
             self.btSelectSet.setEnabled(False)
             self.btLoadStationSet.setEnabled(False)
+        self.RefreshSource()
 
     def SetCharacterNumber(self, value):
         # logger.info(f"ScoreboardWidget#SetCharacterNumber({value})")
         for pw in self.playerWidgets:
             pw.SetCharactersPerPlayer(value)
 
-    def ConnectLosersStatus(self, p, team, teamColumn):
+    def ConnectLosersStatus(self, p, t):
         # Connected once per player widget: connecting every existing player
         # on each call made the export run several times per edit
         for field in ("name", "team"):
             p.findChild(QLineEdit, field).editingFinished.connect(
-                lambda: self.ExportLosersStatus(
-                    team,
-                    teamColumn.findChild(QLineEdit, "teamName").text(),
-                    teamColumn.findChild(QCheckBox, "losers").isChecked(),
-                )
+                lambda t=t: [
+                    self.ExportLosersStatus(
+                        str(t + 1),
+                        self.teamNameEdits[t].text(),
+                        self.losersChecks[t].isChecked(),
+                    ),
+                    self.RefreshTeamLabels(),
+                    self.RefreshSource(),
+                ]
             )
 
     def SetPlayersPerTeam(self, number):
-        # logger.info(f"ScoreboardWidget#SetPlayersPerTeam({number})")
+        teams = (self.team1playerWidgets, self.team2playerWidgets)
         while len(self.team1playerWidgets) < number:
-            p = ScoreboardPlayerWidget(
-                index=len(self.team1playerWidgets) + 1,
-                teamNumber=1,
-                path=f"score.{self.scoreboardNumber}.team.{1}.player.{len(self.team1playerWidgets) + 1}",
-            )
-            self.playerWidgets.append(p)
-
-            self.team1column.findChild(QScrollArea).widget().layout().addWidget(p)
-            p.SetCharactersPerPlayer(self.charNumber.value())
-            p.SetDetailsShown(not self.compactAction.isChecked())
-            self.team1column.findChild(QCheckBox, "losers").toggled.connect(
-                lambda: [
-                    p.SetLosers,
-                    self.ExportLosersStatus(
-                        "1",
-                        self.team1column.findChild(QLineEdit, "teamName").text(),
-                        self.team1column.findChild(QCheckBox, "losers").isChecked(),
-                    ),
-                ]
-            )
-
-            p.btMoveUp.clicked.connect(
-                lambda index, p=p: p.SwapWith(
-                    self.team1playerWidgets[max(0, self.team1playerWidgets.index(p) - 1)]
+            for t, players in enumerate(teams):
+                team = t + 1
+                p = ScoreboardPlayerWidget(
+                    index=len(players) + 1,
+                    teamNumber=team,
+                    path=f"score.{self.scoreboardNumber}.team.{team}.player.{len(players) + 1}",
                 )
-            )
-            p.btMoveDown.clicked.connect(
-                lambda index, p=p: p.SwapWith(
-                    self.team1playerWidgets[
-                        min(len(self.team1playerWidgets) - 1, self.team1playerWidgets.index(p) + 1)
-                    ]
+                self.playerWidgets.append(p)
+                self.laneLists[t].layout().addWidget(p)
+                p.SetCharactersPerPlayer(self.charNumber.value())
+                p.SetDetailsShown(self.expandAction.isChecked())
+
+                p.btMoveUp.clicked.connect(
+                    lambda checked=False, p=p, players=players: p.SwapWith(
+                        players[max(0, players.index(p) - 1)]
+                    )
                 )
-            )
-
-            p.instanceSignals.playerId_changed.connect(self.stats.signals.RecentSetsSignal.emit)
-            p.instanceSignals.player1Id_changed.connect(self.stats.signals.LastSetsP1Signal.emit)
-            p.instanceSignals.player1Id_changed.connect(
-                self.stats.signals.PlayerHistoryStandingsP1Signal.emit
-            )
-            p.instanceSignals.player_seed_changed.connect(
-                self.stats.signals.UpsetFactorCalculation.emit
-            )
-            self.ConnectLosersStatus(p, "1", self.team1column)
-
-            self.team1playerWidgets.append(p)
-
-            p = ScoreboardPlayerWidget(
-                index=len(self.team2playerWidgets) + 1,
-                teamNumber=2,
-                path=f"score.{self.scoreboardNumber}.team.{2}.player.{len(self.team2playerWidgets) + 1}",
-            )
-            self.playerWidgets.append(p)
-
-            self.team2column.findChild(QScrollArea).widget().layout().addWidget(p)
-            p.SetCharactersPerPlayer(self.charNumber.value())
-            p.SetDetailsShown(not self.compactAction.isChecked())
-            self.team2column.findChild(QCheckBox, "losers").toggled.connect(
-                lambda: [
-                    p.SetLosers,
-                    self.ExportLosersStatus(
-                        "2",
-                        self.team2column.findChild(QLineEdit, "teamName").text(),
-                        self.team2column.findChild(QCheckBox, "losers").isChecked(),
-                    ),
-                ]
-            )
-
-            p.btMoveUp.clicked.connect(
-                lambda index, p=p: p.SwapWith(
-                    self.team2playerWidgets[max(0, self.team2playerWidgets.index(p) - 1)]
+                p.btMoveDown.clicked.connect(
+                    lambda checked=False, p=p, players=players: p.SwapWith(
+                        players[min(len(players) - 1, players.index(p) + 1)]
+                    )
                 )
-            )
-            p.btMoveDown.clicked.connect(
-                lambda index, p=p: p.SwapWith(
-                    self.team2playerWidgets[
-                        min(len(self.team2playerWidgets) - 1, self.team2playerWidgets.index(p) + 1)
-                    ]
+
+                p.instanceSignals.playerId_changed.connect(self.stats.signals.RecentSetsSignal.emit)
+                if team == 1:
+                    p.instanceSignals.player1Id_changed.connect(
+                        self.stats.signals.LastSetsP1Signal.emit
+                    )
+                    p.instanceSignals.player1Id_changed.connect(
+                        self.stats.signals.PlayerHistoryStandingsP1Signal.emit
+                    )
+                else:
+                    p.instanceSignals.player2Id_changed.connect(
+                        self.stats.signals.LastSetsP2Signal.emit
+                    )
+                    p.instanceSignals.player2Id_changed.connect(
+                        self.stats.signals.PlayerHistoryStandingsP2Signal.emit
+                    )
+                p.instanceSignals.player_seed_changed.connect(
+                    self.stats.signals.UpsetFactorCalculation.emit
                 )
-            )
+                self.ConnectLosersStatus(p, t)
 
-            p.instanceSignals.playerId_changed.connect(self.stats.signals.RecentSetsSignal.emit)
-            p.instanceSignals.player2Id_changed.connect(self.stats.signals.LastSetsP2Signal.emit)
-            p.instanceSignals.player2Id_changed.connect(
-                self.stats.signals.PlayerHistoryStandingsP2Signal.emit
-            )
-            p.instanceSignals.player_seed_changed.connect(
-                self.stats.signals.UpsetFactorCalculation.emit
-            )
-            self.ConnectLosersStatus(p, "2", self.team2column)
-
-            self.team2playerWidgets.append(p)
+                players.append(p)
 
         while len(self.team1playerWidgets) > number:
-            team1player = self.team1playerWidgets[-1]
-            StateManager.Unset(team1player.path)
-            team1player.setParent(None)
-            self.playerWidgets.remove(team1player)
-            self.team1playerWidgets.remove(team1player)
-            team1player.deleteLater()
-
-            team2player = self.team2playerWidgets[-1]
-            StateManager.Unset(team2player.path)
-            team2player.setParent(None)
-            self.playerWidgets.remove(team2player)
-            self.team2playerWidgets.remove(team2player)
-            team2player.deleteLater()
+            for players in teams:
+                player = players[-1]
+                StateManager.Unset(player.path)
+                player.setParent(None)
+                self.playerWidgets.remove(player)
+                players.remove(player)
+                player.deleteLater()
 
         for team in [1, 2]:
             if StateManager.Get(f"score.{self.scoreboardNumber}.team.{team}"):
@@ -862,24 +1339,18 @@ class ScoreboardWidget(QWidget):
                     if int(k) > number:
                         StateManager.Unset(f"score.{self.scoreboardNumber}.team.{team}.player.{k}")
 
-        if number > 1:
-            self.team1column.findChild(QLineEdit, "teamName").setVisible(True)
-            self.team2column.findChild(QLineEdit, "teamName").setVisible(True)
-            self.team1column.findChild(QLabel, "teamLabel").setVisible(False)
-            self.team2column.findChild(QLabel, "teamLabel").setVisible(False)
-        else:
-            self.team1column.findChild(QLineEdit, "teamName").setVisible(False)
-            self.team1column.findChild(QLineEdit, "teamName").setText("")
-            self.team1column.findChild(QLineEdit, "teamName").editingFinished.emit()
-            self.team2column.findChild(QLineEdit, "teamName").setVisible(False)
-            self.team2column.findChild(QLineEdit, "teamName").setText("")
-            self.team2column.findChild(QLineEdit, "teamName").editingFinished.emit()
-            self.team1column.findChild(QLabel, "teamLabel").setVisible(True)
-            self.team2column.findChild(QLabel, "teamLabel").setVisible(True)
+        if number <= 1:
+            for t in (0, 1):
+                if self.teamNameEdits[t].text():
+                    self.teamNameEdits[t].setText("")
+                    self.teamNameEdits[t].editingFinished.emit()
 
-        for x, element in enumerate(self.elements, start=1):
-            action: QAction = self.eyeBt.menu().actions()[x]
+        for action, element in zip(self.elementActions, self.elements):
             self.ToggleElements(action, element[1])
+
+        self.RefreshTeamLabels()
+        if hasattr(self, "gameReport"):
+            self.gameReport.RebuildRows()
 
     def SwapTeams(self):
         # Lock all player widgets
@@ -900,25 +1371,21 @@ class ScoreboardWidget(QWidget):
             # Scores. Signals are blocked because each score change would
             # make the games window add/remove wins (and rebuild itself), losing
             # which games were won; gameReport.Swap() below swaps them as is.
-            scoreLeft = self.scoreColumn.findChild(QSpinBox, "score_left").value()
-            scoreRight = self.scoreColumn.findChild(QSpinBox, "score_right").value()
+            scoreLeft = self.scoreSpins[0].value()
+            scoreRight = self.scoreSpins[1].value()
             self.StageResultsToScore(scoreRight, scoreLeft)
 
             # Losers
-            losersLeft = self.team1column.findChild(QCheckBox, "losers").isChecked()
-            self.team1column.findChild(QCheckBox, "losers").setChecked(
-                self.team2column.findChild(QCheckBox, "losers").isChecked()
-            )
-            self.team2column.findChild(QCheckBox, "losers").setChecked(losersLeft)
+            losersLeft = self.losersChecks[0].isChecked()
+            self.losersChecks[0].setChecked(self.losersChecks[1].isChecked())
+            self.losersChecks[1].setChecked(losersLeft)
 
             # Team Names
-            teamNameLeft = self.team1column.findChild(QLineEdit, "teamName").text()
-            self.team1column.findChild(QLineEdit, "teamName").setText(
-                self.team2column.findChild(QLineEdit, "teamName").text()
-            )
-            self.team2column.findChild(QLineEdit, "teamName").setText(teamNameLeft)
-            self.team1column.findChild(QLineEdit, "teamName").editingFinished.emit()
-            self.team2column.findChild(QLineEdit, "teamName").editingFinished.emit()
+            teamNameLeft = self.teamNameEdits[0].text()
+            self.teamNameEdits[0].setText(self.teamNameEdits[1].text())
+            self.teamNameEdits[1].setText(teamNameLeft)
+            self.teamNameEdits[0].editingFinished.emit()
+            self.teamNameEdits[1].editingFinished.emit()
 
             self.gameReport.Swap()
             self.teamsSwapped = not self.teamsSwapped
@@ -964,8 +1431,8 @@ class ScoreboardWidget(QWidget):
             self.stats.signals.RecentSetsSignal.emit()
 
     def ResetScore(self):
-        self.scoreColumn.findChild(QSpinBox, "score_left").setValue(0)
-        self.scoreColumn.findChild(QSpinBox, "score_right").setValue(0)
+        self.scoreSpins[0].setValue(0)
+        self.scoreSpins[1].setValue(0)
 
     def ClearAllClicked(self):
         answer = QMessageBox.question(
@@ -1037,24 +1504,8 @@ class ScoreboardWidget(QWidget):
                 # again. Then the job is still running, so this only updates
                 # what the next run loads. Otherwise it restarts the countdown.
                 Scheduler.instance.Start(self.autoUpdateJob)
-            self.timerLayout.setVisible(True)
-
-            if data.get("auto_update") == "set":
-                self.labelAutoUpdate.setText(QApplication.translate("app", "Auto update (Set)"))
-            elif data.get("auto_update") == "stream":
-                self.labelAutoUpdate.setText(
-                    QApplication.translate("app", "Auto update (Stream [{0}])").format(
-                        self.lastStationSelected.get("identifier")
-                    )
-                )
-            elif data.get("auto_update") == "station":
-                self.labelAutoUpdate.setText(
-                    QApplication.translate("app", "Auto update (Station [{0}])").format(
-                        self.lastStationSelected.get("identifier")
-                    )
-                )
-            else:
-                self.labelAutoUpdate.setText(QApplication.translate("app", "Auto update"))
+            # Loading a set (or the station's next set) resumes updates
+            self.autoUpdatePaused = False
 
         newSet = False
 
@@ -1118,6 +1569,9 @@ class ScoreboardWidget(QWidget):
 
         if newSet:
             self.signals.NewSetLoaded.emit()
+        self.RefreshSource()
+        self.RefreshBanner()
+        self.signals.SummaryChanged.emit()
 
     def StartAutoUpdateAfterLoad(self, data):
         # Unless another set was selected or auto update was stopped meanwhile
@@ -1137,7 +1591,10 @@ class ScoreboardWidget(QWidget):
             StateManager.Set(f"score.{self.scoreboardNumber}.station", None)
             self.gameReport.NewSet(None)
 
-        self.timerLayout.setVisible(False)
+        self.autoUpdatePaused = False
+        self.RefreshSource()
+        self.RefreshBanner()
+        self.signals.SummaryChanged.emit()
 
     def AutoUpdateJobStateChanged(self, name):
         if name == self.autoUpdateJob:
@@ -1145,8 +1602,8 @@ class ScoreboardWidget(QWidget):
 
     def UpdateTimeLeftTimer(self):
         # None while an update or a newly selected set is loading
-        remaining = Scheduler.instance.RemainingMs(self.autoUpdateJob)
-        self.timerTime.setText(str(math.ceil(remaining / 1000) if remaining is not None else 0))
+        if self.autoUpdateData and not self.autoUpdatePaused:
+            self.RefreshSource()
 
     def LoadSetClicked(self):
         self.selectSetWindow.LoadSets()
@@ -1166,8 +1623,8 @@ class ScoreboardWidget(QWidget):
     def CommandScoreChange(self, team: int, change: int):
         if team in (0, 1):
             scoreContainers = [
-                self.scoreColumn.findChild(QSpinBox, "score_left"),
-                self.scoreColumn.findChild(QSpinBox, "score_right"),
+                self.scoreSpins[0],
+                self.scoreSpins[1],
             ]
             scoreContainers[team].setValue(scoreContainers[team].value() + change)
 
@@ -1182,26 +1639,25 @@ class ScoreboardWidget(QWidget):
     def CommandTeamInfo(self, team: int, data):
         if team not in (0, 1):
             return
-        column = [self.team1column, self.team2column][team]
         if data.get("name") is not None:
-            teamName = column.findChild(QLineEdit, "teamName")
+            teamName = self.teamNameEdits[team]
             teamName.setText(str(data.get("name")))
             teamName.editingFinished.emit()
         if data.get("losers") is not None:
-            column.findChild(QCheckBox, "losers").setChecked(bool(data.get("losers")))
+            self.losersChecks[team].setChecked(bool(data.get("losers")))
         if data.get("color"):
             self.CommandTeamColor(team, data.get("color"))
 
     def ClearScore(self):
-        for c in self.scoreColumn.findChildren(QComboBox):
+        for c in (self.phaseCombo, self.matchCombo):
             c.setCurrentText("")
             c.lineEdit().editingFinished.emit()
 
-        self.scoreColumn.findChild(QSpinBox, "score_left").setValue(0)
-        self.scoreColumn.findChild(QSpinBox, "score_right").setValue(0)
+        self.scoreSpins[0].setValue(0)
+        self.scoreSpins[1].setValue(0)
 
-        self.team1column.findChild(QCheckBox, "losers").setChecked(False)
-        self.team2column.findChild(QCheckBox, "losers").setChecked(False)
+        self.losersChecks[0].setChecked(False)
+        self.losersChecks[1].setChecked(False)
 
     def CommandTeamColor(self, team: int, color, force_opponent=False):
         if color:
@@ -1260,8 +1716,8 @@ class ScoreboardWidget(QWidget):
 
             round_name = data.get("round_name")
             if round_name:
-                self.scoreColumn.findChild(QComboBox, "match").setCurrentText(round_name)
-                self.scoreColumn.findChild(QComboBox, "match").lineEdit().editingFinished.emit()
+                self.matchCombo.setCurrentText(round_name)
+                self.matchCombo.lineEdit().editingFinished.emit()
                 StateManager.Set(f"score.{self.scoreboardNumber}.match", round_name)
 
             tournament_phase = data.get("tournament_phase")
@@ -1288,13 +1744,13 @@ class ScoreboardWidget(QWidget):
                         elif "Top" not in phase:
                             tournament_phase = f"{phase} - {tournament_phase}"
 
-                self.scoreColumn.findChild(QComboBox, "phase").setCurrentText(tournament_phase)
-                self.scoreColumn.findChild(QComboBox, "phase").lineEdit().editingFinished.emit()
+                self.phaseCombo.setCurrentText(tournament_phase)
+                self.phaseCombo.lineEdit().editingFinished.emit()
                 StateManager.Set(f"score.{self.scoreboardNumber}.phase", tournament_phase)
 
             scoreContainers = [
-                self.scoreColumn.findChild(QSpinBox, "score_left"),
-                self.scoreColumn.findChild(QSpinBox, "score_right"),
+                self.scoreSpins[0],
+                self.scoreSpins[1],
             ]
             if reverseTeams:
                 scoreContainers.reverse()
@@ -1316,11 +1772,11 @@ class ScoreboardWidget(QWidget):
                         scoreContainers[1].setValue(0)
 
             if data.get("bestOf"):
-                self.scoreColumn.findChild(QSpinBox, "best_of").setValue(data.get("bestOf"))
+                self.bestOfSpin.setValue(data.get("bestOf"))
 
             losersContainers = [
-                self.team1column.findChild(QCheckBox, "losers"),
-                self.team2column.findChild(QCheckBox, "losers"),
+                self.losersChecks[0],
+                self.losersChecks[1],
             ]
             if reverseTeams:
                 losersContainers.reverse()
@@ -1352,12 +1808,11 @@ class ScoreboardWidget(QWidget):
                         teamInstance = teamInstances[t]
 
                         if len(team) > 1:
-                            teamColumns = [self.team1column, self.team2column]
                             teamNames = [data.get("p1_name"), data.get("p2_name")]
                             if self.teamsSwapped:
                                 teamNames.reverse()
-                            teamColumns[t].findChild(QLineEdit, "teamName").setText(teamNames[t])
-                            teamColumns[t].findChild(QLineEdit, "teamName").editingFinished.emit()
+                            self.teamNameEdits[t].setText(teamNames[t])
+                            self.teamNameEdits[t].editingFinished.emit()
 
                         for p, player in enumerate(team):
                             if p >= len(teamInstance):
@@ -1410,7 +1865,8 @@ class ScoreboardWidget(QWidget):
 
                     teamInstance[player].SetData(data.get("data"), False, False)
                     if data.get("data", {}).get("savePlayerToDb", False):
-                        teamInstance[player].SavePlayerToDB()
+                        # Like edits made here: the saved mains stay
+                        teamInstance[player].SavePlayerToDB(auto=True)
                 except Exception as e:
                     logger.error(f"Error while setting entrants: {e}")
                 finally:
@@ -1460,12 +1916,14 @@ class ScoreboardWidget(QWidget):
         # Finished on start.gg
         if data.get("state") == 3:
             self.SetOver(data.get("id"))
+        self.RefreshSource()
 
     def SetOver(self, setId):
         if setId is None or str(setId) in self.finishedSets:
             return
         self.finishedSets.add(str(setId))
         self.signals.SetFinished.emit(setId)
+        self.RefreshBanner()
 
     def LoadPlayerFromTag(self, tag, team, player, no_mains=False):
         team = int(team) - 1

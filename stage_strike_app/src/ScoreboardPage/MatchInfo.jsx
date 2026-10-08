@@ -9,8 +9,8 @@ import {saveOnCommit, useAutoSaveForm} from "./useAutoSaveForm";
 const countOf = (obj) => Object.keys(obj ?? {}).length;
 
 /**
- * The set's phase, match and best of, and how many players and characters
- * the scoreboard has. Saves as it's edited.
+ * The set's phase and match, and how many players and characters the
+ * scoreboard has (the best of is in the score bar). Saves as it's edited.
  */
 export default function MatchInfo({scoreboardNumber, score}) {
     const teams = Object.values(score?.team ?? {});
@@ -21,7 +21,6 @@ export default function MatchInfo({scoreboardNumber, score}) {
     const server = {
         phase: score?.phase ?? "",
         match: score?.match ?? "",
-        bestOf: Number(score?.best_of) || 0,
         players: playersPerTeam,
         characters: charactersPerPlayer,
     };
@@ -70,7 +69,6 @@ export default function MatchInfo({scoreboardNumber, score}) {
                         />
                     </Stack>
                     <Stack direction={"row"} gap={2} flexWrap={"wrap"} justifyContent={"space-around"}>
-                        {number("bestOf", i18n.t("best_of", {value: ""}).trim(), 0)}
                         {number("players", i18n.t("players_per_team"), 1)}
                         {number("characters", i18n.t("characters_per_player"), 0)}
                     </Stack>
