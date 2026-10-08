@@ -16,6 +16,7 @@ from src.Helpers.AltTextHelper import (
 )
 
 from .DisplayOptions import DisplayOptionsButton
+from .FlowLayout import FlowLayout
 from .GameAssetManager import GameAssetManager
 from .PlayerList import PlayerList
 from .SettingsManager import SettingsManager
@@ -48,9 +49,10 @@ class PlayerListWidget(QDockWidget):
         self.setFloating(True)
         self.setWindowFlags(Qt.WindowType.Window)
 
+        # The option rows wrap, so they don't set the window's width
         topOptions = QWidget()
-        topOptions.setLayout(QHBoxLayout())
-        topOptions.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        topOptions.setLayout(FlowLayout())
+        topOptions.layout().setContentsMargins(9, 9, 9, 9)
 
         self.widget.layout().addWidget(topOptions)
 

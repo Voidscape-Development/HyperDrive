@@ -8,6 +8,7 @@ from qtpy.QtWidgets import *
 
 from .BracketFocus import BracketFocus
 from .BracketView import BracketView
+from .FlowLayout import FlowLayout
 from .Helpers.BracketFocusHelper import *
 from .SettingsManager import SettingsManager
 
@@ -18,7 +19,8 @@ class BracketFocusBar(QWidget):
         self.view = view
         self.focus = BracketFocus.instance
 
-        layout = QHBoxLayout()
+        # Wraps its controls, so they don't set the window's width
+        layout = FlowLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
@@ -32,7 +34,6 @@ class BracketFocusBar(QWidget):
                 "What the bracket focus layout (layout/bracket_focus) zooms to. Ctrl+click sets and round names to select them.",
             )
         )
-        layout.addWidget(title)
 
         # The channel the controls act on
         self.channel = QComboBox()
@@ -47,7 +48,6 @@ class BracketFocusBar(QWidget):
         self.channel.activated.connect(
             lambda index: self.focus.SetCurrent(self.channel.itemData(index))
         )
-        layout.addWidget(self.channel)
         self.btChannels = QToolButton()
         self.btChannels.setText("⋯")
         self.btChannels.setToolTip(QApplication.translate("app", "Add, rename or remove channels"))
@@ -61,7 +61,7 @@ class BracketFocusBar(QWidget):
             QApplication.translate("app", "Remove channel"), self.RemoveChannel
         )
         self.btChannels.setMenu(menu)
-        layout.addWidget(self.btChannels)
+        layout.addGroup(title, self.channel, self.btChannels)
 
         self.btAll = QPushButton(QApplication.translate("app", "Whole bracket"))
         self.btAll.setToolTip(QApplication.translate("app", "Show the whole bracket"))
@@ -85,12 +85,11 @@ class BracketFocusBar(QWidget):
         self.btPrevious.setToolTip(QApplication.translate("app", "Previous round"))
         self.btPrevious.setMaximumWidth(32)
         self.btPrevious.clicked.connect(lambda: self.Ch().MoveRound(-1))
-        layout.addWidget(self.btPrevious)
         self.btNext = QPushButton("▶")
         self.btNext.setToolTip(QApplication.translate("app", "Next round"))
         self.btNext.setMaximumWidth(32)
         self.btNext.clicked.connect(lambda: self.Ch().MoveRound(1))
-        layout.addWidget(self.btNext)
+        layout.addGroup(self.btPrevious, self.btNext)
 
         self.player = QComboBox()
         self.player.setMinimumWidth(140)
@@ -111,7 +110,6 @@ class BracketFocusBar(QWidget):
         self.btFollow.clicked.connect(
             lambda on: self.Ch().Follow(self.scoreboard.value()) if on else self.Ch().ShowAll()
         )
-        layout.addWidget(self.btFollow)
         self.scoreboard = QSpinBox()
         self.scoreboard.setMinimum(1)
         self.scoreboard.setMaximum(99)
@@ -121,7 +119,7 @@ class BracketFocusBar(QWidget):
                 self.Ch().Follow(value) if self.Ch().request.get("mode") == MODE_FOLLOW else None
             )
         )
-        layout.addWidget(self.scoreboard)
+        layout.addGroup(self.btFollow, self.scoreboard)
 
         self.btTour = QPushButton(QApplication.translate("app", "Round tour"))
         self.btTour.setCheckable(True)
@@ -133,7 +131,6 @@ class BracketFocusBar(QWidget):
         self.btTour.clicked.connect(
             lambda on: self.Ch().Tour(self.interval.value()) if on else self.Ch().ShowAll()
         )
-        layout.addWidget(self.btTour)
         self.interval = QSpinBox()
         self.interval.setMinimum(MIN_INTERVAL)
         self.interval.setMaximum(MAX_INTERVAL)
@@ -147,12 +144,11 @@ class BracketFocusBar(QWidget):
                 self.Ch().Tour(value) if self.Ch().request.get("mode") == MODE_TOUR else None
             )
         )
-        layout.addWidget(self.interval)
+        layout.addGroup(self.btTour, self.interval)
 
         self.status = QLabel()
         self.status.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
         layout.addWidget(self.status)
-        layout.addStretch()
 
         self.view.signals.selectionChanged.connect(self.UpdateSelection)
         self.view.signals.focusSets.connect(lambda ids: self.Ch().FocusSets(ids))
