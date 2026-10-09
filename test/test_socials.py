@@ -100,6 +100,15 @@ def TestHelper():
     print("TestHelper: OK")
 
 
+def TestIcons():
+    # The app's and the layouts' copies, one per platform
+    for platform in SocialsHelper.PLATFORM_KEYS:
+        for folder in ["assets/icons/socials", "layout/icons"]:
+            path = os.path.join(repoDir, folder, f"{platform}.svg")
+            assert os.path.isfile(path), path
+    print("TestIcons: OK")
+
+
 def TestAddColumnToOldDB():
     # A database made before the socials column
     ResetEngine()
@@ -298,6 +307,7 @@ def TestParseSet():
 if __name__ == "__main__":
     try:
         TestHelper()
+        TestIcons()
         TestAddColumnToOldDB()
         TestSaveAndMerge()
         TestButton()

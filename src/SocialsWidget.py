@@ -1,8 +1,22 @@
+import os
+
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .Helpers import SocialsHelper
+from .Theme import ThemedIcon
+
+# A copy of the icons is in layout/icons for the layouts; the app doesn't
+# load files from the layout folder
+ICONS_DIR = "./assets/icons/socials"
+ICON_SIZE = 20
+
+
+def PlatformIcon(platform):
+    """The platform's icon in the theme's colors, or None."""
+    path = f"{ICONS_DIR}/{platform}.svg"
+    return ThemedIcon(path) if os.path.isfile(path) else None
 
 
 class SocialsDialog(QDialog):
@@ -24,9 +38,21 @@ class SocialsDialog(QDialog):
             p for p in socials if p not in SocialsHelper.PLATFORM_KEYS
         ]
         for platform in platforms:
+            name = SocialsHelper.Label(platform)
             edit = QLineEdit(socials.get(platform, ""))
             edit.setObjectName(f"social_{platform}")
-            form.addRow(SocialsHelper.Label(platform), edit)
+            edit.setPlaceholderText(name)
+            edit.setToolTip(name)
+
+            # The platform's icon, or its name for one without an icon
+            label = QLabel(name)
+            icon = PlatformIcon(platform)
+            if icon is not None:
+                label.setPixmap(icon.pixmap(ICON_SIZE, ICON_SIZE))
+                label.setToolTip(name)
+                label.setAccessibleName(name)
+            label.setBuddy(edit)
+            form.addRow(label, edit)
             self.edits[platform] = edit
 
         buttons = QDialogButtonBox(
