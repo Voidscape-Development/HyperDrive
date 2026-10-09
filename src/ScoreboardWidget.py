@@ -13,6 +13,7 @@ from src.ColorButton import ColorButton
 
 from .GameAssetManager import GameAssetManager
 from .GameReportWidget import GameReportWidget
+from .GamesTracker import GamesTracker
 from .Helpers.DictHelper import deep_get
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
@@ -522,6 +523,22 @@ class ScoreboardWidget(QWidget):
         self.btGames.clicked.connect(self.OpenGames)
         self.scoreColumn.findChild(QGroupBox, "scoreGroupBox").layout().addWidget(self.btGames)
 
+        # A square per game under the score, in the color of the team that
+        # won it; clicking one opens it in the Games window
+        self.gamesTracker = GamesTracker(
+            tooltip=self.gameReport.GameTooltip, teamName=self.gameReport.TeamName
+        )
+        self.gamesTracker.setObjectName("gamesTracker")
+        self.gamesTracker.gameClicked.connect(self.OpenGame)
+        self.gamesTracker.winnerPicked.connect(self.gameReport.SetWinnerFromTracker)
+        scoreLayout = self.scoreColumn.findChild(QGroupBox, "scoreGroupBox").layout()
+        scoresRow = self.scoreColumn.findChild(QHBoxLayout, "horizontalLayout_2")
+        scoreLayout.insertWidget(scoreLayout.indexOf(scoresRow) + 1, self.gamesTracker)
+        self.gameReport.signals.gamesChanged.connect(self.UpdateGamesTracker)
+        self.colorButton1.colorChanged.connect(lambda _: self.UpdateGamesTracker())
+        self.colorButton2.colorChanged.connect(lambda _: self.UpdateGamesTracker())
+        self.UpdateGamesTracker()
+
         self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.connect(self.ExportBestOf)
         self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.emit(0)
 
@@ -723,6 +740,18 @@ class ScoreboardWidget(QWidget):
         self.gamesWindow.show()
         self.gamesWindow.raise_()
         self.gamesWindow.activateWindow()
+
+    def OpenGame(self, index):
+        """Opens the Games window on a game (a games tracker square)."""
+        self.OpenGames()
+        # Once the window is laid out, so the row's place is known
+        QTimer.singleShot(50, lambda: self.gameReport.FocusGame(index))
+
+    def UpdateGamesTracker(self):
+        self.gamesTracker.SetColors(self.colorButton1.color(), self.colorButton2.color())
+        self.gamesTracker.SetGames(
+            self.gameReport.report.games, self.gameReport.report.CurrentGameIndex()
+        )
 
     def UpdateBottomButtons(self):
         if TournamentDataManager.instance.provider and TournamentDataManager.instance.provider.url:
