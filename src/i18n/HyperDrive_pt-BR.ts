@@ -4444,37 +4444,47 @@ Drop an image here.</source>
         <translation>Habilitar teclas de atalho</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="272"/>
+        <location filename="../Settings/SettingsWindow.py" line="133"/>
         <source>General</source>
         <translation>Geral</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="277"/>
+        <location filename="../Settings/SettingsWindow.py" line="138"/>
         <source>Appearance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="329"/>
+        <location filename="../Settings/SettingsWindow.py" line="247"/>
+        <source>Scoreboard</source>
+        <translation type="unfinished">Placar</translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="275"/>
+        <source>State Manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="328"/>
         <source>Hotkeys</source>
         <translation>Teclas de atalho</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="417"/>
+        <location filename="../Settings/SettingsWindow.py" line="416"/>
         <source>Default Display Options</source>
         <translation>Opções de Exibição Padrão</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="443"/>
+        <location filename="../Settings/SettingsWindow.py" line="442"/>
         <source>Character Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="448"/>
+        <location filename="../Settings/SettingsWindow.py" line="447"/>
         <source>Match &amp; Phase Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="451"/>
+        <location filename="../Settings/SettingsWindow.py" line="450"/>
         <source>Pronouns</source>
         <translation type="unfinished">Pronomes</translation>
     </message>
@@ -4483,12 +4493,12 @@ Drop an image here.</source>
         <translation>Bluesky</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="493"/>
+        <location filename="../Settings/SettingsWindow.py" line="492"/>
         <source>API Keys</source>
         <translation>Chaves de API</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="535"/>
+        <location filename="../Settings/SettingsWindow.py" line="534"/>
         <source>start.gg Reporting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4502,28 +4512,28 @@ Drop an image here.</source>
 <context>
     <name>settings.api_keys</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="457"/>
+        <location filename="../Settings/SettingsWindow.py" line="456"/>
         <source>ParryGG</source>
         <translation>ParryGG</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="462"/>
+        <location filename="../Settings/SettingsWindow.py" line="461"/>
         <source>You can get an API Key from parry.gg/api-keys</source>
         <translation>Você pode obter uma Chave de API em parry.gg/api-keys</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="466"/>
-        <location filename="../Settings/SettingsWindow.py" line="485"/>
+        <location filename="../Settings/SettingsWindow.py" line="465"/>
+        <location filename="../Settings/SettingsWindow.py" line="484"/>
         <source>Please note that the API Key will be stored in plain text on your computer</source>
         <translation>Note que a Chave de API será salva no seu computador em forma de texto</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="475"/>
+        <location filename="../Settings/SettingsWindow.py" line="474"/>
         <source>start.gg (reporting sets)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="480"/>
+        <location filename="../Settings/SettingsWindow.py" line="479"/>
         <source>Needed to report sets to start.gg from the scoreboard&apos;s Games window. Create a token at start.gg &gt; Developer Settings, with an account that&apos;s an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4582,13 +4592,13 @@ Drop an image here.</source>
     </message>
     <message>
         <location filename="../Theme.py" line="119"/>
-        <location filename="../Settings/AppearanceSettings.py" line="221"/>
+        <location filename="../Settings/AppearanceSettings.py" line="250"/>
         <source>Dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Theme.py" line="121"/>
-        <location filename="../Settings/AppearanceSettings.py" line="223"/>
+        <location filename="../Settings/AppearanceSettings.py" line="252"/>
         <source>Light</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4598,166 +4608,171 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="49"/>
+        <location filename="../Settings/AppearanceSettings.py" line="50"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="54"/>
+        <location filename="../Settings/AppearanceSettings.py" line="55"/>
         <source>Accent color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="62"/>
+        <location filename="../Settings/AppearanceSettings.py" line="63"/>
         <source>Reset the accent color to default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="72"/>
+        <location filename="../Settings/AppearanceSettings.py" line="73"/>
         <source>UI scale (takes effect on next restart)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="98"/>
+        <location filename="../Settings/AppearanceSettings.py" line="99"/>
         <source>New custom theme...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="101"/>
+        <location filename="../Settings/AppearanceSettings.py" line="102"/>
         <source>Starts a custom theme from the one in use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="107"/>
+        <location filename="../Settings/AppearanceSettings.py" line="108"/>
         <source>Import...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="110"/>
+        <location filename="../Settings/AppearanceSettings.py" line="111"/>
         <source>Export...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="112"/>
+        <location filename="../Settings/AppearanceSettings.py" line="113"/>
         <source>Saves the theme in use to a file you can share</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="118"/>
+        <location filename="../Settings/AppearanceSettings.py" line="119"/>
         <source>Rename...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="121"/>
+        <location filename="../Settings/AppearanceSettings.py" line="122"/>
         <source>Delete</source>
         <translation type="unfinished">Deletar</translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="140"/>
+        <location filename="../Settings/AppearanceSettings.py" line="141"/>
         <source>Reset &quot;{0}&quot; to default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="154"/>
-        <location filename="../Settings/AppearanceSettings.py" line="317"/>
+        <location filename="../Settings/AppearanceSettings.py" line="155"/>
+        <location filename="../Settings/AppearanceSettings.py" line="346"/>
         <source>Reset all colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="158"/>
+        <location filename="../Settings/AppearanceSettings.py" line="159"/>
         <source>Resets every color to the built-in Dark or Light theme, whichever this theme is closest to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="167"/>
+        <location filename="../Settings/AppearanceSettings.py" line="168"/>
         <source>Corner roundness</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="185"/>
+        <location filename="../Settings/AppearanceSettings.py" line="186"/>
         <source>Spacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="198"/>
+        <location filename="../Settings/AppearanceSettings.py" line="199"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="202"/>
+        <location filename="../Settings/AppearanceSettings.py" line="203"/>
         <source>System default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="226"/>
+        <location filename="../Settings/AppearanceSettings.py" line="216"/>
+        <source>Default team colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AppearanceSettings.py" line="255"/>
         <source>Follow system</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="251"/>
+        <location filename="../Settings/AppearanceSettings.py" line="280"/>
         <source>Customize {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="318"/>
+        <location filename="../Settings/AppearanceSettings.py" line="347"/>
         <source>Reset every color of &quot;{0}&quot; to default?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="355"/>
+        <location filename="../Settings/AppearanceSettings.py" line="384"/>
         <source>Theme name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="366"/>
+        <location filename="../Settings/AppearanceSettings.py" line="395"/>
         <source>New custom theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="368"/>
+        <location filename="../Settings/AppearanceSettings.py" line="397"/>
         <source>{0} (custom)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="384"/>
+        <location filename="../Settings/AppearanceSettings.py" line="413"/>
         <source>Rename theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="397"/>
+        <location filename="../Settings/AppearanceSettings.py" line="426"/>
         <source>Delete theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="398"/>
+        <location filename="../Settings/AppearanceSettings.py" line="427"/>
         <source>Delete the theme &quot;{0}&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="413"/>
-        <location filename="../Settings/AppearanceSettings.py" line="425"/>
+        <location filename="../Settings/AppearanceSettings.py" line="442"/>
+        <location filename="../Settings/AppearanceSettings.py" line="454"/>
         <source>Import theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="415"/>
-        <location filename="../Settings/AppearanceSettings.py" line="442"/>
+        <location filename="../Settings/AppearanceSettings.py" line="444"/>
+        <location filename="../Settings/AppearanceSettings.py" line="471"/>
         <source>HyperDrive theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="426"/>
+        <location filename="../Settings/AppearanceSettings.py" line="455"/>
         <source>This file isn&apos;t a HyperDrive theme.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="440"/>
-        <location filename="../Settings/AppearanceSettings.py" line="454"/>
+        <location filename="../Settings/AppearanceSettings.py" line="469"/>
+        <location filename="../Settings/AppearanceSettings.py" line="483"/>
         <source>Export theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="455"/>
+        <location filename="../Settings/AppearanceSettings.py" line="484"/>
         <source>The theme could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4796,12 +4811,12 @@ Drop an image here.</source>
 <context>
     <name>settings.character_picker</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="424"/>
+        <location filename="../Settings/SettingsWindow.py" line="423"/>
         <source>Show the player&apos;s mains in the character grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="432"/>
+        <location filename="../Settings/SettingsWindow.py" line="431"/>
         <source>Show recently picked characters in the character grid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4809,7 +4824,7 @@ Drop an image here.</source>
 <context>
     <name>settings.compact_players</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="409"/>
+        <location filename="../Settings/SettingsWindow.py" line="408"/>
         <source>Compact Player Cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4817,7 +4832,7 @@ Drop an image here.</source>
 <context>
     <name>settings.completed_sets_pull_interval</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="125"/>
+        <location filename="../Settings/SettingsWindow.py" line="70"/>
         <source>Completed sets auto pull interval (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4825,7 +4840,7 @@ Drop an image here.</source>
 <context>
     <name>settings.control_score_from_stage_strike</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="79"/>
+        <location filename="../Settings/SettingsWindow.py" line="147"/>
         <source>Enable score control from the stage striking app</source>
         <translation>Habilitar controle do placar a partir do app de stage strike</translation>
     </message>
@@ -4833,12 +4848,12 @@ Drop an image here.</source>
 <context>
     <name>settings.custom_player_export</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="181"/>
+        <location filename="../Settings/SettingsWindow.py" line="91"/>
         <source>Export custom player data from user_data/custom_player_export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="189"/>
+        <location filename="../Settings/SettingsWindow.py" line="99"/>
         <source>Sends the files in a folder named after a player&apos;s tag (or sponsor and tag) to the layouts, as the player&apos;s custom data. Changes to the files show up on stream within a second.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4846,7 +4861,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_autoupdate</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="91"/>
+        <location filename="../Settings/SettingsWindow.py" line="159"/>
         <source>Disable automatic set updating for the scoreboard</source>
         <translation>Desabilitar atualização automática do placar</translation>
     </message>
@@ -4868,7 +4883,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_export</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="170"/>
+        <location filename="../Settings/SettingsWindow.py" line="265"/>
         <source>Disable HyperDrive file exporting</source>
         <translation>Desabilitar exportação de arquivos</translation>
     </message>
@@ -4883,7 +4898,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_overwrite</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="200"/>
+        <location filename="../Settings/SettingsWindow.py" line="217"/>
         <source>Do not override existing values in the local player database (takes effect on next restart)</source>
         <translation>Não sobrescrever entradas existentes em local_players.csv (reinicialização necessária)</translation>
     </message>
@@ -4891,7 +4906,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_scoreupdate</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="158"/>
+        <location filename="../Settings/SettingsWindow.py" line="205"/>
         <source>Disable automatic score updating for the scoreboard</source>
         <translation>Desabilitar atualização automática de pontuação do placar</translation>
     </message>
@@ -4906,7 +4921,7 @@ Drop an image here.</source>
 <context>
     <name>settings.force_no_mains_on_new_set_loads</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="146"/>
+        <location filename="../Settings/SettingsWindow.py" line="193"/>
         <source>Do not update character data when a set is loaded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4924,7 +4939,7 @@ Drop an image here.</source>
         <translation>Habilitar filtro de texto ofensivo</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="70"/>
+        <location filename="../Settings/SettingsWindow.py" line="256"/>
         <source>Enable StateManager Logging</source>
         <translation>Habilitar Log do StateManager</translation>
     </message>
@@ -4971,77 +4986,77 @@ Drop an image here.</source>
         <translation>Habilitar teclas de atalho</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="293"/>
+        <location filename="../Settings/SettingsWindow.py" line="292"/>
         <source>Load set</source>
         <translation>Carregar set</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="294"/>
+        <location filename="../Settings/SettingsWindow.py" line="293"/>
         <source>Team 1 score up</source>
         <translation>Aumentar pontuação da equipe 1</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="295"/>
+        <location filename="../Settings/SettingsWindow.py" line="294"/>
         <source>Team 1 score down</source>
         <translation>Diminuir pontuação da equipe 1</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="296"/>
+        <location filename="../Settings/SettingsWindow.py" line="295"/>
         <source>Team 2 score up</source>
         <translation>Aumentar pontuação da equipe 2</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="297"/>
+        <location filename="../Settings/SettingsWindow.py" line="296"/>
         <source>Team 2 score down</source>
         <translation>Diminuir pontuação da equipe 2</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="298"/>
+        <location filename="../Settings/SettingsWindow.py" line="297"/>
         <source>Reset scores</source>
         <translation>Zerar placar</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="299"/>
+        <location filename="../Settings/SettingsWindow.py" line="298"/>
         <source>Swap teams</source>
         <translation>Inverter times</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="300"/>
+        <location filename="../Settings/SettingsWindow.py" line="299"/>
         <source>Refresh bracket phase groups</source>
         <translation>Atualizar fases da chave</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="303"/>
+        <location filename="../Settings/SettingsWindow.py" line="302"/>
         <source>Toggle bracket limit export</source>
         <translation>Alternar limite de exportação da chave</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="306"/>
+        <location filename="../Settings/SettingsWindow.py" line="305"/>
         <source>Bracket focus: show the whole bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="309"/>
+        <location filename="../Settings/SettingsWindow.py" line="308"/>
         <source>Bracket focus: previous round</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="312"/>
+        <location filename="../Settings/SettingsWindow.py" line="311"/>
         <source>Bracket focus: next round</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="315"/>
+        <location filename="../Settings/SettingsWindow.py" line="314"/>
         <source>Bracket focus: follow the set on stream on/off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="318"/>
+        <location filename="../Settings/SettingsWindow.py" line="317"/>
         <source>Bracket focus: round tour on/off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="285"/>
+        <location filename="../Settings/SettingsWindow.py" line="284"/>
         <source>Enable hotkeys</source>
         <translation>Habilitar teclas de atalho</translation>
     </message>
@@ -5049,12 +5064,12 @@ Drop an image here.</source>
 <context>
     <name>settings.local_player_data</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="212"/>
+        <location filename="../Settings/SettingsWindow.py" line="229"/>
         <source>Use the local player database for player info when loading sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="220"/>
+        <location filename="../Settings/SettingsWindow.py" line="237"/>
         <source>Sets, the stream queue and station sets are loaded without the players&apos; socials, pronouns and location, which come from the local player database instead. Players not in it yet are looked up once and saved to it.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5095,7 +5110,7 @@ Drop an image here.</source>
 <context>
     <name>settings.scoreboard_auto_update_interval</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="103"/>
+        <location filename="../Settings/SettingsWindow.py" line="171"/>
         <source>Scoreboard automatic set updating interval (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5103,7 +5118,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_additional</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="400"/>
+        <location filename="../Settings/SettingsWindow.py" line="399"/>
         <source>Show Additional Info</source>
         <translation>Mostrar Informações Adicionais</translation>
     </message>
@@ -5111,7 +5126,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_birthday</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="364"/>
+        <location filename="../Settings/SettingsWindow.py" line="363"/>
         <source>Show Birthday</source>
         <translation>Mostrar Aniversário</translation>
     </message>
@@ -5119,7 +5134,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_characters</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="382"/>
+        <location filename="../Settings/SettingsWindow.py" line="381"/>
         <source>Show Characters</source>
         <translation>Mostrar Personagens</translation>
     </message>
@@ -5134,7 +5149,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_location</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="373"/>
+        <location filename="../Settings/SettingsWindow.py" line="372"/>
         <source>Show Location</source>
         <translation>Mostrar Localização</translation>
     </message>
@@ -5142,7 +5157,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_name</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="337"/>
+        <location filename="../Settings/SettingsWindow.py" line="336"/>
         <source>Show Real Name</source>
         <translation>Mostrar Nome Real</translation>
     </message>
@@ -5150,7 +5165,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_pronouns</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="391"/>
+        <location filename="../Settings/SettingsWindow.py" line="390"/>
         <source>Show Pronouns</source>
         <translation>Mostrar Pronomes</translation>
     </message>
@@ -5158,7 +5173,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_seed</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="355"/>
+        <location filename="../Settings/SettingsWindow.py" line="354"/>
         <source>Show Seed</source>
         <translation>Mostrar Seed</translation>
     </message>
@@ -5166,7 +5181,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_social</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="346"/>
+        <location filename="../Settings/SettingsWindow.py" line="345"/>
         <source>Show Social Media</source>
         <translation>Mostrar Redes Sociais</translation>
     </message>
@@ -5174,22 +5189,22 @@ Drop an image here.</source>
 <context>
     <name>settings.startgg_reporting</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="501"/>
+        <location filename="../Settings/SettingsWindow.py" line="500"/>
         <source>Send each game to start.gg as it&apos;s played (otherwise games are sent when the set is reported)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="509"/>
+        <location filename="../Settings/SettingsWindow.py" line="508"/>
         <source>Lets viewers follow the set on start.gg live. Uses one request per change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="517"/>
+        <location filename="../Settings/SettingsWindow.py" line="516"/>
         <source>Mark sets as in progress on start.gg when they&apos;re loaded on a scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="528"/>
+        <location filename="../Settings/SettingsWindow.py" line="527"/>
         <source>Ask before reporting a set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5197,7 +5212,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_1_default_color</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="231"/>
+        <location filename="../Settings/AppearanceSettings.py" line="223"/>
         <source>Default Color of Team 1</source>
         <translation>Cor Padrão do Time 1</translation>
     </message>
@@ -5205,7 +5220,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_2_default_color</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="240"/>
+        <location filename="../Settings/AppearanceSettings.py" line="231"/>
         <source>Default Color of Team 2</source>
         <translation>Cor Padrão do Time 2</translation>
     </message>
@@ -5213,7 +5228,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_battle_default_first_to</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="261"/>
+        <location filename="../Settings/SettingsWindow.py" line="122"/>
         <source>Crew/Team Battle: games to win a matchup (First To)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5221,7 +5236,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_battle_default_stocks</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="249"/>
+        <location filename="../Settings/SettingsWindow.py" line="110"/>
         <source>Crew/Team Battle: starting stocks per player (Stock Pool)</source>
         <translation type="unfinished"></translation>
     </message>
