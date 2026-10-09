@@ -5,6 +5,7 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .CharacterPicker import CharacterCombo, MainsOf, SkinCombo
 from .GameAssetManager import GameAssetManager
 from .Helpers import SocialsHelper
 from .Helpers.CountryHelper import CountryHelper
@@ -48,17 +49,20 @@ class MainRow(QWidget):
     removed = Signal(object)
     changed = Signal()
 
-    def __init__(self, main=None, parent=None):
+    def __init__(self, main=None, parent=None, mainsProvider=None):
         super().__init__(parent)
         self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.character = _SearchableCombo(GameAssetManager.instance.characterModel)
+        # Both open the character grid
+        self.character = CharacterCombo()
+        self.character.mainsProvider = mainsProvider
+        self.character.setModel(GameAssetManager.instance.characterModel)
         self.character.setIconSize(QSize(24, 24))
         self.character.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.character, 3)
 
-        self.skin = QComboBox()
+        self.skin = SkinCombo(self.character)
         self.skin.setIconSize(QSize(24, 24))
         self.layout().addWidget(self.skin, 2)
 
@@ -491,7 +495,12 @@ class PlayersTab(QWidget):
         self.DBUpdated()
 
     def AddMainRow(self, main=None):
-        row = MainRow(main)
+        row = MainRow(
+            main,
+            mainsProvider=lambda: MainsOf(
+                PlayerDB.GetPlayer(self.editingTag) if self.editingTag else None
+            ),
+        )
         row.removed.connect(self.RemoveMainRow)
         row.changed.connect(self.SetDirty)
         self.mainRows.append(row)

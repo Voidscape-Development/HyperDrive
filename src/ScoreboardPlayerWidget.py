@@ -8,6 +8,7 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .CharacterPicker import CharacterCombo, MainsOf, SkinCombo
 from .GameAssetManager import GameAssetManager
 from .Helpers import SocialsHelper
 from .Helpers.BadWordFilter import BadWordFilter
@@ -405,7 +406,7 @@ class ScoreboardPlayerWidget(QGroupBox):
                                 continue
                             if type(widget) == QLineEdit:
                                 data[widget.objectName()] = widget.text()
-                            if type(widget) == QComboBox:
+                            if isinstance(widget, QComboBox):
                                 data[widget.objectName()] = widget.currentIndex()
                             if type(widget) == QPlainTextEdit:
                                 data[widget.objectName()] = widget.toPlainText()
@@ -430,7 +431,7 @@ class ScoreboardPlayerWidget(QGroupBox):
                                 if type(widget) == QLineEdit:
                                     widget.setText(tmpData[i][objName])
                                     lineEdits.append(widget)
-                                if type(widget) == QComboBox:
+                                if isinstance(widget, QComboBox):
                                     widget.setCurrentIndex(tmpData[i][objName])
                                 if type(widget) == QPlainTextEdit:
                                     widget.setPlainText(tmpData[i][objName])
@@ -472,35 +473,23 @@ class ScoreboardPlayerWidget(QGroupBox):
             character_element.setLayout(QHBoxLayout())
             character_element.layout().setSpacing(4)
             character_element.layout().setContentsMargins(0, 0, 0, 0)
-            player_character = QComboBox()
-            player_character.setEditable(True)
+            # Both open the character grid
+            player_character = CharacterCombo()
+            player_character.mainsProvider = self.SavedMains
             character_element.layout().addWidget(player_character)
             player_character.setMinimumWidth(60)
-            player_character.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_character.view().setMinimumWidth(60)
-            player_character.completer().setCompletionMode(QCompleter.PopupCompletion)
-            player_character.completer().popup().setMinimumWidth(250)
             player_character.setModel(GameAssetManager.instance.characterModel)
             player_character.setIconSize(QSize(24, 24))
             player_character.setFixedHeight(32)
             player_character.setFont(QFont(player_character.font().family(), 9))
-            player_character.lineEdit().setFont(QFont(player_character.font().family(), 9))
 
-            player_character_color = QComboBox()
+            player_character_color = SkinCombo(player_character)
             character_element.layout().addWidget(player_character_color)
             player_character_color.setIconSize(QSize(48, 48))
             player_character_color.setFixedHeight(32)
             player_character_color.setMinimumWidth(64)
             player_character_color.setMaximumWidth(120)
             player_character_color.setFont(QFont(player_character_color.font().family(), 9))
-            view = QListView()
-            view.setIconSize(QSize(128, 128))
-            player_character_color.setView(view)
-            player_character_color.setEditable(True)
-            player_character_color.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_character_color.completer().setCompletionMode(QCompleter.PopupCompletion)
-            # self.player_character_color.activated.connect(self.CharacterChanged)
-            # self.CharacterChanged()
 
             # Add variant
             player_variant = QComboBox()
@@ -744,6 +733,11 @@ class ScoreboardPlayerWidget(QGroupBox):
         state: QComboBox = self.findChild(QComboBox, "state")
         state.setModel(stateModel)
         state.setCurrentIndex(0)
+
+    def SavedMains(self):
+        """The mains saved in the player DB for the player in this widget,
+        shown first in the character grid."""
+        return MainsOf(PlayerDB.GetPlayer(self.GetCurrentPlayerTag()))
 
     def LoadSkinOptions(self, element, target):
         characterData = element.currentData()
