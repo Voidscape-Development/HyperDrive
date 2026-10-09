@@ -67,61 +67,6 @@ class SettingsWindow(QDialog):
 
         generalSettings.append(
             (
-                QApplication.translate("settings.general", "Enable StateManager Logging"),
-                "statemanager_logging",
-                "checkbox",
-                False,
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate(
-                    "settings.control_score_from_stage_strike",
-                    "Enable score control from the stage striking app",
-                ),
-                "control_score_from_stage_strike",
-                "checkbox",
-                True,
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate(
-                    "settings.disable_autoupdate",
-                    "Disable automatic set updating for the scoreboard",
-                ),
-                "disable_autoupdate",
-                "checkbox",
-                False,
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate(
-                    "settings.scoreboard_auto_update_interval",
-                    "Scoreboard automatic set updating interval (seconds)",
-                ),
-                "scoreboard_auto_update_interval",
-                "spinbox",
-                SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
-                lambda: Scheduler.instance.SetGroupInterval(
-                    SCOREBOARD_AUTO_UPDATE_GROUP,
-                    SettingsManager.Get(
-                        "general.scoreboard_auto_update_interval",
-                        SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
-                    )
-                    * 1000,
-                ),
-                None,
-                SCOREBOARD_AUTO_UPDATE_MIN_INTERVAL_SECS,
-            )
-        )
-
-        generalSettings.append(
-            (
                 QApplication.translate(
                     "settings.completed_sets_pull_interval",
                     "Completed sets auto pull interval (seconds)",
@@ -144,41 +89,6 @@ class SettingsWindow(QDialog):
         generalSettings.append(
             (
                 QApplication.translate(
-                    "settings.force_no_mains_on_new_set_loads",
-                    "Do not update character data when a set is loaded",
-                ),
-                "force_no_mains_on_new_set_loads",
-                "checkbox",
-                False,
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate(
-                    "settings.disable_scoreupdate",
-                    "Disable automatic score updating for the scoreboard",
-                ),
-                "disable_scoreupdate",
-                "checkbox",
-                False,
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate(
-                    "settings.disable_export", "Disable HyperDrive file exporting"
-                ),
-                "disable_export",
-                "checkbox",
-                False,
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate(
                     "settings.custom_player_export",
                     "Export custom player data from user_data/custom_player_export",
                 ),
@@ -192,55 +102,6 @@ class SettingsWindow(QDialog):
                     "to the layouts, as the player's custom data. Changes to the files show up "
                     "on stream within a second.",
                 ),
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate(
-                    "settings.disable_overwrite",
-                    "Do not override existing values in the local player database (takes effect on next restart)",
-                ),
-                "disable_overwrite",
-                "checkbox",
-                False,
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate(
-                    "settings.local_player_data",
-                    "Use the local player database for player info when loading sets",
-                ),
-                "local_player_data",
-                "checkbox",
-                False,
-                None,
-                QApplication.translate(
-                    "settings.local_player_data",
-                    "Sets, the stream queue and station sets are loaded without the players' "
-                    "socials, pronouns and location, which come from the local player database "
-                    "instead. Players not in it yet are looked up once and saved to it.",
-                ),
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate("settings.team_1_default_color", "Default Color of Team 1"),
-                "team_1_default_color",
-                "color",
-                "#fe3636",
-            )
-        )
-
-        generalSettings.append(
-            (
-                QApplication.translate("settings.team_2_default_color", "Default Color of Team 2"),
-                "team_2_default_color",
-                "color",
-                "#2e89ff",
             )
         )
 
@@ -275,6 +136,144 @@ class SettingsWindow(QDialog):
 
         self.add_setting_widget(
             QApplication.translate("settings", "Appearance"), AppearanceSettings()
+        )
+
+        # Scoreboard settings. Stored under general, where they were before
+        # they got their own section
+        scoreboardSettings = []
+
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.control_score_from_stage_strike",
+                    "Enable score control from the stage striking app",
+                ),
+                "control_score_from_stage_strike",
+                "checkbox",
+                True,
+            )
+        )
+
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.disable_autoupdate",
+                    "Disable automatic set updating for the scoreboard",
+                ),
+                "disable_autoupdate",
+                "checkbox",
+                False,
+            )
+        )
+
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.scoreboard_auto_update_interval",
+                    "Scoreboard automatic set updating interval (seconds)",
+                ),
+                "scoreboard_auto_update_interval",
+                "spinbox",
+                SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
+                lambda: Scheduler.instance.SetGroupInterval(
+                    SCOREBOARD_AUTO_UPDATE_GROUP,
+                    SettingsManager.Get(
+                        "general.scoreboard_auto_update_interval",
+                        SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
+                    )
+                    * 1000,
+                ),
+                None,
+                SCOREBOARD_AUTO_UPDATE_MIN_INTERVAL_SECS,
+            )
+        )
+
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.force_no_mains_on_new_set_loads",
+                    "Do not update character data when a set is loaded",
+                ),
+                "force_no_mains_on_new_set_loads",
+                "checkbox",
+                False,
+            )
+        )
+
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.disable_scoreupdate",
+                    "Disable automatic score updating for the scoreboard",
+                ),
+                "disable_scoreupdate",
+                "checkbox",
+                False,
+            )
+        )
+
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.disable_overwrite",
+                    "Do not override existing values in the local player database (takes effect on next restart)",
+                ),
+                "disable_overwrite",
+                "checkbox",
+                False,
+            )
+        )
+
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.local_player_data",
+                    "Use the local player database for player info when loading sets",
+                ),
+                "local_player_data",
+                "checkbox",
+                False,
+                None,
+                QApplication.translate(
+                    "settings.local_player_data",
+                    "Sets, the stream queue and station sets are loaded without the players' "
+                    "socials, pronouns and location, which come from the local player database "
+                    "instead. Players not in it yet are looked up once and saved to it.",
+                ),
+            )
+        )
+
+        self.add_setting_widget(
+            QApplication.translate("settings", "Scoreboard"),
+            SettingsWidget("general", scoreboardSettings),
+        )
+
+        # State Manager settings, also stored under general
+        stateManagerSettings = []
+
+        stateManagerSettings.append(
+            (
+                QApplication.translate("settings.general", "Enable StateManager Logging"),
+                "statemanager_logging",
+                "checkbox",
+                False,
+            )
+        )
+
+        stateManagerSettings.append(
+            (
+                QApplication.translate(
+                    "settings.disable_export", "Disable HyperDrive file exporting"
+                ),
+                "disable_export",
+                "checkbox",
+                False,
+            )
+        )
+
+        self.add_setting_widget(
+            QApplication.translate("settings", "State Manager"),
+            SettingsWidget("general", stateManagerSettings),
         )
 
         # Add hotkey settings

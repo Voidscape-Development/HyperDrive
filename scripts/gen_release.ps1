@@ -39,7 +39,18 @@ try {
     Copy-Item -Recurse -Force "src" "HyperDrive\src"
     Get-ChildItem -Path "HyperDrive\src" -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
 
-    Copy-Item -Recurse -Force "user_data" "HyperDrive\user_data"
+    # Only the files committed to user_data: running the program (or importing
+    # SettingsManager while building) writes settings.json and other user
+    # files there, and those mustn't ship and overwrite the user's own
+    $tracked = @(git -c core.quotepath=off ls-files -- "user_data")
+    if ($LASTEXITCODE -ne 0) {
+        throw "Couldn't list the files in user_data with git."
+    }
+    foreach ($file in $tracked) {
+        $destination = Join-Path "HyperDrive" $file
+        New-Item -ItemType Directory -Path (Split-Path $destination) -Force | Out-Null
+        Copy-Item -LiteralPath $file -Destination $destination -Force
+    }
     New-Item -Path "HyperDrive\stage_strike_app" -ItemType Directory | Out-Null
     Copy-Item -Recurse -Force "stage_strike_app\build" "HyperDrive\stage_strike_app\build"
     Copy-Item -Force "LICENSE" "HyperDrive\LICENSE"
