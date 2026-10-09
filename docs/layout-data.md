@@ -1,4 +1,4 @@
-# Layout data: bracket, stream queue, games, team battle, socials, custom player data and layout themes
+# Layout data: bracket, stream queue, games, team battle, socials, custom player data, layout themes and display controls
 
 What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
 Stream Queue widget, the scoreboard's Games window, the Crew/Team Battle window, the
@@ -332,3 +332,29 @@ it before each `Update()`:
 
 A `hd_theme` event is sent on `document` after it's applied, and
 `ThemeValue(section, field, fallback)` reads a value.
+
+## `display`
+
+What the Display Controls window (and its `/display/...` links, see the
+README) has turned on and off:
+
+```json
+{"folders": {"scoreboard": true, "commentators": false}, "groups": {"main": true}}
+```
+
+`globals.js` does the work, so layouts don't have to: a page is shown while
+its folder (the folder its page is in) is on and so is every group in its
+`?display=<group>[,<group>...]` (lowercase). When it's turned off, `Hide()`
+plays, then the page fades out; when it's turned back on, `Start()` plays
+again. One that's off when it loads stays hidden, without playing `Start()`,
+and so does one that's off when OBS shows its source.
+
+By default `Hide()` plays the timelines the last `Start()` played backwards
+(a layout whose `Start()` plays none just fades out). To hide it another way,
+a layout sets its own:
+
+```js
+Hide = async () => {
+  await gsap.to(".container", { y: -100, autoAlpha: 0, duration: 0.4 });
+};
+```

@@ -849,6 +849,35 @@ class WebServerActions(QThread):
             return "NO_BRACKET"
         return BracketWidget.instance.RefreshSets()
 
+    # Display Controls: kind is "folder", "group" or "all", action "show",
+    # "hide", "toggle" or None to only answer whether it's shown
+    @gui_thread_sync
+    def display(self, kind, name=None, action=None):
+        from .DisplayControls import DisplayControls
+
+        controls = DisplayControls.instance
+        if controls is None:
+            return "NO_DISPLAY_CONTROLS", 503
+        if kind == "all":
+            if action is None:
+                return {"kind": "all", "shown": controls.AllShown(), **controls.State()}
+            result = controls.SetAll(action)
+        elif action is None:
+            result = controls.Get(kind, name)
+        else:
+            result = controls.Set(kind, name, action)
+        error = result.get("error")
+        if error:
+            return error, 400 if error in ("UNKNOWN_ACTION", "UNKNOWN_KIND") else 404
+        return result
+
+    @gui_thread_sync
+    def display_register(self, groups):
+        from .DisplayControls import DisplayControls
+
+        if DisplayControls.instance is not None and isinstance(groups, list):
+            DisplayControls.instance.AddGroups(groups)
+
     @gui_thread_sync
     def bracket_focus(self, channel=None):
         # A focus channel's state, "main" by default

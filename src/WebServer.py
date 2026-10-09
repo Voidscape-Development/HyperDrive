@@ -1045,6 +1045,59 @@ class WebServer(QThread):
             "bracket_focus", WebServer.actions.bracket_focus_set(parse_message(message))
         )
 
+    # Display Controls, as links for a Stream Deck: /display/state is
+    # everything, /display/all/<action>, /display/folder/<folder>/<action>
+    # and /display/group/<group>/<action>, with show, hide or toggle as the
+    # action (or none, to get whether it's shown)
+    @api.get("/display/state")
+    async def display_state():
+        return await call(WebServer.actions.display, "all")
+
+    @api.get("/display/all/{action}")
+    async def display_all(action: str):
+        return await call(WebServer.actions.display, "all", None, action)
+
+    @api.get("/display/{kind}/{name}")
+    async def display_get(kind: str, name: str):
+        return await call(WebServer.actions.display, kind, name)
+
+    @api.get("/display/{kind}/{name}/{action}")
+    async def display_set(kind: str, name: str, action: str):
+        return await call(WebServer.actions.display, kind, name, action)
+
+    # {"folder": <name>} or {"group": <name>} or {"all": true}, with
+    # "action": show, hide or toggle (without it, answers whether it's shown)
+    @on("display")
+    def ws_display(message=None):
+        info = parse_message(message)
+        kind = next((k for k in ("folder", "group", "all") if k in info), None)
+        result = WebServer.actions.display(kind, info.get(kind), info.get("action"))
+        if isinstance(result, tuple):
+            result = {"error": result[0]}
+        WebServer.ws_emit("display", result)
+
+    @on("display_state")
+    def ws_display_state(message=None):
+        WebServer.ws_emit("display_state", WebServer.actions.display("all"))
+
+    # Layouts send the groups in their ?display= so they're listed
+    @on("display_register")
+    def ws_display_register(message=None):
+        WebServer.actions.display_register(parse_message(message).get("groups"))
+
+    def ws_broadcast_display_state():
+        """Sends display_state to every client when something is shown or hidden."""
+        loop = WebServer.loop
+        if loop is None or loop.is_closed():
+            return
+        from .DisplayControls import DisplayControls
+
+        if DisplayControls.instance is None:
+            return
+        controls = DisplayControls.instance
+        state = {"kind": "all", "shown": controls.AllShown(), **controls.State()}
+        asyncio.run_coroutine_threadsafe(sio.emit("display_state", state), loop)
+
     # The same as links, e.g. for a Stream Deck: /bracket-focus/all,
     # /bracket-focus/next-round, /bracket-focus/previous-round,
     # /bracket-focus/follow?scoreboard=<n>, /bracket-focus/tour?interval=<s>

@@ -138,6 +138,7 @@ from src.WebServer import WebServer
 from .AlertNotification import AlertNotification
 from .BracketWidget import BracketWidget
 from .CommentaryWidget import CommentaryWidget
+from .DisplayControls import DisplayControls, DisplayControlsWidget
 from .GameAssetManager import GameAssetManager
 from .Helpers.CountryHelper import CountryHelper
 from .Hotkeys import Hotkeys
@@ -426,10 +427,18 @@ class Window(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, commentary)
         self.dockWidgets.append(commentary)
 
+        DisplayControls()
+        displayControls = DisplayControlsWidget()
+        displayControls.setWindowIcon(ThemedIcon("assets/icons/eye.svg"))
+        displayControls.setObjectName(QApplication.translate("app", "Display Controls"))
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, displayControls)
+        self.dockWidgets.append(displayControls)
+
         self.webserver = WebServer(
             parent=self, stageWidget=self.stageWidget, commentaryWidget=commentary
         )
         self.webserver.start()
+        DisplayControls.signals.changed.connect(WebServer.ws_broadcast_display_state)
         self.signals.GameChanged.connect(self.webserver.ws_program_state)
         self.signals.GameChanged.connect(self.webserver.ws_get_characters)
         # Sends each scoreboard's stage strike to the stage strike app
@@ -450,6 +459,7 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, playerList)
         self.tabifyDockWidget(self.scoreboard, bracket)
         self.tabifyDockWidget(self.scoreboard, streamQueue)
+        self.tabifyDockWidget(self.scoreboard, displayControls)
         self.scoreboard.raise_()
 
         # Game
@@ -623,6 +633,7 @@ class Window(QMainWindow):
         toggleWidgets.addAction(playerList.toggleViewAction())
         toggleWidgets.addAction(bracket.toggleViewAction())
         toggleWidgets.addAction(streamQueue.toggleViewAction())
+        toggleWidgets.addAction(displayControls.toggleViewAction())
 
         self.optionsBt.menu().addSeparator()
 
