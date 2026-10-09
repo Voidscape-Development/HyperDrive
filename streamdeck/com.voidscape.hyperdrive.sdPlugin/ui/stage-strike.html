@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Stage strike</title>
+		<script src="sdpi-components.js"></script>
+		<script src="locales.js"></script>
+		<script src="common.js"></script>
+	</head>
+	<body>
+		<sdpi-item label="__MSG_scoreboard__">
+			<sdpi-select setting="scoreboard" datasource="scoreboards" hot-reload default="1"></sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_command__">
+			<sdpi-select setting="command" default="undo">
+				<option value="undo">__MSG_undo__</option>
+				<option value="redo">__MSG_redo__</option>
+				<option value="reset">__MSG_resetStrike__</option>
+				<option value="rps">__MSG_rps__</option>
+				<option value="win">__MSG_win__</option>
+			</sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_winner__" data-when="command=rps,win" data-default="undo">
+			<sdpi-radio setting="team" default="1">
+				<option value="1">__MSG_team1__</option>
+				<option value="2">__MSG_team2__</option>
+			</sdpi-radio>
+		</sdpi-item>
+		<sdpi-item data-when="command=reset" data-default="undo">
+			<sdpi-checkbox setting="requireHold" default="true" label="__MSG_requireHold__"></sdpi-checkbox>
+		</sdpi-item>
+	</body>
+</html>

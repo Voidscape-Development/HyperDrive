@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Bracket focus</title>
+		<script src="sdpi-components.js"></script>
+		<script src="locales.js"></script>
+		<script src="common.js"></script>
+	</head>
+	<body>
+		<sdpi-item label="__MSG_channel__">
+			<sdpi-select setting="channel" datasource="bracketChannels" hot-reload default="main"></sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_mode__">
+			<sdpi-select setting="mode" default="all">
+				<option value="all">__MSG_focusAll__</option>
+				<option value="next-round">__MSG_nextRound__</option>
+				<option value="previous-round">__MSG_previousRound__</option>
+				<option value="follow">__MSG_follow__</option>
+				<option value="tour">__MSG_tour__</option>
+				<option value="player">__MSG_playerRun__</option>
+			</sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_scoreboard__" data-when="mode=follow" data-default="all">
+			<sdpi-select setting="scoreboard" datasource="scoreboards" hot-reload default="1"></sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_interval__" data-when="mode=tour" data-default="all">
+			<sdpi-textfield setting="interval" placeholder="5" pattern="[0-9]*"></sdpi-textfield>
+		</sdpi-item>
+		<sdpi-item label="__MSG_player__" data-when="mode=player" data-default="all">
+			<sdpi-select setting="player" datasource="bracketPlayers" hot-reload placeholder="…"></sdpi-select>
+		</sdpi-item>
+		<p class="hd-hint" data-msg="dialFocus"></p>
+	</body>
+</html>

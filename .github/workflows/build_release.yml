@@ -37,11 +37,15 @@ jobs:
                   fi
                   echo "version=$version" >> "$GITHUB_OUTPUT"
 
-            - name: Download application zip
+            - name: Download application zip and Stream Deck plugin
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   GH_REPO: ${{ github.repository }}
-              run: gh release download latest-build --pattern HyperDrive-windows.zip --clobber
+              run: |
+                  gh release download latest-build --pattern HyperDrive-windows.zip --clobber
+                  # Added by build_streamdeck.yml
+                  gh release download latest-build --pattern HyperDrive.streamDeckPlugin --clobber \
+                    || echo "::warning::No Stream Deck plugin in latest-build, releasing without it"
 
             - name: Publish release
               env:
@@ -53,7 +57,11 @@ jobs:
                     echo "::error::Release $VERSION already exists. Bump the program version in assets/versions.json first."
                     exit 1
                   fi
-                  gh release create "$VERSION" HyperDrive-windows.zip \
+                  files=(HyperDrive-windows.zip)
+                  if [ -f HyperDrive.streamDeckPlugin ]; then
+                    files+=(HyperDrive.streamDeckPlugin)
+                  fi
+                  gh release create "$VERSION" "${files[@]}" \
                     --target "$(git rev-parse HEAD)" \
                     --title "HyperDrive $VERSION" \
                     --generate-notes \

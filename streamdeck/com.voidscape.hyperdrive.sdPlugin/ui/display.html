@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Display Controls</title>
+		<script src="sdpi-components.js"></script>
+		<script src="locales.js"></script>
+		<script src="common.js"></script>
+	</head>
+	<body>
+		<sdpi-item label="__MSG_layout__">
+			<sdpi-select setting="target" datasource="displayTargets" hot-reload placeholder="…"></sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_action__">
+			<sdpi-select setting="action" default="toggle">
+				<option value="toggle">__MSG_toggle__</option>
+				<option value="show">__MSG_show__</option>
+				<option value="hide">__MSG_hide__</option>
+			</sdpi-select>
+		</sdpi-item>
+		<p class="hd-hint" data-msg="displayHint"></p>
+		<p class="hd-hint" data-msg="dialDisplay"></p>
+	</body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Reset</title>
+		<script src="sdpi-components.js"></script>
+		<script src="locales.js"></script>
+		<script src="common.js"></script>
+	</head>
+	<body>
+		<sdpi-item label="__MSG_scoreboard__">
+			<sdpi-select setting="scoreboard" datasource="scoreboards" hot-reload default="1"></sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_reset__">
+			<sdpi-select setting="kind" default="scores">
+				<option value="scores">__MSG_resetScores__</option>
+				<option value="match">__MSG_resetMatch__</option>
+				<option value="players">__MSG_resetPlayers__</option>
+				<option value="all">__MSG_clearAll__</option>
+			</sdpi-select>
+		</sdpi-item>
+		<sdpi-item>
+			<sdpi-checkbox setting="requireHold" default="true" label="__MSG_requireHold__"></sdpi-checkbox>
+		</sdpi-item>
+	</body>
+</html>

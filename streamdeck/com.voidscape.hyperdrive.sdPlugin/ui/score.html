@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Team score</title>
+		<script src="sdpi-components.js"></script>
+		<script src="locales.js"></script>
+		<script src="common.js"></script>
+	</head>
+	<body>
+		<sdpi-item label="__MSG_scoreboard__">
+			<sdpi-select setting="scoreboard" datasource="scoreboards" hot-reload default="1"></sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_team__">
+			<sdpi-radio setting="team" default="1">
+				<option value="1">__MSG_team1__</option>
+				<option value="2">__MSG_team2__</option>
+			</sdpi-radio>
+		</sdpi-item>
+		<sdpi-item label="__MSG_press__">
+			<sdpi-select setting="direction" default="up">
+				<option value="up">__MSG_addPoint__</option>
+				<option value="down">__MSG_removePoint__</option>
+			</sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_hold__">
+			<sdpi-select setting="hold" default="opposite">
+				<option value="opposite">__MSG_holdOpposite__</option>
+				<option value="none">__MSG_holdNothing__</option>
+			</sdpi-select>
+		</sdpi-item>
+		<p class="hd-hint" data-msg="dialScore"></p>
+	</body>
+</html>

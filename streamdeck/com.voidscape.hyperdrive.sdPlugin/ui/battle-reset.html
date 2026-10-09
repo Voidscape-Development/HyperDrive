@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Team battle reset</title>
+		<script src="sdpi-components.js"></script>
+		<script src="locales.js"></script>
+		<script src="common.js"></script>
+	</head>
+	<body>
+		<sdpi-item label="__MSG_reset__">
+			<sdpi-select setting="kind" default="stocks">
+				<option value="stocks">__MSG_resetStocks__</option>
+				<option value="all">__MSG_resetBattle__</option>
+			</sdpi-select>
+		</sdpi-item>
+		<sdpi-item>
+			<sdpi-checkbox setting="requireHold" default="true" label="__MSG_requireHold__"></sdpi-checkbox>
+		</sdpi-item>
+	</body>
+</html>
