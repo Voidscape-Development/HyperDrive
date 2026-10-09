@@ -1,5 +1,6 @@
 # Checks the character grid: the mains and recent rows, searching, picking a
-# character then a skin, the "None" tile, and typing on the dropdown.
+# character then a skin, the "None" tile, typing on the dropdown, and the
+# variants' grid.
 # Run from the repository root: python test/test_character_picker.py
 # (with an optional path to save a screenshot of the grid to)
 import os
@@ -65,6 +66,12 @@ class FakeAssetManager:
                 skinItem = QStandardItem(QIcon(Swatch(shade, QSize(96, 72))), f"{name} {skin + 1}")
                 skinModel.appendRow(skinItem)
             self.skinModels[name] = skinModel
+        self.variantModel = QStandardItemModel()
+        self.variantModel.appendRow(QStandardItem(""))
+        for name, color in [("Classic", "#607d8b"), ("Gold", "#fbc02d"), ("Metal", "#90a4ae")]:
+            item = QStandardItem(QIcon(Swatch(color, QSize(32, 32))), name)
+            item.setData({"en_name": name, "display_name": name}, Qt.ItemDataRole.UserRole)
+            self.variantModel.appendRow(item)
 
 
 FakeAssetManager.instance = FakeAssetManager()
@@ -76,18 +83,22 @@ os.chdir(workDir)
 # Theme reads the icons from the repository
 os.symlink(os.path.join(repoDir, "assets"), os.path.join(workDir, "assets"))
 
-from src.CharacterPicker import CharacterCombo, RecentCharacters, SkinCombo
+from src.CharacterPicker import CharacterCombo, RecentCharacters, SkinCombo, VariantCombo
 
 
 def Row():
-    """A character and skin dropdown, as the player widgets make them."""
+    """A character, skin and variant dropdown, as the player widgets make
+    them. The variant one is character.variantCombo."""
     widget = QWidget()
     widget.setLayout(QHBoxLayout())
     character = CharacterCombo()
     character.setModel(FakeAssetManager.instance.characterModel)
     skin = SkinCombo(character)
+    variant = VariantCombo(character)
+    variant.setModel(FakeAssetManager.instance.variantModel)
     widget.layout().addWidget(character)
     widget.layout().addWidget(skin)
+    widget.layout().addWidget(variant)
 
     def LoadSkins(_):
         data = character.currentData()
@@ -189,6 +200,36 @@ def TestNoneTileAndTyping():
     print("TestNoneTileAndTyping: OK")
 
 
+def TestVariants():
+    widget, character, skin = Row()
+    variant = character.variantCombo
+    character.setCurrentIndex(character.findText("Bowser"))
+    skin.setCurrentIndex(2)
+    variant.showPopup()
+    popup = character.popup
+    assert popup.step == "variant"
+    everyone = popup.sections[2][1]
+    assert Names(everyone) == ["None", "Classic", "Gold", "Metal"]
+    assert not popup.sections[0][1].isVisibleTo(popup)
+    QTest.keyClicks(popup.search, "gol")
+    assert Names(everyone) == ["Gold"]
+    QTest.keyClick(popup.search, Qt.Key.Key_Return)
+    assert variant.currentData()["en_name"] == "Gold"
+    assert character.popup is None
+    # The character and skin are left alone
+    assert character.currentData()["en_name"] == "Bowser" and skin.currentIndex() == 2
+
+    # Typing on it searches; the None tile clears it
+    variant.setFocus()
+    QTest.keyClick(variant, Qt.Key.Key_M)
+    popup = character.popup
+    assert popup.step == "variant" and Names(popup.sections[2][1]) == ["Metal"]
+    popup.search.clear()
+    popup.sections[2][1].picked.emit(0)
+    assert variant.currentIndex() == 0
+    print("TestVariants: OK")
+
+
 def Screenshot(path, theme=None):
     """Saves the characters to path and the skins to path with _skins."""
     if theme:
@@ -208,6 +249,11 @@ def Screenshot(path, theme=None):
     app.processEvents()
     character.popup.grab().save(path.replace(".png", "_skins.png"))
     character.popup.close()
+    character.variantCombo.setCurrentIndex(2)
+    character.variantCombo.showPopup()
+    app.processEvents()
+    character.popup.grab().save(path.replace(".png", "_variants.png"))
+    character.popup.close()
 
 
 if __name__ == "__main__":
@@ -216,6 +262,7 @@ if __name__ == "__main__":
         TestOneSkinClosesAndRecent()
         TestSkinDropdownAndBack()
         TestNoneTileAndTyping()
+        TestVariants()
         if len(sys.argv) > 1:
             Screenshot(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
     finally:

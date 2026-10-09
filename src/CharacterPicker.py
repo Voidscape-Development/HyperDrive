@@ -1,9 +1,11 @@
-"""A grid to pick characters and skins from, in place of the dropdowns' lists.
+"""A grid to pick characters, skins and variants from, in place of the
+dropdowns' lists.
 
-CharacterCombo and SkinCombo are the character and skin dropdowns; they hold
-the selection as before (current index and data, from GameAssetManager's
-models), only their popup is the grid. Picking a character goes on to its
-skins in the same popup, with the default one selected.
+CharacterCombo, SkinCombo and VariantCombo are the character, skin and
+variant dropdowns; they hold the selection as before (current index and
+data, from GameAssetManager's models), only their popup is the grid.
+Picking a character goes on to its skins in the same popup, with the
+default one selected. Variants have a grid of their own.
 """
 
 from qtpy.QtCore import *
@@ -240,16 +242,17 @@ class _GridView(QListView):
 
 
 class CharacterPickerPopup(QFrame):
-    """The grid, opened under a CharacterCombo or SkinCombo."""
+    """The grid, opened under a CharacterCombo, SkinCombo or VariantCombo."""
 
     closed = Signal()
 
-    def __init__(self, characterCombo, skinCombo=None):
+    def __init__(self, characterCombo, skinCombo=None, variantCombo=None):
         super().__init__(characterCombo, Qt.WindowType.Popup)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.characterCombo = characterCombo
         self.skinCombo = skinCombo
+        self.variantCombo = variantCombo
         self.step = "character"
 
         layout = QVBoxLayout(self)
@@ -311,7 +314,9 @@ class CharacterPickerPopup(QFrame):
     # Opening
 
     def Open(self, step="character", text=""):
-        if step == "skin" and self.CurrentCharacterData():
+        if step == "variant" and self.variantCombo is not None:
+            self.ShowVariants()
+        elif step == "skin" and self.CurrentCharacterData():
             self.ShowSkins()
         else:
             self.ShowCharacters()
@@ -323,7 +328,8 @@ class CharacterPickerPopup(QFrame):
 
     def Place(self):
         """Under the dropdown, or above it when there's no room below."""
-        anchor = self.skinCombo if self.step == "skin" and self.skinCombo else self.characterCombo
+        anchor = {"skin": self.skinCombo, "variant": self.variantCombo}.get(self.step)
+        anchor = anchor or self.characterCombo
         screen = (anchor.screen() or QApplication.primaryScreen()).availableGeometry()
         width = max(self.minimumWidth(), anchor.width())
         width = min(width, screen.width())
@@ -392,6 +398,43 @@ class CharacterPickerPopup(QFrame):
         self.allSection[1].SelectSourceRow(max(0, self.skinCombo.currentIndex()))
         self.search.setFocus()
 
+    def ShowVariants(self):
+        self.step = "variant"
+        self.backButton.setVisible(False)
+        self.title.setVisible(False)
+        self.search.setPlaceholderText(QApplication.translate("app", "Search variants..."))
+        self.search.blockSignals(True)
+        self.search.clear()
+        self.search.blockSignals(False)
+        self.Filter("")
+        self.allSection[1].SelectSourceRow(max(0, self.variantCombo.currentIndex()))
+        self.search.setFocus()
+
+    def VariantTiles(self, text=""):
+        """[(icon, name, row)] of the variant dropdown's model, matching
+        text; the empty first row is the "None" tile."""
+        model = self.variantCombo.model() if self.variantCombo else None
+        text = text.strip().lower()
+        tiles = []
+        for row in range(model.rowCount() if model else 0):
+            index = model.index(row, 0)
+            data = index.data(Qt.ItemDataRole.UserRole)
+            if not data or not data.get("en_name"):
+                if row == 0 and not text:
+                    tiles.append(
+                        (
+                            ThemedIcon("assets/icons/cancel.svg"),
+                            QApplication.translate("app", "None"),
+                            row,
+                        )
+                    )
+                continue
+            name = data.get("display_name") or data.get("en_name")
+            if text and text not in f"{name} {data.get('en_name')}".lower():
+                continue
+            tiles.append((index.data(Qt.ItemDataRole.DecorationRole), name, row))
+        return tiles
+
     def CharacterTiles(self, text=""):
         """[(icon, name, row)] of the character dropdown's model, matching
         text; the empty first row is the "None" tile."""
@@ -424,12 +467,15 @@ class CharacterPickerPopup(QFrame):
         searching = bool(text.strip())
         (mainsLabel, mainsView), (recentLabel, recentView), (allLabel, allView) = self.sections
 
-        if self.step == "skin":
+        if self.step in ("skin", "variant"):
             for label, view in [self.mainsSection, self.recentSection]:
                 label.setVisible(False)
                 view.setVisible(False)
             allLabel.setVisible(False)
-            allView.SetTiles(self.SkinTiles(text), SKIN_ICON, SKIN_TILE)
+            if self.step == "skin":
+                allView.SetTiles(self.SkinTiles(text), SKIN_ICON, SKIN_TILE)
+            else:
+                allView.SetTiles(self.VariantTiles(text), CHARACTER_ICON, CHARACTER_TILE)
             if allView.Count():
                 allView.setCurrentIndex(allView.model().index(0, 0))
             return
@@ -488,6 +534,10 @@ class CharacterPickerPopup(QFrame):
                 return
             self.ShowSkins()
             self.Place()
+        elif self.step == "variant":
+            if self.variantCombo.currentIndex() != row:
+                self.variantCombo.setCurrentIndex(row)
+            self.close()
         else:
             if self.skinCombo.currentIndex() != row:
                 self.skinCombo.setCurrentIndex(row)
@@ -526,6 +576,7 @@ class CharacterCombo(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.skinCombo = None
+        self.variantCombo = None
         self.mainsProvider = None
         self.popup = None
 
@@ -533,14 +584,20 @@ class CharacterCombo(QComboBox):
         self.OpenPicker()
 
     def OpenPicker(self, step="character", text=""):
-        model = self.model()
+        if step == "variant":
+            model = self.variantCombo.model() if self.variantCombo else None
+            fallback = self.variantCombo
+        else:
+            model = self.model()
+            fallback = self
         # Nothing to pick from (no game loaded): the plain list
         if model is None or model.rowCount() <= 1:
-            super().showPopup()
+            if fallback is not None:
+                QComboBox.showPopup(fallback)
             return
         if self.popup is not None:
             self.popup.close()
-        self.popup = CharacterPickerPopup(self, self.skinCombo)
+        self.popup = CharacterPickerPopup(self, self.skinCombo, self.variantCombo)
         self.popup.closed.connect(self._PopupClosed)
         self.popup.Open(step, text)
 
@@ -579,5 +636,24 @@ class SkinCombo(QComboBox):
         text = event.text()
         if text and text.isprintable() and not text.isspace():
             self.characterCombo.OpenPicker(step="skin", text=text)
+            return
+        super().keyPressEvent(event)
+
+
+class VariantCombo(QComboBox):
+    """The variant dropdown, opening the grid on the game's variants."""
+
+    def __init__(self, characterCombo: CharacterCombo, parent=None):
+        super().__init__(parent)
+        self.characterCombo = characterCombo
+        characterCombo.variantCombo = self
+
+    def showPopup(self):
+        self.characterCombo.OpenPicker(step="variant")
+
+    def keyPressEvent(self, event):
+        text = event.text()
+        if text and text.isprintable() and not text.isspace():
+            self.characterCombo.OpenPicker(step="variant", text=text)
             return
         super().keyPressEvent(event)

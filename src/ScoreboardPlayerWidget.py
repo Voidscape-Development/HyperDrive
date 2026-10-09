@@ -8,7 +8,7 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
-from .CharacterPicker import CharacterCombo, MainsOf, SkinCombo
+from .CharacterPicker import CharacterCombo, MainsOf, SkinCombo, VariantCombo
 from .GameAssetManager import GameAssetManager
 from .Helpers import SocialsHelper
 from .Helpers.BadWordFilter import BadWordFilter
@@ -491,8 +491,8 @@ class ScoreboardPlayerWidget(QGroupBox):
             player_character_color.setMaximumWidth(120)
             player_character_color.setFont(QFont(player_character_color.font().family(), 9))
 
-            # Add variant
-            player_variant = QComboBox()
+            # Add variant, also picked from the grid
+            player_variant = VariantCombo(player_character)
             player_variant.setObjectName("variants")
             character_element.layout().addWidget(player_variant)
             player_variant.setIconSize(QSize(24, 24))
@@ -501,12 +501,6 @@ class ScoreboardPlayerWidget(QGroupBox):
             player_variant.setMaximumWidth(120)
             player_variant.setFont(QFont(player_variant.font().family(), 9))
             player_variant.setModel(GameAssetManager.instance.variantModel)
-            view = QListView()
-            view.setIconSize(QSize(24, 24))
-            player_variant.setView(view)
-            player_variant.setEditable(True)
-            player_variant.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_variant.completer().setCompletionMode(QCompleter.PopupCompletion)
 
             if len(GameAssetManager.instance.variants) <= 0:
                 player_variant.setVisible(False)
