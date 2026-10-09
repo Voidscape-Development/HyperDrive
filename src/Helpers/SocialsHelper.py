@@ -11,7 +11,7 @@ the layouts and the rest of the app have always used.
 # discord, xbox...), others are entered by hand. Keys not listed here are
 # kept as well, labelled with the key.
 PLATFORMS = [
-    ("twitter", "Twitter / X", "https://x.com/{}"),
+    ("twitter", "Twitter", "https://x.com/{}"),
     ("bluesky", "Bluesky", "https://bsky.app/profile/{}"),
     ("twitch", "Twitch", "https://twitch.tv/{}"),
     ("youtube", "YouTube", "https://youtube.com/@{}"),

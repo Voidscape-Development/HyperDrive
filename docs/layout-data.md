@@ -209,7 +209,9 @@ the rest by hand: `bluesky`, `youtube`, `instagram`, `tiktok`, `kick` and
 is loaded again. Handles are as typed, a leading `@` included.
 
 Each platform has an icon in [`layout/icons`](../layout/icons), named after
-its key (`twitter.svg`, `twitch.svg`, `youtube.svg`...). They're one color
+its key (`twitter.svg`, `twitch.svg`, `youtube.svg`...). `twitter.svg` is the
+X logo the layouts already used; `twitter_bird.svg` is the original Twitter
+bird, which HyperDrive itself shows. They're one color
 (`currentColor`), so they take the text color of the element they're in. The
 Xbox icon is a generic gamepad. The brand glyphs come from
 [Simple Icons](https://simpleicons.org) (CC0); the brands' trademarks still

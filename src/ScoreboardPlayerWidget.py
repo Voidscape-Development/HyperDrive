@@ -20,7 +20,7 @@ from .Helpers.PronounHelper import PronounHelper
 from .PlayerDB import PlayerDB
 from .SeedManager import SeedManager
 from .SettingsManager import SettingsManager
-from .SocialsWidget import SocialsButton
+from .SocialsWidget import SetPlatformIcon, SocialsButton
 from .StateManager import StateManager
 from .Theme import ThemedIcon
 from .TournamentDataManager import TournamentDataManager
@@ -77,6 +77,7 @@ class ScoreboardPlayerWidget(QGroupBox):
 
         # Twitter keeps its field, the other socials are edited from here
         self.socialsButton = SocialsButton.Attach(self.findChild(QLineEdit, "twitter"))
+        SetPlatformIcon(self.findChild(QLabel, "twitterLabel"), "twitter")
         self.socialsButton.changed.connect(self.ExportSocials)
 
         custom_textbox_layout = QHBoxLayout()

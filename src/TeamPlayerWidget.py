@@ -17,7 +17,7 @@ from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
 from .Helpers.PronounHelper import PronounHelper
 from .PlayerDB import PlayerDB
-from .SocialsWidget import SocialsButton
+from .SocialsWidget import SetPlatformIcon, SocialsButton
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
 from .Theme import ThemedIcon
@@ -58,6 +58,7 @@ class TeamPlayerWidget(QGroupBox):
 
         # Twitter keeps its field, the other socials are edited from here
         self.socialsButton = SocialsButton.Attach(self.findChild(QLineEdit, "twitter"))
+        SetPlatformIcon(self.findChild(QLabel, "twitterLabel"), "twitter")
         self.socialsButton.changed.connect(self.ExportSocials)
 
         self.dynamicSpinner = self.findChild(QSpinBox, "dynamicSpinner")

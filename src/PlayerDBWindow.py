@@ -12,7 +12,7 @@ from .Helpers.DictHelper import deep_clone
 from .PlayerDB import PlayerDB
 from .PlayerMediaTabs import PlayerMediaTab, SponsorLogosTab, TeamLogosTab
 from .SeedManager import SeedManager
-from .SocialsWidget import SocialsButton
+from .SocialsWidget import SetPlatformIcon, SocialsButton
 from .Theme import ThemedIcon
 
 TagRole = Qt.ItemDataRole.UserRole + 1
@@ -214,7 +214,9 @@ class PlayersTab(QWidget):
         self.pronoun = QLineEdit()
         form.addRow(QApplication.translate("app", "Pronouns"), self.pronoun)
         self.twitter = QLineEdit()
-        form.addRow(QApplication.translate("app", "Twitter"), self.twitter)
+        twitterLabel = QLabel(QApplication.translate("app", "Twitter"))
+        SetPlatformIcon(twitterLabel, "twitter")
+        form.addRow(twitterLabel, self.twitter)
         self.socials = SocialsButton.Attach(self.twitter)
 
         self.country = _SearchableCombo()
