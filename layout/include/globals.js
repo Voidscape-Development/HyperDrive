@@ -19,6 +19,12 @@ var Start = async () => {
   console.log("Start(): Implement me");
 };
 
+// Display Controls turning this layout off plays Hide(). Layouts can
+// reimplement it with their own hide animation; by default the layout's show
+// animation (what Start() played) runs backwards. Turning it back on plays
+// Start() again.
+var Hide = null;
+
 // This is called each time data changes. Layouts should reimplement this function.
 var Update = async (event) => {
   console.log("Update(): Implement me");
@@ -39,13 +45,145 @@ async function UpdateWrapper(event) {
     gsap.globalTimeline.timeScale(hd_animation_scale);
     window.requestAnimationFrame(() => {
       $(document).waitForImages(() => {
+        hd_display.started = true;
+        // Turned off in Display Controls: stays hidden until turned on
+        if (!HDDisplayVisible(data)) {
+          hd_display.shown = false;
+          gsap.set("body", { autoAlpha: 0 });
+          return;
+        }
         $("body").fadeTo(1, 1, () => {
           console.log("Start()");
-          Start();
+          HDRunStart();
         });
       });
     });
+  } else {
+    HDApplyDisplay(event.data);
   }
+}
+
+// Display Controls (the Display Controls window, or /display/... links for a
+// Stream Deck) show and hide layouts by folder, and by group: the groups in
+// ?display=<group>[,<group>...]. A layout is shown while its folder and all
+// of its groups are on.
+var hd_display = {
+  // The layout's folder, as in layout/<folder>/<page>.html
+  folder: (() => {
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    try {
+      return decodeURIComponent(parts[parts.length - 2] || "");
+    } catch (e) {
+      return parts[parts.length - 2] || "";
+    }
+  })(),
+  groups: (new URLSearchParams(window.location.search).get("display") || "")
+    .split(",")
+    .map((g) => g.trim().replace(/\s+/g, " ").toLowerCase().slice(0, 40).trim())
+    .filter(Boolean),
+  // Start() was called the first time
+  started: false,
+  // Whether it's on screen (or going to be)
+  shown: true,
+  // The timelines Start() played, run backwards to hide
+  animations: [],
+  // Changes each show or hide, so one that's interrupted stops there
+  sequence: 0,
+};
+
+function HDDisplayVisible(data) {
+  const display = data && data.display;
+  if (!display) return true;
+  if ((display.folders || {})[hd_display.folder] === false) return false;
+  return hd_display.groups.every((g) => (display.groups || {})[g] !== false);
+}
+
+// Calls Start(), keeping the timelines it played to run them backwards for
+// the hide animation
+async function HDRunStart() {
+  const before = gsap.globalTimeline.time();
+  await Start();
+  // Started (or restarted) by Start() and not done yet. Done timelines
+  // aren't in the global timeline anymore.
+  hd_display.animations = gsap.globalTimeline
+    .getChildren(false, false, true)
+    .filter(
+      (t) =>
+        !t.paused() &&
+        t.progress() < 1 &&
+        t.duration() > 0 &&
+        t.startTime() >= before &&
+        t.repeat() !== -1,
+    );
+}
+
+function HDApplyDisplay(data) {
+  if (!hd_display.started) return;
+  const visible = HDDisplayVisible(data);
+  if (visible === hd_display.shown) return;
+  if (visible) {
+    HDDisplayShow();
+  } else {
+    HDDisplayHide();
+  }
+}
+
+async function HDDisplayShow() {
+  hd_display.shown = true;
+  hd_display.sequence += 1;
+  console.log("Display: show");
+  gsap.killTweensOf("body");
+  // Back to the end, so Start() restarting them plays the whole animation
+  hd_display.animations.forEach((t) => t.progress(1));
+  if (hd_display.animations.length > 0 || Hide) {
+    gsap.set("body", { autoAlpha: 1 });
+  } else {
+    // No show animation to play: fades in
+    gsap.fromTo("body", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 });
+  }
+  await HDRunStart();
+}
+
+// Resolves when a timeline has run backwards to its start
+function HDReverse(timeline) {
+  return new Promise((resolve) => {
+    if (timeline.time() === 0) return resolve();
+    const previous = timeline.eventCallback("onReverseComplete");
+    timeline.eventCallback("onReverseComplete", function () {
+      timeline.eventCallback("onReverseComplete", previous || null);
+      if (previous) previous.apply(this, arguments);
+      resolve();
+    });
+    timeline.reverse();
+  });
+}
+
+async function HDDisplayHide() {
+  hd_display.shown = false;
+  const sequence = ++hd_display.sequence;
+  console.log("Display: hide");
+  gsap.killTweensOf("body");
+
+  const animations = hd_display.animations.filter((t) => t.time() > 0);
+  if (Hide) {
+    await Hide();
+  } else if (animations.length > 0) {
+    // At most as long as the show animation could take, in case one of
+    // them doesn't finish (killed by the layout)
+    const longest = Math.max(...animations.map((t) => t.time())) / hd_animation_scale;
+    await Promise.race([
+      Promise.all(animations.map(HDReverse)),
+      new Promise((r) => setTimeout(r, longest * 1000 + 500)),
+    ]);
+  }
+
+  // Shown again meanwhile
+  if (sequence !== hd_display.sequence) return;
+  // Whatever wasn't part of the animation goes too
+  gsap.to("body", {
+    autoAlpha: 0,
+    duration: Hide || animations.length > 0 ? 0.15 : 0.3,
+  });
 }
 
 // Gets current program state,
@@ -93,6 +231,10 @@ async function UpdateData_SocketIO() {
 
     socket.on("connect", () => {
       console.log("socket.io connected");
+      // So Display Controls lists this layout's groups
+      if (hd_display.groups.length > 0) {
+        socket.emit("display_register", { groups: hd_display.groups });
+      }
     });
 
     socket.on("disconnect", () => {
@@ -249,7 +391,8 @@ async function InitAll() {
       },
       () => {
         UpdateData().then(() => {
-          Start();
+          // Turned off in Display Controls: stays hidden
+          if (hd_display.shown) HDRunStart();
         });
       },
     );

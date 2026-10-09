@@ -55,6 +55,35 @@ these from any device on the same network at `http://<HyperDrive's address>:5500
 | `/admin` | Player database editor |
 | `/api/docs` | The web server's endpoints |
 
+## Display Controls
+
+The Display Controls window turns layouts on and off: off plays the layout's hide
+animation (its show animation backwards, unless the layout has its own), on plays its show
+animation again. What's off stays off when HyperDrive restarts or OBS reloads the source.
+
+- **By layout folder**: every page in `layout/<folder>/` (e.g. `scoreboard`).
+- **By group**: add `?display=<group>` (or several, `?display=main,top8`) to a layout's URL
+  in OBS, and that page is also turned off with its group. Groups show up in the window
+  once a page using them is open, or can be added there by hand.
+
+A page is shown while its folder and all of its groups are on. *Show all* and *Hide all*
+turn everything on or off.
+
+For a Stream Deck (*Website* or *API Ninja*) or Bitfocus Companion, right click an entry to
+copy its links, or use these (`<action>` is `show`, `hide` or `toggle`):
+
+| Link | |
+| - | - |
+| `/display/folder/<folder>/<action>` | A layout folder |
+| `/display/group/<group>/<action>` | A group |
+| `/display/all/<action>` | Everything (`toggle` hides everything if all is shown, otherwise shows everything) |
+| `/display/folder/<folder>`, `/display/group/<group>` | `{"kind", "name", "shown"}`, e.g. to light a button |
+| `/display/state` | Every folder and group: `{"shown", "folders": {name: shown}, "groups": {...}}` |
+
+Over socket.io, emit `display` with `{"folder" or "group": <name>, "action": <action>}`
+(or `{"all": true, "action": ...}`). `display_state` answers the state, and is also sent to
+every client whenever something is turned on or off.
+
 ## Player database
 
 Players are saved in `user_data/players.db`. You can edit them in the Player DB window,
