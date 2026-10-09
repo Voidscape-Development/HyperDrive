@@ -297,9 +297,14 @@ class PlayerListWidget(QDockWidget):
         else:
             players, characters = 1, 1
 
-        with StateManager.SaveBlock():
-            if self.playerList.playersPerTeam != players:
-                self.playerList.SetPlayersPerTeam(players)
-
-            if self.playerList.charactersPerPlayer != characters:
-                self.playerList.SetCharactersPerPlayer(characters)
+        # The spin boxes show the new sizes; the slots are resized a few at a
+        # time, so loading a game doesn't freeze the window
+        for spin, value in [(self.playerPerTeam, players), (self.charNumber, characters)]:
+            spin.blockSignals(True)
+            spin.setValue(value)
+            spin.blockSignals(False)
+        if (
+            self.playerList.playersPerTeam != players
+            or self.playerList.charactersPerPlayer != characters
+        ):
+            self.playerList.SetSizesGradually(players, characters)

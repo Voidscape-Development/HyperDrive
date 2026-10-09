@@ -131,6 +131,14 @@ assert LocaleHelper.matchNames["grand_final"] == "Grand Final"
 # Pronouns: cleaned up, saved one per line, and added once
 assert NormalizePronouns([" she/her ", "", "he/him", "she/her", None]) == ["she/her", "he/him"]
 assert PronounHelper.Load() == [] and os.path.isfile(PronounHelperModule.PRONOUNS_FILE)
+# The defaults are added the first time the list loads, and only that time
+SettingsManager.Unset(PronounHelperModule.DEFAULTS_ADDED_SETTING)
+assert PronounHelper.Model().stringList() == PronounHelperModule.DEFAULT_PRONOUNS
+assert PronounHelper.Load() == PronounHelperModule.DEFAULT_PRONOUNS
+assert SettingsManager.Get(PronounHelperModule.DEFAULTS_ADDED_SETTING) is True
+PronounHelper.Save([])
+PronounHelper.model = None
+assert PronounHelper.Model().stringList() == []
 assert PronounHelper.Save(["they/them", "", "she/her", "they/them"])
 assert PronounHelper.Model().stringList() == ["they/them", "she/her"]
 PronounHelper.Add("él/ella")

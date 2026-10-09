@@ -1303,8 +1303,17 @@ class BracketWidget(QDockWidget):
             characters = StateManager.Get("game.defaults.characters_per_player", 1)
         else:
             players, characters = 1, 1
-        self.playerPerTeam.setValue(players)
-        self.charNumber.setValue(characters)
+        # The spin boxes show the new sizes; the slots are resized a few at a
+        # time, so loading a game doesn't freeze the window
+        for spin, value in [(self.playerPerTeam, players), (self.charNumber, characters)]:
+            spin.blockSignals(True)
+            spin.setValue(value)
+            spin.blockSignals(False)
+        if (
+            self.playerList.playersPerTeam != players
+            or self.playerList.charactersPerPlayer != characters
+        ):
+            self.playerList.SetSizesGradually(players, characters)
 
     # Saving, so a tournament run in HyperDrive survives a restart
 

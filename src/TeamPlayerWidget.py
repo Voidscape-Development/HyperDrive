@@ -162,9 +162,7 @@ class TeamPlayerWidget(QGroupBox):
 
         GameAssetManager.instance.signals.onLoad.connect(self.ReloadCharacters)
 
-        self.pronoun_completer = QCompleter()
-        self.findChild(QLineEdit, "pronoun").setCompleter(self.pronoun_completer)
-        self.pronoun_completer.setModel(PronounHelper.Model())
+        self.pronoun_completer = PronounHelper.SetupField(self.findChild(QLineEdit, "pronoun"))
 
         self.ToggleSponsorDisplay()
         self.SetEliminatedStatus()

@@ -10,6 +10,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from src.ColorButton import ColorButton
+from src.ColorPicker import GameColorSwatchGroups
 
 from .GameAssetManager import GameAssetManager
 from .GameReportWidget import GameReportWidget
@@ -178,26 +179,25 @@ class ScoreboardWidget(QWidget):
 
         self.innerWidget.layout().addWidget(topOptions)
 
-        col = QWidget()
-        col.setLayout(QVBoxLayout())
-        topOptions.layout().addWidget(col)
+        # Both counts on one line, to keep the options short
         self.charNumber = QSpinBox()
-        col.layout().addWidget(QLabel(QApplication.translate("app", "Characters per player")))
-        col.layout().addWidget(self.charNumber)
+        topOptions.layout().addWidget(
+            QLabel(QApplication.translate("app", "Characters per player"))
+        )
+        topOptions.layout().addWidget(self.charNumber)
         self.charNumber.valueChanged.connect(self.SetCharacterNumber)
 
-        col = QWidget()
-        col.setLayout(QVBoxLayout())
-        topOptions.layout().addWidget(col)
-        topOptions.layout().addStretch()
+        topOptions.layout().addSpacing(12)
         self.playerNumber = QSpinBox()
-        col.layout().addWidget(QLabel(QApplication.translate("app", "Players per team")))
-        col.layout().addWidget(self.playerNumber)
+        topOptions.layout().addWidget(QLabel(QApplication.translate("app", "Players per team")))
+        topOptions.layout().addWidget(self.playerNumber)
         self.playerNumber.valueChanged.connect(self.SetPlayersPerTeam)
+        topOptions.layout().addStretch()
 
         # VISIBILITY
         col = QWidget()
         col.setLayout(QVBoxLayout())
+        col.layout().setContentsMargins(0, 0, 0, 0)
         col.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         col.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         topOptions.layout().addWidget(col)
@@ -347,24 +347,16 @@ class ScoreboardWidget(QWidget):
         )
         self.CommandTeamColor(0, DEFAULT_TEAM1_COLOR)
 
-        self.colorMenu1 = QComboBox()
-        self.colorMenu1.setVisible(False)
-        self.colorMenu1.setModel(GameAssetManager.instance.colorModel)
-        self.colorMenu1.setEditable(True)
-        self.colorMenu1.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-        self.colorMenu1.completer().setCompletionMode(QCompleter.PopupCompletion)
-        self.colorMenu1.setMaximumWidth(200)
-        self.colorMenu1.setIconSize(QSize(24, 24))
-
-        colorGroup1.layout().addWidget(self.colorButton1)
-        colorGroup1.layout().addWidget(self.colorMenu1)
-
-        self.colorMenu1.currentIndexChanged.connect(
-            lambda element=self.colorMenu1: [
-                self.CommandTeamColor(0, element),
-                self.CommandTeamColor(1, element, force_opponent=True),
+        # The game's colors are in the color picker, above the custom colors
+        self.colorButton1.swatchGroups = GameColorSwatchGroups
+        self.colorButton1.swatchPicked.connect(
+            lambda row: [
+                self.CommandTeamColor(0, row),
+                self.CommandTeamColor(1, row, force_opponent=True),
             ]
         )
+
+        colorGroup1.layout().addWidget(self.colorButton1)
 
         self.team1column.findChild(QHBoxLayout, "horizontalLayout_2").layout().insertWidget(
             0, colorGroup1
@@ -417,24 +409,16 @@ class ScoreboardWidget(QWidget):
         # self.colorButton2.setText(QApplication.translate("app", "COLOR"))
         self.CommandTeamColor(1, DEFAULT_TEAM2_COLOR)
 
-        self.colorMenu2 = QComboBox()
-        self.colorMenu2.setVisible(False)
-        self.colorMenu2.setModel(GameAssetManager.instance.colorModel)
-        self.colorMenu2.setEditable(True)
-        self.colorMenu2.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-        self.colorMenu2.completer().setCompletionMode(QCompleter.PopupCompletion)
-        self.colorMenu2.setMaximumWidth(200)
-        self.colorMenu2.setIconSize(QSize(24, 24))
-
-        colorGroup2.layout().addWidget(self.colorButton2)
-        colorGroup2.layout().addWidget(self.colorMenu2)
-
-        self.colorMenu2.currentIndexChanged.connect(
-            lambda element=self.colorMenu2: [
-                self.CommandTeamColor(1, element),
-                self.CommandTeamColor(0, element, force_opponent=True),
+        # The game's colors are in the color picker, above the custom colors
+        self.colorButton2.swatchGroups = GameColorSwatchGroups
+        self.colorButton2.swatchPicked.connect(
+            lambda row: [
+                self.CommandTeamColor(1, row),
+                self.CommandTeamColor(0, row, force_opponent=True),
             ]
         )
+
+        colorGroup2.layout().addWidget(self.colorButton2)
 
         self.team2column.findChild(QHBoxLayout, "horizontalLayout_2").layout().insertWidget(
             0, colorGroup2
@@ -489,9 +473,6 @@ class ScoreboardWidget(QWidget):
             )
             c.lineEdit().editingFinished.emit()
             c.lineEdit().setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.colorMenu1.setVisible(StateManager.Get("game.has_colors", False))
-        self.colorMenu2.setVisible(StateManager.Get("game.has_colors", False))
 
         # Sets that were over, so that's only told once per set
         self.finishedSets = set()
@@ -624,10 +605,6 @@ class ScoreboardWidget(QWidget):
                 self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.emit(
                     self.scoreColumn.findChild(QSpinBox, "best_of").value()
                 ),
-                self.colorMenu1.setModel(GameAssetManager.instance.colorModel),
-                self.colorMenu2.setModel(GameAssetManager.instance.colorModel),
-                self.colorMenu1.setVisible(StateManager.Get("game.has_colors", False)),
-                self.colorMenu2.setVisible(StateManager.Get("game.has_colors", False)),
             ]
         )
 
@@ -1269,18 +1246,6 @@ class ScoreboardWidget(QWidget):
                 if team in (0, 1):
                     StateManager.Set(f"score.{self.scoreboardNumber}.team.{team + 1}.color", value)
 
-                # Set in menu if recognized
-                if type(color) is int and force_opponent:
-                    for i in range(1, GameAssetManager.instance.colorModel.rowCount()):
-                        current_menu_item_data = GameAssetManager.instance.colorModel.item(i).data(
-                            Qt.ItemDataRole.UserRole
-                        )
-                        if current_menu_item_data.get("value") in value:
-                            if team == 0:
-                                self.colorMenu1.setCurrentIndex(i)
-                            if team == 1:
-                                self.colorMenu2.setCurrentIndex(i)
-
     # Modifies the current set data. Does not check for id, so do not call this with data that may lead to another hbox incident
     #
     # team1/team2 values (scores, losers) are the set's entrants, so they go
@@ -1540,8 +1505,23 @@ class ScoreboardWidget(QWidget):
         else:
             players, characters = 1, 1
         logger.info(f"{players} players, {characters} characters")
-        self.playerNumber.setValue(players)
-        self.charNumber.setValue(characters)
+        # Players now and characters on the next pass of the event loop, so
+        # loading a game doesn't hold the window for both at once. Each in a
+        # save block, so the cards' fields are exported once, not one by one
+        with StateManager.SaveBlock():
+            self.playerNumber.setValue(players)
+        self.defaultCharacters = characters
+        if getattr(self, "defaultCharactersTimer", None) is None:
+            # Owned by the scoreboard, so it can't fire after it's gone
+            self.defaultCharactersTimer = QTimer(self)
+            self.defaultCharactersTimer.setSingleShot(True)
+            self.defaultCharactersTimer.setInterval(0)
+            self.defaultCharactersTimer.timeout.connect(self.SetDefaultCharacters)
+        self.defaultCharactersTimer.start()
+
+    def SetDefaultCharacters(self):
+        with StateManager.SaveBlock():
+            self.charNumber.setValue(self.defaultCharacters)
 
     def GetIP(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

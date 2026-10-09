@@ -1,7 +1,7 @@
 from qtpy.QtCore import *
 from qtpy.QtWidgets import *
 
-from ..Helpers.PronounHelper import PronounHelper
+from ..Helpers.PronounHelper import DEFAULT_PRONOUNS, PronounHelper
 
 
 class PronounSettings(QWidget):
@@ -17,8 +17,9 @@ class PronounSettings(QWidget):
         hint = QLabel(
             QApplication.translate(
                 "settings.pronouns",
-                "The pronouns suggested while typing in a player's pronouns field. "
-                "Pronouns of players you save are added here automatically.",
+                "The pronouns listed in a player's pronouns field. "
+                "Pronouns of players you save are added here automatically. "
+                "Double-click a pronoun to edit it.",
             )
         )
         hint.setWordWrap(True)
@@ -28,6 +29,7 @@ class PronounSettings(QWidget):
         self.list.setModel(self.model)
         self.list.setEditTriggers(
             QAbstractItemView.EditTrigger.DoubleClicked
+            | QAbstractItemView.EditTrigger.SelectedClicked
             | QAbstractItemView.EditTrigger.EditKeyPressed
         )
         self.list.itemDelegate().closeEditor.connect(self.Save)
@@ -37,6 +39,9 @@ class PronounSettings(QWidget):
         addButton = QPushButton(QApplication.translate("settings.pronouns", "Add"))
         addButton.clicked.connect(self.Add)
         buttons.addWidget(addButton)
+        editButton = QPushButton(QApplication.translate("settings.pronouns", "Edit"))
+        editButton.clicked.connect(self.Edit)
+        buttons.addWidget(editButton)
         removeButton = QPushButton(QApplication.translate("settings.pronouns", "Remove"))
         removeButton.clicked.connect(self.Remove)
         buttons.addWidget(removeButton)
@@ -44,6 +49,12 @@ class PronounSettings(QWidget):
         sortButton.clicked.connect(self.Sort)
         buttons.addWidget(sortButton)
         buttons.addStretch()
+        defaultsButton = QPushButton(
+            QApplication.translate("settings.pronouns", "Add default pronouns")
+        )
+        defaultsButton.setToolTip(", ".join(DEFAULT_PRONOUNS))
+        defaultsButton.clicked.connect(self.AddDefaults)
+        buttons.addWidget(defaultsButton)
         layout.addLayout(buttons)
 
     def Save(self, *args):
@@ -56,6 +67,14 @@ class PronounSettings(QWidget):
         index = self.model.index(row)
         self.list.setCurrentIndex(index)
         self.list.edit(index)
+
+    def Edit(self):
+        index = self.list.currentIndex()
+        if index.isValid():
+            self.list.edit(index)
+
+    def AddDefaults(self):
+        PronounHelper.Save(self.model.stringList() + DEFAULT_PRONOUNS)
 
     def Remove(self):
         index = self.list.currentIndex()

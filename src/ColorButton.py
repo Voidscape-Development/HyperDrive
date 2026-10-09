@@ -4,16 +4,23 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .ColorPicker import ColorPicker
+
 
 class ColorButton(QToolButton):
     """
     Custom Qt Widget to show a chosen color.
 
-    Left-clicking the button shows the color-chooser, while
+    Left-clicking the button shows the color picker, while
     right-clicking resets the color to None (no-color).
+
+    swatchGroups, when set, returns [(title, [Swatch, ...]), ...] shown at
+    the top of the picker. Picking one of those also emits swatchPicked
+    with the swatch's data.
     """
 
     colorChanged = Signal(object)
+    swatchPicked = Signal(object)
 
     def __init__(
         self,
@@ -31,7 +38,8 @@ class ColorButton(QToolButton):
         self.disable_right_click = disable_right_click
         self.enable_alpha_selection = enable_alpha_selection
         self.ignore_same_color = ignore_same_color
-        self.pressed.connect(self.onColorPicker)
+        self.swatchGroups = None
+        self.clicked.connect(self.onColorPicker)
 
         # Set the initial/default state.
         self.setColor(self._default)
@@ -54,23 +62,18 @@ class ColorButton(QToolButton):
         return self._color
 
     def onColorPicker(self):
-        """
-        Show color-picker dialog to select color.
+        """Show the color picker popup below the button."""
+        groups = self.swatchGroups() if callable(self.swatchGroups) else None
+        # Parented to the window: the button's style sheet (its color) would
+        # otherwise apply to the picker's buttons too
+        picker = ColorPicker(self._color, groups, self.enable_alpha_selection, self.window())
+        picker.picked.connect(self.onPicked)
+        picker.Show(self)
 
-        Qt will use the native dialog by default.
-
-        """
-        dlg = QColorDialog(self)
-        if self.enable_alpha_selection:
-            dlg.setOption(QColorDialog.ColorDialogOption.ShowAlphaChannel)
-        if self._color:
-            dlg.setCurrentColor(QColor(self._color))
-
-        if dlg.exec_():
-            if self.enable_alpha_selection:
-                self.setColor(dlg.currentColor().name(QColor.NameFormat.HexArgb))
-            else:
-                self.setColor(dlg.currentColor().name(QColor.NameFormat.HexRgb))
+    def onPicked(self, color, data):
+        self.setColor(color)
+        if data is not None:
+            self.swatchPicked.emit(data)
 
     def mousePressEvent(self, e):
         if not self.disable_right_click and e.button() == Qt.RightButton:

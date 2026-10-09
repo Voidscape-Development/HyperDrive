@@ -10,6 +10,7 @@ from .GameAssetManager import GameAssetManager
 from .Helpers import SocialsHelper
 from .Helpers.CountryHelper import CountryHelper
 from .Helpers.DictHelper import deep_clone
+from .Helpers.PronounHelper import PronounHelper
 from .PlayerDB import PlayerDB
 from .PlayerMediaTabs import PlayerMediaTab, SponsorLogosTab, TeamLogosTab
 from .SeedManager import SeedManager
@@ -216,6 +217,7 @@ class PlayersTab(QWidget):
         self.realName = QLineEdit()
         form.addRow(QApplication.translate("app", "Real Name"), self.realName)
         self.pronoun = QLineEdit()
+        PronounHelper.SetupField(self.pronoun)
         form.addRow(QApplication.translate("app", "Pronouns"), self.pronoun)
         self.twitter = QLineEdit()
         twitterLabel = QLabel(QApplication.translate("app", "Twitter"))
@@ -647,6 +649,7 @@ class PlayersTab(QWidget):
 
         if oldTag is not None:
             SeedManager.RenamePlayer(oldTag, newTag)
+        PronounHelper.Add(data["pronoun"])
 
         self.dirty = False
         self.LoadForm(newTag)
