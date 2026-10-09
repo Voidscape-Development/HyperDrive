@@ -65,7 +65,7 @@ class WebServerActions(QThread):
         """A scoreboard number for stage striking, raising ScoreboardNotAvailable if it doesn't exist."""
         try:
             number = int(number) if number not in (None, "") else 1
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             raise ScoreboardNotAvailable(f"Invalid scoreboard {number}")
         if number < 1 or number > self.scoreboard.GetTabAmount():
             raise ScoreboardNotAvailable(f"Scoreboard {number} not available")
@@ -78,7 +78,7 @@ class WebServerActions(QThread):
         """HyperDrive's team number (1 or 2) a stage strike page is for, or None for both."""
         try:
             team = int(team) if team not in (None, "") else None
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             return None
         return team if team in (1, 2) else None
 
@@ -463,7 +463,7 @@ class WebServerActions(QThread):
         widget = self._team_battle()
         try:
             index = int(player) - 1
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             index = -1
         if not 0 <= index < len(widget.Players(team)):
             return "ERROR : no such player", 400
@@ -878,7 +878,7 @@ class WebServerActions(QThread):
         if "move" in request:
             try:
                 target.MoveRound(1 if int(request.get("move")) >= 0 else -1)
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 return "BAD_MOVE", 400
         else:
             target.Set(request)

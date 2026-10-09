@@ -426,7 +426,7 @@ def NormalizeValue(field, value):
             return field.default
         try:
             number = int(value)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             return field.default
         return max(field.minimum, min(field.maximum, number))
     if field.type in (FIELD_FONT, FIELD_TEXT):

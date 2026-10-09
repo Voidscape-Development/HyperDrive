@@ -367,7 +367,7 @@ class TeamPlayerWidget(QGroupBox):
             if StateManager.Get(f"{self.path}.city") != city:
                 StateManager.Set(f"{self.path}.city", city)
 
-    def SwapWith(self, other: TeamPlayerWidget):
+    def SwapWith(self, other: "TeamPlayerWidget"):
         if self == other:
             logger.info("Swapping player with themselves")
             return

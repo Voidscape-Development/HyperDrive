@@ -360,7 +360,7 @@ class ScoreboardPlayerWidget(QGroupBox):
             if StateManager.Get(f"{self.path}.city") != city:
                 StateManager.Set(f"{self.path}.city", city)
 
-    def SwapWith(self, other: ScoreboardPlayerWidget, emitIdChanged=True):
+    def SwapWith(self, other: "ScoreboardPlayerWidget", emitIdChanged=True):
         """Swap this player's data with other's.
 
         With emitIdChanged=False the playerId signals aren't emitted for the

@@ -499,7 +499,7 @@ class StateManager:
             try:
                 for key in path:
                     value = value[key]
-            except KeyError, IndexError, TypeError:
+            except (KeyError, IndexError, TypeError):
                 # The list itself is gone
                 continue
             result.append(

@@ -51,7 +51,7 @@ class Scheduler(QObject):
     so slow requests can't pile up.
     """
 
-    instance: Scheduler = None
+    instance: "Scheduler" = None
     TICK_MS = 1000
 
     def __init__(self) -> None:

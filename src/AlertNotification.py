@@ -18,7 +18,7 @@ class AlertNotificationSignals(QObject):
 
 
 class AlertNotification(QObject):
-    instance: AlertNotification = None
+    instance: "AlertNotification" = None
 
     def __init__(self) -> None:
         super().__init__()

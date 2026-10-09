@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "A Stream helper for fighting game tournaments"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.14,<3.15"
+requires-python = ">=3.10,<3.15"
 dependencies = [
     "arabic-buckwalter-transliteration",
     "chardet",
@@ -36,7 +36,9 @@ dependencies = [
     "tzdata",
     "unidic-lite",
     "uvicorn>=0.54.0",
-    "websockets>=17.2",
+    "websockets>=17.2; python_version >= '3.11'",
+    # websockets 17.2 needs Python 3.11; the Windows executable is built with 3.10
+    "websockets; python_version < '3.11'",
 ]
 
 [dependency-groups]
@@ -54,7 +56,7 @@ package = false
 default-groups = ["dev"]
 
 [tool.ruff]
-target-version = "py314"
+target-version = "py310"
 line-length = 100
 extend-exclude = ["layout", "stage_strike_app", "user_data"]
 

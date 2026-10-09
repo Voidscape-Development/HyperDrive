@@ -18,7 +18,7 @@ class CountryHelperSignals(QObject):
 
 
 class CountryHelper(QObject):
-    instance: CountryHelper = None
+    instance: "CountryHelper" = None
 
     countries = {}
     cities = {}

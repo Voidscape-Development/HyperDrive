@@ -86,7 +86,7 @@ class MainRow(QWidget):
             self.LoadSkins()
             try:
                 skin = int(main[1]) if len(main) > 1 else 0
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 skin = 0
             if 0 <= skin < self.skin.count():
                 self.skin.setCurrentIndex(skin)
@@ -849,7 +849,7 @@ class SeedsTab(QWidget):
         tag = item.data(TagRole)
         try:
             seed = int(item.data(Qt.ItemDataRole.EditRole) or 0)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             seed = 0
         current = SeedManager.GetSeed(tag)
         if seed == (current or 0):
@@ -890,7 +890,7 @@ class SeedsTab(QWidget):
 
 
 class PlayerDBWindow(QDialog):
-    instance: PlayerDBWindow = None
+    instance: "PlayerDBWindow" = None
 
     def __init__(self, parent=None):
         super().__init__(parent)

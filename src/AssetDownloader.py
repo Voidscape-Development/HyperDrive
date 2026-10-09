@@ -28,7 +28,7 @@ class AssetDownloaderSignals(QObject):
 
 
 class AssetDownloader(QObject):
-    instance: AssetDownloader = None
+    instance: "AssetDownloader" = None
 
     def __init__(self) -> None:
         super().__init__()

@@ -23,7 +23,7 @@ class StatsSignals(QObject):
 
 
 class StatsUtil:
-    instance: StatsUtil = None
+    instance: "StatsUtil" = None
 
     def __init__(self, scoreboardNumber, scoreboard):
         self.signals: StatsSignals = StatsSignals()

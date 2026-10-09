@@ -156,7 +156,7 @@ def NormalizeTheme(data, name=None):
 
     try:
         radius = int(data.get("radius", DEFAULT_RADIUS))
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         radius = DEFAULT_RADIUS
     theme["radius"] = max(0, min(MAX_RADIUS, radius))
     spacing = data.get("spacing", DEFAULT_SPACING)
@@ -383,7 +383,7 @@ def ApplyUIScale():
         return
     try:
         scale = int(SettingsManager.Get("appearance.ui_scale", DEFAULT_UI_SCALE))
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return
     if scale != 100 and scale in UI_SCALES:
         os.environ["QT_SCALE_FACTOR"] = str(scale / 100)

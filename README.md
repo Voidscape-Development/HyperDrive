@@ -65,7 +65,8 @@ window can still import and export the JSON format.
 ## Running from source
 
 HyperDrive uses [uv](https://docs.astral.sh/uv/), which installs Python 3.14 and the
-dependencies locked in `uv.lock`:
+dependencies locked in `uv.lock` (the Windows executable is built with Python 3.10, so the
+code has to stay compatible with it; `ruff check` flags syntax 3.10 doesn't have):
 
 ```sh
 uv run main.py
