@@ -141,7 +141,7 @@ class AddStartggSetDialog(QDialog):
 
 
 class StreamQueueTab(QWidget):
-    def __init__(self, owner: StreamQueueWidget, name):
+    def __init__(self, owner: "StreamQueueWidget", name):
         super().__init__()
         self.owner = owner
         self.name = name
@@ -424,7 +424,7 @@ class StreamQueueTab(QWidget):
 
 
 class StreamQueueWidget(QDockWidget):
-    instance: StreamQueueWidget = None
+    instance: "StreamQueueWidget" = None
 
     def __init__(self, *args):
         super().__init__(*args)

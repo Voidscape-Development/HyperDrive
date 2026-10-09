@@ -46,17 +46,17 @@ def NormalizeRequest(request):
     elif mode == MODE_PLAYER:
         try:
             result["player"] = int(request.get("player"))
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             result["player"] = None
     elif mode == MODE_FOLLOW:
         try:
             result["scoreboard"] = max(1, int(request.get("scoreboard") or 1))
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             result["scoreboard"] = 1
     elif mode == MODE_TOUR:
         try:
             interval = int(request.get("interval") or DEFAULT_INTERVAL)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             interval = DEFAULT_INTERVAL
         result["interval"] = max(MIN_INTERVAL, min(MAX_INTERVAL, interval))
     return result

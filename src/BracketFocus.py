@@ -153,7 +153,7 @@ class BracketFocus(QObject):
     """The focus channels, and the one the bracket widget and the hotkeys
     act on."""
 
-    instance: BracketFocus = None
+    instance: "BracketFocus" = None
 
     def __init__(self):
         super().__init__()

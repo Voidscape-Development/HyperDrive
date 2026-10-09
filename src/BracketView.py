@@ -45,7 +45,7 @@ class MatchItem(QGraphicsObject):
     SCORE_WIDTH = 32
     SEED_WIDTH = 26
 
-    def __init__(self, view: BracketView, match: BracketMatch):
+    def __init__(self, view: "BracketView", match: BracketMatch):
         super().__init__()
         self.view = view
         self.match = match
@@ -288,7 +288,7 @@ class RoundHeaderItem(QGraphicsSimpleTextItem):
 class MatchEditDialog(QDialog):
     """Result and players of a set."""
 
-    def __init__(self, view: BracketView, match: BracketMatch):
+    def __init__(self, view: "BracketView", match: BracketMatch):
         super().__init__(view)
         self.view = view
         self.match = match

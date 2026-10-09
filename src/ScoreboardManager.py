@@ -16,7 +16,7 @@ class ScoreboardManagerSignals(QObject):
 
 
 class ScoreboardManager(QDockWidget):
-    instance: ScoreboardManager = None
+    instance: "ScoreboardManager" = None
 
     def __init__(self, *args):
         super().__init__(*args)

@@ -29,7 +29,7 @@ class HotkeysSignals(QObject):
 
 
 class Hotkeys(QObject):
-    instance: Hotkeys = None
+    instance: "Hotkeys" = None
     signals = HotkeysSignals()
     parent: QWidget = None
     shortcuts = {}

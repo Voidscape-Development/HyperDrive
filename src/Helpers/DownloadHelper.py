@@ -58,7 +58,7 @@ def download_file(
         headerval = response.headers.get("Content-Length", None)
         if headerval is not None and int(headerval):
             content_length = int(headerval)
-    except TypeError, ValueError, AttributeError:
+    except (TypeError, ValueError, AttributeError):
         logger.opt(exception=True).debug(
             f"Failed to parse content-length for file download. ({response.headers})"
         )
@@ -150,7 +150,7 @@ class _DlTimingSample:
     as_of: datetime.datetime
 
     @staticmethod
-    def avg_throughput(samples: collections.deque[_DlTimingSample]):
+    def avg_throughput(samples: "collections.deque[_DlTimingSample]"):
         if len(samples) <= 1:
             return 0
 

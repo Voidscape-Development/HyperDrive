@@ -512,5 +512,5 @@ class StageStrikeLogic:
 def _Int(value):
     try:
         return int(value or 0)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return 0

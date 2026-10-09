@@ -36,7 +36,7 @@ class TournamentDataManagerSignals(QObject):
 
 
 class TournamentDataManager(QObject):
-    instance: TournamentDataManager = None
+    instance: "TournamentDataManager" = None
 
     def __init__(self) -> None:
         super().__init__(None)

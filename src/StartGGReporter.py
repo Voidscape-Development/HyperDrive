@@ -97,7 +97,7 @@ class StartGGReporterSignals(QObject):
 
 
 class StartGGReporter(QObject):
-    instance: StartGGReporter = None
+    instance: "StartGGReporter" = None
 
     def __init__(self):
         super().__init__()

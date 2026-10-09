@@ -64,7 +64,7 @@ class SeedManager:
         seed = player.get("seed")
         try:
             return int(seed) if seed is not None else None
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             return None
 
     @staticmethod

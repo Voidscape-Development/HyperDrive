@@ -57,7 +57,7 @@ def Ordinal(n):
 
 
 class BracketWidget(QDockWidget):
-    instance: BracketWidget = None
+    instance: "BracketWidget" = None
 
     def __init__(self, *args):
         with StateManager.SaveBlock():
@@ -1234,7 +1234,7 @@ class BracketWidget(QDockWidget):
             self.playerList.setUpdatesEnabled(False)
             try:
                 self.playerList.signals.DataChanged.disconnect(self.PlayersChanged)
-            except TypeError, RuntimeError:
+            except (TypeError, RuntimeError):
                 pass
             try:
                 self.loadedEntrants = entrants

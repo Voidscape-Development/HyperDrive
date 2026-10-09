@@ -174,7 +174,7 @@ def format_twitter(handle):
 def format_seed(seed):
     try:
         seed = int(seed or 0)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return ""
     return str(seed) if seed > 0 else ""
 

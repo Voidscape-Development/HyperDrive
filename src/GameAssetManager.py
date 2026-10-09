@@ -63,7 +63,7 @@ class GameAssetManagerSignals(QObject):
 
 
 class GameAssetManager(QObject):
-    instance: GameAssetManager = None
+    instance: "GameAssetManager" = None
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)

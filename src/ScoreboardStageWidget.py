@@ -354,7 +354,7 @@ class ScoreboardStageWidget(QDockWidget):
         if old is not None:
             try:
                 old.signals.state_updated.disconnect()
-            except RuntimeError, TypeError:
+            except (RuntimeError, TypeError):
                 pass
         self.ApplyRuleset(number)
         self.UpdateScoreboardSelect()
@@ -374,7 +374,7 @@ class ScoreboardStageWidget(QDockWidget):
         if old is not None:
             try:
                 old.signals.state_updated.disconnect()
-            except RuntimeError, TypeError:
+            except (RuntimeError, TypeError):
                 pass
         self.UpdateScoreboardSelect()
 

@@ -51,7 +51,7 @@ class TeamBattleSignals(QObject):
 
 class TeamBattleWidget(QDockWidget):
     # The widget the webserver controls
-    instance: TeamBattleWidget = None
+    instance: "TeamBattleWidget" = None
 
     battleMode = TeamBattleModeEnum.STOCK_POOL
 
