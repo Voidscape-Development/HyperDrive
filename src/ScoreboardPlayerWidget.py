@@ -22,7 +22,7 @@ from .SeedManager import SeedManager
 from .SettingsManager import SettingsManager
 from .SocialsWidget import SetPlatformIcon, SocialsButton
 from .StateManager import StateManager
-from .Theme import ThemedIcon
+from .Theme import SetLabelIcon, ThemedIcon
 from .TournamentDataManager import TournamentDataManager
 
 
@@ -78,6 +78,16 @@ class ScoreboardPlayerWidget(QGroupBox):
         # Twitter keeps its field, the other socials are edited from here
         self.socialsButton = SocialsButton.Attach(self.findChild(QLineEdit, "twitter"))
         SetPlatformIcon(self.findChild(QLabel, "twitterLabel"), "twitter")
+        SetLabelIcon(
+            self.findChild(QLabel, "seedLabel"),
+            "assets/icons/seed_leaf.svg",
+            QApplication.translate("app", "Seed"),
+        )
+        SetLabelIcon(
+            self.findChild(QLabel, "locationLabel"),
+            "assets/icons/location.svg",
+            QApplication.translate("app", "Location"),
+        )
         self.socialsButton.changed.connect(self.ExportSocials)
 
         custom_textbox_layout = QHBoxLayout()
@@ -451,11 +461,9 @@ class ScoreboardPlayerWidget(QGroupBox):
                     w.EmitPlayerIdChanged()
 
     def SetIndex(self, index: int, team: int):
-        if self.customName == "":
-            self.findChild(QWidget, "title").setText(
-                QApplication.translate("app", "Player {0}").format(index)
-            )
-        else:
+        # Players have no title, commentators keep theirs
+        self.findChild(QWidget, "title").setVisible(self.customName != "")
+        if self.customName != "":
             title = self.customName + " {0}"
             self.findChild(QWidget, "title").setText(
                 QApplication.translate("app", title).format(index)

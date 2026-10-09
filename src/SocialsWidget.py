@@ -5,12 +5,11 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .Helpers import SocialsHelper
-from .Theme import ThemedIcon
+from .Theme import SetLabelIcon, ThemedIcon
 
 # A copy of the icons is in layout/icons for the layouts; the app doesn't
 # load files from the layout folder
 ICONS_DIR = "./assets/icons/socials"
-ICON_SIZE = 20
 
 
 def PlatformIcon(platform):
@@ -19,36 +18,13 @@ def PlatformIcon(platform):
     return ThemedIcon(path) if os.path.isfile(path) else None
 
 
-class _IconRefresher(QObject):
-    """Draws a label's icon again when the theme changes: a pixmap, unlike
-    an icon on a button, keeps the colors it was drawn with."""
-
-    def __init__(self, label, icon):
-        super().__init__(label)
-        self.label = label
-        self.icon = icon
-        self.Draw()
-        label.installEventFilter(self)
-
-    def Draw(self):
-        self.label.setPixmap(self.icon.pixmap(ICON_SIZE, ICON_SIZE))
-
-    def eventFilter(self, obj, event):
-        if event.type() in (QEvent.Type.PaletteChange, QEvent.Type.StyleChange):
-            self.Draw()
-        return False
-
-
 def SetPlatformIcon(label: QLabel, platform):
     """Shows the platform's icon in label instead of its text, with the
     platform's name as tooltip. Returns False when it has no icon."""
     icon = PlatformIcon(platform)
     if icon is None:
         return False
-    name = SocialsHelper.Label(platform)
-    _IconRefresher(label, icon)
-    label.setToolTip(name)
-    label.setAccessibleName(name)
+    SetLabelIcon(label, f"{ICONS_DIR}/{platform}.svg", SocialsHelper.Label(platform))
     return True
 
 

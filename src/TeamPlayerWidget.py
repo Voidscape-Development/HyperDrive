@@ -20,7 +20,7 @@ from .PlayerDB import PlayerDB
 from .SocialsWidget import SetPlatformIcon, SocialsButton
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
-from .Theme import ThemedIcon
+from .Theme import SetLabelIcon, ThemedIcon
 
 
 class TeamPlayerWidgetSignals(QObject):
@@ -59,6 +59,11 @@ class TeamPlayerWidget(QGroupBox):
         # Twitter keeps its field, the other socials are edited from here
         self.socialsButton = SocialsButton.Attach(self.findChild(QLineEdit, "twitter"))
         SetPlatformIcon(self.findChild(QLabel, "twitterLabel"), "twitter")
+        SetLabelIcon(
+            self.findChild(QLabel, "locationLabel"),
+            "assets/icons/location.svg",
+            QApplication.translate("app", "Location"),
+        )
         self.socialsButton.changed.connect(self.ExportSocials)
 
         self.dynamicSpinner = self.findChild(QSpinBox, "dynamicSpinner")
