@@ -10,7 +10,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from src.ColorButton import ColorButton
-from src.ColorPicker import Swatch
+from src.ColorPicker import GameColorSwatchGroups
 
 from .GameAssetManager import GameAssetManager
 from .GameReportWidget import GameReportWidget
@@ -76,26 +76,6 @@ class QueueSetsCache:
 
         logger.info("----------------- QUEUES CHECK OK -------------------")
         return True
-
-
-def GameColorSwatchGroups():
-    """The loaded game's preset colors, for the team color pickers. A
-    swatch's data is its row in the asset manager's color model."""
-    model = GameAssetManager.instance.colorModel
-    swatches = []
-    for row in range(1, model.rowCount()):
-        data = model.item(row).data(Qt.ItemDataRole.UserRole) or {}
-        if not data.get("value"):
-            continue
-        tooltip = ""
-        if data.get("force_opponent"):
-            tooltip = QApplication.translate("app", "Also sets the other team to {0}").format(
-                "#" + data["force_opponent"]
-            )
-        swatches.append(Swatch("#" + data["value"], data.get("display_name") or "", row, tooltip))
-    game = GameAssetManager.instance.selectedGame.get("name")
-    title = QApplication.translate("app", "Game colors")
-    return [(f"{title} ({game})" if game else title, swatches)]
 
 
 class ScoreboardWidgetSignals(QObject):

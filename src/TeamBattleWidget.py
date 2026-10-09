@@ -7,6 +7,7 @@ from qtpy.QtGui import QAction
 from qtpy.QtWidgets import *
 
 from .ColorButton import ColorButton
+from .ColorPicker import GameColorSwatchGroups, GameColorValues
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.MediaHelper import MediaHelper
@@ -290,6 +291,9 @@ class TeamBattleWidget(QDockWidget):
             lambda color: StateManager.Set(f"team_battle.team.{1}.color", color)
         )
         self.colorButton1.setColor(DEFAULT_TEAM1_COLOR)
+        # The game's colors are in the color picker, above the custom colors
+        self.colorButton1.swatchGroups = GameColorSwatchGroups
+        self.colorButton1.swatchPicked.connect(lambda row: self.GameColorPicked(2, row))
         self.team1score = QSpinBox()
         self.team1column.findChild(QHBoxLayout, "team_header").layout().addWidget(self.team1score)
         self.team1score.valueChanged.connect(self.Team1TotalScoreExport)
@@ -310,6 +314,9 @@ class TeamBattleWidget(QDockWidget):
             lambda color: StateManager.Set(f"team_battle.team.{2}.color", color)
         )
         self.colorButton2.setColor(DEFAULT_TEAM2_COLOR)
+        # The game's colors are in the color picker, above the custom colors
+        self.colorButton2.swatchGroups = GameColorSwatchGroups
+        self.colorButton2.swatchPicked.connect(lambda row: self.GameColorPicked(1, row))
         self.team2score = QSpinBox()
         self.team2column.findChild(QHBoxLayout, "team_header").layout().addWidget(self.team2score)
         self.team2score.valueChanged.connect(self.Team2TotalScoreExport)
@@ -758,6 +765,12 @@ class TeamBattleWidget(QDockWidget):
 
     def TeamColumn(self, team: int) -> QWidget:
         return self.team1column if team == 1 else self.team2column
+
+    def GameColorPicked(self, opponent, row):
+        # Some game colors also set the other team's color
+        color = GameColorValues(row, force_opponent=True)
+        if color:
+            (self.colorButton1 if opponent == 1 else self.colorButton2).setColor(color)
 
     def TeamNameExport(self, team: int):
         path = f"team_battle.team.{team}"

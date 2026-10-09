@@ -43,6 +43,41 @@ def ColorName(color: QColor, alpha=False):
     return color.name(QColor.NameFormat.HexRgb)
 
 
+def GameColorSwatchGroups():
+    """The loaded game's preset colors, for the team color pickers. A
+    swatch's data is its row in the asset manager's color model."""
+    # Imported here: the picker itself doesn't need the game's assets
+    from .GameAssetManager import GameAssetManager
+
+    model = GameAssetManager.instance.colorModel
+    swatches = []
+    for row in range(1, model.rowCount()):
+        data = model.item(row).data(Qt.ItemDataRole.UserRole) or {}
+        if not data.get("value"):
+            continue
+        tooltip = ""
+        if data.get("force_opponent"):
+            tooltip = QApplication.translate("app", "Also sets the other team to {0}").format(
+                "#" + data["force_opponent"]
+            )
+        swatches.append(Swatch("#" + data["value"], data.get("display_name") or "", row, tooltip))
+    game = GameAssetManager.instance.selectedGame.get("name")
+    title = QApplication.translate("app", "Game colors")
+    return [(f"{title} ({game})" if game else title, swatches)]
+
+
+def GameColorValues(row, force_opponent=False):
+    """The color of a game color swatch (its row in the color model), or the
+    color it sets the other team to; None if it doesn't set one."""
+    from .GameAssetManager import GameAssetManager
+
+    model = GameAssetManager.instance.colorModel
+    item = model.item(row) if 0 < row < model.rowCount() else None
+    data = (item.data(Qt.ItemDataRole.UserRole) if item else None) or {}
+    value = data.get("force_opponent" if force_opponent else "value")
+    return "#" + value if value else None
+
+
 class SwatchButton(QToolButton):
     def __init__(self, color: QColor, selected=False, parent=None):
         super().__init__(parent)
