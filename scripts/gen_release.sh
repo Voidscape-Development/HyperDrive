@@ -32,10 +32,13 @@ mkdir -p HyperDrive/stage_strike_app/build
 cp -R assets \
 	layout \
 	src \
-	user_data \
 	LICENSE \
 	HyperDrive.exe \
 	HyperDrive/
+
+# Only the files committed to user_data: running the program writes
+# settings.json and other user files there, and those mustn't ship
+git ls-files -z -- user_data | xargs -0 -I{} cp --parents {} HyperDrive/
 
 cp -R stage_strike_app/build \
 	HyperDrive/stage_strike_app/

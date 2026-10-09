@@ -23,6 +23,7 @@ from ..Theme import (
     Theme,
     ThemedIcon,
 )
+from .SettingsWidget import SettingsWidget
 
 # Edits are saved and applied after this long without another change, so
 # dragging the roundness slider doesn't restyle the app on every step
@@ -209,6 +210,34 @@ class AppearanceSettings(QWidget):
         )
         editorLayout.addWidget(self.fontSelect, row + 2, 1, 1, 3)
         editorLayout.setColumnStretch(3, 1)
+
+        # The colors teams start with. Stored under general, where they were
+        # before they moved here
+        teamColors = QGroupBox(QApplication.translate("settings.appearance", "Default team colors"))
+        layout.addWidget(teamColors)
+        QVBoxLayout(teamColors).addWidget(
+            SettingsWidget(
+                "general",
+                [
+                    (
+                        QApplication.translate(
+                            "settings.team_1_default_color", "Default Color of Team 1"
+                        ),
+                        "team_1_default_color",
+                        "color",
+                        "#fe3636",
+                    ),
+                    (
+                        QApplication.translate(
+                            "settings.team_2_default_color", "Default Color of Team 2"
+                        ),
+                        "team_2_default_color",
+                        "color",
+                        "#2e89ff",
+                    ),
+                ],
+            )
+        )
 
         self.Refresh()
 
