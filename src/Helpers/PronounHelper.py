@@ -99,14 +99,16 @@ class PronounHelper:
         pronoun, and typing suggests the matching ones or a new pronoun"""
         # Imported here, so the helper can be used without the theme
         from ..Theme import ThemedIcon
+        from .QtHelper import OnFirstFocus
 
         completer = QCompleter(PronounHelper.Model(), lineEdit)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         completer.setFilterMode(Qt.MatchFlag.MatchContains)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         completer.setMaxVisibleItems(12)
-        # The field can be narrow; the list shouldn't cut the pronouns off
-        completer.popup().setMinimumWidth(140)
+        # The field can be narrow; the list shouldn't cut the pronouns off.
+        # Set once the field is used, so the list isn't created for every card
+        OnFirstFocus([lineEdit], lambda: completer.popup().setMinimumWidth(140))
         lineEdit.setCompleter(completer)
         # Picking a pronoun saves it right away, like a combo box would
         completer.activated[str].connect(lambda text: lineEdit.editingFinished.emit())

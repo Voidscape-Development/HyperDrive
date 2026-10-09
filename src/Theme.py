@@ -213,6 +213,15 @@ def ThemeIcon(name, color):
     return path.replace("\\", "/")
 
 
+# Shared by every themed icon: the same file is used by many widgets (each
+# player card has a dozen), and working out and tinting an icon is done
+# pixel by pixel. The tint color is in the key, so theme changes still show.
+_ICON_SOURCES = {}
+_ICON_KINDS = {}
+_TINTED_PIXMAPS = {}
+_TINTED_PIXMAPS_MAX = 512
+
+
 class ThemedIconEngine(QIconEngine):
     """Draws HyperDrive's one-color icons in the theme's text color.
 
@@ -225,9 +234,10 @@ class ThemedIconEngine(QIconEngine):
         super().__init__()
         self.path = path
         self.badge = badge
-        self.source = QIcon(path)
-        self.kind = None
-        self.cache = {}
+        self.source = _ICON_SOURCES.get(path)
+        if self.source is None:
+            self.source = _ICON_SOURCES[path] = QIcon(path)
+        self.kind = _ICON_KINDS.get(path)
 
     def clone(self):
         return ThemedIconEngine(self.path, self.badge)
@@ -246,6 +256,7 @@ class ThemedIconEngine(QIconEngine):
                         continue
                     if pixel.hsvSaturationF() > 0.15:
                         self.kind = "color"
+                        _ICON_KINDS[self.path] = self.kind
                         return self.kind
                     if pixel.lightnessF() > 0.6:
                         light += 1
@@ -255,6 +266,7 @@ class ThemedIconEngine(QIconEngine):
                 self.kind = "outlined"
             elif dark == 0:
                 self.kind = "color"
+            _ICON_KINDS[self.path] = self.kind
         return self.kind
 
     def _Color(self, mode, state):
@@ -276,13 +288,13 @@ class ThemedIconEngine(QIconEngine):
             pixmap = self.source.pixmap(size, scale, mode, state)
         else:
             color = self._Color(mode, state)
-            key = (size.width(), size.height(), scale, color.rgba())
-            pixmap = self.cache.get(key)
+            key = (self.path, size.width(), size.height(), scale, color.rgba())
+            pixmap = _TINTED_PIXMAPS.get(key)
             if pixmap is None:
                 pixmap = self._Tinted(size, scale, color)
-                if len(self.cache) >= 8:
-                    self.cache.clear()
-                self.cache[key] = pixmap
+                if len(_TINTED_PIXMAPS) >= _TINTED_PIXMAPS_MAX:
+                    _TINTED_PIXMAPS.clear()
+                _TINTED_PIXMAPS[key] = pixmap
         if self.badge:
             pixmap = QPixmap(pixmap)
             painter = QPainter(pixmap)

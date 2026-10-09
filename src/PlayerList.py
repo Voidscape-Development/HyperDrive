@@ -43,6 +43,13 @@ class PlayerList(QWidget):
 
         self.childDataChangedLock = False
 
+        # Slots still to be resized by SetSizesGradually, one per timeout.
+        # Not 0: the gap lets the window handle input and paint in between
+        self.resizeQueue = []
+        self.resizeTimer = QTimer(self)
+        self.resizeTimer.setInterval(15)
+        self.resizeTimer.timeout.connect(self.ResizeNextSlot)
+
         scrollArea = QScrollArea()
         scrollArea.setFrameShadow(QFrame.Shadow.Plain)
         scrollArea.setFrameShape(QFrame.Shape.NoFrame)
@@ -127,6 +134,33 @@ class PlayerList(QWidget):
             finally:
                 self.childDataChangedLock = False
             self.signals.DataChanged.emit()
+
+    def SetSizesGradually(self, players, characters):
+        """Sets the players per slot and characters per player one slot at a
+        time, a slot per pass of the event loop. Used when a game is loaded:
+        making every slot's player cards at once froze the window."""
+        self.playersPerTeam = players
+        self.charactersPerPlayer = characters
+        self.resizeQueue = list(self.slotWidgets)
+        self.resizeTimer.start()
+
+    def ResizeNextSlot(self):
+        # Slots read the sizes when resized, so a size changed directly in
+        # the meantime (which resizes every slot) is kept
+        while self.resizeQueue:
+            s = self.resizeQueue.pop(0)
+            if s not in self.slotWidgets:
+                continue
+            with StateManager.SaveBlock():
+                self.childDataChangedLock = True
+                try:
+                    s.SetPlayersPerTeam(self.playersPerTeam)
+                    s.SetCharacterNumber(self.charactersPerPlayer)
+                finally:
+                    self.childDataChangedLock = False
+            return
+        self.resizeTimer.stop()
+        self.signals.DataChanged.emit()
 
     def SetHiddenElements(self, hidden):
         self.hiddenElements = set(hidden)

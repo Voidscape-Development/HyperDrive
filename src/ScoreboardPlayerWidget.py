@@ -18,6 +18,7 @@ from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.PronounHelper import PronounHelper
+from .Helpers.QtHelper import OnFirstFocus
 from .PlayerDB import PlayerDB
 from .SeedManager import SeedManager
 from .SettingsManager import SettingsManager
@@ -456,6 +457,9 @@ class ScoreboardPlayerWidget(QGroupBox):
             character_element.setLayout(QHBoxLayout())
             character_element.layout().setSpacing(4)
             character_element.layout().setContentsMargins(0, 0, 0, 0)
+            # Set once on the row: the dropdowns take it from there, and each
+            # font change restyles the widget
+            character_element.setFont(QFont(character_element.font().family(), 9))
             # Both open the character grid
             player_character = CharacterCombo()
             player_character.mainsProvider = self.SavedMains
@@ -464,7 +468,6 @@ class ScoreboardPlayerWidget(QGroupBox):
             player_character.setModel(GameAssetManager.instance.characterModel)
             player_character.setIconSize(QSize(24, 24))
             player_character.setFixedHeight(32)
-            player_character.setFont(QFont(player_character.font().family(), 9))
 
             player_character_color = SkinCombo(player_character)
             character_element.layout().addWidget(player_character_color)
@@ -472,7 +475,6 @@ class ScoreboardPlayerWidget(QGroupBox):
             player_character_color.setFixedHeight(32)
             player_character_color.setMinimumWidth(64)
             player_character_color.setMaximumWidth(120)
-            player_character_color.setFont(QFont(player_character_color.font().family(), 9))
 
             # Add variant, also picked from the grid
             player_variant = VariantCombo(player_character)
@@ -482,7 +484,6 @@ class ScoreboardPlayerWidget(QGroupBox):
             player_variant.setFixedHeight(32)
             player_variant.setMinimumWidth(60)
             player_variant.setMaximumWidth(120)
-            player_variant.setFont(QFont(player_variant.font().family(), 9))
             player_variant.setModel(GameAssetManager.instance.variantModel)
 
             if len(GameAssetManager.instance.variants) <= 0:
@@ -543,19 +544,7 @@ class ScoreboardPlayerWidget(QGroupBox):
             self.character_elements[-1][0].setParent(None)
             self.character_elements.pop()
 
-        if self.character_container.findChild(QComboBox, "variants") is not None:
-            if len(GameAssetManager.instance.variants) <= 0:
-                for container in self.findChildren(QComboBox, "variants"):
-                    container.setVisible(False)
-                for container in self.findChildren(QComboBox):
-                    if "character_color_" in container.objectName():
-                        container.setMaximumWidth(210)
-            else:
-                for container in self.findChildren(QComboBox, "variants"):
-                    container.setVisible(True)
-                for container in self.findChildren(QComboBox):
-                    if "character_color_" in container.objectName():
-                        container.setMaximumWidth(120)
+        self.UpdateVariantsShown()
 
         self.CharactersChanged(includeMains=True)
 
@@ -648,9 +637,7 @@ class ScoreboardPlayerWidget(QGroupBox):
             country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
             country.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
             country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            country.view().setMinimumWidth(60)
             country.completer().setCompletionMode(QCompleter.PopupCompletion)
-            country.completer().popup().setMinimumWidth(300)
             country.setModel(CountryHelper.countryModel)
             country.setFont(QFont(country.font().family(), 9))
             country.lineEdit().setFont(QFont(country.font().family(), 9))
@@ -662,11 +649,20 @@ class ScoreboardPlayerWidget(QGroupBox):
             state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
             state.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
             state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            state.view().setMinimumWidth(60)
             state.completer().setCompletionMode(QCompleter.PopupCompletion)
-            state.completer().popup().setMinimumWidth(300)
             state.setFont(QFont(state.font().family(), 9))
             state.lineEdit().setFont(QFont(state.font().family(), 9))
+
+            # The dropdowns' lists are only created once a field is used, as
+            # every player card has these and creating them adds up
+            for combo in (country, state):
+                OnFirstFocus(
+                    [combo, combo.lineEdit()],
+                    lambda combo=combo: [
+                        combo.view().setMinimumWidth(60),
+                        combo.completer().popup().setMinimumWidth(300),
+                    ],
+                )
 
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -724,19 +720,18 @@ class ScoreboardPlayerWidget(QGroupBox):
         else:
             target.setModel(QStandardItemModel())
 
+    def UpdateVariantsShown(self):
+        # The variant dropdowns only show for games with variants; the skin
+        # dropdowns take their room otherwise. Uses the rows kept in
+        # character_elements: searching the card's children for them was
+        # slow with many cards (every card does this when a game loads)
+        hasVariants = len(GameAssetManager.instance.variants) > 0
+        for _, _, color, variant in self.character_elements:
+            variant.setVisible(hasVariants)
+            color.setMaximumWidth(120 if hasVariants else 210)
+
     def ReloadCharacters(self):
-        if len(GameAssetManager.instance.variants) <= 0:
-            for container in self.findChildren(QComboBox, "variants"):
-                container.setVisible(False)
-            for container in self.findChildren(QComboBox):
-                if "character_color_" in container.objectName():
-                    container.setMaximumWidth(210)
-        else:
-            for container in self.findChildren(QComboBox, "variants"):
-                container.setVisible(True)
-            for container in self.findChildren(QComboBox):
-                if "character_color_" in container.objectName():
-                    container.setMaximumWidth(120)
+        self.UpdateVariantsShown()
         for c in self.character_elements:
             c[1].setModel(GameAssetManager.instance.characterModel)
             c[1].setIconSize(QSize(24, 24))

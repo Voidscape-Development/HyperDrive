@@ -87,6 +87,10 @@ class GameAssetManager(QObject):
         self.assetsLoaderLock = QMutex()
         self.assetsLoaderThread = None
         self.threadpool = QThreadPool()
+        # Skin and stage images are made with PIL from Python threads, which
+        # mostly take turns holding the GIL: more threads hardly load them
+        # faster, but they starve the UI thread while a game loads
+        self.threadpool.setMaxThreadCount(1)
         self.workers = []
 
         self.skinLoaderLock = QMutex()

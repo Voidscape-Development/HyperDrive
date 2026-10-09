@@ -179,3 +179,27 @@ def assert_gui_thread(fn=None):
         return deco
     else:
         return _assert()
+
+
+class _FirstFocusFilter(QObject):
+    def __init__(self, widgets, callback):
+        super().__init__(widgets[0])
+        self.widgets = widgets
+        self.callback = callback
+        for widget in widgets:
+            widget.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.FocusIn and self.callback is not None:
+            callback, self.callback = self.callback, None
+            for widget in self.widgets:
+                widget.removeEventFilter(self)
+            callback()
+        return False
+
+
+def OnFirstFocus(widgets, callback):
+    """Runs callback once, the first time one of the widgets gets focus. For
+    setup that creates widgets only needed once a field is used, like a
+    completer's popup: the popup can't show before the field has focus."""
+    _FirstFocusFilter(list(widgets), callback)
