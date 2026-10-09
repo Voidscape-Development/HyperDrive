@@ -1,0 +1,260 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+	"Name": "HyperDrive",
+	"Version": "1.0.0.0",
+	"Author": "Voidscape Development",
+	"Description": "Control HyperDrive, the stream helper for fighting game tournaments: scores, Display Controls, Crew/Team Battle, stage strike and bracket focus, with live state on the keys.",
+	"URL": "https://github.com/Voidscape-Development/HyperDrive",
+	"SupportURL": "https://github.com/Voidscape-Development/HyperDrive/issues",
+	"Category": "HyperDrive",
+	"CategoryIcon": "imgs/plugin/category",
+	"Icon": "imgs/plugin/marketplace",
+	"CodePath": "bin/plugin.js",
+	"SDKVersion": 3,
+	"Software": {
+		"MinimumVersion": "7.1"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "12"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "24"
+	},
+	"UUID": "com.voidscape.hyperdrive",
+	"Actions": [
+		{
+			"Name": "Team Score",
+			"UUID": "com.voidscape.hyperdrive.score",
+			"Icon": "imgs/actions/score",
+			"Tooltip": "Adds a point to a team (hold to take one). Shows the team's score and color.",
+			"PropertyInspectorPath": "ui/score.html",
+			"Controllers": [
+				"Keypad",
+				"Encoder"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/score",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true,
+			"Encoder": {
+				"layout": "layouts/canvas.json",
+				"Icon": "imgs/actions/score",
+				"TriggerDescription": {
+					"Rotate": "Change score",
+					"Push": "Swap teams",
+					"Touch": "Add a point"
+				}
+			}
+		},
+		{
+			"Name": "Swap Teams",
+			"UUID": "com.voidscape.hyperdrive.swap-teams",
+			"Icon": "imgs/actions/swap-teams",
+			"Tooltip": "Swaps the scoreboard's teams.",
+			"PropertyInspectorPath": "ui/swap-teams.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/swap-teams",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true
+		},
+		{
+			"Name": "Reset Scoreboard",
+			"UUID": "com.voidscape.hyperdrive.reset",
+			"Icon": "imgs/actions/reset",
+			"Tooltip": "Resets the scores, the match, the players or everything. Hold to reset.",
+			"PropertyInspectorPath": "ui/reset.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/reset",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true
+		},
+		{
+			"Name": "Team Color",
+			"UUID": "com.voidscape.hyperdrive.team-color",
+			"Icon": "imgs/actions/team-color",
+			"Tooltip": "Sets a team's color. Lit while the team has it.",
+			"PropertyInspectorPath": "ui/team-color.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/team-color",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true
+		},
+		{
+			"Name": "Load Set",
+			"UUID": "com.voidscape.hyperdrive.load-set",
+			"Icon": "imgs/actions/load-set",
+			"Tooltip": "Loads the next set of the stream queue, the set on stream, or opens the set selector.",
+			"PropertyInspectorPath": "ui/load-set.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/load-set",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true
+		},
+		{
+			"Name": "Display Controls",
+			"UUID": "com.voidscape.hyperdrive.display",
+			"Icon": "imgs/actions/display",
+			"Tooltip": "Shows, hides or toggles a layout folder, a group or everything. Lit while shown.",
+			"PropertyInspectorPath": "ui/display.html",
+			"Controllers": [
+				"Keypad",
+				"Encoder"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/display",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true,
+			"Encoder": {
+				"layout": "layouts/canvas.json",
+				"Icon": "imgs/actions/display",
+				"TriggerDescription": {
+					"Rotate": "Pick a layout",
+					"Push": "Show / hide",
+					"Touch": "Show / hide"
+				}
+			}
+		},
+		{
+			"Name": "Team Battle Score",
+			"UUID": "com.voidscape.hyperdrive.battle-score",
+			"Icon": "imgs/actions/battle-score",
+			"Tooltip": "A team scores in the Crew/Team Battle (hold to undo). Shows the active player.",
+			"PropertyInspectorPath": "ui/battle-score.html",
+			"Controllers": [
+				"Keypad",
+				"Encoder"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/battle-score",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true,
+			"Encoder": {
+				"layout": "layouts/canvas.json",
+				"Icon": "imgs/actions/battle-score",
+				"TriggerDescription": {
+					"Rotate": "Score / undo",
+					"Push": "Next player",
+					"Touch": "Next player"
+				}
+			}
+		},
+		{
+			"Name": "Team Battle Player",
+			"UUID": "com.voidscape.hyperdrive.battle-player",
+			"Icon": "imgs/actions/battle-player",
+			"Tooltip": "Makes the team's next player, or a given player, the active one.",
+			"PropertyInspectorPath": "ui/battle-player.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/battle-player",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true
+		},
+		{
+			"Name": "Team Battle Reset",
+			"UUID": "com.voidscape.hyperdrive.battle-reset",
+			"Icon": "imgs/actions/battle-reset",
+			"Tooltip": "Resets every player's stocks, or the whole battle. Hold to reset.",
+			"PropertyInspectorPath": "ui/battle-reset.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/battle-reset",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true
+		},
+		{
+			"Name": "Stage Strike",
+			"UUID": "com.voidscape.hyperdrive.stage-strike",
+			"Icon": "imgs/actions/stage-strike",
+			"Tooltip": "Undo, redo or restart the stage strike, or report the rock-paper-scissors or game winner.",
+			"PropertyInspectorPath": "ui/stage-strike.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/stage-strike",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true
+		},
+		{
+			"Name": "Bracket Focus",
+			"UUID": "com.voidscape.hyperdrive.bracket-focus",
+			"Icon": "imgs/actions/bracket-focus",
+			"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour or a player's run.",
+			"PropertyInspectorPath": "ui/bracket-focus.html",
+			"Controllers": [
+				"Keypad",
+				"Encoder"
+			],
+			"States": [
+				{
+					"Image": "imgs/keys/bracket-focus",
+					"ShowTitle": false
+				}
+			],
+			"SupportedInMultiActions": true,
+			"Encoder": {
+				"layout": "layouts/canvas.json",
+				"Icon": "imgs/actions/bracket-focus",
+				"TriggerDescription": {
+					"Rotate": "Next / previous round",
+					"Push": "Follow the set",
+					"Touch": "Whole bracket"
+				}
+			}
+		}
+	]
+}

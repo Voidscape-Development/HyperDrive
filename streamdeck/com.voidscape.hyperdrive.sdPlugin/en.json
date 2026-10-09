@@ -1,0 +1,109 @@
+{
+	"Name": "HyperDrive",
+	"Description": "Control HyperDrive, the stream helper for fighting game tournaments: scores, Display Controls, Crew/Team Battle, stage strike and bracket focus, with live state on the keys.",
+	"Category": "HyperDrive",
+	"com.voidscape.hyperdrive.score": {
+		"Name": "Team Score",
+		"Tooltip": "Adds a point to a team (hold to take one). Shows the team's score and color."
+	},
+	"com.voidscape.hyperdrive.swap-teams": {
+		"Name": "Swap Teams",
+		"Tooltip": "Swaps the scoreboard's teams."
+	},
+	"com.voidscape.hyperdrive.reset": {
+		"Name": "Reset Scoreboard",
+		"Tooltip": "Resets the scores, the match, the players or everything. Hold to reset."
+	},
+	"com.voidscape.hyperdrive.team-color": {
+		"Name": "Team Color",
+		"Tooltip": "Sets a team's color. Lit while the team has it."
+	},
+	"com.voidscape.hyperdrive.load-set": {
+		"Name": "Load Set",
+		"Tooltip": "Loads the next set of the stream queue, the set on stream, or opens the set selector."
+	},
+	"com.voidscape.hyperdrive.display": {
+		"Name": "Display Controls",
+		"Tooltip": "Shows, hides or toggles a layout folder, a group or everything. Lit while shown."
+	},
+	"com.voidscape.hyperdrive.battle-score": {
+		"Name": "Team Battle Score",
+		"Tooltip": "A team scores in the Crew/Team Battle (hold to undo). Shows the active player."
+	},
+	"com.voidscape.hyperdrive.battle-player": {
+		"Name": "Team Battle Player",
+		"Tooltip": "Makes the team's next player, or a given player, the active one."
+	},
+	"com.voidscape.hyperdrive.battle-reset": {
+		"Name": "Team Battle Reset",
+		"Tooltip": "Resets every player's stocks, or the whole battle. Hold to reset."
+	},
+	"com.voidscape.hyperdrive.stage-strike": {
+		"Name": "Stage Strike",
+		"Tooltip": "Undo, redo or restart the stage strike, or report the rock-paper-scissors or game winner."
+	},
+	"com.voidscape.hyperdrive.bracket-focus": {
+		"Name": "Bracket Focus",
+		"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour or a player's run."
+	},
+	"Localization": {
+		"team": "Team {team}",
+		"player": "Player {player}",
+		"scoreboard": "Scoreboard {scoreboard}",
+		"scoreboardShort": "SB{scoreboard}",
+		"losers": "Losers",
+		"bestOf": "Best of {bestOf}",
+		"swapTeams": "Swap teams",
+		"resetScores": "Reset scores",
+		"resetMatch": "Reset match",
+		"resetPlayers": "Reset players",
+		"clearAll": "Clear all",
+		"holdToReset": "Hold to reset",
+		"loadStreamSet": "Stream set",
+		"pickSet": "Pick a set",
+		"next": "Next",
+		"loadNext": "Load next",
+		"queueEmpty": "Queue empty",
+		"displayControls": "Display",
+		"pickLayout": "Pick a layout",
+		"everything": "Everything",
+		"layoutFolders": "Layout folders",
+		"groups": "Groups",
+		"unknown": "Unknown",
+		"shown": "Shown",
+		"hidden": "Hidden",
+		"show": "Show",
+		"hide": "Hide",
+		"teamBattle": "Team battle",
+		"noTeamBattle": "No team battle",
+		"noPlayer": "No player",
+		"stocks": "{count} stocks",
+		"stocksOf": "{count} of {max} stocks",
+		"wins": "{count} wins",
+		"eliminated": "Out",
+		"nextPlayer": "Next player",
+		"resetStocks": "Reset stocks",
+		"resetBattle": "Reset battle",
+		"undoStrike": "Undo",
+		"redoStrike": "Redo",
+		"resetStrike": "Restart strike",
+		"rpsWinner": "Won RPS",
+		"wonGame": "Won game",
+		"bracket": "Bracket",
+		"mainChannel": "Main",
+		"noBracket": "No bracket",
+		"focusAll": "Whole bracket",
+		"nextRound": "Next round",
+		"previousRound": "Previous round",
+		"followSet": "Follow set",
+		"followScoreboard": "Follow SB{scoreboard}",
+		"tour": "Tour",
+		"tourStep": "Tour {step}/{steps}",
+		"playerRun": "Player's run",
+		"status": {
+			"connected": "Connected to {url}",
+			"connecting": "Connecting to {url}…",
+			"disconnected": "Can't reach HyperDrive at {url}"
+		}
+	}
+}

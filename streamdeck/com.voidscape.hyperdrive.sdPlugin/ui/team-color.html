@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Team color</title>
+		<script src="sdpi-components.js"></script>
+		<script src="locales.js"></script>
+		<script src="common.js"></script>
+	</head>
+	<body>
+		<sdpi-item label="__MSG_scoreboard__">
+			<sdpi-select setting="scoreboard" datasource="scoreboards" hot-reload default="1"></sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_team__">
+			<sdpi-radio setting="team" default="1">
+				<option value="1">__MSG_team1__</option>
+				<option value="2">__MSG_team2__</option>
+			</sdpi-radio>
+		</sdpi-item>
+		<sdpi-item label="__MSG_color__">
+			<sdpi-color setting="color" default="#e54c4c"></sdpi-color>
+		</sdpi-item>
+	</body>
+</html>

@@ -1,0 +1,84 @@
+name: Build the Stream Deck plugin
+
+# Checks and packs the Stream Deck plugin in streamdeck/. On main, the
+# HyperDrive.streamDeckPlugin file is also added to the latest-build
+# prerelease (made by build_app.yml), which Build Release publishes with
+# the application.
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - 'streamdeck/**'
+            - '.github/workflows/build_streamdeck.yml'
+    pull_request:
+        paths:
+            - 'streamdeck/**'
+            - '.github/workflows/build_streamdeck.yml'
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+concurrency:
+    group: build-streamdeck-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        name: Build plugin
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: streamdeck
+
+        steps:
+            - uses: actions/checkout@v4
+
+            # The version Stream Deck runs the plugin with (manifest.json's Nodejs.Version)
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '24'
+                  cache: npm
+                  cache-dependency-path: streamdeck/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Typecheck
+              run: npm run typecheck
+
+            - name: Test
+              run: npm test
+
+            - name: Build
+              run: npm run build
+
+            - name: Validate
+              run: npm run validate
+
+            - name: Pack
+              run: |
+                  npx streamdeck pack com.voidscape.hyperdrive.sdPlugin --output dist --force
+                  mv dist/com.voidscape.hyperdrive.streamDeckPlugin dist/HyperDrive.streamDeckPlugin
+
+            - name: Upload plugin
+              uses: actions/upload-artifact@v4
+              with:
+                  name: HyperDrive-streamdeck
+                  path: streamdeck/dist/HyperDrive.streamDeckPlugin
+                  compression-level: 0
+
+            # build_app.yml creates latest-build; until it exists there's nothing to add to
+            - name: Add to latest-build release
+              if: ${{ github.ref == 'refs/heads/main' }}
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+              run: |
+                  if gh release view latest-build > /dev/null 2>&1; then
+                    gh release upload latest-build dist/HyperDrive.streamDeckPlugin --clobber
+                  else
+                    echo "::notice::No latest-build release yet, the plugin is only in this run's artifacts"
+                  fi

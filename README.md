@@ -69,8 +69,9 @@ animation again. What's off stays off when HyperDrive restarts or OBS reloads th
 A page is shown while its folder and all of its groups are on. *Show all* and *Hide all*
 turn everything on or off.
 
-For a Stream Deck (*Website* or *API Ninja*) or Bitfocus Companion, right click an entry to
-copy its links, or use these (`<action>` is `show`, `hide` or `toggle`):
+The [Stream Deck plugin](#stream-deck-plugin) has a Display Controls action that lights up
+while its layout is shown. For other tools (Stream Deck's *Website* or *API Ninja* actions,
+Bitfocus Companion), right click an entry to copy its links, or use these (`<action>` is `show`, `hide` or `toggle`):
 
 | Link | |
 | - | - |
@@ -83,6 +84,41 @@ copy its links, or use these (`<action>` is `show`, `hide` or `toggle`):
 Over socket.io, emit `display` with `{"folder" or "group": <name>, "action": <action>}`
 (or `{"all": true, "action": ...}`). `display_state` answers the state, and is also sent to
 every client whenever something is turned on or off.
+
+## Stream Deck plugin
+
+The HyperDrive plugin for Stream Deck runs HyperDrive from its keys, and they show what's
+happening live: the score and team color on a score key, whether a layout is shown, the
+active player of a crew battle.
+
+1. Download `HyperDrive.streamDeckPlugin` from the
+   [releases page](https://github.com/Voidscape-Development/HyperDrive/releases) (the
+   [`latest-build`](https://github.com/Voidscape-Development/HyperDrive/releases/tag/latest-build)
+   prerelease has the newest one) and open it to install it.
+2. Drag a HyperDrive action onto a key. If HyperDrive runs on another PC, type its address
+   (and its port, if you changed it from 5500) at the bottom of the action's settings. Every
+   action uses the same address, and the settings say whether it's connected.
+
+It needs Stream Deck 7.1 or newer, on Windows 10 or macOS 12 and up. Keys whose HyperDrive
+can't be reached are dimmed with a red badge, and pressing one shows an alert, as does an
+action HyperDrive refuses (e.g. nothing to undo).
+
+| Action | Key | Dial (Stream Deck +) |
+| - | - | - |
+| Team Score | Adds a point (or takes one), holding does the opposite. Shows the team, its score and color | Turn: change the score. Push: swap the teams. Touch: add a point |
+| Swap Teams | Swaps the scoreboard's teams | |
+| Reset Scoreboard | The scores, the match, the players or everything. Held, so it isn't pressed by mistake | |
+| Team Color | Sets a team's color, lit while the team has it | |
+| Load Set | The next set of the stream queue (shown on the key), the set on stream, or the set selector | |
+| Display Controls | Toggles, shows or hides a layout folder, a group or everything. Lit while shown | Turn: pick the layout. Push or touch: show/hide it |
+| Team Battle Score | A team scores (Stock Pool: the other team loses a stock), holding undoes it. Shows the active player | Turn: score or undo. Push or touch: next player |
+| Team Battle Player | Makes the next player, or a given one, active | |
+| Team Battle Reset | Every player's stocks, or the whole battle. Held | |
+| Stage Strike | Undo, redo, restart (held), or the winner of rock-paper-scissors or of the game | |
+| Bracket Focus | The whole bracket, next/previous round, the set on a scoreboard, a tour or a player's run, on any focus channel | Turn: next/previous round. Push: follow the scoreboard's set. Touch: whole bracket |
+
+The actions with scoreboards have a scoreboard setting, so one profile can run several
+streams. The plugin's code is in [`streamdeck/`](streamdeck).
 
 ## Player database
 

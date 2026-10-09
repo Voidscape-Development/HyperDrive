@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Team battle player</title>
+		<script src="sdpi-components.js"></script>
+		<script src="locales.js"></script>
+		<script src="common.js"></script>
+	</head>
+	<body>
+		<sdpi-item label="__MSG_team__">
+			<sdpi-radio setting="team" default="1">
+				<option value="1">__MSG_team1__</option>
+				<option value="2">__MSG_team2__</option>
+			</sdpi-radio>
+		</sdpi-item>
+		<sdpi-item label="__MSG_mode__">
+			<sdpi-select setting="mode" default="next">
+				<option value="next">__MSG_nextPlayer__</option>
+				<option value="player">__MSG_setPlayer__</option>
+			</sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_player__" data-when="mode=player" data-default="next">
+			<sdpi-select setting="player" datasource="battlePlayers" hot-reload default="1"></sdpi-select>
+		</sdpi-item>
+	</body>
+</html>

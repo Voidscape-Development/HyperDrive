@@ -6,6 +6,9 @@ on:
       - main
     paths-ignore:
       - 'layout/**'
+      # The Stream Deck plugin has its own workflow, build_streamdeck.yml
+      - 'streamdeck/**'
+      - '.github/workflows/build_streamdeck.yml'
   workflow_dispatch:
 
 jobs:
