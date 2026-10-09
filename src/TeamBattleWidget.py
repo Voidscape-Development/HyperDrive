@@ -12,6 +12,7 @@ from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.MediaHelper import MediaHelper
 from .Helpers.SponsorHelper import SponsorHelper
 from .Helpers.VersionHelper import add_beta_label
+from .PlayerDrag import PlayerDragBoard
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
@@ -62,6 +63,10 @@ class TeamBattleWidget(QDockWidget):
         self.playerWidgets: list[TeamPlayerWidget] = []
         self.team1playerWidgets: list[TeamPlayerWidget] = []
         self.team2playerWidgets: list[TeamPlayerWidget] = []
+        # Players are dragged by their grip within and between the teams
+        self.dragBoard = PlayerDragBoard(
+            lambda: [self.team1playerWidgets, self.team2playerWidgets], self.SwapPlayers, self
+        )
 
         # Index (from 0) of each team's active player, -1 for none
         self.currentActiveIndexTeam1: int = -1
@@ -483,6 +488,7 @@ class TeamBattleWidget(QDockWidget):
         )
 
         players.append(p)
+        self.dragBoard.Register(p)
 
         self.bulkUpdate = True
         try:

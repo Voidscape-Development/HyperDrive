@@ -5,6 +5,7 @@ from qtpy.QtWidgets import *
 
 from .GameAssetManager import GameAssetManager
 from .PlayerDB import PlayerDB
+from .PlayerDrag import PlayerDragBoard
 from .ScoreboardPlayerWidget import ScoreboardPlayerWidget
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
@@ -113,6 +114,12 @@ class CommentaryWidget(QDockWidget):
         self.widget.layout().addWidget(scrollArea)
 
         self.commentaryWidgets: list[ScoreboardPlayerWidget] = []
+        # Commentators are dragged by their grip to reorder them
+        self.dragBoard = PlayerDragBoard(
+            lambda: [self.commentaryWidgets],
+            lambda a, b: a.SwapWith(b, emitIdChanged=False),
+            self,
+        )
 
         StateManager.Set("commentary", {})
         self.commentatorNumber.setValue(2)
@@ -164,6 +171,7 @@ class CommentaryWidget(QDockWidget):
             )
 
             self.commentaryWidgets.append(comm)
+            self.dragBoard.Register(comm)
             self.widgetArea.layout().addWidget(comm)
 
         while len(self.commentaryWidgets) > number:

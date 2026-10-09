@@ -20,6 +20,7 @@ from .Helpers.MediaHelper import MediaHelper
 from .Helpers.VersionHelper import add_beta_label
 from .Hotkeys import Hotkeys
 from .PlayerDB import PlayerDB
+from .PlayerDrag import PlayerDragBoard
 from .Scheduler import (
     SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
     SCOREBOARD_AUTO_UPDATE_GROUP,
@@ -253,6 +254,12 @@ class ScoreboardWidget(QWidget):
         self.playerWidgets: list[ScoreboardPlayerWidget] = []
         self.team1playerWidgets: list[ScoreboardPlayerWidget] = []
         self.team2playerWidgets: list[ScoreboardPlayerWidget] = []
+        # Players are dragged by their grip within and between the teams
+        self.dragBoard = PlayerDragBoard(
+            lambda: [self.team1playerWidgets, self.team2playerWidgets],
+            lambda a, b: a.SwapWith(b, emitIdChanged=False),
+            self,
+        )
 
         self.team1swaps = []
         self.team2swaps = []
@@ -796,6 +803,7 @@ class ScoreboardWidget(QWidget):
             self.ConnectLosersStatus(p, "1", self.team1column)
 
             self.team1playerWidgets.append(p)
+            self.dragBoard.Register(p)
 
             p = ScoreboardPlayerWidget(
                 index=len(self.team2playerWidgets) + 1,
@@ -842,6 +850,7 @@ class ScoreboardWidget(QWidget):
             self.ConnectLosersStatus(p, "2", self.team2column)
 
             self.team2playerWidgets.append(p)
+            self.dragBoard.Register(p)
 
         while len(self.team1playerWidgets) > number:
             team1player = self.team1playerWidgets[-1]
