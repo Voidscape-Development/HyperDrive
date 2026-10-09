@@ -155,7 +155,13 @@ The games of the set on scoreboard N, by game number:
 | `winner` | `1` or `2` for the team that won, `0` for a draw, `null` if not played yet |
 | `stage`, `stageData` | The stage's codename and its data (as in `game.stages`) |
 | `characters` | Characters by team: `{"1": ["Mario"], "2": ["Fox"]}`, by player |
+| `characterData` | The same characters with their data, as in a player's `character`: `{name, en_name, display_name, codename, assets}`. `assets` are the default skin's images (the games don't keep skins). `null` for a player without one |
+| `scoreAfter` | The set's score once this game was played: `{"1": 1, "2": 0}`. Draws don't count. `null` for a game not played yet |
 | `current` | It's the game being played |
+
+The teams are the scoreboard's sides: when they're swapped, `winner`, the
+characters and `scoreAfter` follow the teams. Their colors are in
+`score.N.team.T.color`, and the best of in `score.N.best_of`.
 
 ## `score.N.report`
 

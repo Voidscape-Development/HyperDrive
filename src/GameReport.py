@@ -58,6 +58,17 @@ class GameReport:
                 wins[g["winner"]] += 1
         return wins[1], wins[2]
 
+    def ScoreAfter(self, index):
+        """The set's score (team 1, team 2) once game `index` was played, or
+        None if it wasn't played yet."""
+        if not 0 <= index < len(self.games) or self.games[index]["winner"] is UNDECIDED:
+            return None
+        wins = {1: 0, 2: 0}
+        for g in self.games[: index + 1]:
+            if g["winner"] in (1, 2):
+                wins[g["winner"]] += 1
+        return wins[1], wins[2]
+
     def Wins(self, team):
         return [i for i, g in enumerate(self.games) if g["winner"] == team]
 

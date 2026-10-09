@@ -755,11 +755,34 @@ class GameReportWidget(QWidget):
 
     # Layouts
 
+    @staticmethod
+    def CharacterData(en_name):
+        """A character's data for the layouts, like a player's character:
+        names, codename and the default skin's assets. None if not found."""
+        if not en_name:
+            return None
+        manager = GameAssetManager.instance
+        character = (getattr(manager, "characters", None) or {}).get(en_name)
+        if character is None:
+            return None
+        assets = {}
+        skins = (getattr(manager, "skinModels", None) or {}).get(en_name)
+        if skins is not None and skins.rowCount() > 0:
+            assets = (skins.item(0).data(Qt.ItemDataRole.UserRole) or {}).get("assets") or {}
+        return {
+            "name": character.get("export_name"),
+            "en_name": en_name,
+            "display_name": character.get("display_name"),
+            "codename": character.get("codename"),
+            "assets": assets,
+        }
+
     def Export(self):
         try:
             games = {}
             for i, g in enumerate(self.report.games):
                 stage = StateManager.Get(f"game.stages.{g['stage']}") if g.get("stage") else None
+                scoreAfter = self.report.ScoreAfter(i)
                 games[str(i + 1)] = {
                     "game": i + 1,
                     # 1 or 2 for the team that won, 0 for a draw, None if not played
@@ -769,6 +792,15 @@ class GameReportWidget(QWidget):
                     "characters": {
                         str(team): [c for c in (g["characters"].get(team) or [])] for team in (1, 2)
                     },
+                    # The same characters with their names and images
+                    "characterData": {
+                        str(team): [
+                            self.CharacterData(c) for c in (g["characters"].get(team) or [])
+                        ]
+                        for team in (1, 2)
+                    },
+                    # The set's score once this game was played, None before
+                    "scoreAfter": {"1": scoreAfter[0], "2": scoreAfter[1]} if scoreAfter else None,
                     "current": i == self.report.CurrentGameIndex(),
                 }
             status = StartGGReporter.instance.Status(self.number)
