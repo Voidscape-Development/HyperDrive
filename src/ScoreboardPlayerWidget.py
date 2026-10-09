@@ -129,21 +129,6 @@ class ScoreboardPlayerWidget(QGroupBox):
         self.findChild(QLineEdit, "team").editingFinished.connect(self.ManageSavePlayerToDBText)
         self.save_bt.setMinimumWidth(1)
 
-        self.delete_bt = QPushButton(QApplication.translate("app", "Delete player entry"))
-        # self.delete_bt.setFont(self.parent.font_small)
-        self.delete_bt.setIcon(ThemedIcon("assets/icons/cancel.svg"))
-        bottom_buttons_layout.addWidget(self.delete_bt)
-        self.delete_bt.setFont(QFont(self.delete_bt.font().family(), 9))
-        self.delete_bt.setEnabled(False)
-        self.findChild(QLineEdit, "name").editingFinished.connect(
-            self.ManageDeletePlayerFromDBActive
-        )
-        self.findChild(QLineEdit, "team").editingFinished.connect(
-            self.ManageDeletePlayerFromDBActive
-        )
-        self.delete_bt.clicked.connect(self.DeletePlayerFromDB)
-        self.delete_bt.setMinimumWidth(1)
-
         self.media_bt = QPushButton(QApplication.translate("app", "Media..."))
         self.media_bt.setFont(QFont(self.media_bt.font().family(), 9))
         self.media_bt.setIcon(ThemedIcon("assets/icons/person.svg"))
@@ -178,7 +163,7 @@ class ScoreboardPlayerWidget(QGroupBox):
         self.hiddenElements = set()
         self.displayElements = set()
         self.detailsShown = True
-        self.bottomButtons = [self.save_bt, self.delete_bt, self.media_bt, self.clear_bt]
+        self.bottomButtons = [self.save_bt, self.media_bt, self.clear_bt]
         self.detailsButton = QToolButton()
         self.detailsButton.setAutoRaise(True)
         self.detailsButton.setFixedSize(24, 24)
@@ -233,9 +218,7 @@ class ScoreboardPlayerWidget(QGroupBox):
 
         GameAssetManager.instance.signals.onLoad.connect(self.ReloadCharacters)
 
-        self.pronoun_completer = QCompleter()
-        self.findChild(QLineEdit, "pronoun").setCompleter(self.pronoun_completer)
-        self.pronoun_completer.setModel(PronounHelper.Model())
+        self.pronoun_completer = PronounHelper.SetupField(self.findChild(QLineEdit, "pronoun"))
 
     def OpenMedia(self):
         # Imported here: the window imports the widgets' modules
@@ -774,7 +757,6 @@ class ScoreboardPlayerWidget(QGroupBox):
             self.findChild(QLineEdit, "name").completer().setModel(PlayerDB.model)
 
             self.ManageSavePlayerToDBText()
-            self.ManageDeletePlayerFromDBActive()
 
     def SetData(self, data, dontLoadFromDB=False, clear=True, no_mains=False, enrichBlocking=True):
         self.dataLock.acquire()
@@ -1080,18 +1062,6 @@ class ScoreboardPlayerWidget(QGroupBox):
             self.save_bt.setText(QApplication.translate("app", "Update player"))
         else:
             self.save_bt.setText(QApplication.translate("app", "Save new player"))
-
-    def ManageDeletePlayerFromDBActive(self):
-        tag = self.GetCurrentPlayerTag()
-
-        if tag in PlayerDB.database:
-            self.delete_bt.setEnabled(True)
-        else:
-            self.delete_bt.setEnabled(False)
-
-    def DeletePlayerFromDB(self):
-        tag = self.GetCurrentPlayerTag()
-        PlayerDB.DeletePlayer(tag)
 
     def Clear(self, no_mains=False):
         with StateManager.SaveBlock():

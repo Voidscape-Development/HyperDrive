@@ -29,18 +29,15 @@ class SettingsWindow(QDialog):
         self.selection_list = QListWidget()
         self.selection_list.currentRowChanged.connect(self.on_selection_changed)
 
-        # Create a stacked widget for the settings widgets
+        # Create a stacked widget for the settings widgets. Each page scrolls
+        # on its own, so a short page isn't stretched to the tallest one's
+        # height (which pushed the Pronouns page's buttons out of view)
         self.settings_stack = QStackedWidget()
-
-        # Create a scroll area for the settings stack
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setWidget(self.settings_stack)
 
         # Create a splitter for the selection and settings
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.selection_list)
-        splitter.addWidget(scroll_area)
+        splitter.addWidget(self.settings_stack)
 
         # Set the layout for the dialog
         layout = QVBoxLayout()
@@ -421,6 +418,32 @@ class SettingsWindow(QDialog):
             SettingsWidget("display_options", displaySettings),
         )
 
+        # The rows above every character in the character select grid
+        characterSelectSettings = [
+            (
+                QApplication.translate(
+                    "settings.character_picker", "Show the player's mains in the character grid"
+                ),
+                "show_mains",
+                "checkbox",
+                True,
+            ),
+            (
+                QApplication.translate(
+                    "settings.character_picker",
+                    "Show recently picked characters in the character grid",
+                ),
+                "show_recent",
+                "checkbox",
+                True,
+            ),
+        ]
+
+        self.add_setting_widget(
+            QApplication.translate("settings", "Character Select"),
+            SettingsWidget("character_picker", characterSelectSettings),
+        )
+
         self.add_setting_widget(
             QApplication.translate("settings", "Match & Phase Names"), TournamentTermsSettings()
         )
@@ -526,10 +549,15 @@ class SettingsWindow(QDialog):
         self.settings_stack.setCurrentWidget(widget)
 
     def add_setting_widget(self, name, widget):
+        # Create a scroll area for the setting widget
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(widget)
+
         # Create a list widget item for the selection
         item = QListWidgetItem(name)
-        item.setData(Qt.UserRole, widget)
+        item.setData(Qt.UserRole, scroll_area)
         self.selection_list.addItem(item)
 
         # Add the setting widget to the stack
-        self.settings_stack.addWidget(widget)
+        self.settings_stack.addWidget(scroll_area)

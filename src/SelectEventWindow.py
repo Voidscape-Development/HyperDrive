@@ -21,6 +21,9 @@ ICON_SIZE = 52
 LOCATION_ICON_SIZE = 22
 DETAIL_ICON_SIZE = 14
 STRIPE_WIDTH = 4
+# Width of a selected event's border. The list draws it inside the item, so
+# the card gets that much less room than its size hint on each side
+SELECTED_BORDER = 2
 LOCATION_ICONS = {
     "online": ["online"],
     "offline": ["offline"],
@@ -148,7 +151,7 @@ class EventCard(QWidget):
         else:
             tile.setText(Initials(event.get("game")))
         tile.setToolTip(event.get("game", ""))
-        layout.addWidget(tile)
+        layout.addWidget(tile, 0, Qt.AlignmentFlag.AlignVCenter)
 
         column = QVBoxLayout()
         column.setSpacing(4)
@@ -283,7 +286,7 @@ class SelectEventWindow(QDialog):
             }}
             QListWidget::item:selected {{
                 background: {colors["selected"].name()};
-                border: 2px solid {colors["highlight"].name()};
+                border: {SELECTED_BORDER}px solid {colors["highlight"].name()};
             }}
         """)
         layout.addWidget(self.eventList)
@@ -337,7 +340,8 @@ class SelectEventWindow(QDialog):
                 Qt.ItemDataRole.UserRole + 1,
                 f"{event.get('name', '')} {event.get('game', '')}".lower(),
             )
-            item.setSizeHint(card.sizeHint())
+            # Room for the border, so the card's margins (and the logo) stay even
+            item.setSizeHint(card.sizeHint() + QSize(0, 2 * SELECTED_BORDER))
             self.eventList.addItem(item)
             self.eventList.setItemWidget(item, card)
 

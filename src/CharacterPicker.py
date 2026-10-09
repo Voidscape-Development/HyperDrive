@@ -19,6 +19,9 @@ from .Theme import ThemedIcon
 # The characters picked last, by game: {game codename: [en_name, ...]}
 RECENT_KEY = "character_picker.recent"
 RECENT_COUNT = 12
+# Settings page "Character Select" turns the mains and recent rows on and off
+SHOW_MAINS_KEY = "character_picker.show_mains"
+SHOW_RECENT_KEY = "character_picker.show_recent"
 
 COLUMNS = 7
 CHARACTER_ICON = QSize(40, 40)
@@ -489,8 +492,10 @@ class CharacterPickerPopup(QFrame):
         everything = tiles if not searching else self.CharacterTiles()[0]
         everything = {row: tile for tile in everything for row in [tile[2]]}
         provider = self.characterCombo.mainsProvider
-        mains = provider() if callable(provider) and not searching else []
-        recent = RecentCharacters()[:COLUMNS] if not searching else []
+        showMains = SettingsManager.Get(SHOW_MAINS_KEY, True) and not searching
+        showRecent = SettingsManager.Get(SHOW_RECENT_KEY, True) and not searching
+        mains = provider() if callable(provider) and showMains else []
+        recent = RecentCharacters()[:COLUMNS] if showRecent else []
         anyShown = False
         for (label, view), names in [
             ((mainsLabel, mainsView), mains),

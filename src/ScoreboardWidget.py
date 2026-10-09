@@ -178,26 +178,25 @@ class ScoreboardWidget(QWidget):
 
         self.innerWidget.layout().addWidget(topOptions)
 
-        col = QWidget()
-        col.setLayout(QVBoxLayout())
-        topOptions.layout().addWidget(col)
+        # Both counts on one line, to keep the options short
         self.charNumber = QSpinBox()
-        col.layout().addWidget(QLabel(QApplication.translate("app", "Characters per player")))
-        col.layout().addWidget(self.charNumber)
+        topOptions.layout().addWidget(
+            QLabel(QApplication.translate("app", "Characters per player"))
+        )
+        topOptions.layout().addWidget(self.charNumber)
         self.charNumber.valueChanged.connect(self.SetCharacterNumber)
 
-        col = QWidget()
-        col.setLayout(QVBoxLayout())
-        topOptions.layout().addWidget(col)
-        topOptions.layout().addStretch()
+        topOptions.layout().addSpacing(12)
         self.playerNumber = QSpinBox()
-        col.layout().addWidget(QLabel(QApplication.translate("app", "Players per team")))
-        col.layout().addWidget(self.playerNumber)
+        topOptions.layout().addWidget(QLabel(QApplication.translate("app", "Players per team")))
+        topOptions.layout().addWidget(self.playerNumber)
         self.playerNumber.valueChanged.connect(self.SetPlayersPerTeam)
+        topOptions.layout().addStretch()
 
         # VISIBILITY
         col = QWidget()
         col.setLayout(QVBoxLayout())
+        col.layout().setContentsMargins(0, 0, 0, 0)
         col.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         col.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         topOptions.layout().addWidget(col)
