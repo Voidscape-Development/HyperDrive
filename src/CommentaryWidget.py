@@ -153,7 +153,6 @@ class CommentaryWidget(QDockWidget):
                 index=len(self.commentaryWidgets) + 1,
                 teamNumber=0,
                 path=f"commentary.{len(self.commentaryWidgets) + 1}",
-                customName="Commentator",
             )
 
             comm.btMoveUp.clicked.connect(

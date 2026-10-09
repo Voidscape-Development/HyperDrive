@@ -60,7 +60,7 @@ class ScoreboardPlayerWidget(QGroupBox):
 
     dataLock = threading.RLock()
 
-    def __init__(self, index=0, teamNumber=0, path="", customName="", *args):
+    def __init__(self, index=0, teamNumber=0, path="", *args):
         super().__init__(*args)
 
         self.instanceSignals = ScoreboardPlayerWidgetSignals()
@@ -69,7 +69,6 @@ class ScoreboardPlayerWidget(QGroupBox):
 
         self.index = index
         self.teamNumber = teamNumber
-        self.customName = customName
 
         self.losers = False
 
@@ -461,13 +460,8 @@ class ScoreboardPlayerWidget(QGroupBox):
                     w.EmitPlayerIdChanged()
 
     def SetIndex(self, index: int, team: int):
-        # Players have no title, commentators keep theirs
-        self.findChild(QWidget, "title").setVisible(self.customName != "")
-        if self.customName != "":
-            title = self.customName + " {0}"
-            self.findChild(QWidget, "title").setText(
-                QApplication.translate("app", title).format(index)
-            )
+        # Neither players nor commentators show a title
+        self.findChild(QWidget, "title").setVisible(False)
         self.index = index
         self.teamNumber = team
 
