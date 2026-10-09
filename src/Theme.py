@@ -329,6 +329,40 @@ def ThemedIcon(path, badge=None):
     return QIcon(ThemedIconEngine(path, badge))
 
 
+LABEL_ICON_SIZE = 20
+
+
+class _LabelIconRefresher(QObject):
+    """Draws a label's icon again when the theme changes: a pixmap, unlike
+    an icon on a button, keeps the colors it was drawn with."""
+
+    def __init__(self, label, icon):
+        super().__init__(label)
+        self.label = label
+        self.icon = icon
+        self.Draw()
+        label.installEventFilter(self)
+
+    def Draw(self):
+        self.label.setPixmap(self.icon.pixmap(LABEL_ICON_SIZE, LABEL_ICON_SIZE))
+
+    def eventFilter(self, obj, event):
+        if event.type() in (QEvent.Type.PaletteChange, QEvent.Type.StyleChange):
+            self.Draw()
+        return False
+
+
+def SetLabelIcon(label, path, name):
+    """Shows the icon at path (from assets/icons) in label instead of its
+    text, in the theme's colors, with name as its tooltip."""
+    _LabelIconRefresher(label, ThemedIcon(path))
+    # As wide as the icon, not as the text it replaces
+    label.setMinimumWidth(0)
+    label.setFixedWidth(LABEL_ICON_SIZE + 4)
+    label.setToolTip(name)
+    label.setAccessibleName(name)
+
+
 def ApplyUIScale():
     # Qt only reads the scale factor when the application is created, so this
     # runs before that and a change takes effect on the next start. A scale

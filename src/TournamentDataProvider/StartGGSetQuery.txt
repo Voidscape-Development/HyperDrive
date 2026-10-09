@@ -1,4 +1,4 @@
-query SetQuery($id: ID!) {
+query SetQuery($id: ID!, $profile: Boolean = true) {
 	set(id: $id) {
 		id
 		event {
@@ -28,12 +28,12 @@ query SetQuery($id: ID!) {
 						id
 						slug
 						name
-						genderPronoun
-						authorizations(types: [TWITTER]) {
+						genderPronoun @include(if: $profile)
+						authorizations @include(if: $profile) {
 							type
 							externalUsername
 						}
-						location {
+						location @include(if: $profile) {
 							city
 							country
 							state

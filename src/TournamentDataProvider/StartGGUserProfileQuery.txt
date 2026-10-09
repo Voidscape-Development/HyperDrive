@@ -1,0 +1,15 @@
+query UserProfileQuery($id: ID!) {
+	user(id: $id) {
+		id
+		genderPronoun
+		location {
+			city
+			country
+			state
+		}
+		authorizations {
+			type
+			externalUsername
+		}
+	}
+}

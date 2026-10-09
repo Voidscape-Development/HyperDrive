@@ -8,7 +8,9 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .CharacterPicker import CharacterCombo, MainsOf, SkinCombo, VariantCombo
 from .GameAssetManager import GameAssetManager
+from .Helpers import SocialsHelper
 from .Helpers.BadWordFilter import BadWordFilter
 from .Helpers.CountryHelper import CountryHelper
 from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
@@ -16,9 +18,10 @@ from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
 from .Helpers.PronounHelper import PronounHelper
 from .PlayerDB import PlayerDB
+from .SocialsWidget import SetPlatformIcon, SocialsButton
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
-from .Theme import ThemedIcon
+from .Theme import SetLabelIcon, ThemedIcon
 
 
 class TeamPlayerWidgetSignals(QObject):
@@ -53,6 +56,16 @@ class TeamPlayerWidget(QGroupBox):
         self.losers = False
 
         uic.loadUi(ResolvePath("src/layout/TeamPlayer.ui"), self)
+
+        # Twitter keeps its field, the other socials are edited from here
+        self.socialsButton = SocialsButton.Attach(self.findChild(QLineEdit, "twitter"))
+        SetPlatformIcon(self.findChild(QLabel, "twitterLabel"), "twitter")
+        SetLabelIcon(
+            self.findChild(QLabel, "locationLabel"),
+            "assets/icons/location.svg",
+            QApplication.translate("app", "Location"),
+        )
+        self.socialsButton.changed.connect(self.ExportSocials)
 
         self.dynamicSpinner = self.findChild(QSpinBox, "dynamicSpinner")
 
@@ -117,6 +130,8 @@ class TeamPlayerWidget(QGroupBox):
                 ]
             )
 
+        self.ExportSocials()
+
         for c in self.findChildren(QComboBox):
             c.currentIndexChanged.connect(
                 lambda text, element=c: [self.ComboBoxIndexChanged(element)]
@@ -156,6 +171,9 @@ class TeamPlayerWidget(QGroupBox):
 
     def GetIndex(self):
         return self.index
+
+    def ExportSocials(self):
+        StateManager.Set(f"{self.path}.socials", self.socialsButton.Socials())
 
     # =====================================================
     # BATTLE SPECIFIC CALLS
@@ -367,7 +385,7 @@ class TeamPlayerWidget(QGroupBox):
                         for widget in w.findChildren(QWidget):
                             if type(widget) == QLineEdit:
                                 data[widget.objectName()] = widget.text()
-                            if type(widget) == QComboBox:
+                            if isinstance(widget, QComboBox):
                                 data[widget.objectName()] = widget.currentIndex()
                             if type(widget) == QPlainTextEdit:
                                 data[widget.objectName()] = widget.toPlainText()
@@ -378,6 +396,7 @@ class TeamPlayerWidget(QGroupBox):
                         data["online_avatar"] = StateManager.Get(f"{w.path}.online_avatar")
                         data["id"] = StateManager.Get(f"{w.path}.id")
                         data["city"] = StateManager.Get(f"{w.path}.city")
+                        data["_socials"] = w.socialsButton.Others()
                         tmpData.append(data)
 
                     # Load state
@@ -388,7 +407,7 @@ class TeamPlayerWidget(QGroupBox):
                                 if type(widget) == QLineEdit:
                                     widget.setText(tmpData[i][objName])
                                     widget.editingFinished.emit()
-                                if type(widget) == QComboBox:
+                                if isinstance(widget, QComboBox):
                                     widget.setCurrentIndex(tmpData[i][objName])
                                 if type(widget) == QPlainTextEdit:
                                     widget.setPlainText(tmpData[i][objName])
@@ -400,6 +419,7 @@ class TeamPlayerWidget(QGroupBox):
                         w.ExportPlayerImages(tmpData[i]["online_avatar"])
                         # w.ExportPlayerId(tmpData[i]["id"])
                         StateManager.Set(f"{w.path}.city", tmpData[i]["city"])
+                        w.socialsButton.SetOthers(tmpData[i]["_socials"])
                         w.ExportActiveStatus()
                         w.ExportEliminatedStatus()
         finally:
@@ -456,38 +476,26 @@ class TeamPlayerWidget(QGroupBox):
             character_element.setLayout(QHBoxLayout())
             character_element.layout().setSpacing(4)
             character_element.layout().setContentsMargins(0, 0, 0, 0)
-            player_character = QComboBox()
-            player_character.setEditable(True)
+            # Both open the character grid
+            player_character = CharacterCombo()
+            player_character.mainsProvider = self.SavedMains
             character_element.layout().addWidget(player_character)
             player_character.setMinimumWidth(60)
-            player_character.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_character.view().setMinimumWidth(60)
-            player_character.completer().setCompletionMode(QCompleter.PopupCompletion)
-            player_character.completer().popup().setMinimumWidth(250)
             player_character.setModel(GameAssetManager.instance.characterModel)
             player_character.setIconSize(QSize(24, 24))
             player_character.setFixedHeight(32)
             player_character.setFont(QFont(player_character.font().family(), 9))
-            player_character.lineEdit().setFont(QFont(player_character.font().family(), 9))
 
-            player_character_color = QComboBox()
+            player_character_color = SkinCombo(player_character)
             character_element.layout().addWidget(player_character_color)
             player_character_color.setIconSize(QSize(48, 48))
             player_character_color.setFixedHeight(32)
             player_character_color.setMinimumWidth(64)
             player_character_color.setMaximumWidth(120)
             player_character_color.setFont(QFont(player_character_color.font().family(), 9))
-            view = QListView()
-            view.setIconSize(QSize(128, 128))
-            player_character_color.setView(view)
-            player_character_color.setEditable(True)
-            player_character_color.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_character_color.completer().setCompletionMode(QCompleter.PopupCompletion)
-            # self.player_character_color.activated.connect(self.CharacterChanged)
-            # self.CharacterChanged()
 
-            # Add variant
-            player_variant = QComboBox()
+            # Add variant, also picked from the grid
+            player_variant = VariantCombo(player_character)
             player_variant.setObjectName("variants")
             character_element.layout().addWidget(player_variant)
             player_variant.setIconSize(QSize(24, 24))
@@ -496,12 +504,6 @@ class TeamPlayerWidget(QGroupBox):
             player_variant.setMaximumWidth(120)
             player_variant.setFont(QFont(player_variant.font().family(), 9))
             player_variant.setModel(GameAssetManager.instance.variantModel)
-            view = QListView()
-            view.setIconSize(QSize(24, 24))
-            player_variant.setView(view)
-            player_variant.setEditable(True)
-            player_variant.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_variant.completer().setCompletionMode(QCompleter.PopupCompletion)
 
             if len(GameAssetManager.instance.variants) <= 0:
                 player_variant.setVisible(False)
@@ -681,6 +683,11 @@ class TeamPlayerWidget(QGroupBox):
         state.setModel(stateModel)
         state.setCurrentIndex(0)
 
+    def SavedMains(self):
+        """The mains saved in the player DB for the player in this widget,
+        shown first in the character grid."""
+        return MainsOf(PlayerDB.GetPlayer(self.GetCurrentPlayerTag()))
+
     def LoadSkinOptions(self, element, target):
         characterData = element.currentData()
 
@@ -767,6 +774,16 @@ class TeamPlayerWidget(QGroupBox):
                 data["twitter"] = BadWordFilter.Censor(data["twitter"], data.get("country_code"))
                 twitter.setText(f"{data.get('twitter')}")
                 twitter.editingFinished.emit()
+
+            if data.get("socials"):
+                # Added to the ones loaded from the DB before, so accounts
+                # only typed in locally are kept
+                self.socialsButton.MergeOthers(
+                    {
+                        platform: BadWordFilter.Censor(handle, data.get("country_code"))
+                        for platform, handle in SocialsHelper.Clean(data.get("socials")).items()
+                    }
+                )
 
             # if data.get("custom_textbox") and data.get("custom_textbox") != self.custom_textbox.toPlainText():
             #     data["custom_textbox"] = BadWordFilter.Censor(
@@ -916,3 +933,5 @@ class TeamPlayerWidget(QGroupBox):
                         continue  # only executed if the inner loop DID break
                 else:
                     c.setCurrentIndex(0)
+
+            self.socialsButton.Clear()

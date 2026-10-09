@@ -61,7 +61,8 @@ query EventMatchListQuery($eventSlug: String!, $page: Int = 1, $filters: SetFilt
 										state
 										city
 									}
-									authorizations(types: [TWITTER]) {
+									authorizations {
+										type
 										externalUsername
 									}
 									images(type: \"profile\") {

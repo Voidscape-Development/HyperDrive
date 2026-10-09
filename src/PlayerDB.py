@@ -13,6 +13,7 @@ from qtpy.QtWidgets import *
 from sqlmodel import Session, select
 
 from .GameAssetManager import GameAssetManager
+from .Helpers import SocialsHelper
 from .Helpers.DictHelper import deep_clone
 from .Helpers.QtHelper import gui_thread_sync
 from .PlayerDBModels import PLAYER_FIELDS, GetEngine, MakeTag, Player
@@ -21,6 +22,9 @@ from .SettingsManager import SettingsManager
 # Where the players were saved before the SQLite database
 LEGACY_JSON_PATH = "./user_data/local_players.json"
 LEGACY_CSV_PATH = "./user_data/local_players.csv"
+
+# Saved as JSON, the other fields as strings
+JSON_FIELDS = {"mains", "socials"}
 
 
 class PlayerDBSignals(QObject):
@@ -71,11 +75,13 @@ class PlayerDB:
     def RowToDict(row):
         # Unset fields are left out, like they were in the JSON file, so
         # player.get("mains", {}) still gets the default
-        return {
+        player = {
             field: getattr(row, field)
             for field in PlayerDB.fieldnames
             if getattr(row, field) is not None
         }
+        # The admin page edits twitter on its own
+        return SocialsHelper.Normalize(player)
 
     @staticmethod
     def MigrateLegacyFiles():
@@ -138,7 +144,7 @@ class PlayerDB:
                     except:
                         player["mains"] = {}
                         logger.error(f"No mains found for: {tag}")
-                players[tag] = player
+                players[tag] = SocialsHelper.Normalize(player)
         return players
 
     @staticmethod
@@ -195,6 +201,8 @@ class PlayerDB:
                     else player.get("gamerTag")
                 )
 
+                SocialsHelper.Normalize(player)
+
                 if not overwrite:
                     if tag not in PlayerDB.database:
                         incomingMains = player.get("mains", {})
@@ -223,11 +231,21 @@ class PlayerDB:
                                 newMains.append(main)
                             dbMains[game] = newMains
 
+                        # Merged platform by platform, so accounts typed in
+                        # by hand aren't lost when start.gg doesn't know them
+                        dbSocials = SocialsHelper.Get(PlayerDB.database[tag])
+                        incomingSocials = SocialsHelper.Get(player)
+
                         if SettingsManager.Get("general.disable_overwrite", False):
                             PlayerDB.database[tag] = player | PlayerDB.database[tag]
+                            socials = SocialsHelper.Merge(incomingSocials, dbSocials)
                         else:
                             PlayerDB.database[tag].update(player)
+                            socials = SocialsHelper.Merge(dbSocials, incomingSocials)
                         PlayerDB.database[tag]["mains"] = dbMains
+                        if socials or "socials" in PlayerDB.database[tag]:
+                            PlayerDB.database[tag]["socials"] = socials
+                            PlayerDB.database[tag]["twitter"] = socials.get("twitter", "")
                 else:
                     if PlayerDB.database.get(tag) is not None and player.get("mains") is not None:
                         try:
@@ -273,6 +291,7 @@ class PlayerDB:
         entry.update(player)
         entry["prefix"] = (entry.get("prefix") or "").strip()
         entry["gamerTag"] = (entry.get("gamerTag") or "").strip()
+        SocialsHelper.Normalize(entry)
 
         if oldTag is not None and oldTag != newTag:
             PlayerDB.database.pop(oldTag, None)
@@ -439,12 +458,12 @@ class PlayerDB:
                 row = rows.pop(tag, None) or Player()
                 for field in PlayerDB.fieldnames:
                     value = player.get(field)
-                    if field == "mains" and isinstance(value, str):
+                    if field in JSON_FIELDS and isinstance(value, str):
                         try:
                             value = json.loads(value)
                         except:
                             value = {}
-                    elif field != "mains" and value is not None:
+                    elif field not in JSON_FIELDS and value is not None:
                         value = str(value)
                     if getattr(row, field) != value:
                         setattr(row, field, value)

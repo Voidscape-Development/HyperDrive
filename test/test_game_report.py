@@ -40,6 +40,18 @@ def TestScoreSync():
     assert len(report.games) == 7
 
 
+def TestScoreAfter():
+    report = GameReport()
+    report.SetBestOf(5)
+    for i, winner in enumerate([1, DRAW, 2, 2]):
+        report.SetWinner(i, winner)
+    assert [report.ScoreAfter(i) for i in range(5)] == [(1, 0), (1, 0), (1, 1), (1, 2), None]
+    assert report.ScoreAfter(9) is None
+    # Swapping the teams flips it
+    report.Swap()
+    assert report.ScoreAfter(3) == (2, 1)
+
+
 def TestSwap():
     report = GameReport()
     report.SetBestOf(3)

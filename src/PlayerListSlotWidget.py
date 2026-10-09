@@ -91,6 +91,7 @@ class PlayerListSlotWidget(QGroupBox):
             )
             self.playerWidgets.append(p)
             self.list.layout().addWidget(p)
+            self.playerList.dragBoard.Register(p)
 
             p.SetCharactersPerPlayer(self.playerList.charactersPerPlayer)
             ApplyHiddenElements(p, self.playerList.hiddenElements)

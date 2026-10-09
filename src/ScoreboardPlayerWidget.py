@@ -8,7 +8,9 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .CharacterPicker import CharacterCombo, MainsOf, SkinCombo, VariantCombo
 from .GameAssetManager import GameAssetManager
+from .Helpers import SocialsHelper
 from .Helpers.BadWordFilter import BadWordFilter
 from .Helpers.CountryHelper import CountryHelper
 from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
@@ -19,8 +21,9 @@ from .Helpers.PronounHelper import PronounHelper
 from .PlayerDB import PlayerDB
 from .SeedManager import SeedManager
 from .SettingsManager import SettingsManager
+from .SocialsWidget import SetPlatformIcon, SocialsButton
 from .StateManager import StateManager
-from .Theme import ThemedIcon
+from .Theme import SetLabelIcon, ThemedIcon
 from .TournamentDataManager import TournamentDataManager
 
 
@@ -42,6 +45,7 @@ class ScoreboardPlayerWidget(QGroupBox):
         "pronoun",
         "twitterLabel",
         "twitter",
+        "socials",
         "birthday",
         "locationLabel",
         "country",
@@ -57,7 +61,7 @@ class ScoreboardPlayerWidget(QGroupBox):
 
     dataLock = threading.RLock()
 
-    def __init__(self, index=0, teamNumber=0, path="", customName="", *args):
+    def __init__(self, index=0, teamNumber=0, path="", *args):
         super().__init__(*args)
 
         self.instanceSignals = ScoreboardPlayerWidgetSignals()
@@ -66,11 +70,25 @@ class ScoreboardPlayerWidget(QGroupBox):
 
         self.index = index
         self.teamNumber = teamNumber
-        self.customName = customName
 
         self.losers = False
 
         uic.loadUi(ResolvePath("src/layout/ScoreboardPlayer.ui"), self)
+
+        # Twitter keeps its field, the other socials are edited from here
+        self.socialsButton = SocialsButton.Attach(self.findChild(QLineEdit, "twitter"))
+        SetPlatformIcon(self.findChild(QLabel, "twitterLabel"), "twitter")
+        SetLabelIcon(
+            self.findChild(QLabel, "seedLabel"),
+            "assets/icons/seed_leaf.svg",
+            QApplication.translate("app", "Seed"),
+        )
+        SetLabelIcon(
+            self.findChild(QLabel, "locationLabel"),
+            "assets/icons/location.svg",
+            QApplication.translate("app", "Location"),
+        )
+        self.socialsButton.changed.connect(self.ExportSocials)
 
         custom_textbox_layout = QHBoxLayout()
         self.custom_textbox = QPlainTextEdit()
@@ -186,6 +204,8 @@ class ScoreboardPlayerWidget(QGroupBox):
                 ]
             )
 
+        self.ExportSocials()
+
         seed = self.findChild(QSpinBox, "seed")
         seed.valueChanged.connect(lambda value: StateManager.Set(f"{self.path}.seed", value))
         seed.valueChanged.connect(lambda value: self.instanceSignals.player_seed_changed.emit())
@@ -230,6 +250,10 @@ class ScoreboardPlayerWidget(QGroupBox):
     def deleteLater(self):
         self._deleted = True
         super().deleteLater()
+
+    def ExportSocials(self):
+        StateManager.Set(f"{self.path}.socials", self.socialsButton.Socials())
+        self.instanceSignals.dataChanged.emit()
 
     def ComboBoxIndexChanged(self, element: QComboBox):
         StateManager.Set(f"{self.path}.{element.objectName()}", element.currentData())
@@ -382,7 +406,7 @@ class ScoreboardPlayerWidget(QGroupBox):
                                 continue
                             if type(widget) == QLineEdit:
                                 data[widget.objectName()] = widget.text()
-                            if type(widget) == QComboBox:
+                            if isinstance(widget, QComboBox):
                                 data[widget.objectName()] = widget.currentIndex()
                             if type(widget) == QPlainTextEdit:
                                 data[widget.objectName()] = widget.toPlainText()
@@ -395,6 +419,7 @@ class ScoreboardPlayerWidget(QGroupBox):
                         data["losses"] = StateManager.Get(f"{w.path}.losses")
                         data["winPercentage"] = StateManager.Get(f"{w.path}.winPercentage")
                         data["city"] = StateManager.Get(f"{w.path}.city")
+                        data["_socials"] = w.socialsButton.Others()
                         tmpData.append(data)
 
                     # Load state
@@ -406,7 +431,7 @@ class ScoreboardPlayerWidget(QGroupBox):
                                 if type(widget) == QLineEdit:
                                     widget.setText(tmpData[i][objName])
                                     lineEdits.append(widget)
-                                if type(widget) == QComboBox:
+                                if isinstance(widget, QComboBox):
                                     widget.setCurrentIndex(tmpData[i][objName])
                                 if type(widget) == QPlainTextEdit:
                                     widget.setPlainText(tmpData[i][objName])
@@ -424,6 +449,7 @@ class ScoreboardPlayerWidget(QGroupBox):
                         StateManager.Set(f"{w.path}.losses", tmpData[i]["losses"])
                         StateManager.Set(f"{w.path}.winPercentage", tmpData[i]["winPercentage"])
                         StateManager.Set(f"{w.path}.city", tmpData[i]["city"])
+                        w.socialsButton.SetOthers(tmpData[i]["_socials"])
         finally:
             self._swapping = False
             other._swapping = False
@@ -435,15 +461,8 @@ class ScoreboardPlayerWidget(QGroupBox):
                     w.EmitPlayerIdChanged()
 
     def SetIndex(self, index: int, team: int):
-        if self.customName == "":
-            self.findChild(QWidget, "title").setText(
-                QApplication.translate("app", "Player {0}").format(index)
-            )
-        else:
-            title = self.customName + " {0}"
-            self.findChild(QWidget, "title").setText(
-                QApplication.translate("app", title).format(index)
-            )
+        # Neither players nor commentators show a title
+        self.findChild(QWidget, "title").setVisible(False)
         self.index = index
         self.teamNumber = team
 
@@ -454,38 +473,26 @@ class ScoreboardPlayerWidget(QGroupBox):
             character_element.setLayout(QHBoxLayout())
             character_element.layout().setSpacing(4)
             character_element.layout().setContentsMargins(0, 0, 0, 0)
-            player_character = QComboBox()
-            player_character.setEditable(True)
+            # Both open the character grid
+            player_character = CharacterCombo()
+            player_character.mainsProvider = self.SavedMains
             character_element.layout().addWidget(player_character)
             player_character.setMinimumWidth(60)
-            player_character.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_character.view().setMinimumWidth(60)
-            player_character.completer().setCompletionMode(QCompleter.PopupCompletion)
-            player_character.completer().popup().setMinimumWidth(250)
             player_character.setModel(GameAssetManager.instance.characterModel)
             player_character.setIconSize(QSize(24, 24))
             player_character.setFixedHeight(32)
             player_character.setFont(QFont(player_character.font().family(), 9))
-            player_character.lineEdit().setFont(QFont(player_character.font().family(), 9))
 
-            player_character_color = QComboBox()
+            player_character_color = SkinCombo(player_character)
             character_element.layout().addWidget(player_character_color)
             player_character_color.setIconSize(QSize(48, 48))
             player_character_color.setFixedHeight(32)
             player_character_color.setMinimumWidth(64)
             player_character_color.setMaximumWidth(120)
             player_character_color.setFont(QFont(player_character_color.font().family(), 9))
-            view = QListView()
-            view.setIconSize(QSize(128, 128))
-            player_character_color.setView(view)
-            player_character_color.setEditable(True)
-            player_character_color.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_character_color.completer().setCompletionMode(QCompleter.PopupCompletion)
-            # self.player_character_color.activated.connect(self.CharacterChanged)
-            # self.CharacterChanged()
 
-            # Add variant
-            player_variant = QComboBox()
+            # Add variant, also picked from the grid
+            player_variant = VariantCombo(player_character)
             player_variant.setObjectName("variants")
             character_element.layout().addWidget(player_variant)
             player_variant.setIconSize(QSize(24, 24))
@@ -494,12 +501,6 @@ class ScoreboardPlayerWidget(QGroupBox):
             player_variant.setMaximumWidth(120)
             player_variant.setFont(QFont(player_variant.font().family(), 9))
             player_variant.setModel(GameAssetManager.instance.variantModel)
-            view = QListView()
-            view.setIconSize(QSize(24, 24))
-            player_variant.setView(view)
-            player_variant.setEditable(True)
-            player_variant.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            player_variant.completer().setCompletionMode(QCompleter.PopupCompletion)
 
             if len(GameAssetManager.instance.variants) <= 0:
                 player_variant.setVisible(False)
@@ -727,6 +728,11 @@ class ScoreboardPlayerWidget(QGroupBox):
         state.setModel(stateModel)
         state.setCurrentIndex(0)
 
+    def SavedMains(self):
+        """The mains saved in the player DB for the player in this widget,
+        shown first in the character grid."""
+        return MainsOf(PlayerDB.GetPlayer(self.GetCurrentPlayerTag()))
+
     def LoadSkinOptions(self, element, target):
         characterData = element.currentData()
 
@@ -849,6 +855,16 @@ class ScoreboardPlayerWidget(QGroupBox):
                 data["twitter"] = BadWordFilter.Censor(data["twitter"], data.get("country_code"))
                 twitter.setText(f"{data.get('twitter')}")
                 twitter.editingFinished.emit()
+
+            if data.get("socials"):
+                # Added to the ones loaded from the DB before, so accounts
+                # only typed in locally are kept
+                self.socialsButton.MergeOthers(
+                    {
+                        platform: BadWordFilter.Censor(handle, data.get("country_code"))
+                        for platform, handle in SocialsHelper.Clean(data.get("socials")).items()
+                    }
+                )
 
             if (
                 data.get("custom_textbox")
@@ -1008,6 +1024,7 @@ class ScoreboardPlayerWidget(QGroupBox):
             "gamerTag": self.findChild(QWidget, "name").text(),
             "name": self.findChild(QWidget, "real_name").text(),
             "twitter": self.findChild(QWidget, "twitter").text(),
+            "socials": self.socialsButton.Socials(),
             "pronoun": self.findChild(QWidget, "pronoun").text(),
             "custom_textbox": "\\n".join(self.custom_textbox.toPlainText().splitlines()),
         }
@@ -1108,6 +1125,8 @@ class ScoreboardPlayerWidget(QGroupBox):
                         continue  # only executed if the inner loop DID break
                 else:
                     c.setCurrentIndex(0)
+
+            self.socialsButton.Clear()
 
         StateManager.Unset(f"{self.path}.online_avatar")
         StateManager.Unset(f"{self.path}.wins")

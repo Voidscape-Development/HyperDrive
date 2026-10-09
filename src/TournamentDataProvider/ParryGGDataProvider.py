@@ -709,6 +709,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                         "real_name": (user.first_name + " " + user.last_name).strip(),
                         "online_avatar": avatar_url,
                         "twitter": "",
+                        "socials": {},
                     }
             teams[str(team_index + 1)] = team
 

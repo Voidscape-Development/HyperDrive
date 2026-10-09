@@ -33,7 +33,8 @@ query TournamentPhaseGroupSeedsQuery($id: ID!, $page: Int!, $perPage: Int!) {
 								state
 								city
 							}
-							authorizations(types: [TWITTER]) {
+							authorizations {
+								type
 								externalUsername
 							}
 							images(type: "profile") {

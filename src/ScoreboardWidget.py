@@ -13,6 +13,7 @@ from src.ColorButton import ColorButton
 
 from .GameAssetManager import GameAssetManager
 from .GameReportWidget import GameReportWidget
+from .GamesTracker import GamesTracker
 from .Helpers.DictHelper import deep_get
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
@@ -20,6 +21,7 @@ from .Helpers.MediaHelper import MediaHelper
 from .Helpers.VersionHelper import add_beta_label
 from .Hotkeys import Hotkeys
 from .PlayerDB import PlayerDB
+from .PlayerDrag import PlayerDragBoard
 from .Scheduler import (
     SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
     SCOREBOARD_AUTO_UPDATE_GROUP,
@@ -212,7 +214,11 @@ class ScoreboardWidget(QWidget):
 
         self.elements = [
             [QApplication.translate("app", "Real Name"), ["real_name"], "show_name"],
-            [QApplication.translate("app", "Twitter"), ["twitter", "twitterLabel"], "show_social"],
+            [
+                QApplication.translate("app", "Socials"),
+                ["twitter", "twitterLabel", "socials"],
+                "show_social",
+            ],
             [QApplication.translate("app", "Seed"), ["seed", "seedLabel"], "show_seed"],
             [QApplication.translate("app", "Birthday"), ["birthday"], "show_birthday"],
             [
@@ -249,6 +255,12 @@ class ScoreboardWidget(QWidget):
         self.playerWidgets: list[ScoreboardPlayerWidget] = []
         self.team1playerWidgets: list[ScoreboardPlayerWidget] = []
         self.team2playerWidgets: list[ScoreboardPlayerWidget] = []
+        # Players are dragged by their grip within and between the teams
+        self.dragBoard = PlayerDragBoard(
+            lambda: [self.team1playerWidgets, self.team2playerWidgets],
+            lambda a, b: a.SwapWith(b, emitIdChanged=False),
+            self,
+        )
 
         self.team1swaps = []
         self.team2swaps = []
@@ -511,6 +523,22 @@ class ScoreboardWidget(QWidget):
         self.btGames.clicked.connect(self.OpenGames)
         self.scoreColumn.findChild(QGroupBox, "scoreGroupBox").layout().addWidget(self.btGames)
 
+        # A square per game under the score, in the color of the team that
+        # won it; clicking one opens it in the Games window
+        self.gamesTracker = GamesTracker(
+            tooltip=self.gameReport.GameTooltip, teamName=self.gameReport.TeamName
+        )
+        self.gamesTracker.setObjectName("gamesTracker")
+        self.gamesTracker.gameClicked.connect(self.OpenGame)
+        self.gamesTracker.winnerPicked.connect(self.gameReport.SetWinnerFromTracker)
+        scoreLayout = self.scoreColumn.findChild(QGroupBox, "scoreGroupBox").layout()
+        scoresRow = self.scoreColumn.findChild(QHBoxLayout, "horizontalLayout_2")
+        scoreLayout.insertWidget(scoreLayout.indexOf(scoresRow) + 1, self.gamesTracker)
+        self.gameReport.signals.gamesChanged.connect(self.UpdateGamesTracker)
+        self.colorButton1.colorChanged.connect(lambda _: self.UpdateGamesTracker())
+        self.colorButton2.colorChanged.connect(lambda _: self.UpdateGamesTracker())
+        self.UpdateGamesTracker()
+
         self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.connect(self.ExportBestOf)
         self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.emit(0)
 
@@ -713,6 +741,18 @@ class ScoreboardWidget(QWidget):
         self.gamesWindow.raise_()
         self.gamesWindow.activateWindow()
 
+    def OpenGame(self, index):
+        """Opens the Games window on a game (a games tracker square)."""
+        self.OpenGames()
+        # Once the window is laid out, so the row's place is known
+        QTimer.singleShot(50, lambda: self.gameReport.FocusGame(index))
+
+    def UpdateGamesTracker(self):
+        self.gamesTracker.SetColors(self.colorButton1.color(), self.colorButton2.color())
+        self.gamesTracker.SetGames(
+            self.gameReport.report.games, self.gameReport.report.CurrentGameIndex()
+        )
+
     def UpdateBottomButtons(self):
         if TournamentDataManager.instance.provider and TournamentDataManager.instance.provider.url:
             self.btSelectSet.setText(
@@ -792,6 +832,7 @@ class ScoreboardWidget(QWidget):
             self.ConnectLosersStatus(p, "1", self.team1column)
 
             self.team1playerWidgets.append(p)
+            self.dragBoard.Register(p)
 
             p = ScoreboardPlayerWidget(
                 index=len(self.team2playerWidgets) + 1,
@@ -838,6 +879,7 @@ class ScoreboardWidget(QWidget):
             self.ConnectLosersStatus(p, "2", self.team2column)
 
             self.team2playerWidgets.append(p)
+            self.dragBoard.Register(p)
 
         while len(self.team1playerWidgets) > number:
             team1player = self.team1playerWidgets[-1]

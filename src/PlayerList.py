@@ -3,6 +3,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .DisplayOptions import ApplyHiddenElements
+from .PlayerDrag import PlayerDragBoard
 from .PlayerListSlotWidget import PlayerListSlotWidget
 from .StateManager import StateManager
 from .TournamentDataManager import TournamentDataManager
@@ -25,6 +26,12 @@ class PlayerList(QWidget):
         self.base = base
 
         self.slotWidgets: list[PlayerListSlotWidget] = []
+        # Players are dragged by their grip within and between the slots
+        self.dragBoard = PlayerDragBoard(
+            lambda: [s.playerWidgets for s in self.slotWidgets],
+            lambda a, b: a.SwapWith(b, emitIdChanged=False),
+            self,
+        )
 
         self.playersPerTeam = 0
         self.charactersPerPlayer = 0

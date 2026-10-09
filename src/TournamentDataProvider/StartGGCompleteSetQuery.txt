@@ -81,7 +81,8 @@ query EventMatchListQuery($eventSlug: String!, $page: Int = 1, $filters: SetFilt
 										id
 										prefix
 										name
-										authorizations(types: [TWITTER]) {
+										authorizations {
+											type
 											externalUsername
 										}
 									}

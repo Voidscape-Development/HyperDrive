@@ -35,7 +35,8 @@ query EventEntrantsListQuery($eventSlug: String!, $page: Int!) {
 							state
 							city
 						}
-						authorizations(types: [TWITTER]) {
+						authorizations {
+							type
 							externalUsername
 						}
 						images(type: "profile") {
