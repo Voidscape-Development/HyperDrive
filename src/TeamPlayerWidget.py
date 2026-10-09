@@ -9,6 +9,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .GameAssetManager import GameAssetManager
+from .Helpers import SocialsHelper
 from .Helpers.BadWordFilter import BadWordFilter
 from .Helpers.CountryHelper import CountryHelper
 from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
@@ -16,6 +17,7 @@ from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
 from .Helpers.PronounHelper import PronounHelper
 from .PlayerDB import PlayerDB
+from .SocialsWidget import SocialsButton
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
 from .Theme import ThemedIcon
@@ -53,6 +55,10 @@ class TeamPlayerWidget(QGroupBox):
         self.losers = False
 
         uic.loadUi(ResolvePath("src/layout/TeamPlayer.ui"), self)
+
+        # Twitter keeps its field, the other socials are edited from here
+        self.socialsButton = SocialsButton.Attach(self.findChild(QLineEdit, "twitter"))
+        self.socialsButton.changed.connect(self.ExportSocials)
 
         self.dynamicSpinner = self.findChild(QSpinBox, "dynamicSpinner")
 
@@ -117,6 +123,8 @@ class TeamPlayerWidget(QGroupBox):
                 ]
             )
 
+        self.ExportSocials()
+
         for c in self.findChildren(QComboBox):
             c.currentIndexChanged.connect(
                 lambda text, element=c: [self.ComboBoxIndexChanged(element)]
@@ -156,6 +164,9 @@ class TeamPlayerWidget(QGroupBox):
 
     def GetIndex(self):
         return self.index
+
+    def ExportSocials(self):
+        StateManager.Set(f"{self.path}.socials", self.socialsButton.Socials())
 
     # =====================================================
     # BATTLE SPECIFIC CALLS
@@ -378,6 +389,7 @@ class TeamPlayerWidget(QGroupBox):
                         data["online_avatar"] = StateManager.Get(f"{w.path}.online_avatar")
                         data["id"] = StateManager.Get(f"{w.path}.id")
                         data["city"] = StateManager.Get(f"{w.path}.city")
+                        data["_socials"] = w.socialsButton.Others()
                         tmpData.append(data)
 
                     # Load state
@@ -400,6 +412,7 @@ class TeamPlayerWidget(QGroupBox):
                         w.ExportPlayerImages(tmpData[i]["online_avatar"])
                         # w.ExportPlayerId(tmpData[i]["id"])
                         StateManager.Set(f"{w.path}.city", tmpData[i]["city"])
+                        w.socialsButton.SetOthers(tmpData[i]["_socials"])
                         w.ExportActiveStatus()
                         w.ExportEliminatedStatus()
         finally:
@@ -768,6 +781,16 @@ class TeamPlayerWidget(QGroupBox):
                 twitter.setText(f"{data.get('twitter')}")
                 twitter.editingFinished.emit()
 
+            if data.get("socials"):
+                # Added to the ones loaded from the DB before, so accounts
+                # only typed in locally are kept
+                self.socialsButton.MergeOthers(
+                    {
+                        platform: BadWordFilter.Censor(handle, data.get("country_code"))
+                        for platform, handle in SocialsHelper.Clean(data.get("socials")).items()
+                    }
+                )
+
             # if data.get("custom_textbox") and data.get("custom_textbox") != self.custom_textbox.toPlainText():
             #     data["custom_textbox"] = BadWordFilter.Censor(
             #         data["custom_textbox"], data.get("country_code"))
@@ -916,3 +939,5 @@ class TeamPlayerWidget(QGroupBox):
                         continue  # only executed if the inner loop DID break
                 else:
                     c.setCurrentIndex(0)
+
+            self.socialsButton.Clear()

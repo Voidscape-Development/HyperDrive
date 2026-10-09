@@ -217,7 +217,11 @@ class TeamBattleWidget(QDockWidget):
         menu.addSection(QApplication.translate("app", "Players"))
 
         self.elements = [
-            [QApplication.translate("app", "Twitter"), ["twitter", "twitterLabel"], "show_social"],
+            [
+                QApplication.translate("app", "Socials"),
+                ["twitter", "twitterLabel", "socials"],
+                "show_social",
+            ],
             [
                 QApplication.translate("app", "Location"),
                 ["locationLabel", "state", "country"],

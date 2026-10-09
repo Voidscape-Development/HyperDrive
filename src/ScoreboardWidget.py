@@ -212,7 +212,11 @@ class ScoreboardWidget(QWidget):
 
         self.elements = [
             [QApplication.translate("app", "Real Name"), ["real_name"], "show_name"],
-            [QApplication.translate("app", "Twitter"), ["twitter", "twitterLabel"], "show_social"],
+            [
+                QApplication.translate("app", "Socials"),
+                ["twitter", "twitterLabel", "socials"],
+                "show_social",
+            ],
             [QApplication.translate("app", "Seed"), ["seed", "seedLabel"], "show_seed"],
             [QApplication.translate("app", "Birthday"), ["birthday"], "show_birthday"],
             [

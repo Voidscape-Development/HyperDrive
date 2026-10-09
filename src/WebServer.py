@@ -175,6 +175,7 @@ class PlayerAdmin(ModelView, model=Player):
         Player.tag,
         Player.name,
         Player.twitter,
+        Player.socials,
         Player.country_code,
         Player.state_code,
         Player.pronoun,

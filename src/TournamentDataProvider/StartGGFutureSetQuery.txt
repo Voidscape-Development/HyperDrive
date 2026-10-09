@@ -1,4 +1,4 @@
-query FutureSetQuery($id: ID!) {
+query FutureSetQuery($id: ID!, $profile: Boolean = true) {
 	set(id: $id){
 		id
 		identifier
@@ -24,8 +24,8 @@ query FutureSetQuery($id: ID!) {
 						id
 						slug
 						name
-						genderPronoun
-						location {
+						genderPronoun @include(if: $profile)
+						location @include(if: $profile) {
 							city
 							country
 							state
@@ -33,7 +33,7 @@ query FutureSetQuery($id: ID!) {
 						images(type: "profile") {
 							url
 						}
-						authorizations(types: [TWITTER]) {
+						authorizations @include(if: $profile) {
 							type
 							externalUsername
 						}

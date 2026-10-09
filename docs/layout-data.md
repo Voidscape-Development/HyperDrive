@@ -1,8 +1,8 @@
-# Layout data: bracket, stream queue, games, team battle, custom player data and layout themes
+# Layout data: bracket, stream queue, games, team battle, socials, custom player data and layout themes
 
 What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
 Stream Queue widget, the scoreboard's Games window, the Crew/Team Battle window, the
-players' custom data and the layout theme in use.
+players' socials and custom data, and the layout theme in use.
 
 ## `bracket`
 
@@ -192,6 +192,21 @@ The Crew/Team Battle window:
 The layouts in [`layout/team_battle`](../layout/team_battle) show it: a scoreboard
 for in game, a roster board and a versus screen, each in a Stock Pool
 (`*_stock.html`) and a First To (`*_first_to.html`) version.
+
+## Socials: `socials`
+
+A player's or commentator's social media accounts, as `{platform: handle}`,
+for example `{"twitter": "beast", "twitch": "beasttv"}`. It's in the
+scoreboard's players, the commentators, the player lists, team battle players
+and the stream queue's players, next to `twitter`, which is unchanged
+(`socials.twitter` is the same handle). Platforms with no account are left
+out, so check one with `player.socials?.twitch`.
+
+start.gg's linked accounts fill `twitter`, `twitch`, `discord` and `xbox`
+(the API has no others). The *+* button next to a player's Twitter field adds
+the rest by hand: `bluesky`, `youtube`, `instagram`, `tiktok`, `kick` and
+`steam`. Those are saved in the player database and kept when start.gg data
+is loaded again. Handles are as typed, a leading `@` included.
 
 ## Custom player data: `custom`
 

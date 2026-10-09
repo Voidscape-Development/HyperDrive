@@ -6,11 +6,13 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .GameAssetManager import GameAssetManager
+from .Helpers import SocialsHelper
 from .Helpers.CountryHelper import CountryHelper
 from .Helpers.DictHelper import deep_clone
 from .PlayerDB import PlayerDB
 from .PlayerMediaTabs import PlayerMediaTab, SponsorLogosTab, TeamLogosTab
 from .SeedManager import SeedManager
+from .SocialsWidget import SocialsButton
 from .Theme import ThemedIcon
 
 TagRole = Qt.ItemDataRole.UserRole + 1
@@ -213,6 +215,7 @@ class PlayersTab(QWidget):
         form.addRow(QApplication.translate("app", "Pronouns"), self.pronoun)
         self.twitter = QLineEdit()
         form.addRow(QApplication.translate("app", "Twitter"), self.twitter)
+        self.socials = SocialsButton.Attach(self.twitter)
 
         self.country = _SearchableCombo()
         self.country.setIconSize(QSize(24, 16))
@@ -262,6 +265,7 @@ class PlayersTab(QWidget):
         for combo in [self.country, self.state]:
             combo.currentIndexChanged.connect(lambda _: self.SetDirty())
         self.customText.textChanged.connect(self.SetDirty)
+        self.socials.changed.connect(self.SetDirty)
 
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
@@ -299,7 +303,7 @@ class PlayersTab(QWidget):
                 QApplication.translate("app", "Real Name"),
                 QApplication.translate("app", "Pronouns"),
                 QApplication.translate("app", "Country"),
-                QApplication.translate("app", "Twitter"),
+                QApplication.translate("app", "Socials"),
             ]
         )
 
@@ -318,12 +322,17 @@ class PlayersTab(QWidget):
                 country = player.get("country_code") or ""
                 if player.get("state_code"):
                     country += " / " + str(player.get("state_code"))
+                socials = SocialsHelper.Get(player)
+                socialsItem = QStandardItem(", ".join(socials.values()))
+                socialsItem.setToolTip(
+                    "\n".join(f"{SocialsHelper.Label(p)}: {h}" for p, h in socials.items())
+                )
                 items = [
                     tagItem,
                     QStandardItem(player.get("name") or ""),
                     QStandardItem(player.get("pronoun") or ""),
                     QStandardItem(country),
-                    QStandardItem(player.get("twitter") or ""),
+                    socialsItem,
                 ]
                 for item in items:
                     item.setData(tag, TagRole)
@@ -531,6 +540,7 @@ class PlayersTab(QWidget):
             self.realName.setText(player.get("name") or "")
             self.pronoun.setText(player.get("pronoun") or "")
             self.twitter.setText(player.get("twitter") or "")
+            self.socials.SetOthers(SocialsHelper.Get(player))
             self.customText.setPlainText(
                 "\n".join((player.get("custom_textbox") or "").split("\\n"))
             )
@@ -591,6 +601,7 @@ class PlayersTab(QWidget):
             "name": self.realName.text().strip(),
             "pronoun": self.pronoun.text().strip(),
             "twitter": self.twitter.text().strip(),
+            "socials": self.socials.Socials(),
             "custom_textbox": "\\n".join(self.customText.toPlainText().splitlines()),
             "country_code": countryData.get("code") or "",
             "state_code": stateData.get("code") or "",

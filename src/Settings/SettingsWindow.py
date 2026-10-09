@@ -212,6 +212,25 @@ class SettingsWindow(QDialog):
 
         generalSettings.append(
             (
+                QApplication.translate(
+                    "settings.local_player_data",
+                    "Use the local player database for player info when loading sets",
+                ),
+                "local_player_data",
+                "checkbox",
+                False,
+                None,
+                QApplication.translate(
+                    "settings.local_player_data",
+                    "Sets, the stream queue and station sets are loaded without the players' "
+                    "socials, pronouns and location, which come from the local player database "
+                    "instead. Players not in it yet are looked up once and saved to it.",
+                ),
+            )
+        )
+
+        generalSettings.append(
+            (
                 QApplication.translate("settings.team_1_default_color", "Default Color of Team 1"),
                 "team_1_default_color",
                 "color",

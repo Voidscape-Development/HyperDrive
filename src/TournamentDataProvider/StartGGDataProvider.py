@@ -13,11 +13,14 @@ import requests.adapters
 from loguru import logger
 
 from ..GameAssetManager import GameAssetManager
+from ..Helpers import SocialsHelper
 from ..Helpers.CountryHelper import CountryHelper
-from ..Helpers.DictHelper import deep_get
+from ..Helpers.DictHelper import deep_clone, deep_get
 from ..Helpers.DirHelper import ResolvePath
 from ..Helpers.LocaleHelper import LocaleHelper
 from ..PlayerDB import PlayerDB
+from ..PlayerDBModels import MakeTag
+from ..SettingsManager import SettingsManager
 from ..Workers import Worker
 from .TournamentDataProvider import TournamentDataProvider
 
@@ -65,6 +68,7 @@ class StartGGDataProvider(TournamentDataProvider):
     TournamentStandingsQuery = None
     UserSetQuery = None
     UserMainsQuery = None
+    UserProfileQuery = None
     _request_timeout_secs = 20.0
 
     player_seeds = {}
@@ -79,6 +83,10 @@ class StartGGDataProvider(TournamentDataProvider):
         self._mainsQueued = set()
         self._mainsQueueLock = threading.Lock()
         self._mainsQueueThread = None
+        # {start.gg user id: profile fields}, for players looked up because
+        # they weren't in the local DB (see FillFromLocalDB)
+        self._profile_cache = {}
+        self._profileLock = threading.Lock()
 
     # Status codes worth trying again: rate limiting and server-side errors.
     # Anything else (bad query, auth, not found) fails the same way every time.
@@ -655,7 +663,7 @@ class StartGGDataProvider(TournamentDataProvider):
                 type=requests.post,
                 jsonParams={
                     "operationName": "SetQuery",
-                    "variables": {"id": setId},
+                    "variables": {"id": setId, "profile": not self.UseLocalPlayerData()},
                     "query": StartGGDataProvider.SetQuery,
                 },
             )
@@ -918,11 +926,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData["name"] = player.get("name")
 
                     if user:
-                        if user.get("authorizations"):
-                            if len(user.get("authorizations", [])) > 0:
-                                playerData["twitter"] = user.get("authorizations", [])[0].get(
-                                    "externalUsername"
-                                )
+                        StartGGDataProvider.ParseUserSocials(user, playerData)
 
                         if user.get("genderPronoun"):
                             playerData["pronoun"] = user.get("genderPronoun")
@@ -983,6 +987,9 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData["wins"] = standings.get("wins", "0")
                         playerData["losses"] = standings.get("losses", "0")
                         playerData["winPercentage"] = standings.get("winPercentage", "N/A")
+
+                    if self.UseLocalPlayerData():
+                        self.FillFromLocalDB(playerData)
 
                     players[i].append(playerData)
 
@@ -1340,6 +1347,8 @@ class StartGGDataProvider(TournamentDataProvider):
 
                 for playerIndex, participant in enumerate(entrant.get("participants", [])):
                     playerData = StartGGDataProvider.ProcessEntrantData(participant)
+                    if self.UseLocalPlayerData():
+                        self.FillFromLocalDB(playerData)
                     playerName = playerData.get("gamerTag", "")
                     team = playerData.get("prefix", "")
 
@@ -1370,6 +1379,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         "real_name": playerData.get("name", ""),
                         "online_avatar": playerData.get("avatar", ""),
                         "twitter": playerData.get("twitter", ""),
+                        "socials": playerData.get("socials", {}),
                     }
 
                     teamData["player"][str(playerIndex + 1)] = playerData
@@ -1384,7 +1394,10 @@ class StartGGDataProvider(TournamentDataProvider):
                 type=requests.post,
                 jsonParams={
                     "operationName": "StreamQueueQuery",
-                    "variables": {"slug": self.url.split("start.gg/")[1]},
+                    "variables": {
+                        "slug": self.url.split("start.gg/")[1],
+                        "profile": not self.UseLocalPlayerData(),
+                    },
                     "query": StartGGDataProvider.StreamQueueQuery,
                 },
             )
@@ -2193,6 +2206,87 @@ class StartGGDataProvider(TournamentDataProvider):
         except Exception:
             logger.error(traceback.format_exc())
 
+    # The fields that come from the local player DB instead of start.gg with
+    # the general.local_player_data setting: the set queries leave them out
+    LOCAL_PROFILE_FIELDS = ["twitter", "socials", "pronoun", "country_code", "state_code"]
+
+    @staticmethod
+    def UseLocalPlayerData():
+        return bool(SettingsManager.Get("general.local_player_data", False))
+
+    def FillFromLocalDB(self, playerData):
+        """Fills playerData's profile fields (LOCAL_PROFILE_FIELDS) from the
+        local player DB. A player not in it yet is looked up on start.gg
+        once and saved to it, so the next sets find them there."""
+        tag = MakeTag(playerData.get("prefix"), playerData.get("gamerTag"))
+        if not tag:
+            return playerData
+
+        saved = PlayerDB.GetPlayer(tag)
+        if saved is not None:
+            for field in StartGGDataProvider.LOCAL_PROFILE_FIELDS:
+                if saved.get(field) and not playerData.get(field):
+                    playerData[field] = saved[field]
+            return playerData
+
+        ids = playerData.get("id") or []
+        userId = ids[1] if len(ids) > 1 else None
+        profile = self.GetUserProfile(userId) if userId else None
+        if profile:
+            playerData.update(profile)
+            PlayerDB.AddPlayers(
+                [
+                    {
+                        "prefix": playerData.get("prefix"),
+                        "gamerTag": playerData.get("gamerTag"),
+                        **deep_clone(profile),
+                    }
+                ]
+            )
+        return playerData
+
+    def GetUserProfile(self, userId):
+        """The LOCAL_PROFILE_FIELDS of a start.gg user, {} when they have
+        none, or None when the request failed. Kept for the session."""
+        with self._profileLock:
+            if userId in self._profile_cache:
+                return self._profile_cache[userId]
+
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "UserProfileQuery",
+                "variables": {"id": userId},
+                "query": StartGGDataProvider.UserProfileQuery,
+            },
+        )
+        user = deep_get(data, "data.user")
+        if not user:
+            # A failed request isn't cached, so it's tried again next time
+            return None if not data or data.get("errors") else {}
+
+        parsed = StartGGDataProvider.ProcessEntrantData({"player": {}, "user": user})
+        profile = {
+            field: parsed[field]
+            for field in StartGGDataProvider.LOCAL_PROFILE_FIELDS
+            if parsed.get(field)
+        }
+        with self._profileLock:
+            self._profile_cache[userId] = profile
+        return profile
+
+    @staticmethod
+    def ParseUserSocials(user, playerData):
+        """Sets playerData's socials (and twitter) from the start.gg user's
+        linked accounts. Only the accounts the user has are set, so ones
+        typed in by hand are kept when merged with the local DB."""
+        socials = SocialsHelper.FromStartGG(user.get("authorizations"))
+        if socials:
+            playerData["socials"] = socials
+            if socials.get("twitter"):
+                playerData["twitter"] = socials["twitter"]
+
     def ProcessEntrantData(entrant, setData=[]):
         player = entrant.get("player")
         user = entrant.get("user")
@@ -2245,11 +2339,7 @@ class StartGGDataProvider(TournamentDataProvider):
             if user.get("slug"):
                 playerData["startgg_user_slug"] = user.get("slug")
 
-            if user.get("authorizations"):
-                if len(user.get("authorizations", [])) > 0:
-                    playerData["twitter"] = user.get("authorizations", [])[0].get(
-                        "externalUsername"
-                    )
+            StartGGDataProvider.ParseUserSocials(user, playerData)
 
             if user.get("genderPronoun"):
                 playerData["pronoun"] = user.get("genderPronoun")
@@ -2558,7 +2648,7 @@ class StartGGDataProvider(TournamentDataProvider):
             type=requests.post,
             jsonParams={
                 "operationName": "FutureSetQuery",
-                "variables": {"id": matchId},
+                "variables": {"id": matchId, "profile": not self.UseLocalPlayerData()},
                 "query": StartGGDataProvider.FutureSetQuery,
             },
         )
@@ -2656,4 +2746,5 @@ StartGGDataProvider.TournamentPhaseGroupSetsQuery = readQueryFile(
 StartGGDataProvider.TournamentStandingsQuery = readQueryFile(sggTdpDir, "TournamentStandings")
 StartGGDataProvider.UserSetQuery = readQueryFile(sggTdpDir, "UserSet")
 StartGGDataProvider.UserMainsQuery = readQueryFile(sggTdpDir, "UserMains")
+StartGGDataProvider.UserProfileQuery = readQueryFile(sggTdpDir, "UserProfile")
 StartGGDataProvider.TournamentSlugQuery = readQueryFile(sggTdpDir, "TournamentSlug")
