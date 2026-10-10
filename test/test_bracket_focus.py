@@ -82,6 +82,30 @@ def TestSetsAndRounds():
     assert focus["label"] == ""
 
 
+def TestWithoutPicks():
+    request = {"mode": MODE_SETS, "sets": ["m1", "m2"], "rounds": ["W1"]}
+    # Deselecting a set in focus takes it out
+    assert WithoutPicks(request, ["m1"]) == {"mode": MODE_SETS, "sets": ["m2"], "rounds": ["W1"]}
+    # The last set out leaves the rounds
+    assert WithoutPicks({"mode": MODE_SETS, "sets": ["m1"], "rounds": ["W1"]}, ["m1"]) == {
+        "mode": MODE_ROUNDS,
+        "sets": [],
+        "rounds": ["W1"],
+    }
+    assert WithoutPicks(request, [], ["W1"]) == {
+        "mode": MODE_SETS,
+        "sets": ["m1", "m2"],
+        "rounds": [],
+    }
+    # Nothing left: the whole bracket
+    assert WithoutPicks({"mode": MODE_SETS, "sets": ["m1"]}, ["m1"]) == {"mode": MODE_ALL}
+    assert WithoutPicks({"mode": MODE_ROUNDS, "rounds": ["W1"]}, [], ["W1"]) == {"mode": MODE_ALL}
+    # Not in focus, or the focus wasn't picked by hand: nothing changes
+    assert WithoutPicks(request, ["m9"]) is None
+    assert WithoutPicks({"mode": MODE_FOLLOW, "scoreboard": 1}, ["m1"]) is None
+    assert WithoutPicks({"mode": MODE_ALL}, ["m1"]) is None
+
+
 def TestPlayer():
     focus = Resolve(BRACKET, {"mode": "player", "player": 1})
     # Every set of the player, winners side first
