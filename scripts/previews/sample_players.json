@@ -446,5 +446,118 @@
     "GG Kestrel": {
       "bio.txt": "Undefeated in winners side this season"
     }
-  }
+  },
+  "completed_sets": [
+    {
+      "phase": "Top 16",
+      "round": "Winners Semi-Final",
+      "winner": [
+        1
+      ],
+      "loser": [
+        4
+      ],
+      "score": [
+        3,
+        1
+      ]
+    },
+    {
+      "phase": "Top 16",
+      "round": "Losers Round 2",
+      "winner": [
+        11
+      ],
+      "loser": [
+        6
+      ],
+      "score": [
+        3,
+        2
+      ]
+    },
+    {
+      "phase": "Top 16",
+      "round": "Winners Semi-Final",
+      "winner": [
+        2
+      ],
+      "loser": [
+        3
+      ],
+      "score": [
+        3,
+        2
+      ]
+    },
+    {
+      "phase": "Doubles Top 8",
+      "round": "Winners Final",
+      "winner": [
+        7,
+        8
+      ],
+      "loser": [
+        9,
+        10
+      ],
+      "score": [
+        3,
+        0
+      ],
+      "team_names": [
+        "Pixel Perfect",
+        "Fast Lane"
+      ],
+      "seeds": [
+        1,
+        3
+      ]
+    },
+    {
+      "phase": "Pools",
+      "phase_id": "B2",
+      "round": "Winners Quarter-Final",
+      "winner": [
+        5
+      ],
+      "loser": [
+        12
+      ],
+      "score": [
+        2,
+        0
+      ]
+    },
+    {
+      "phase": "Pools",
+      "phase_id": "B2",
+      "round": "Losers Round 1",
+      "winner": [
+        16
+      ],
+      "loser": [
+        13
+      ],
+      "score": [
+        2,
+        1
+      ]
+    },
+    {
+      "phase": "Pools",
+      "phase_id": "A1",
+      "round": "Winners Round 1",
+      "winner": [
+        14
+      ],
+      "loser": [
+        15
+      ],
+      "score": [
+        2,
+        -1
+      ]
+    }
+  ]
 }

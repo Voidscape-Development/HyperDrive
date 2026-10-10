@@ -35,6 +35,8 @@ from parrygg.services.user_service_pb2 import *
 from parrygg.services.user_service_pb2_grpc import UserServiceStub
 
 from ..GameAssetManager import GameAssetManager
+from ..Helpers import CompletedSetsHelper
+from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.SeedPerformance import EventBracketType
 from ..PlayerDB import PlayerDB
@@ -1116,22 +1118,40 @@ class ParryGGDataProvider(TournamentDataProvider):
         phase_name = phase.name if phase else ""
         phase_identifier = bracket.name if (bracket and phase and len(phase.brackets) > 1) else ""
 
+        # Characters played, by user, when the match has its games
+        characters = {}
+        for match_game in sorted(match.match_games, key=lambda g: g.index):
+            for slot in match_game.slots:
+                for participant in slot.participants:
+                    for character in participant.characters:
+                        char = GameAssetManager.instance.GetCharacterFromParryGGSlug(character.slug)
+                        if char:
+                            AddCharacterKey(characters.setdefault(participant.user_id, []), char[0])
+
+        def team(user, player):
+            return {
+                1: {
+                    "sponsor": player["prefix"],
+                    "gamertag": player["gamerTag"],
+                    "country_code": player["country_code"],
+                    "state_code": player["state_code"],
+                    "character_keys": characters.get(user.id, []),
+                }
+            }
+
         return {
             "phase_id": phase_identifier,
             "phase_name": phase_name,
             "round_name": round_label,
             f"{keys[0]}_score": score1,
             f"{keys[0]}_seed": seed1.seed,
-            f"{keys[0]}_team": {
-                1: {"sponsor": team1_player["prefix"], "gamertag": team1_player["gamerTag"]}
-            },
+            f"{keys[0]}_team": team(u1, team1_player),
             f"{keys[0]}_team_name": "",
             f"{keys[1]}_score": score2,
             f"{keys[1]}_seed": seed2.seed,
-            f"{keys[1]}_team": {
-                1: {"sponsor": team2_player["prefix"], "gamertag": team2_player["gamerTag"]}
-            },
+            f"{keys[1]}_team": team(u2, team2_player),
             f"{keys[1]}_team_name": "",
+            "bracket_type": _bracket_type_name(phase.bracket_type) if phase else "",
             "ended_at": match.ended_at.seconds,
         }
 
@@ -1425,7 +1445,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             sets.sort(key=lambda s: s.get("ended_at", 0), reverse=True)
             sets = sets[:10]
             logger.info(f"GetCompletedSets: -> {len(sets)} sets")
-            return sets
+            return CompletedSetsHelper.Finish(sets)
         except Exception as e:
             logger.error(f"Error in GetCompletedSets: {traceback.format_exc()}")
             return []

@@ -15,7 +15,25 @@ query CompletedSetsQuery($eventSlug: String!) {
 								prefix
 								gamerTag
 							}
+							user {
+								location {
+									city
+									country
+									state
+								}
+							}
 						}
+					}
+				}
+				games {
+					selections {
+						entrant {
+							id
+						}
+						participant {
+							id
+						}
+						selectionValue
 					}
 				}
 				entrant1Score
@@ -26,6 +44,7 @@ query CompletedSetsQuery($eventSlug: String!) {
 					displayIdentifier
 					phase {
 						name
+						bracketType
 					}
 				}
 			}

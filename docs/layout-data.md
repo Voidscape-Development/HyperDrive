@@ -1,7 +1,7 @@
-# Layout data: bracket, stream queue, games, team battle, socials, custom player data, layout themes and display controls
+# Layout data: bracket, stream queue, completed sets, games, team battle, socials, custom player data, layout themes and display controls
 
 What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
-Stream Queue widget, the scoreboard's Games window, the Crew/Team Battle window, the
+Stream Queue widget, the completed sets, the scoreboard's Games window, the Crew/Team Battle window, the
 players' socials and custom data, and the layout theme in use.
 
 ## `bracket`
@@ -144,6 +144,31 @@ player: {"1": {...}}}, "2": {...}}`), plus:
 
 `score.N.station_queue` (sets of the station tracked by scoreboard N) is
 unchanged.
+
+## `completed_sets`
+
+The event's last 10 completed sets, from "Pull Latest Completed Sets"
+(start.gg or parry.gg), most recent first, keyed `"1"`, `"2"`... Shown by
+`layout/completed_sets/` (`list.html`, `ticker.html`, `card.html` and
+`column.html`; see its `settings.json`).
+
+| Key | |
+| - | - |
+| `phase_name`, `phase_id` | The phase, and its pool (e.g. `B2`) when it has several |
+| `round_name` | |
+| `winner_score`, `loser_score` | `-1` is a DQ |
+| `winner_seed`, `loser_seed` | Seeds in the event |
+| `winner_team`, `loser_team` | The players, by number: `{sponsor, gamertag, country, state, characters}` |
+| `winner_team_name`, `loser_team_name` | The entrant's name (a doubles team's name) |
+| `bracket_type` | The phase's: `DOUBLE_ELIMINATION`, `SINGLE_ELIMINATION`... |
+| `upset_factor` | Placement rounds the winner was expected to finish below the loser, `0` when it isn't an upset |
+
+`country` and `state` are like the scoreboard players' (with `asset`, the
+flag), from the player's start.gg / parry.gg profile, or the local player
+database when the profile has no location. `characters` are the characters
+the player used in the set, in the order they first picked them
+(`{"1": {name, en_name, codename, assets}}`), empty when the provider has no
+character data for the set.
 
 ## `score.N.games`
 

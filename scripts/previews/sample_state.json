@@ -3165,6 +3165,1174 @@
       "twitter": "castertwo"
     }
   },
+  "completed_sets": {
+    "1": {
+      "bracket_type": "DOUBLE_ELIMINATION",
+      "loser_score": 1,
+      "loser_seed": 4,
+      "loser_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_wolf_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_wolf_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 245,
+                    "y": 170
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "wolf",
+              "en_name": "Wolf",
+              "name": "Wolf"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/ca.svg",
+            "code": "CA",
+            "display_name": "Canada",
+            "emoji": "🇨🇦",
+            "en_name": "Canada",
+            "latitude": "60.00000000",
+            "longitude": "-95.00000000",
+            "name": "Canada"
+          },
+          "gamertag": "Quill",
+          "sponsor": "NX",
+          "state": {
+            "asset": "./assets/state_flag/CA/ON.png",
+            "code": "ON",
+            "latitude": "50.00067800",
+            "longitude": "-86.00097700",
+            "name": "Ontario",
+            "original_code": "ON"
+          }
+        }
+      },
+      "loser_team_name": "",
+      "phase_id": "",
+      "phase_name": "Top 16",
+      "round_name": "Winners Semi-Final",
+      "upset_factor": 0,
+      "winner_score": 3,
+      "winner_seed": 1,
+      "winner_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_palutena_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_palutena_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 280,
+                    "y": 161
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "palutena",
+              "en_name": "Palutena",
+              "name": "Palutena"
+            },
+            "2": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_sonic_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_sonic_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 255,
+                    "y": 207
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "sonic",
+              "en_name": "Sonic",
+              "name": "Sonic"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/br.svg",
+            "code": "BR",
+            "display_name": "Brazil",
+            "emoji": "🇧🇷",
+            "en_name": "Brazil",
+            "latitude": "-10.00000000",
+            "longitude": "-55.00000000",
+            "name": "Brazil"
+          },
+          "gamertag": "Azure",
+          "sponsor": "HD",
+          "state": {
+            "asset": "./assets/state_flag/BR/SP.png",
+            "code": "SP",
+            "latitude": "-23.55051990",
+            "longitude": "-46.63330940",
+            "name": "São Paulo",
+            "original_code": "SP"
+          }
+        }
+      },
+      "winner_team_name": ""
+    },
+    "2": {
+      "bracket_type": "DOUBLE_ELIMINATION",
+      "loser_score": 2,
+      "loser_seed": 6,
+      "loser_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_ken_01.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_ken_01.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 244,
+                    "y": 165
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "ken",
+              "en_name": "Ken",
+              "name": "Ken"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/se.svg",
+            "code": "SE",
+            "display_name": "Sweden",
+            "emoji": "🇸🇪",
+            "en_name": "Sweden",
+            "latitude": "62.00000000",
+            "longitude": "15.00000000",
+            "name": "Sweden"
+          },
+          "gamertag": "Tundra",
+          "sponsor": "VX",
+          "state": {
+            "asset": "./assets/state_flag/SE/AB.png",
+            "code": "AB",
+            "latitude": "59.33361730",
+            "longitude": "18.02769730",
+            "name": "Stockholm",
+            "original_code": "AB"
+          }
+        }
+      },
+      "loser_team_name": "",
+      "phase_id": "",
+      "phase_name": "Top 16",
+      "round_name": "Losers Round 2",
+      "upset_factor": 2,
+      "winner_score": 3,
+      "winner_seed": 11,
+      "winner_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_mario_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_mario_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 207,
+                    "y": 187
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "mario",
+              "en_name": "Mario",
+              "name": "Mario"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/cl.svg",
+            "code": "CL",
+            "display_name": "Chile",
+            "emoji": "🇨🇱",
+            "en_name": "Chile",
+            "latitude": "-30.00000000",
+            "longitude": "-71.00000000",
+            "name": "Chile"
+          },
+          "gamertag": "Drift",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/CL/RM.png",
+            "code": "RM",
+            "latitude": "-33.57393410",
+            "longitude": "-70.62055180",
+            "name": "Región Metropolitana de Santiago",
+            "original_code": "RM"
+          }
+        }
+      },
+      "winner_team_name": ""
+    },
+    "3": {
+      "bracket_type": "DOUBLE_ELIMINATION",
+      "loser_score": 2,
+      "loser_seed": 3,
+      "loser_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pikachu_03.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_pikachu_03.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 246,
+                    "y": 195
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "pikachu",
+              "en_name": "Pikachu",
+              "name": "Pikachu"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/us.svg",
+            "code": "US",
+            "display_name": "United States",
+            "emoji": "🇺🇸",
+            "en_name": "United States",
+            "latitude": "38.00000000",
+            "longitude": "-97.00000000",
+            "name": "United States"
+          },
+          "gamertag": "Marlowe",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/US/CA.png",
+            "code": "CA",
+            "latitude": "36.70146310",
+            "longitude": "-118.75599700",
+            "name": "California",
+            "original_code": "CA"
+          }
+        }
+      },
+      "loser_team_name": "",
+      "phase_id": "",
+      "phase_name": "Top 16",
+      "round_name": "Winners Semi-Final",
+      "upset_factor": 0,
+      "winner_score": 3,
+      "winner_seed": 2,
+      "winner_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_sonic_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_sonic_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 255,
+                    "y": 207
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "sonic",
+              "en_name": "Sonic",
+              "name": "Sonic"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/jp.svg",
+            "code": "JP",
+            "display_name": "Japan",
+            "emoji": "🇯🇵",
+            "en_name": "Japan",
+            "latitude": "36.00000000",
+            "longitude": "138.00000000",
+            "name": "Japan"
+          },
+          "gamertag": "Kestrel",
+          "sponsor": "GG",
+          "state": {
+            "asset": "./assets/state_flag/JP/13.png",
+            "code": "13",
+            "latitude": "35.67686010",
+            "longitude": "139.76389470",
+            "name": "Tokyo",
+            "original_code": "13"
+          }
+        }
+      },
+      "winner_team_name": ""
+    },
+    "4": {
+      "bracket_type": "DOUBLE_ELIMINATION",
+      "loser_score": 0,
+      "loser_seed": 3,
+      "loser_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_captain_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_captain_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 249,
+                    "y": 164
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "captain",
+              "en_name": "Captain Falcon",
+              "name": "Captain Falcon"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/us.svg",
+            "code": "US",
+            "display_name": "United States",
+            "emoji": "🇺🇸",
+            "en_name": "United States",
+            "latitude": "38.00000000",
+            "longitude": "-97.00000000",
+            "name": "United States"
+          },
+          "gamertag": "Bolt",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/US/TX.png",
+            "code": "TX",
+            "latitude": "31.26389050",
+            "longitude": "-98.54561160",
+            "name": "Texas",
+            "original_code": "TX"
+          }
+        },
+        "2": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_lucina_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_lucina_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 271,
+                    "y": 156
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "lucina",
+              "en_name": "Lucina",
+              "name": "Lucina"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/kr.svg",
+            "code": "KR",
+            "display_name": "South Korea",
+            "emoji": "🇰🇷",
+            "en_name": "South Korea",
+            "latitude": "37.00000000",
+            "longitude": "127.50000000",
+            "name": "South Korea"
+          },
+          "gamertag": "Cinder",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/KR/11.png",
+            "code": "11",
+            "latitude": "37.56653500",
+            "longitude": "126.97796920",
+            "name": "Seoul",
+            "original_code": "11"
+          }
+        }
+      },
+      "loser_team_name": "Fast Lane",
+      "phase_id": "",
+      "phase_name": "Doubles Top 8",
+      "round_name": "Winners Final",
+      "upset_factor": 0,
+      "winner_score": 3,
+      "winner_seed": 1,
+      "winner_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pickel_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_pickel_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 262,
+                    "y": 165
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "pickel",
+              "en_name": "Steve",
+              "name": "Steve"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/fr.svg",
+            "code": "FR",
+            "display_name": "France",
+            "emoji": "🇫🇷",
+            "en_name": "France",
+            "latitude": "46.00000000",
+            "longitude": "2.00000000",
+            "name": "France"
+          },
+          "gamertag": "Pixel",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/FR/IDF.png",
+            "code": "IDF",
+            "latitude": "48.64430570",
+            "longitude": "2.75378630",
+            "name": "Île-de-France",
+            "original_code": "IDF"
+          }
+        },
+        "2": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_eflame_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_eflame_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 188,
+                    "y": 177
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "eflame",
+              "en_name": "Pyra / Mythra",
+              "name": "Pyra / Mythra"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/gb.svg",
+            "code": "GB",
+            "display_name": "United Kingdom",
+            "emoji": "🇬🇧",
+            "en_name": "United Kingdom",
+            "latitude": "54.00000000",
+            "longitude": "-2.00000000",
+            "name": "United Kingdom"
+          },
+          "gamertag": "Saffron",
+          "sponsor": "RB",
+          "state": {
+            "asset": "./assets/state_flag/GB/ENG.png",
+            "code": "ENG",
+            "latitude": "52.53102140",
+            "longitude": "-1.26490620",
+            "name": "England",
+            "original_code": "ENG"
+          }
+        }
+      },
+      "winner_team_name": "Pixel Perfect"
+    },
+    "5": {
+      "bracket_type": "DOUBLE_ELIMINATION",
+      "loser_score": 0,
+      "loser_seed": 12,
+      "loser_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_inkling_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_inkling_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 251,
+                    "y": 176
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "inkling",
+              "en_name": "Inkling",
+              "name": "Inkling"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/au.svg",
+            "code": "AU",
+            "display_name": "Australia",
+            "emoji": "🇦🇺",
+            "en_name": "Australia",
+            "latitude": "-27.00000000",
+            "longitude": "133.00000000",
+            "name": "Australia"
+          },
+          "gamertag": "Echo",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/AU/NSW.png",
+            "code": "NSW",
+            "latitude": "-31.87598350",
+            "longitude": "147.28694930",
+            "name": "New South Wales",
+            "original_code": "NSW"
+          }
+        }
+      },
+      "loser_team_name": "",
+      "phase_id": "B2",
+      "phase_name": "Pools",
+      "round_name": "Winners Quarter-Final",
+      "upset_factor": 0,
+      "winner_score": 2,
+      "winner_seed": 5,
+      "winner_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_peach_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_peach_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 250,
+                    "y": 178
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "peach",
+              "en_name": "Peach",
+              "name": "Peach"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/mx.svg",
+            "code": "MX",
+            "display_name": "Mexico",
+            "emoji": "🇲🇽",
+            "en_name": "Mexico",
+            "latitude": "23.00000000",
+            "longitude": "-102.00000000",
+            "name": "Mexico"
+          },
+          "gamertag": "Ember",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/MX/JAL.png",
+            "code": "JAL",
+            "latitude": "20.33333310",
+            "longitude": "-103.66666710",
+            "name": "Jalisco",
+            "original_code": "JAL"
+          }
+        }
+      },
+      "winner_team_name": ""
+    },
+    "6": {
+      "bracket_type": "DOUBLE_ELIMINATION",
+      "loser_score": 1,
+      "loser_seed": 13,
+      "loser_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_snake_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_snake_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 342,
+                    "y": 143
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "snake",
+              "en_name": "Snake",
+              "name": "Snake"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/de.svg",
+            "code": "DE",
+            "display_name": "Germany",
+            "emoji": "🇩🇪",
+            "en_name": "Germany",
+            "latitude": "51.00000000",
+            "longitude": "9.00000000",
+            "name": "Germany"
+          },
+          "gamertag": "Flint",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/DE/BE.png",
+            "code": "BE",
+            "latitude": "52.51088500",
+            "longitude": "13.39893670",
+            "name": "Berlin",
+            "original_code": "BE"
+          }
+        }
+      },
+      "loser_team_name": "",
+      "phase_id": "B2",
+      "phase_name": "Pools",
+      "round_name": "Losers Round 1",
+      "upset_factor": 0,
+      "winner_score": 2,
+      "winner_seed": 16,
+      "winner_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_kirby_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_kirby_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 280,
+                    "y": 189
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "kirby",
+              "en_name": "Kirby",
+              "name": "Kirby"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/ca.svg",
+            "code": "CA",
+            "display_name": "Canada",
+            "emoji": "🇨🇦",
+            "en_name": "Canada",
+            "latitude": "60.00000000",
+            "longitude": "-95.00000000",
+            "name": "Canada"
+          },
+          "gamertag": "Iris",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/CA/QC.png",
+            "code": "QC",
+            "latitude": "52.47608920",
+            "longitude": "-71.82586680",
+            "name": "Quebec",
+            "original_code": "QC"
+          }
+        }
+      },
+      "winner_team_name": ""
+    },
+    "7": {
+      "bracket_type": "DOUBLE_ELIMINATION",
+      "loser_score": -1,
+      "loser_seed": 15,
+      "loser_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_donkey_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_donkey_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 283,
+                    "y": 151
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "donkey",
+              "en_name": "Donkey Kong",
+              "name": "Donkey Kong"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/pt.svg",
+            "code": "PT",
+            "display_name": "Portugal",
+            "emoji": "🇵🇹",
+            "en_name": "Portugal",
+            "latitude": "39.50000000",
+            "longitude": "-8.00000000",
+            "name": "Portugal"
+          },
+          "gamertag": "Harbor",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/PT/11.png",
+            "code": "11",
+            "latitude": "38.70775070",
+            "longitude": "-9.13659190",
+            "name": "Lisbon",
+            "original_code": "11"
+          }
+        }
+      },
+      "loser_team_name": "",
+      "phase_id": "A1",
+      "phase_name": "Pools",
+      "round_name": "Winners Round 1",
+      "upset_factor": 0,
+      "winner_score": 2,
+      "winner_seed": 14,
+      "winner_team": {
+        "1": {
+          "characters": {
+            "1": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_zelda_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_zelda_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 244,
+                    "y": 163
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "zelda",
+              "en_name": "Zelda",
+              "name": "Zelda"
+            }
+          },
+          "country": {
+            "asset": "./assets/country_flag/us.svg",
+            "code": "US",
+            "display_name": "United States",
+            "emoji": "🇺🇸",
+            "en_name": "United States",
+            "latitude": "38.00000000",
+            "longitude": "-97.00000000",
+            "name": "United States"
+          },
+          "gamertag": "Gale",
+          "sponsor": null,
+          "state": {
+            "asset": "./assets/state_flag/US/NY.png",
+            "code": "NY",
+            "latitude": "40.71277530",
+            "longitude": "-74.00597280",
+            "name": "New York",
+            "original_code": "NY"
+          }
+        }
+      },
+      "winner_team_name": ""
+    }
+  },
   "game": {
     "codename": "ssbu",
     "defaults": null,

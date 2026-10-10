@@ -13,7 +13,8 @@ import requests.adapters
 from loguru import logger
 
 from ..GameAssetManager import GameAssetManager
-from ..Helpers import SocialsHelper
+from ..Helpers import CompletedSetsHelper, SocialsHelper
+from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.DictHelper import deep_clone, deep_get
 from ..Helpers.DirHelper import ResolvePath
@@ -1696,27 +1697,49 @@ class StartGGDataProvider(TournamentDataProvider):
 
                 winnerId = deep_get(p1, "entrant.id", 0)
 
-                team1Info = set.get("slots", [{}])[0].get("entrant", {}).get("participants", [{}])
-                team2Info = set.get("slots", [{}])[1].get("entrant", {}).get("participants", [{}])
+                # Characters played, by participant. A selection without a
+                # participant goes to its entrant's only participant.
+                characters = {}
+                participantsByEntrant = {
+                    deep_get(slot, "entrant.id"): deep_get(slot, "entrant.participants") or []
+                    for slot in slots
+                }
+                for game in set.get("games") or []:
+                    for selection in game.get("selections") or []:
+                        participantId = deep_get(selection, "participant.id")
+                        if participantId is None:
+                            participants = participantsByEntrant.get(
+                                deep_get(selection, "entrant.id"), []
+                            )
+                            if len(participants) != 1:
+                                continue
+                            participantId = participants[0].get("id")
+                        char = GameAssetManager.instance.GetCharacterFromStartGGId(
+                            selection.get("selectionValue")
+                        )
+                        if char:
+                            AddCharacterKey(characters.setdefault(participantId, []), char[0])
 
-                # Pull Team Info and Store it
-                team1 = []
-                for players in team1Info:
-                    player = players.get("player")
-                    playerInfo = {
-                        "sponsor": player.get("prefix", ""),
-                        "gamertag": player.get("gamerTag"),
-                    }
-                    team1.append(playerInfo)
+                def TeamInfo(slot):
+                    team = []
+                    for participant in deep_get(slot, "entrant.participants") or []:
+                        player = participant.get("player") or {}
+                        countryCode, stateCode = StartGGDataProvider.LocationCodes(
+                            deep_get(participant, "user.location")
+                        )
+                        team.append(
+                            {
+                                "sponsor": player.get("prefix", ""),
+                                "gamertag": player.get("gamerTag"),
+                                "country_code": countryCode,
+                                "state_code": stateCode,
+                                "character_keys": characters.get(participant.get("id"), []),
+                            }
+                        )
+                    return team
 
-                team2 = []
-                for players in team2Info:
-                    player = players.get("player")
-                    playerInfo = {
-                        "sponsor": player.get("prefix", ""),
-                        "gamertag": player.get("gamerTag"),
-                    }
-                    team2.append(playerInfo)
+                team1 = TeamInfo(p1)
+                team2 = TeamInfo(p2)
 
                 # Setting Correct Winner Info
                 players = ["winner", "loser"]
@@ -1741,11 +1764,12 @@ class StartGGDataProvider(TournamentDataProvider):
                     f"{players[1]}_seed": team2Seed,
                     f"{players[1]}_team": {index + 1: player for index, player in enumerate(team2)},
                     f"{players[1]}_team_name": t2Name,
+                    "bracket_type": deep_get(set, "phaseGroup.phase.bracketType"),
                 }
 
                 set_data.append(set)
 
-            return set_data
+            return CompletedSetsHelper.Finish(set_data)
         except Exception as e:
             logger.error(traceback.format_exc())
             return []
@@ -2291,6 +2315,24 @@ class StartGGDataProvider(TournamentDataProvider):
             playerData["socials"] = socials
             if socials.get("twitter"):
                 playerData["twitter"] = socials["twitter"]
+
+    def LocationCodes(location):
+        """(country_code, state_code) of a start.gg user location, the state
+        found from the city when it isn't given."""
+        if not location:
+            return None, None
+        countryCode = next(
+            (
+                country.get("code")
+                for country in CountryHelper.countries.values()
+                if location.get("country") and location.get("country") == country.get("en_name")
+            ),
+            None,
+        )
+        stateCode = location.get("state")
+        if not stateCode and location.get("city"):
+            stateCode = CountryHelper.FindState(countryCode, location.get("city"))
+        return countryCode, stateCode or None
 
     def ProcessEntrantData(entrant, setData=[]):
         player = entrant.get("player")

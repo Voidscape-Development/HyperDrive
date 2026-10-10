@@ -29,6 +29,7 @@ from qtpy.QtWidgets import QLineEdit  # noqa: E402
 import src  # noqa: E402
 from src.BracketWidget import BracketWidget  # noqa: E402
 from src.GameAssetManager import GameAssetManager  # noqa: E402
+from src.Helpers import CompletedSetsHelper  # noqa: E402
 from src.Helpers.DynamicExport import DynamicExport  # noqa: E402
 from src.PlayerListWidget import PlayerListWidget  # noqa: E402
 from src.ScoreboardManager import ScoreboardManager  # noqa: E402
@@ -146,6 +147,45 @@ def set_team_battle():
         widget.TeamScored(team)
 
 
+def set_completed_sets():
+    """What HyperDrive would pull with Pull Latest Completed Sets"""
+
+    def team(indexes):
+        return {
+            i: {
+                "sponsor": PLAYERS[index - 1].get("prefix"),
+                "gamertag": PLAYERS[index - 1]["gamerTag"],
+                "country_code": PLAYERS[index - 1].get("country_code"),
+                "state_code": PLAYERS[index - 1].get("state_code"),
+                "character_keys": [m[0] for m in PLAYERS[index - 1]["mains"].get(GAME, [])],
+            }
+            for i, index in enumerate(indexes, start=1)
+        }
+
+    sets = []
+    for s in SAMPLE["completed_sets"]:
+        names = s.get("team_names", ["", ""])
+        seeds = s.get("seeds", [s["winner"][0], s["loser"][0]])
+        sets.append(
+            {
+                "phase_id": s.get("phase_id", ""),
+                "phase_name": s["phase"],
+                "round_name": s["round"],
+                "winner_score": s["score"][0],
+                "winner_seed": seeds[0],
+                "winner_team": team(s["winner"]),
+                "winner_team_name": names[0],
+                "loser_score": s["score"][1],
+                "loser_seed": seeds[1],
+                "loser_team": team(s["loser"]),
+                "loser_team_name": names[1],
+                "bracket_type": "DOUBLE_ELIMINATION",
+            }
+        )
+    CompletedSetsHelper.Finish(sets)
+    StateManager.Set("completed_sets", {i: s for i, s in enumerate(sets, start=1)})
+
+
 def set_bracket():
     widget = BracketWidget.instance
     widget.playerList.LoadFromStandings(
@@ -189,6 +229,7 @@ def main():
         lambda: set_player_list(window),
         set_team_battle,
         set_bracket,
+        set_completed_sets,
     ]
 
     def run(i=0):
