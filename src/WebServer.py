@@ -13,7 +13,7 @@ import socketio
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from loguru import logger
 from qtpy.QtCore import *
 from qtpy.QtGui import *
@@ -226,6 +226,11 @@ class WebServer(QThread):
             WebServer.routesAdded = True
             # Before the file route below, which matches every path
             Admin(api, engine=GetEngine(), title="HyperDrive Player DB").add_view(PlayerAdmin)
+            # The admin mount only matches /admin/..., and the file route
+            # would take /admin before Starlette's slash redirect
+            api.add_api_route(
+                "/admin", lambda: RedirectResponse("/admin/"), include_in_schema=False
+            )
             api.add_api_route("/{filename:path}", WebServer.file_request, methods=["GET", "POST"])
 
     # Don't override the QObject emit() method

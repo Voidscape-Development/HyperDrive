@@ -1,0 +1,410 @@
+/* Shared by the completed sets pages. Colors, fonts and radii come from
+   main.css and the layout theme. */
+
+:root {
+  --cs-row-bg: rgba(255, 255, 255, 0.06);
+  --cs-muted: rgba(255, 255, 255, 0.6);
+  --cs-gap: 12px;
+  --cs-icon: 32px;
+  --cs-flag: 18px;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--text-color);
+  background: transparent;
+}
+
+body.hd-text-upper .cs-set,
+body.hd-text-upper .cs-title {
+  text-transform: uppercase;
+}
+
+.cs-container {
+  visibility: hidden;
+}
+
+/* Nothing pulled yet. More specific than each page's display */
+body .cs-container.cs-empty {
+  display: none;
+}
+
+/* ── A set ─────────────────────────────────────────────── */
+
+.cs-set {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background: var(--bg-fill, var(--bg-color));
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.cs-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cs-round {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cs-muted);
+}
+
+.cs-round-name {
+  color: var(--accent-color);
+}
+
+.cs-upset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 1px 10px;
+  border-radius: var(--border-radius-chip);
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.cs-upset-factor {
+  padding: 0 6px;
+  border-radius: var(--border-radius-chip);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ── A side: seed, names, characters, score ────────────── */
+
+.cs-side {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-gap);
+  min-width: 0;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.cs-loser {
+  color: var(--cs-muted);
+}
+
+.cs-seed {
+  flex: none;
+  min-width: 1.6em;
+  padding: 0 4px;
+  border-radius: var(--border-radius-chip);
+  background: var(--cs-row-bg);
+  color: var(--cs-muted);
+  font-size: 0.6em;
+  text-align: center;
+}
+
+.cs-names {
+  flex: 1;
+  min-width: 0;
+}
+
+.cs-player,
+.cs-member,
+.cs-team-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cs-name,
+.cs-team-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 700;
+}
+
+.cs-sponsor {
+  margin-right: 0.3em;
+  color: var(--accent-color);
+  font-weight: 400;
+}
+
+.cs-loser .cs-sponsor {
+  opacity: 0.7;
+}
+
+.cs-members {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.65em;
+}
+
+.cs-members .cs-name {
+  font-weight: 600;
+}
+
+.cs-flags {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+}
+
+.cs-flag {
+  height: var(--cs-flag);
+  border-radius: 2px;
+}
+
+.cs-characters {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+}
+
+.cs-character {
+  width: var(--cs-icon);
+  height: var(--cs-icon);
+  object-fit: contain;
+}
+
+.cs-members .cs-character {
+  width: calc(var(--cs-icon) * 0.75);
+  height: calc(var(--cs-icon) * 0.75);
+}
+
+.cs-loser .cs-character {
+  opacity: 0.6;
+}
+
+.cs-score {
+  flex: none;
+  min-width: 1.4em;
+  text-align: center;
+  font-weight: 700;
+}
+
+.cs-winner .cs-score {
+  color: var(--accent-color);
+}
+
+/* Layout theme display options */
+body.hd-hide-seed .cs-seed,
+body.hd-hide-country-flag .cs-country-flag,
+body.hd-hide-state-flag .cs-state-flag {
+  display: none;
+}
+
+.cs-title {
+  align-self: flex-start;
+  padding: 2px 18px;
+  border-radius: var(--border-radius-chip);
+  background: var(--accent-color);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ── list.html: a full-screen list of results ─────────── */
+
+.cs-list .cs-container {
+  position: absolute;
+  inset: 80px 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cs-list .cs-title {
+  font-size: 44px;
+}
+
+.cs-list .cs-sets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 14px 20px;
+}
+
+/* ── ticker.html: a bar that scrolls through results ──── */
+
+.cs-ticker .cs-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  display: flex;
+  background: var(--bg-fill, var(--bg-color));
+}
+
+.cs-ticker .cs-title {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-radius: 0;
+  font-size: 26px;
+  z-index: 1;
+}
+
+.cs-ticker .cs-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.cs-ticker .cs-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.cs-ticker .cs-set {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 0 28px;
+  background: none;
+  border-radius: 0;
+  border-right: 2px solid var(--cs-row-bg);
+}
+
+.cs-ticker .cs-header {
+  order: 0;
+}
+
+.cs-ticker .cs-upset {
+  margin-left: 0;
+}
+
+.cs-ticker .cs-side {
+  font-size: 24px;
+  gap: 8px;
+}
+
+.cs-ticker .cs-winner {
+  order: 1;
+}
+
+.cs-ticker .cs-loser {
+  order: 2;
+  flex-direction: row-reverse;
+}
+
+.cs-ticker .cs-names {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Teams: the team name, then its players on the same line */
+.cs-ticker .cs-members {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8em;
+}
+
+.cs-ticker .cs-loser::before {
+  content: "–";
+  color: var(--cs-muted);
+  order: 99;
+}
+
+/* The ticker reads "winner 3 – 1 loser" */
+.cs-ticker .cs-loser .cs-score {
+  order: 98;
+}
+
+/* ── card.html: one set at a time ─────────────────────── */
+
+.cs-card .cs-container {
+  position: absolute;
+  left: 40px;
+  bottom: 40px;
+  width: 560px;
+}
+
+.cs-card .cs-slot {
+  display: grid;
+}
+
+.cs-card .cs-slot > .cs-set {
+  grid-area: 1 / 1;
+  padding: 14px 20px;
+}
+
+.cs-card .cs-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-card .cs-title {
+  margin-bottom: 6px;
+  font-size: 22px;
+}
+
+/* ── column.html: a stack of compact results ──────────── */
+
+.cs-column .cs-container {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cs-column .cs-title {
+  font-size: 28px;
+}
+
+.cs-column .cs-sets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cs-column {
+  --cs-icon: 24px;
+  --cs-flag: 14px;
+}
+
+.cs-column .cs-set {
+  padding: 8px 12px;
+  gap: 2px;
+}
+
+.cs-column .cs-round {
+  font-size: 14px;
+}
+
+.cs-column .cs-upset {
+  font-size: 12px;
+}
+
+.cs-column .cs-side {
+  font-size: 20px;
+  gap: 8px;
+}

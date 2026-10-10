@@ -1,0 +1,27 @@
+{
+  "assets": {
+    "default": {}
+  },
+  "stock_icon": {
+    "default": {
+      "asset_key": "base_files/icon"
+    }
+  },
+  "sets_displayed": 10,
+  "upset_threshold": 1,
+  "upset_label": "UPSET",
+  "title": "RECENT RESULTS",
+  "card_interval": 6,
+  "ticker_speed": 90,
+  "display": {
+    "title": true,
+    "phase": true,
+    "round": true,
+    "seed": true,
+    "country_flag": true,
+    "state_flag": true,
+    "characters": true,
+    "upset": true,
+    "upset_factor": true
+  }
+}
