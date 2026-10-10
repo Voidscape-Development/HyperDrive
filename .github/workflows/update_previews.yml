@@ -120,23 +120,4 @@ jobs:
         if: steps.commit.outputs.committed == 'true'
         env:
           BRANCH: ${{ github.ref_name }}
-        run: |
-          # Other workflows (e.g. Build the application's "Update locale
-          # files") can push to the branch while the previews render, which
-          # rejects the push. Put the preview commit on top of theirs and
-          # try again.
-          for attempt in 1 2 3 4 5; do
-            if git push origin "HEAD:$BRANCH"; then
-              exit 0
-            fi
-            echo "Push rejected (attempt $attempt), rebasing onto origin/$BRANCH"
-            sleep $((attempt * 5))
-            git fetch origin "$BRANCH"
-            if ! git rebase "origin/$BRANCH"; then
-              git rebase --abort
-              echo "::error::The preview commit doesn't rebase cleanly onto origin/$BRANCH"
-              exit 1
-            fi
-          done
-          echo "::error::Couldn't push the previews after 5 attempts"
-          exit 1
+        run: ./scripts/push_with_retry.sh "$BRANCH"
