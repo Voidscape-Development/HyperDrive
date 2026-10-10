@@ -91,7 +91,7 @@ LoadEverything().then(() => {
           let names = [];
           for (const [p, player] of Object.values(team.player).entries()) {
             if (player && player.name) {
-              names.push(await Transcript(player.name));
+              names.push(player.name);
             }
           }
           teamName = names.join(" / ");
@@ -453,6 +453,10 @@ LoadEverything().then(() => {
       team2Losers = team.losers
     }
 
+    // Both names are drawn by each team's call: wait for the other team's
+    // call to store its player, or a name would be faded to the old one
+    await Promise.resolve();
+
       // If the player and the opponent are both in losers
     if (team1Losers && team2Losers) {
 
@@ -467,7 +471,7 @@ LoadEverything().then(() => {
               ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
             </span>
             ${
-              player1.name ? await Transcript(player1.name) : ""
+              player1.name ? player1.name : ""
             }
             ${"(WL)"}
           `
@@ -481,7 +485,7 @@ LoadEverything().then(() => {
               ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
             </span>
             ${
-              player2.name ? await Transcript(player2.name) : ""
+              player2.name ? player2.name : ""
             }
             ${"(L)"}
           `
@@ -498,7 +502,7 @@ LoadEverything().then(() => {
               ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
             </span>
             ${
-              player1.name ? await Transcript(player1.name) : ""
+              player1.name ? player1.name : ""
             }
             ${"(L)"}
           `
@@ -512,7 +516,7 @@ LoadEverything().then(() => {
               ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
             </span>
             ${
-              player2.name ? await Transcript(player2.name) : ""
+              player2.name ? player2.name : ""
             }
             ${"(WL)"}
           `
@@ -529,7 +533,7 @@ LoadEverything().then(() => {
               ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
             </span>
             ${
-              player1.name ? await Transcript(player1.name) : ""
+              player1.name ? player1.name : ""
             }
             ${"(L)"}
           `
@@ -543,7 +547,7 @@ LoadEverything().then(() => {
               ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
             </span>
             ${
-              player2.name ? await Transcript(player2.name) : ""
+              player2.name ? player2.name : ""
             }
             ${"(L)"}
           `
@@ -560,7 +564,7 @@ LoadEverything().then(() => {
             ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
           </span>
           ${
-            player1.name ? await Transcript(player1.name) : ""
+            player1.name ? player1.name : ""
           }
           ${"(L)"}
         `
@@ -574,7 +578,7 @@ LoadEverything().then(() => {
             ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
           </span>
           ${
-            player2.name ? await Transcript(player2.name) : ""
+            player2.name ? player2.name : ""
           }
           ${"(W)"}
         `
@@ -595,7 +599,7 @@ LoadEverything().then(() => {
             ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
           </span>
           ${
-            player1.name ? await Transcript(player1.name) : ""
+            player1.name ? player1.name : ""
           }
           ${"(W)"}
         `
@@ -609,7 +613,7 @@ LoadEverything().then(() => {
             ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
           </span>
           ${
-            player2.name ? await Transcript(player2.name) : ""
+            player2.name ? player2.name : ""
           }
           ${"(L)"}
         `
@@ -630,7 +634,7 @@ LoadEverything().then(() => {
             ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
           </span>
           ${
-            player1.name ? await Transcript(player1.name) : ""
+            player1.name ? player1.name : ""
           }
         `
       );
@@ -642,7 +646,7 @@ LoadEverything().then(() => {
             ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
           </span>
           ${
-            player2.name ? await Transcript(player2.name) : ""
+            player2.name ? player2.name : ""
           }
         `
       );

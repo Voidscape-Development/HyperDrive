@@ -79,12 +79,12 @@ row player's side) and a blank cell where a player meets themselves.
 ### `bracket.focus`
 
 What the bracket focus layout (`layout/bracket_focus`) zooms to, set from
-the bracket widget's "Layout focus" bar, hotkeys or the `/bracket-focus-app`
+the bracket widget's "Layout focus" bar or the `/bracket-focus-app`
 web page. There's one per focus channel, by name: `{"main": {...}, "Losers
 cam": {...}}`. `main` is always there; more are added in the bracket widget,
 so layouts in different sources can show different things. Each layout shows
 one, picked with `?channel=<name>` in its URL (`main` without it). The
-bracket widget, and the hotkeys, act on the channel picked in the widget.
+bracket widget acts on the channel picked in the widget.
 
 Each channel's focus:
 

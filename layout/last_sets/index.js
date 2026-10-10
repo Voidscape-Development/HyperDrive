@@ -76,7 +76,7 @@ LoadEverything().then(() => {
             <span class="sponsor">
               ${sets.player_team ? sets.player_team : ""}
             </span>
-            ${await Transcript(sets.player_name)}
+            ${sets.player_name}
           `
         );
         SetInnerHtml(
@@ -96,7 +96,7 @@ LoadEverything().then(() => {
             <span class="sponsor">
               ${sets.oponent_team ? sets.oponent_team : ""}
             </span>
-            ${await Transcript(sets.oponent_name)}
+            ${sets.oponent_name}
           `
         );
         SetInnerHtml(

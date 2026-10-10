@@ -181,7 +181,7 @@ LoadEverything().then(() => {
               <span class="sponsor">
                 ${player.team ? player.team : ""}
               </span>
-              ${await Transcript(player.name)}
+              ${player.name}
               ${team.losers ? "<span class='losers'>L</span>" : ""}
             `,
           );
@@ -246,7 +246,7 @@ LoadEverything().then(() => {
         for (const player of Object.values(team.player)) {
           if (player && player.name) {
             rawNames.push(player.name);
-            transcriptedNames.push(await Transcript(player.name));
+            transcriptedNames.push(player.name);
           }
         }
 

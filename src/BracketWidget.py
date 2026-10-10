@@ -22,7 +22,6 @@ from .BracketView import BracketView, SourceText
 from .DisplayOptions import DisplayOptionsButton
 from .FlowLayout import FlowLayout
 from .GameAssetManager import GameAssetManager
-from .Hotkeys import Hotkeys
 from .PlayerList import PlayerList
 from .Scheduler import (
     BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
@@ -156,7 +155,6 @@ class BracketWidget(QDockWidget):
         )
         self.labelAutoUpdateTimer = QLabel()
         providerRow.addGroup(self.btRefreshSets, self.cbAutoUpdateSets, self.labelAutoUpdateTimer)
-        Hotkeys.signals.refresh_phase_group.connect(self.PhaseGroupChanged)
 
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
         contents.layout().addWidget(self.splitter, 1)
@@ -215,9 +213,6 @@ class BracketWidget(QDockWidget):
             )
         )
         self.limitExport.toggled.connect(self.ExportOptionsChanged)
-        Hotkeys.signals.limit_export.connect(
-            lambda: self.limitExport.setChecked(not self.limitExport.isChecked())
-        )
         self.limitExportNumber = QSpinBox()
         self.limitExportNumber.setMinimum(2)
         self.limitExportNumber.setMaximum(1024)

@@ -1703,10 +1703,6 @@
               "online_avatar": null,
               "pronoun": "she/her",
               "real_name": "Ana Silva",
-              "romanized_data": {
-                "name": "Azure",
-                "team": "HD"
-              },
               "seed": 1,
               "state": {
                 "asset": "./assets/state_flag/BR/SP.png",
@@ -1799,10 +1795,6 @@
               "name": "Cinder",
               "online_avatar": null,
               "real_name": "Chloe Park",
-              "romanized_data": {
-                "name": "cinder",
-                "team": ""
-              },
               "seed": 10,
               "state": {
                 "asset": "./assets/state_flag/KR/11.png",
@@ -1894,10 +1886,6 @@
               "name": "Drift",
               "online_avatar": null,
               "real_name": "Diego Lopez",
-              "romanized_data": {
-                "name": "Drift",
-                "team": ""
-              },
               "seed": 11,
               "state": {
                 "asset": "./assets/state_flag/CL/RM.png",
@@ -1989,10 +1977,6 @@
               "name": "Echo",
               "online_avatar": null,
               "real_name": "Emma Clark",
-              "romanized_data": {
-                "name": "Echo",
-                "team": ""
-              },
               "seed": 12,
               "state": {
                 "asset": "./assets/state_flag/AU/NSW.png",
@@ -2084,10 +2068,6 @@
               "name": "Flint",
               "online_avatar": null,
               "real_name": "Felix Wagner",
-              "romanized_data": {
-                "name": "Flint",
-                "team": ""
-              },
               "seed": 13,
               "state": {
                 "asset": "./assets/state_flag/DE/BE.png",
@@ -2179,10 +2159,6 @@
               "name": "Gale",
               "online_avatar": null,
               "real_name": "Grace Lee",
-              "romanized_data": {
-                "name": "Gale",
-                "team": ""
-              },
               "seed": 14,
               "state": {
                 "asset": "./assets/state_flag/US/NY.png",
@@ -2274,10 +2250,6 @@
               "name": "Harbor",
               "online_avatar": null,
               "real_name": "Hugo Costa",
-              "romanized_data": {
-                "name": "Harbor",
-                "team": ""
-              },
               "seed": 15,
               "state": {
                 "asset": "./assets/state_flag/PT/11.png",
@@ -2369,10 +2341,6 @@
               "name": "Iris",
               "online_avatar": null,
               "real_name": "Ivy Chen",
-              "romanized_data": {
-                "name": "Iris",
-                "team": ""
-              },
               "seed": 16,
               "state": {
                 "asset": "./assets/state_flag/CA/QC.png",
@@ -2468,10 +2436,6 @@
               "online_avatar": null,
               "pronoun": "he/him",
               "real_name": "Kenji Sato",
-              "romanized_data": {
-                "name": "Kestrel",
-                "team": "GG"
-              },
               "seed": 2,
               "state": {
                 "asset": "./assets/state_flag/JP/13.png",
@@ -2565,10 +2529,6 @@
               "online_avatar": null,
               "pronoun": "she/her",
               "real_name": "Mia Lowe",
-              "romanized_data": {
-                "name": "Marlowe",
-                "team": ""
-              },
               "seed": 3,
               "state": {
                 "asset": "./assets/state_flag/US/CA.png",
@@ -2661,10 +2621,6 @@
               "online_avatar": null,
               "pronoun": "they/them",
               "real_name": "Quinn Hale",
-              "romanized_data": {
-                "name": "Quill",
-                "team": "NX"
-              },
               "seed": 4,
               "state": {
                 "asset": "./assets/state_flag/CA/ON.png",
@@ -2758,10 +2714,6 @@
               "online_avatar": null,
               "pronoun": "she/her",
               "real_name": "Elena Ruiz",
-              "romanized_data": {
-                "name": "Ember",
-                "team": ""
-              },
               "seed": 5,
               "state": {
                 "asset": "./assets/state_flag/MX/JAL.png",
@@ -2854,10 +2806,6 @@
               "online_avatar": null,
               "pronoun": "he/him",
               "real_name": "Tomas Berg",
-              "romanized_data": {
-                "name": "Tundra",
-                "team": "VX"
-              },
               "seed": 6,
               "state": {
                 "asset": "./assets/state_flag/SE/AB.png",
@@ -2951,10 +2899,6 @@
               "online_avatar": null,
               "pronoun": "he/him",
               "real_name": "Paul Martin",
-              "romanized_data": {
-                "name": "Pixel",
-                "team": ""
-              },
               "seed": 7,
               "state": {
                 "asset": "./assets/state_flag/FR/IDF.png",
@@ -3047,10 +2991,6 @@
               "online_avatar": null,
               "pronoun": "she/her",
               "real_name": "Sara Khan",
-              "romanized_data": {
-                "name": "Saffron",
-                "team": "RB"
-              },
               "seed": 8,
               "state": {
                 "asset": "./assets/state_flag/GB/ENG.png",
@@ -3143,10 +3083,6 @@
               "name": "Bolt",
               "online_avatar": null,
               "real_name": "Ben Ortiz",
-              "romanized_data": {
-                "name": "Bolt",
-                "team": ""
-              },
               "seed": 9,
               "state": {
                 "asset": "./assets/state_flag/US/TX.png",
@@ -3193,10 +3129,6 @@
       "online_avatar": null,
       "pronoun": "they/them",
       "real_name": "Alex Doe",
-      "romanized_data": {
-        "name": "Caster One",
-        "team": "HD"
-      },
       "seed": 0,
       "state": {},
       "team": "HD",
@@ -3228,10 +3160,6 @@
       "online_avatar": null,
       "pronoun": "she/her",
       "real_name": "Sam Roe",
-      "romanized_data": {
-        "name": "Caster Two",
-        "team": ""
-      },
       "seed": 0,
       "state": {},
       "twitter": "castertwo"
@@ -5869,10 +5797,6 @@
             "online_avatar": null,
             "pronoun": "she/her",
             "real_name": "Ana Silva",
-            "romanized_data": {
-              "name": "Azure",
-              "team": "HD"
-            },
             "seed": 1,
             "state": {
               "asset": "./assets/state_flag/BR/SP.png",
@@ -5969,10 +5893,6 @@
             "online_avatar": null,
             "pronoun": "he/him",
             "real_name": "Kenji Sato",
-            "romanized_data": {
-              "name": "Kestrel",
-              "team": "GG"
-            },
             "seed": 2,
             "state": {
               "asset": "./assets/state_flag/JP/13.png",
@@ -6066,10 +5986,6 @@
             "online_avatar": null,
             "pronoun": "she/her",
             "real_name": "Mia Lowe",
-            "romanized_data": {
-              "name": "Marlowe",
-              "team": ""
-            },
             "seed": 3,
             "state": {
               "asset": "./assets/state_flag/US/CA.png",
@@ -6162,10 +6078,6 @@
             "online_avatar": null,
             "pronoun": "they/them",
             "real_name": "Quinn Hale",
-            "romanized_data": {
-              "name": "Quill",
-              "team": "NX"
-            },
             "seed": 4,
             "state": {
               "asset": "./assets/state_flag/CA/ON.png",
@@ -6259,10 +6171,6 @@
             "online_avatar": null,
             "pronoun": "she/her",
             "real_name": "Elena Ruiz",
-            "romanized_data": {
-              "name": "Ember",
-              "team": ""
-            },
             "seed": 5,
             "state": {
               "asset": "./assets/state_flag/MX/JAL.png",
@@ -6355,10 +6263,6 @@
             "online_avatar": null,
             "pronoun": "he/him",
             "real_name": "Tomas Berg",
-            "romanized_data": {
-              "name": "Tundra",
-              "team": "VX"
-            },
             "seed": 6,
             "state": {
               "asset": "./assets/state_flag/SE/AB.png",
@@ -6452,10 +6356,6 @@
             "online_avatar": null,
             "pronoun": "he/him",
             "real_name": "Paul Martin",
-            "romanized_data": {
-              "name": "Pixel",
-              "team": ""
-            },
             "seed": 7,
             "state": {
               "asset": "./assets/state_flag/FR/IDF.png",
@@ -6548,10 +6448,6 @@
             "online_avatar": null,
             "pronoun": "she/her",
             "real_name": "Sara Khan",
-            "romanized_data": {
-              "name": "Saffron",
-              "team": "RB"
-            },
             "seed": 8,
             "state": {
               "asset": "./assets/state_flag/GB/ENG.png",
@@ -6994,10 +6890,6 @@
               "online_avatar": null,
               "pronoun": "she/her",
               "real_name": "Ana Silva",
-              "romanized_data": {
-                "name": "Azure",
-                "team": "HD"
-              },
               "seed": 1,
               "state": {
                 "asset": "./assets/state_flag/BR/SP.png",
@@ -7096,10 +6988,6 @@
               "online_avatar": null,
               "pronoun": "he/him",
               "real_name": "Kenji Sato",
-              "romanized_data": {
-                "name": "Kestrel",
-                "team": "GG"
-              },
               "seed": 2,
               "state": {
                 "asset": "./assets/state_flag/JP/13.png",

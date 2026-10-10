@@ -2,7 +2,6 @@ from qtpy.QtCore import *
 from qtpy.QtWidgets import *
 
 from ..Helpers.DynamicExport import DynamicExport
-from ..Hotkeys import Hotkeys
 from ..Scheduler import (
     BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
     BRACKET_AUTO_UPDATE_MIN_INTERVAL_SECS,
@@ -298,58 +297,6 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "State Manager"),
             SettingsWidget("general", stateManagerSettings),
-        )
-
-        # Add hotkey settings
-        hotkeySettings = []
-
-        hotkeySettings.append(
-            (
-                QApplication.translate("settings.hotkeys", "Enable hotkeys"),
-                "hotkeys_enabled",
-                "checkbox",
-                True,
-            )
-        )
-
-        key_names = {
-            "load_set": QApplication.translate("settings.hotkeys", "Load set"),
-            "team1_score_up": QApplication.translate("settings.hotkeys", "Team 1 score up"),
-            "team1_score_down": QApplication.translate("settings.hotkeys", "Team 1 score down"),
-            "team2_score_up": QApplication.translate("settings.hotkeys", "Team 2 score up"),
-            "team2_score_down": QApplication.translate("settings.hotkeys", "Team 2 score down"),
-            "reset_scores": QApplication.translate("settings.hotkeys", "Reset scores"),
-            "swap_teams": QApplication.translate("settings.hotkeys", "Swap teams"),
-            "refresh_phase_group": QApplication.translate(
-                "settings.hotkeys", "Refresh bracket phase groups"
-            ),
-            "limit_export": QApplication.translate(
-                "settings.hotkeys", "Toggle bracket limit export"
-            ),
-            "bracket_focus_all": QApplication.translate(
-                "settings.hotkeys", "Bracket focus: show the whole bracket"
-            ),
-            "bracket_focus_previous_round": QApplication.translate(
-                "settings.hotkeys", "Bracket focus: previous round"
-            ),
-            "bracket_focus_next_round": QApplication.translate(
-                "settings.hotkeys", "Bracket focus: next round"
-            ),
-            "bracket_focus_follow": QApplication.translate(
-                "settings.hotkeys", "Bracket focus: follow the set on stream on/off"
-            ),
-            "bracket_focus_tour": QApplication.translate(
-                "settings.hotkeys", "Bracket focus: round tour on/off"
-            ),
-        }
-
-        for i, (setting, value) in enumerate(Hotkeys.instance.keys.items()):
-            hotkeySettings.append(
-                (key_names[setting], setting, "hotkey", value, Hotkeys.instance.ReloadHotkeys)
-            )
-
-        self.add_setting_widget(
-            QApplication.translate("settings", "Hotkeys"), SettingsWidget("hotkeys", hotkeySettings)
         )
 
         # Add Display Options settings

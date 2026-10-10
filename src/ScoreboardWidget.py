@@ -20,7 +20,6 @@ from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.MediaHelper import MediaHelper
 from .Helpers.VersionHelper import add_beta_label
-from .Hotkeys import Hotkeys
 from .PlayerDB import PlayerDB
 from .PlayerDrag import PlayerDragBoard
 from .Scheduler import (
@@ -120,19 +119,6 @@ class ScoreboardWidget(QWidget):
         self.signals.StationSelected.connect(self.LoadStationSets)
         self.signals.StationSelection.connect(self.LoadStationSetClicked)
         self.signals.ChangeSetData.connect(self.ChangeSetData)
-
-        if self.scoreboardNumber == 1:
-            Hotkeys.signals.load_set.connect(self.LoadSetClicked)
-            Hotkeys.signals.swap_teams.connect(self.SwapTeams)
-            Hotkeys.signals.reset_scores.connect(self.ResetScore)
-
-            Hotkeys.signals.team1_score_up.connect(lambda: [self.CommandScoreChange(0, 1)])
-
-            Hotkeys.signals.team1_score_down.connect(lambda: [self.CommandScoreChange(0, -1)])
-
-            Hotkeys.signals.team2_score_up.connect(lambda: [self.CommandScoreChange(1, 1)])
-
-            Hotkeys.signals.team2_score_down.connect(lambda: [self.CommandScoreChange(1, -1)])
 
         self.signals.CommandScoreChange.connect(self.CommandScoreChange)
         self.signals.SwapTeams.connect(self.SwapTeams)

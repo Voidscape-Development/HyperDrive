@@ -32,7 +32,7 @@ def NormalizeChannelName(name):
 
 
 def NormalizeRequest(request):
-    """A focus request from the app, a hotkey or the web page, with only the
+    """A focus request from the app or the web page, with only the
     keys its mode uses and sane values."""
     request = request if isinstance(request, dict) else {}
     mode = request.get("mode")

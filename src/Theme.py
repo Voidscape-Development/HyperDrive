@@ -632,7 +632,7 @@ class Theme:
         }}
         QPushButton::menu-indicator {{ subcontrol-position: right center; right: 6px; }}
 
-        QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox, QComboBox, QKeySequenceEdit QLineEdit {{
+        QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox, QComboBox {{
             background: {c["surface"]}; color: {c["text"]};
             border: 1px solid {c["border"]}; border-radius: {r}px;
             padding: {pad["input"]};

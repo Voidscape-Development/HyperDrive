@@ -57,6 +57,20 @@ def MatchFilesWithPrefix(sortedFiles, pattern, head):
     return [f for f in candidates if pattern.match(f)]
 
 
+def LocaleKeys(locale):
+    """The keys of a "locale" dict of a game's config to look a language up
+    with, in order: the full code (pt_BR), the language (pt), its remap."""
+    keys = [locale.replace("-", "_"), re.split("-|_", locale)[0], LocaleHelper.GetRemaps(locale)]
+    return [k for k in keys if k is not None]
+
+
+def Localized(locales, keys, default):
+    for key in keys:
+        if key in locales:
+            return locales[key]
+    return default
+
+
 class GameAssetManagerSignals(QObject):
     onLoad = Signal()
     onLoadAssets = Signal()
@@ -374,822 +388,12 @@ class GameAssetManager(QObject):
             def run(self):
                 self.lock.lock()
                 try:
-                    game = self.game
-
-                    if len(self.parent().games.keys()) == 0:
-                        return
-
-                    if game == 0 or game == None:
-                        game = ""
-                    else:
-                        game = list(self.parent().games.keys())[game - 1]
-
-                    _game_meta = self.parent().games.get(game, {})
-                    game_dir = _game_meta.get("base_game_dir", game)
-                    if _game_meta.get("mods_active_default") and not self.mods_active:
-                        self.mods_active = True
-
-                    # Game is already loaded
-                    if game == self.parent().selectedGame.get("codename") and (
-                        not self.mods_reload_mode
-                    ):
-                        self.parent().threadpool.waitForDone()
-                        return
-
-                    logger.info("Changed to game: " + game)
-
-                    # Asset files may have changed since the last load
-                    self.parent().assetDirCache = {}
-
-                    self.parent().CopyCSS(game_dir)
-
-                    gameObj = self.parent().games.get(game, {})
-                    self.parent().selectedGame = gameObj
-                    gameObj["codename"] = game
-
-                    if gameObj != None:
-                        self.parent().characters = gameObj.get("character_to_codename", {})
-                        self.parent().variants = gameObj.get("variant_to_codename", {})
-                        self.parent().colors = gameObj.get("preset_colors", [])
-
-                        assetsKey = ""
-                        if len(list(gameObj.get("assets", {}).keys())) > 0:
-                            assetsKey = list(gameObj.get("assets", {}).keys())[0]
-
-                        for asset in list(gameObj.get("assets", {}).keys()):
-                            if "icon" in gameObj["assets"][asset].get("type", ""):
-                                assetsKey = asset
-                                break
-
-                        assetsObj = gameObj.get("assets", {}).get(assetsKey, None)
-                        self.parent().stockIcons = self.parent().BuildStockIcons(
-                            gameObj, game_dir, assetsKey
-                        )
-
-                        logger.info("Loaded stock icons")
-
-                        self.parent().skins = {}
-
-                        packSkinMask = {}
-
-                        widths = {}
-                        heights = {}
-
-                        for c in self.parent().characters.keys():
-                            self.parent().skins[c] = {}
-                            codename = self.parent().characters[c].get("codename")
-                            for assetsKey in list(gameObj["assets"].keys()):
-                                asset = gameObj["assets"][assetsKey]
-
-                                # Listed once per pack, not once per character
-                                files = self.parent().ListAssetDir(
-                                    "./user_data/games/" + game_dir + "/" + assetsKey
-                                )
-
-                                pattern = f"({asset.get('prefix', '')})({codename})({asset.get('postfix', '')})([0-9]*)\\.([A-Za-z0-9]+)"
-                                filteredFiles = MatchFilesWithPrefix(
-                                    files, pattern, f"{asset.get('prefix', '')}{codename}"
-                                )
-
-                                for f in filteredFiles:
-                                    numberStart = f.rfind(asset.get("postfix", "")) + len(
-                                        asset.get("postfix", "")
-                                    )
-                                    numberEnd = f.rfind(".")
-                                    number = 0
-                                    try:
-                                        number = int(f[numberStart:numberEnd])
-                                    except:
-                                        pass
-                                    self.parent().skins[c][number] = True
-
-                                    if c not in packSkinMask:
-                                        packSkinMask[c] = {}
-
-                                    if assetsKey not in packSkinMask[c]:
-                                        packSkinMask[c][assetsKey] = set()
-
-                                    packSkinMask[c][assetsKey].add(number)
-
-                            logger.info(
-                                "Character "
-                                + c
-                                + " has "
-                                + str(len(self.parent().skins[c]))
-                                + " skins"
-                            )
-
-                        # Set average size
-                        for assetsKey in list(gameObj.get("assets", {}).keys()):
-                            if assetsKey != "base_files" and assetsKey not in [
-                                "stage_icon",
-                                "variant_icon",
-                            ]:
-                                try:
-                                    if (
-                                        len(widths.get(assetsKey, [])) > 0
-                                        and len(heights.get(assetsKey, [])) > 0
-                                    ):
-                                        gameObj["assets"][assetsKey]["average_size"] = (
-                                            assetsObj.get("average_size")
-                                        )
-                                except:
-                                    logger.error(traceback.format_exc())
-
-                        # Set complete
-                        for assetsKey in list(gameObj.get("assets", {}).keys()):
-                            try:
-                                complete = True
-
-                                for c in self.parent().characters.keys():
-                                    if "random" in c.lower():
-                                        continue
-                                    for skin in self.parent().skins[c].keys():
-                                        if (
-                                            assetsKey not in packSkinMask[c]
-                                            or skin not in packSkinMask[c][assetsKey]
-                                        ):
-                                            complete = False
-                                            break
-
-                                gameObj["assets"][assetsKey]["complete"] = complete
-                            except:
-                                logger.error(traceback.format_exc())
-
-                        # Get biggest complete pack
-                        assetsKey = "base_files/icon"
-                        biggestAverage = 0
-
-                        for asset in list(gameObj.get("assets", {}).keys()):
-                            if (
-                                gameObj["assets"][asset].get("complete")
-                                and gameObj["assets"][asset].get("average_size")
-                                and asset not in ["stage_icon", "variant_icon"]
-                            ):
-                                size = sum(gameObj["assets"][asset].get("average_size").values())
-
-                                if size > biggestAverage:
-                                    assetsKey = asset
-                                    biggestAverage = size
-
-                        self.parent().biggestCompletePack = assetsKey
-                        logger.info("Biggest complete assets: " + assetsKey)
-
-                        # Get stage icon
-                        assetsKey = None
-
-                        for asset in list(gameObj.get("assets", {}).keys()):
-                            if "stage_icon" in gameObj["assets"][asset].get("type", ""):
-                                assetsKey = asset
-                                break
-
-                        self.parent().stages = gameObj.get("stage_to_codename", {})
-
-                        if assetsKey:
-                            assetsObj = gameObj.get("assets", {}).get(assetsKey)
-                            files = sorted(
-                                os.listdir("./user_data/games/" + game_dir + "/" + assetsKey)
-                            )
-
-                            for stage in self.parent().stages:
-                                self.parent().stages[stage]["path"] = (
-                                    "./user_data/games/"
-                                    + game_dir
-                                    + "/"
-                                    + assetsKey
-                                    + "/"
-                                    + assetsObj.get("prefix", "")
-                                    + self.parent().stages[stage].get("codename", "")
-                                    + assetsObj.get("postfix", "")
-                                    + ".png"
-                                )
-
-                        for s in self.parent().stages.keys():
-                            self.parent().stages[s]["name"] = s
-
-                        # Load translations
-                        try:
-                            for c in self.parent().characters.keys():
-                                display_name = c
-                                export_name = c
-                                en_name = c
-
-                                if self.parent().characters[c].get("locale"):
-                                    locale = LocaleHelper.programLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent().characters[c]["locale"]
-                                    ):
-                                        display_name = self.parent().characters[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent().characters[c]["locale"]
-                                    ):
-                                        display_name = self.parent().characters[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        in self.parent().characters[c]["locale"]
-                                    ):
-                                        display_name = self.parent().characters[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        ]
-
-                                    locale = LocaleHelper.exportLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent().characters[c]["locale"]
-                                    ):
-                                        export_name = self.parent().characters[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent().characters[c]["locale"]
-                                    ):
-                                        export_name = self.parent().characters[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        in self.parent().characters[c]["locale"]
-                                    ):
-                                        export_name = self.parent().characters[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        ]
-
-                                self.parent().characters[c]["display_name"] = display_name
-                                self.parent().characters[c]["export_name"] = export_name
-                                self.parent().characters[c]["en_name"] = en_name
-                        except:
-                            logger.error(traceback.format_exc())
-
-                        # Load translations for variants
-                        try:
-                            for c in self.parent().variants.keys():
-                                display_name = c
-                                export_name = c
-                                en_name = c
-
-                                if self.parent().variants[c].get("locale"):
-                                    locale = LocaleHelper.programLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent().variants[c]["locale"]
-                                    ):
-                                        display_name = self.parent().variants[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent().variants[c]["locale"]
-                                    ):
-                                        display_name = self.parent().variants[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        in self.parent().variants[c]["locale"]
-                                    ):
-                                        display_name = self.parent().variants[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        ]
-
-                                    locale = LocaleHelper.exportLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent().variants[c]["locale"]
-                                    ):
-                                        export_name = self.parent().variants[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent().variants[c]["locale"]
-                                    ):
-                                        export_name = self.parent().variants[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        in self.parent().variants[c]["locale"]
-                                    ):
-                                        export_name = self.parent().variants[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        ]
-
-                                self.parent().variants[c]["display_name"] = display_name
-                                self.parent().variants[c]["export_name"] = export_name
-                                self.parent().variants[c]["en_name"] = en_name
-                        except:
-                            logger.error(traceback.format_exc())
-
-                        # Load translations for colors
-                        try:
-                            for c in range(len(self.parent().colors)):
-                                display_name = self.parent().colors[c].get("name")
-                                export_name = self.parent().colors[c].get("name")
-                                en_name = self.parent().colors[c].get("name")
-
-                                if self.parent().colors[c].get("locale"):
-                                    locale = LocaleHelper.programLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent().colors[c]["locale"]
-                                    ):
-                                        display_name = self.parent().colors[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent().colors[c]["locale"]
-                                    ):
-                                        display_name = self.parent().colors[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        in self.parent().colors[c]["locale"]
-                                    ):
-                                        display_name = self.parent().colors[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        ]
-
-                                    locale = LocaleHelper.exportLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent().colors[c]["locale"]
-                                    ):
-                                        export_name = self.parent().colors[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent().colors[c]["locale"]
-                                    ):
-                                        export_name = self.parent().colors[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        in self.parent().colors[c]["locale"]
-                                    ):
-                                        export_name = self.parent().colors[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        ]
-
-                                self.parent().colors[c]["display_name"] = display_name
-                                self.parent().colors[c]["export_name"] = export_name
-                                self.parent().colors[c]["en_name"] = en_name
-                        except:
-                            logger.error(traceback.format_exc())
-
-                    with StateManager.SaveBlock():
-                        StateManager.Set(
-                            "game",
-                            {
-                                "name": self.parent().selectedGame.get("name"),
-                                "smashgg_id": self.parent().selectedGame.get("smashgg_game_id"),
-                                "codename": self.parent().selectedGame.get("codename"),
-                                "logo": self.parent().selectedGame.get("logo_path")
-                                or self.parent().selectedGame.get("path", "")
-                                + "/base_files/logo.png",
-                                "defaults": self.parent().selectedGame.get("defaults"),
-                                "mods_active": self.mods_active,
-                                "has_stages": bool(
-                                    self.parent().selectedGame.get("stage_to_codename")
-                                ),
-                                "has_variants": bool(
-                                    self.parent().selectedGame.get("variant_to_codename")
-                                ),
-                                "has_colors": bool(self.parent().selectedGame.get("preset_colors")),
-                                "igdb_id": self.parent().selectedGame.get("igdb_game_id"),
-                            },
-                        )
-
-                        self.parent().has_modded_content = False
-                        self.parent().UpdateCharacterModel(self.mods_active)
-                        self.parent().UpdateSkinModel()
-                        self.parent().UpdateVariantModel(self.mods_active)
-                        self.parent().UpdateColorModel()
-                        self.parent().UpdateStageModel(self.mods_active)
-
-                        StateManager.Set(
-                            "game.has_modded_content", self.parent().has_modded_content
-                        )
-
-                        self.parent().signals.onLoad.emit()
-                except:
-                    logger.error(traceback.format_exc())
+                    self.parent()._LoadGameAssets(
+                        self.game, self.mods_active, self.mods_reload_mode
+                    )
                 finally:
                     self.parent().threadpool.waitForDone()
                     self.lock.unlock()
-
-        class AssetsLoader:
-            def __init__(self, parent=...) -> None:
-                self.parent = parent
-                self.game = None
-
-            def run(self, mods_active=False, mods_reload_mode=False):
-                try:
-                    game = self.game
-
-                    if len(self.parent.games.keys()) == 0:
-                        return
-
-                    if game == 0 or game == None:
-                        game = ""
-                    else:
-                        game = list(self.parent.games.keys())[game - 1]
-
-                    _game_meta = self.parent.games.get(game, {})
-                    game_dir = _game_meta.get("base_game_dir", game)
-                    if _game_meta.get("mods_active_default") and not mods_active:
-                        mods_active = True
-
-                    # Game is already loaded
-                    if game == self.parent.selectedGame.get("codename") and (not mods_reload_mode):
-                        return
-
-                    logger.info("Changed to game: " + game)
-
-                    # Asset files may have changed since the last load
-                    self.parent.assetDirCache = {}
-
-                    self.parent.CopyCSS(game_dir)
-
-                    gameObj = self.parent.games.get(game, {})
-                    self.parent.selectedGame = gameObj
-                    gameObj["codename"] = game
-
-                    if gameObj != None:
-                        self.parent.characters = gameObj.get("character_to_codename", {})
-                        self.parent.variants = gameObj.get("variant_to_codename", {})
-                        self.parent.colors = gameObj.get("preset_colors", [])
-
-                        assetsKey = ""
-                        if len(list(gameObj.get("assets", {}).keys())) > 0:
-                            assetsKey = list(gameObj.get("assets", {}).keys())[0]
-
-                        for asset in list(gameObj.get("assets", {}).keys()):
-                            if "icon" in gameObj["assets"][asset].get("type", ""):
-                                assetsKey = asset
-                                break
-
-                        assetsObj = gameObj.get("assets", {}).get(assetsKey, None)
-                        self.parent.stockIcons = self.parent.BuildStockIcons(
-                            gameObj, game_dir, assetsKey
-                        )
-
-                        logger.info("Loaded stock icons")
-
-                        self.parent.skins = {}
-
-                        packSkinMask = {}
-
-                        widths = {}
-                        heights = {}
-
-                        for c in self.parent.characters.keys():
-                            self.parent.skins[c] = {}
-                            codename = self.parent.characters[c].get("codename")
-                            for assetsKey in list(gameObj["assets"].keys()):
-                                asset = gameObj["assets"][assetsKey]
-
-                                # Listed once per pack, not once per character
-                                files = self.parent.ListAssetDir(
-                                    "./user_data/games/" + game_dir + "/" + assetsKey
-                                )
-
-                                pattern = f"({asset.get('prefix', '')})({codename})({asset.get('postfix', '')})([0-9]*)\\.([A-Za-z0-9]+)"
-                                filteredFiles = MatchFilesWithPrefix(
-                                    files, pattern, f"{asset.get('prefix', '')}{codename}"
-                                )
-
-                                for f in filteredFiles:
-                                    numberStart = f.rfind(asset.get("postfix", "")) + len(
-                                        asset.get("postfix", "")
-                                    )
-                                    numberEnd = f.rfind(".")
-                                    number = 0
-                                    try:
-                                        number = int(f[numberStart:numberEnd])
-                                    except:
-                                        pass
-                                    self.parent.skins[c][number] = True
-
-                                    if c not in packSkinMask:
-                                        packSkinMask[c] = {}
-
-                                    if assetsKey not in packSkinMask[c]:
-                                        packSkinMask[c][assetsKey] = set()
-
-                                    packSkinMask[c][assetsKey].add(number)
-
-                            logger.info(
-                                "Character "
-                                + c
-                                + " has "
-                                + str(len(self.parent.skins[c]))
-                                + " skins"
-                            )
-
-                        # Set average size
-                        for assetsKey in list(gameObj.get("assets", {}).keys()):
-                            if assetsKey != "base_files" and assetsKey not in [
-                                "stage_icon",
-                                "variant_icon",
-                            ]:
-                                try:
-                                    if (
-                                        len(widths.get(assetsKey, [])) > 0
-                                        and len(heights.get(assetsKey, [])) > 0
-                                    ):
-                                        gameObj["assets"][assetsKey]["average_size"] = (
-                                            assetsObj.get("average_size")
-                                        )
-                                except:
-                                    logger.error(traceback.format_exc())
-
-                        # Set complete
-                        for assetsKey in list(gameObj.get("assets", {}).keys()):
-                            try:
-                                complete = True
-
-                                for c in self.parent.characters.keys():
-                                    if "random" in c.lower():
-                                        continue
-                                    for skin in self.parent.skins[c].keys():
-                                        if (
-                                            assetsKey not in packSkinMask[c]
-                                            or skin not in packSkinMask[c][assetsKey]
-                                        ):
-                                            complete = False
-                                            break
-
-                                gameObj["assets"][assetsKey]["complete"] = complete
-                            except:
-                                logger.error(traceback.format_exc())
-
-                        # Get biggest complete pack
-                        assetsKey = "base_files/icon"
-                        biggestAverage = 0
-
-                        for asset in list(gameObj.get("assets", {}).keys()):
-                            if (
-                                gameObj["assets"][asset].get("complete")
-                                and gameObj["assets"][asset].get("average_size")
-                                and asset not in ["stage_icon", "variant_icon"]
-                            ):
-                                size = sum(gameObj["assets"][asset].get("average_size").values())
-
-                                if size > biggestAverage:
-                                    assetsKey = asset
-                                    biggestAverage = size
-
-                        self.parent.biggestCompletePack = assetsKey
-                        logger.info("Biggest complete assets: " + assetsKey)
-
-                        # Get stage icon
-                        assetsKey = None
-
-                        for asset in list(gameObj.get("assets", {}).keys()):
-                            if "stage_icon" in gameObj["assets"][asset].get("type", ""):
-                                assetsKey = asset
-                                break
-
-                        self.parent.stages = gameObj.get("stage_to_codename", {})
-
-                        if assetsKey:
-                            assetsObj = gameObj.get("assets", {}).get(assetsKey)
-                            files = sorted(
-                                os.listdir("./user_data/games/" + game_dir + "/" + assetsKey)
-                            )
-
-                            for stage in self.parent.stages:
-                                self.parent.stages[stage]["path"] = (
-                                    "./user_data/games/"
-                                    + game_dir
-                                    + "/"
-                                    + assetsKey
-                                    + "/"
-                                    + assetsObj.get("prefix", "")
-                                    + self.parent.stages[stage].get("codename", "")
-                                    + assetsObj.get("postfix", "")
-                                    + ".png"
-                                )
-
-                        for s in self.parent.stages.keys():
-                            self.parent.stages[s]["name"] = s
-
-                        # Load translations
-                        try:
-                            for c in self.parent.characters.keys():
-                                display_name = c
-                                export_name = c
-                                en_name = c
-
-                                if self.parent.characters[c].get("locale"):
-                                    locale = LocaleHelper.programLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent.characters[c]["locale"]
-                                    ):
-                                        display_name = self.parent.characters[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent.characters[c]["locale"]
-                                    ):
-                                        display_name = self.parent.characters[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        in self.parent.characters[c]["locale"]
-                                    ):
-                                        display_name = self.parent.characters[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        ]
-
-                                    locale = LocaleHelper.exportLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent.characters[c]["locale"]
-                                    ):
-                                        export_name = self.parent.characters[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent.characters[c]["locale"]
-                                    ):
-                                        export_name = self.parent.characters[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        in self.parent.characters[c]["locale"]
-                                    ):
-                                        export_name = self.parent.characters[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        ]
-
-                                self.parent.characters[c]["display_name"] = display_name
-                                self.parent.characters[c]["export_name"] = export_name
-                                self.parent.characters[c]["en_name"] = en_name
-                        except:
-                            logger.error(traceback.format_exc())
-
-                        # Load translations for variants
-                        try:
-                            for c in self.parent.variants.keys():
-                                display_name = c
-                                export_name = c
-                                en_name = c
-
-                                if self.parent.variants[c].get("locale"):
-                                    locale = LocaleHelper.programLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent.variants[c]["locale"]
-                                    ):
-                                        display_name = self.parent.variants[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent.variants[c]["locale"]
-                                    ):
-                                        display_name = self.parent.variants[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        in self.parent.variants[c]["locale"]
-                                    ):
-                                        display_name = self.parent.variants[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        ]
-
-                                    locale = LocaleHelper.exportLocale
-                                    if (
-                                        locale.replace("-", "_")
-                                        in self.parent.variants[c]["locale"]
-                                    ):
-                                        export_name = self.parent.variants[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent.variants[c]["locale"]
-                                    ):
-                                        export_name = self.parent.variants[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        in self.parent.variants[c]["locale"]
-                                    ):
-                                        export_name = self.parent.variants[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        ]
-
-                                self.parent.variants[c]["display_name"] = display_name
-                                self.parent.variants[c]["export_name"] = export_name
-                                self.parent.variants[c]["en_name"] = en_name
-                        except:
-                            logger.error(traceback.format_exc())
-
-                        # Load translations for colors
-                        try:
-                            for c in range(len(self.parent.colors)):
-                                display_name = self.parent.colors[c].get("name")
-                                export_name = self.parent.colors[c].get("name")
-                                en_name = self.parent.colors[c].get("name")
-
-                                if self.parent.colors[c].get("locale"):
-                                    locale = LocaleHelper.programLocale
-                                    if locale.replace("-", "_") in self.parent.colors[c]["locale"]:
-                                        display_name = self.parent.colors[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent.colors[c]["locale"]
-                                    ):
-                                        display_name = self.parent.colors[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        in self.parent.colors[c]["locale"]
-                                    ):
-                                        display_name = self.parent.colors[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.programLocale)
-                                        ]
-
-                                    locale = LocaleHelper.exportLocale
-                                    if locale.replace("-", "_") in self.parent.colors[c]["locale"]:
-                                        export_name = self.parent.colors[c]["locale"][
-                                            locale.replace("-", "_")
-                                        ]
-                                    elif (
-                                        re.split("-|_", locale)[0]
-                                        in self.parent.colors[c]["locale"]
-                                    ):
-                                        export_name = self.parent.colors[c]["locale"][
-                                            re.split("-|_", locale)[0]
-                                        ]
-                                    elif (
-                                        LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        in self.parent.colors[c]["locale"]
-                                    ):
-                                        export_name = self.parent.colors[c]["locale"][
-                                            LocaleHelper.GetRemaps(LocaleHelper.exportLocale)
-                                        ]
-
-                                self.parent.colors[c]["display_name"] = display_name
-                                self.parent.colors[c]["export_name"] = export_name
-                                self.parent.colors[c]["en_name"] = en_name
-                        except:
-                            logger.error(traceback.format_exc())
-
-                    StateManager.Set(
-                        "game",
-                        {
-                            "name": self.parent.selectedGame.get("name"),
-                            "smashgg_id": self.parent.selectedGame.get("smashgg_game_id"),
-                            "codename": self.parent.selectedGame.get("codename"),
-                            "logo": self.parent.selectedGame.get("logo_path")
-                            or self.parent.selectedGame.get("path", "") + "/base_files/logo.png",
-                            "defaults": self.parent.selectedGame.get("defaults"),
-                            "mods_active": mods_active,
-                            "has_stages": bool(self.parent.selectedGame.get("stage_to_codename")),
-                            "has_variants": bool(
-                                self.parent.selectedGame.get("variant_to_codename")
-                            ),
-                            "has_colors": bool(self.parent.selectedGame.get("preset_colors")),
-                            "igdb_id": self.parent.selectedGame.get("igdb_game_id"),
-                        },
-                    )
-
-                    self.parent.has_modded_content = False
-                    self.parent.UpdateCharacterModel(mods_active)
-                    self.parent.UpdateSkinModel()
-                    self.parent.UpdateVariantModel(mods_active)
-                    self.parent.UpdateColorModel()
-                    self.parent.UpdateStageModel(mods_active)
-
-                    StateManager.Set("game.has_modded_content", self.parent.has_modded_content)
-
-                    self.parent.signals.onLoad.emit()
-                except:
-                    logger.error(traceback.format_exc())
 
         if async_mode:
             self.assetsLoaderThread = AssetsLoaderThread(GameAssetManager.instance)
@@ -1199,9 +403,7 @@ class GameAssetManager(QObject):
             self.assetsLoaderThread.mods_reload_mode = mods_reload_mode
             self.assetsLoaderThread.start(QThread.Priority.HighestPriority)
         else:
-            self.assetsLoader = AssetsLoader(parent=GameAssetManager.instance)
-            self.assetsLoader.game = game
-            self.assetsLoader.run(mods_active=mods_active, mods_reload_mode=mods_reload_mode)
+            GameAssetManager.instance._LoadGameAssets(game, mods_active, mods_reload_mode)
 
         # Setup startgg character id to character name
         try:
@@ -1218,20 +420,210 @@ class GameAssetManager(QObject):
         for c in sggcharacters.get("entities", {}).get("character", []):
             self.startgg_id_to_character[str(c.get("id"))] = c
 
-        # self.programState["asset_path"] = self.selectedGame.get("path")
-        # self.programState["game"] = game
+    def _LoadGameAssets(self, game, mods_active, mods_reload_mode):
+        try:
+            if len(self.games.keys()) == 0:
+                return
 
-        # self.SetupAutocomplete()
+            if game == 0 or game == None:
+                game = ""
+            else:
+                game = list(self.games.keys())[game - 1]
 
-        # if self.settings.get("autosave") == True:
-        #    self.ExportProgramState()
+            _game_meta = self.games.get(game, {})
+            game_dir = _game_meta.get("base_game_dir", game)
+            if _game_meta.get("mods_active_default") and not mods_active:
+                mods_active = True
 
-        # self.gameSelect.clear()
+            # Game is already loaded
+            if game == self.selectedGame.get("codename") and (not mods_reload_mode):
+                return
 
-        # self.gameSelect.addItem("")
+            logger.info("Changed to game: " + game)
 
-        # for game in self.games:
-        #    self.gameSelect.addItem(self.games[game]["name"])
+            # Asset files may have changed since the last load
+            self.assetDirCache = {}
+
+            self.CopyCSS(game_dir)
+
+            gameObj = self.games.get(game, {})
+            self.selectedGame = gameObj
+            gameObj["codename"] = game
+
+            if gameObj != None:
+                self.characters = gameObj.get("character_to_codename", {})
+                self.variants = gameObj.get("variant_to_codename", {})
+                self.colors = gameObj.get("preset_colors", [])
+
+                assetsKey = ""
+                if len(list(gameObj.get("assets", {}).keys())) > 0:
+                    assetsKey = list(gameObj.get("assets", {}).keys())[0]
+
+                for asset in list(gameObj.get("assets", {}).keys()):
+                    if "icon" in gameObj["assets"][asset].get("type", ""):
+                        assetsKey = asset
+                        break
+
+                self.stockIcons = self.BuildStockIcons(gameObj, game_dir, assetsKey)
+
+                logger.info("Loaded stock icons")
+
+                self.skins = {}
+
+                packSkinMask = {}
+
+                for c in self.characters.keys():
+                    self.skins[c] = {}
+                    codename = self.characters[c].get("codename")
+                    for assetsKey in list(gameObj["assets"].keys()):
+                        asset = gameObj["assets"][assetsKey]
+
+                        # Listed once per pack, not once per character
+                        files = self.ListAssetDir("./user_data/games/" + game_dir + "/" + assetsKey)
+
+                        pattern = f"({asset.get('prefix', '')})({codename})({asset.get('postfix', '')})([0-9]*)\\.([A-Za-z0-9]+)"
+                        filteredFiles = MatchFilesWithPrefix(
+                            files, pattern, f"{asset.get('prefix', '')}{codename}"
+                        )
+
+                        for f in filteredFiles:
+                            numberStart = f.rfind(asset.get("postfix", "")) + len(
+                                asset.get("postfix", "")
+                            )
+                            numberEnd = f.rfind(".")
+                            number = 0
+                            try:
+                                number = int(f[numberStart:numberEnd])
+                            except:
+                                pass
+                            self.skins[c][number] = True
+
+                            if c not in packSkinMask:
+                                packSkinMask[c] = {}
+
+                            if assetsKey not in packSkinMask[c]:
+                                packSkinMask[c][assetsKey] = set()
+
+                            packSkinMask[c][assetsKey].add(number)
+
+                    logger.info("Character " + c + " has " + str(len(self.skins[c])) + " skins")
+
+                # Set complete
+                for assetsKey in list(gameObj.get("assets", {}).keys()):
+                    try:
+                        complete = True
+
+                        for c in self.characters.keys():
+                            if "random" in c.lower():
+                                continue
+                            for skin in self.skins[c].keys():
+                                if (
+                                    assetsKey not in packSkinMask[c]
+                                    or skin not in packSkinMask[c][assetsKey]
+                                ):
+                                    complete = False
+                                    break
+
+                        gameObj["assets"][assetsKey]["complete"] = complete
+                    except:
+                        logger.error(traceback.format_exc())
+
+                # Get biggest complete pack
+                assetsKey = "base_files/icon"
+                biggestAverage = 0
+
+                for asset in list(gameObj.get("assets", {}).keys()):
+                    if (
+                        gameObj["assets"][asset].get("complete")
+                        and gameObj["assets"][asset].get("average_size")
+                        and asset not in ["stage_icon", "variant_icon"]
+                    ):
+                        size = sum(gameObj["assets"][asset].get("average_size").values())
+
+                        if size > biggestAverage:
+                            assetsKey = asset
+                            biggestAverage = size
+
+                self.biggestCompletePack = assetsKey
+                logger.info("Biggest complete assets: " + assetsKey)
+
+                # Get stage icon
+                assetsKey = None
+
+                for asset in list(gameObj.get("assets", {}).keys()):
+                    if "stage_icon" in gameObj["assets"][asset].get("type", ""):
+                        assetsKey = asset
+                        break
+
+                self.stages = gameObj.get("stage_to_codename", {})
+
+                if assetsKey:
+                    assetsObj = gameObj.get("assets", {}).get(assetsKey)
+
+                    for stage in self.stages:
+                        self.stages[stage]["path"] = (
+                            "./user_data/games/"
+                            + game_dir
+                            + "/"
+                            + assetsKey
+                            + "/"
+                            + assetsObj.get("prefix", "")
+                            + self.stages[stage].get("codename", "")
+                            + assetsObj.get("postfix", "")
+                            + ".png"
+                        )
+
+                for s in self.stages.keys():
+                    self.stages[s]["name"] = s
+
+                # Load translations of the characters, variants and colors
+                programKeys = LocaleKeys(LocaleHelper.programLocale)
+                exportKeys = LocaleKeys(LocaleHelper.exportLocale)
+                for items, nameOf in (
+                    (self.characters, lambda key, item: key),
+                    (self.variants, lambda key, item: key),
+                    (dict(enumerate(self.colors)), lambda key, item: item.get("name")),
+                ):
+                    try:
+                        for key, item in items.items():
+                            name = nameOf(key, item)
+                            locales = item.get("locale") or {}
+                            item["display_name"] = Localized(locales, programKeys, name)
+                            item["export_name"] = Localized(locales, exportKeys, name)
+                            item["en_name"] = name
+                    except:
+                        logger.error(traceback.format_exc())
+
+            with StateManager.SaveBlock():
+                StateManager.Set(
+                    "game",
+                    {
+                        "name": self.selectedGame.get("name"),
+                        "smashgg_id": self.selectedGame.get("smashgg_game_id"),
+                        "codename": self.selectedGame.get("codename"),
+                        "logo": self.selectedGame.get("logo_path")
+                        or self.selectedGame.get("path", "") + "/base_files/logo.png",
+                        "defaults": self.selectedGame.get("defaults"),
+                        "mods_active": mods_active,
+                        "has_stages": bool(self.selectedGame.get("stage_to_codename")),
+                        "has_variants": bool(self.selectedGame.get("variant_to_codename")),
+                        "has_colors": bool(self.selectedGame.get("preset_colors")),
+                        "igdb_id": self.selectedGame.get("igdb_game_id"),
+                    },
+                )
+
+                self.has_modded_content = False
+                self.UpdateCharacterModel(mods_active)
+                self.UpdateSkinModel()
+                self.UpdateVariantModel(mods_active)
+                self.UpdateColorModel()
+                self.UpdateStageModel(mods_active)
+
+                StateManager.Set("game.has_modded_content", self.has_modded_content)
+
+                self.signals.onLoad.emit()
+        except:
+            logger.error(traceback.format_exc())
 
     def UpdateStageModel(self, mods_active=True):
         # TODO: Make modded content disabled by default

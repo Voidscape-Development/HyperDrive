@@ -50,9 +50,8 @@ class StateManager:
     state = {}
     saveBlocked = 0
     signals = StateManagerSignals()
-    changedKeys = []
-    # Same changes as changedKeys, as tuples of keys, used to update
-    # lastSavedState without cloning the whole state
+    # Paths changed since the last save, as tuples of keys: they narrow the
+    # diff and update lastSavedState without cloning the whole state
     changedPaths = []
     deltaIndex = 0
     load_error: str | None = None
@@ -244,14 +243,10 @@ class StateManager:
             except Exception as e:
                 logger.error(traceback.format_exc())
 
-        # logger.debug(StateManager.changedKeys)
-
-        changedKeys = list(set(StateManager.changedKeys))
         changedPaths = StateManager.changedPaths
 
         # Cleared up front: a change we cannot diff must not be retried on every
         # subsequent save, or a single bad key would stall the export for good.
-        StateManager.changedKeys = []
         StateManager.changedPaths = []
 
         try:
@@ -286,6 +281,7 @@ class StateManager:
                         {"delta_index": StateManager.deltaIndex, "delta": delta}
                     )
             except TypeError:
+                changedKeys = sorted({".".join(path) for path in changedPaths})
                 logger.warning(f"Couldn't serialize diff. Changed Keys: {changedKeys}")
             except Exception as e:
                 logger.error(traceback.format_exc())
@@ -301,7 +297,7 @@ class StateManager:
             # lastSavedState completely.
             ExportAll(
                 diff if diff is not None else {},
-                changedPaths if diff is not None and changedKeys else None,
+                changedPaths if diff is not None and changedPaths else None,
             )
 
     def NarrowChangedKeys(changedPaths):
@@ -572,15 +568,7 @@ class StateManager:
         # fname = os.path.split(func.co_filename)[1]
         # logger.debug(f"{func.co_name}({fname}:{func.co_firstlineno}) Setting {key} to {value}")
         with StateManager.lock:
-            # StateManager.lastSavedState = deep_clone(StateManager.state)
-
             deep_set(StateManager.state, key, value)
-
-            final_key = "root"
-            for k in key.split("."):
-                final_key += f"['{k}']"
-
-            StateManager.changedKeys.append(final_key)
             StateManager.changedPaths.append(tuple(key.split(".")))
 
             if StateManager.saveBlocked == 0:
@@ -595,13 +583,7 @@ class StateManager:
         # logger.debug(f"{func.co_name}({fname}:{func.co_firstlineno}) Deleting {key}")
 
         with StateManager.lock:
-            # StateManager.lastSavedState = deep_clone(StateManager.state)
             deep_unset(StateManager.state, key)
-
-            final_key = "root"
-            for k in key.split("."):
-                final_key += f"['{k}']"
-            StateManager.changedKeys.append(final_key)
             StateManager.changedPaths.append(tuple(key.split(".")))
 
             if StateManager.saveBlocked == 0:

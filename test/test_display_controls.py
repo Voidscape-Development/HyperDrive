@@ -150,8 +150,6 @@ def TestActions():
             return fn()
 
     QtHelper.gui_executor = Executor()
-    # Imported along with the actions, and needs a display to import
-    sys.modules.setdefault("pynput", types.ModuleType("pynput"))
     from src.WebServerActions import WebServerActions
 
     with tempfile.TemporaryDirectory() as root:

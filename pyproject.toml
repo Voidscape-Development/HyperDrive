@@ -6,22 +6,17 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10,<3.15"
 dependencies = [
-    "arabic-buckwalter-transliteration",
     "chardet",
     "charset-normalizer==3.4.1",
-    "cutlet",
     "deepdiff==8.1.1",
     "fastapi>=0.142.2",
     "grpcio",
-    "koroman==1.0.14",
     "loguru==0.7.3",
     "msgpack>=1.1.2",
     "orjson",
     "parrygg>=0.1.6",
     "pillow",
     "py7zr",
-    "pynput==1.7.7",
-    "pypinyin",
     "pyqt6",
     "python-dateutil==2.9.0",
     "python-dotenv",
@@ -34,7 +29,6 @@ dependencies = [
     "termcolor==2.5.0",
     "tqdm==2.2.3",
     "tzdata",
-    "unidic-lite",
     "uvicorn>=0.54.0",
     "websockets>=17.2; python_version >= '3.11'",
     # websockets 17.2 needs Python 3.11; the Windows executable is built with 3.10

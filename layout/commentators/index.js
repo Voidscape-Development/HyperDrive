@@ -51,7 +51,7 @@ LoadEverything().then(() => {
             <span class="team">
               ${commentator.team ? commentator.team + "&nbsp;" : ""}
             </span>
-            ${await Transcript(commentator.name)}
+            ${commentator.name}
           `
         );
         SetInnerHtml($(`.commentator${index} .pronoun`), commentator.pronoun);

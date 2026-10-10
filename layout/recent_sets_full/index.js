@@ -140,7 +140,7 @@ LoadEverything().then(() => {
           );
           SetInnerHtml(
             $(`.recent_sets_players .player_${t + 1} .name`),
-            await Transcript(player.name)
+            player.name
           );
         }
       }

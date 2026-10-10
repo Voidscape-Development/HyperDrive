@@ -134,7 +134,7 @@ function TBPipsHtml(player, team) {
 
 // Sponsor and tag, as HTML for SetInnerHtml
 async function TBNameHtml(player) {
-  const name = player.name ? await Transcript(TBEscape(player.name)) : "";
+  const name = player.name ? TBEscape(player.name) : "";
   const sponsor = player.sponsor
     ? `<span class="sponsor">${TBEscape(player.sponsor)}</span>`
     : "";
