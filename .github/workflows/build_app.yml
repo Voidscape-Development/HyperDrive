@@ -51,10 +51,10 @@ jobs:
           fi
 
       - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.extract_branch.outputs.branch }}
+        shell: bash
+        env:
+          BRANCH: ${{ steps.extract_branch.outputs.branch }}
+        run: ./scripts/push_with_retry.sh "$BRANCH"
 
   build_frontend:
     name: build_frontend
@@ -184,10 +184,10 @@ jobs:
           fi
 
       - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.extract_branch.outputs.branch }}
+        shell: bash
+        env:
+          BRANCH: ${{ steps.extract_branch.outputs.branch }}
+        run: ./scripts/push_with_retry.sh "$BRANCH"
 
       # A single prerelease that's overwritten by every build of main, so the
       # newest build always has the same download link:

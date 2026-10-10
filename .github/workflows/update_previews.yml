@@ -118,4 +118,6 @@ jobs:
 
       - name: Push previews
         if: steps.commit.outputs.committed == 'true'
-        run: git push origin HEAD:${{ github.ref_name }}
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: ./scripts/push_with_retry.sh "$BRANCH"
