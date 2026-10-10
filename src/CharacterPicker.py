@@ -13,6 +13,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .GameAssetManager import GameAssetManager
+from .Helpers.CharacterIconHelper import PlaceholderPixmap
 from .SettingsManager import SettingsManager
 from .Theme import ThemedIcon
 
@@ -67,6 +68,11 @@ def MainsOf(player):
     return names
 
 
+def DisplayName(en_name):
+    character = GameAssetManager.instance.characters.get(en_name) or {}
+    return character.get("display_name") or en_name
+
+
 class _IconCache:
     """The characters' stock icons at the grid's size, made when first
     needed, again when another game is loaded."""
@@ -82,6 +88,11 @@ class _IconCache:
             _IconCache.icons = {}
         icon = _IconCache.icons.get(en_name)
         if icon is None:
+            if en_name in stockIcons and not stockIcons[en_name]:
+                # No pack has an icon for it: its initials
+                icon = QIcon(PlaceholderPixmap(DisplayName(en_name), CHARACTER_ICON.width()))
+                _IconCache.icons[en_name] = icon
+                return icon
             path = (stockIcons.get(en_name) or {}).get(0)
             image = QImage(path) if path else QImage()
             if image.isNull():

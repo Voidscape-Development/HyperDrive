@@ -13,6 +13,7 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .Helpers.CharacterIconHelper import IconPackOrder, PlaceholderPixmap
 from .Helpers.LocaleHelper import LocaleHelper
 from .StateManager import StateManager
 from .Workers import Worker
@@ -97,6 +98,51 @@ class GameAssetManager(QObject):
 
         # Sorted listings of asset directories, cleared when games are reloaded
         self.assetDirCache = {}
+
+    def BuildStockIcons(self, gameObj, game_dir, iconPack):
+        """Paths of each character's icons, by skin. A character the icon
+        pack has none for gets them from another installed pack (see
+        IconPackOrder), and none at all if no pack has it, which shows as a
+        placeholder with its initials. Only paths: QImages must be made on
+        the main thread."""
+        assets = gameObj.get("assets", {})
+        packs = []
+        for key in IconPackOrder(assets, iconPack):
+            try:
+                files = self.ListAssetDir("./user_data/games/" + game_dir + "/" + key)
+            except OSError:
+                continue
+            packs.append((key, assets.get(key) or {}, files))
+
+        stockIcons = {}
+        for c in self.characters.keys():
+            stockIcons[c] = {}
+            codename = self.characters[c].get("codename")
+
+            for key, asset, files in packs:
+                prefix = asset.get("prefix", "")
+                postfix = asset.get("postfix", "")
+                pattern = f"({prefix})({codename})({postfix})([0-9]*)\\.([A-Za-z0-9]+)"
+                filteredFiles = MatchFilesWithPrefix(files, pattern, f"{prefix}{codename}")
+                if not filteredFiles:
+                    continue
+
+                if key != iconPack:
+                    logger.info(f"No icon for {c} in {iconPack}, using {key}")
+                for f in filteredFiles:
+                    numberStart = f.rfind(postfix) + len(postfix)
+                    numberEnd = f.rfind(".")
+                    number = 0
+                    try:
+                        number = int(f[numberStart:numberEnd])
+                    except ValueError:
+                        logger.error(f)
+                    stockIcons[c][number] = "./user_data/games/" + game_dir + "/" + key + "/" + f
+                # Skin 0 is the character's icon wherever one is needed
+                if 0 not in stockIcons[c]:
+                    stockIcons[c][0] = stockIcons[c][min(stockIcons[c])]
+                break
+        return stockIcons
 
     def ListAssetDir(self, path):
         files = self.assetDirCache.get(path)
@@ -376,40 +422,9 @@ class GameAssetManager(QObject):
                                 break
 
                         assetsObj = gameObj.get("assets", {}).get(assetsKey, None)
-                        files = self.parent().ListAssetDir(
-                            "./user_data/games/" + game_dir + "/" + assetsKey
+                        self.parent().stockIcons = self.parent().BuildStockIcons(
+                            gameObj, game_dir, assetsKey
                         )
-
-                        self.parent().stockIcons = {}
-
-                        for c in self.parent().characters.keys():
-                            self.parent().stockIcons[c] = {}
-
-                            codename = self.parent().characters[c].get("codename")
-                            pattern = f"({assetsObj.get('prefix', '')})({codename})({assetsObj.get('postfix', '')})([0-9]*)\\.([A-Za-z0-9]+)"
-                            filteredFiles = MatchFilesWithPrefix(
-                                files, pattern, f"{assetsObj.get('prefix', '')}{codename}"
-                            )
-
-                            if len(filteredFiles) == 0:
-                                # Store path only — QImage must be created on the main thread
-                                self.parent().stockIcons[c][0] = "./assets/icons/cancel.svg"
-
-                            for i, f in enumerate(filteredFiles):
-                                numberStart = f.rfind(assetsObj.get("postfix", "")) + len(
-                                    assetsObj.get("postfix", "")
-                                )
-                                numberEnd = f.rfind(".")
-                                number = 0
-                                try:
-                                    number = int(f[numberStart:numberEnd])
-                                except:
-                                    logger.error(f)
-                                    pass
-                                # Store path only — QImage must be created on the main thread
-                                self.parent().stockIcons[c][number] = (
-                                    "./user_data/games/" + game_dir + "/" + assetsKey + "/" + f
-                                )
 
                         logger.info("Loaded stock icons")
 
@@ -825,40 +840,9 @@ class GameAssetManager(QObject):
                                 break
 
                         assetsObj = gameObj.get("assets", {}).get(assetsKey, None)
-                        files = self.parent.ListAssetDir(
-                            "./user_data/games/" + game_dir + "/" + assetsKey
+                        self.parent.stockIcons = self.parent.BuildStockIcons(
+                            gameObj, game_dir, assetsKey
                         )
-
-                        self.parent.stockIcons = {}
-
-                        for c in self.parent.characters.keys():
-                            self.parent.stockIcons[c] = {}
-
-                            codename = self.parent.characters[c].get("codename")
-                            pattern = f"({assetsObj.get('prefix', '')})({codename})({assetsObj.get('postfix', '')})([0-9]*)\\.([A-Za-z0-9]+)"
-                            filteredFiles = MatchFilesWithPrefix(
-                                files, pattern, f"{assetsObj.get('prefix', '')}{codename}"
-                            )
-
-                            if len(filteredFiles) == 0:
-                                # Store path only — QImage must be created on the main thread
-                                self.parent.stockIcons[c][0] = "./assets/icons/cancel.svg"
-
-                            for i, f in enumerate(filteredFiles):
-                                numberStart = f.rfind(assetsObj.get("postfix", "")) + len(
-                                    assetsObj.get("postfix", "")
-                                )
-                                numberEnd = f.rfind(".")
-                                number = 0
-                                try:
-                                    number = int(f[numberStart:numberEnd])
-                                except:
-                                    logger.error(f)
-                                    pass
-                                # Store path only — QImage must be created on the main thread
-                                self.parent.stockIcons[c][number] = (
-                                    "./user_data/games/" + game_dir + "/" + assetsKey + "/" + f
-                                )
 
                         logger.info("Loaded stock icons")
 
@@ -1397,14 +1381,17 @@ class GameAssetManager(QObject):
                 item = QStandardItem()
                 item.setData(c, Qt.ItemDataRole.EditRole)
                 logger.info(c)
+                iconPath = self.stockIcons.get(c, {}).get(0)
                 item.setIcon(
                     QIcon(
                         QPixmap.fromImage(
-                            QImage(self.stockIcons[c][0]).scaledToWidth(
+                            QImage(iconPath).scaledToWidth(
                                 32, Qt.TransformationMode.FastTransformation
                             )
                         )
                     )
+                    if iconPath
+                    else QIcon(PlaceholderPixmap(self.characters[c].get("display_name") or c, 32))
                 )
 
                 data = {
