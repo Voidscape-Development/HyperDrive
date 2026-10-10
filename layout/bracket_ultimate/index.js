@@ -1203,7 +1203,7 @@ LoadEverything().then(() => {
                           : ""
                       }
                     </span>
-                    ${player ? await Transcript(player.name) : "---"}
+                    ${player ? player.name : "---"}
                   </span>
                 `
               );
@@ -1231,7 +1231,7 @@ LoadEverything().then(() => {
                   team.player
                 ).entries()) {
                   if (player && player.name) {
-                    names.push(await Transcript(player.name));
+                    names.push(player.name);
                   }
                 }
                 teamName = names.join("<div>/</div>");
@@ -1305,7 +1305,7 @@ LoadEverything().then(() => {
           
           SetInnerHtml(
             $(element).find(`.icon_name`),
-            `${player ? await Transcript(player.name) : ""}`
+            `${player ? player.name : ""}`
           );
         } else {
           // Doubles/Teams
@@ -1317,7 +1317,7 @@ LoadEverything().then(() => {
               team.player
             ).entries()) {
               if (player && player.name) {
-                names.push(await Transcript(player.name));
+                names.push(player.name);
               }
             }
             teamName = names.join("<div>/</div>");
@@ -1573,7 +1573,7 @@ LoadEverything().then(() => {
                   $(element).find(`.icon_name`),
                   `
                   <span>
-                    ${player ? await Transcript(player.name) : ""}
+                    ${player ? player.name : ""}
                   </span>
                 `
                 );

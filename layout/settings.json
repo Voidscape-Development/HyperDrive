@@ -8,11 +8,5 @@
       "all_settings": "https://github.com/Voidscape-Development/HyperDrive/blob/main/docs/layout-data.md"
     }
   },
-  "japanese_transcription": {
-    "enabled": true,
-    "to": "romaji",
-    "mode": "normal",
-    "romajiSystem": "hepburn"
-  },
   "automatic_theme": false
 }

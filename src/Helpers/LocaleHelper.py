@@ -11,8 +11,6 @@ from src.SettingsManager import SettingsManager
 
 from .DirHelper import ResolvePath
 
-# The romanizers are imported when first used: pypinyin alone takes ~40MB
-
 # The user's match and phase names, which replace or add to the built-in ones
 CUSTOM_TERMS_FILE = "./user_data/tournament_terms.json"
 TERM_KINDS = ("match", "phase")
@@ -41,8 +39,6 @@ class LocaleHelper(QObject):
     remapping = {}
     countryToLanguage = {}
     countryToContinent = {}
-    # Creating a Cutlet loads the whole MeCab dictionary, so it's done once
-    cutletInstance = None
 
     def LoadLocale():
         settingsProgramLocale = SettingsManager.Get("program_language", None)
@@ -119,33 +115,6 @@ class LocaleHelper(QObject):
 
     def GetCountryContinent(countryCode2: str):
         return LocaleHelper.countryToContinent.get(countryCode2.upper(), "")
-
-    def RomanizeTextFromCountry(text, countryCode2: str):
-        romanized_text = text
-        if romanized_text:
-            languages = LocaleHelper.GetCountrySpokenLanguages(countryCode2)
-            if "ja" in languages:
-                if LocaleHelper.cutletInstance is None:
-                    import cutlet
-
-                    LocaleHelper.cutletInstance = cutlet.Cutlet()
-                romanized_text = LocaleHelper.cutletInstance.romaji(text)
-            elif "zh" in languages:
-                from pypinyin import pinyin
-
-                pinyin_text = pinyin(text)
-                romanized_text = ""
-                for pinyin_character in pinyin_text:
-                    romanized_text = romanized_text + pinyin_character[0]
-            elif "ko" in languages:
-                import koroman
-
-                romanized_text = koroman.romanize(text)
-            elif "ar" in languages:
-                from arabic_buckwalter_transliteration.transliteration import arabic_to_buckwalter
-
-                romanized_text = arabic_to_buckwalter(text)
-        return romanized_text
 
     def LoadRoundNames():
         # Load default round names and translation

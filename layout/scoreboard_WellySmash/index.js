@@ -26,7 +26,7 @@ LoadEverything().then(() => {
         if (player && player.name) {
           if (Object.keys(team.player).length == 1) {
             // Singles: get player name presentation using player_presentation strategy
-            let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? await Transcript(player.name) : ""}`;
+            let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? player.name : ""}`;
 
             SetInnerHtml(
               $(`.t${t + 1}.container .name`),
@@ -42,7 +42,7 @@ LoadEverything().then(() => {
           let names = [];
           for (const [p, player] of Object.values(team.player).entries()) {
             if (player && player.name) {
-              names.push(await Transcript(player.name));
+              names.push(player.name);
             }
           }
           teamName = names.join(" / ");
@@ -198,7 +198,7 @@ LoadEverything().then(() => {
             <span class="team">
               ${commentator.team ? commentator.team + "&nbsp;" : ""}
             </span>
-            ${await Transcript(commentator.name)}
+            ${commentator.name}
           `
         );
         SetInnerHtml($(`.commentator${index} .pronoun`), commentator.pronoun);

@@ -71,30 +71,6 @@ class SettingsWidget(QWidget):
             resetButton.clicked.connect(
                 lambda bt=None, settingWidget=settingWidget: settingWidget.setValue(defaultValue)
             )
-        elif type == "hotkey":
-            settingWidget = QKeySequenceEdit()
-            settingWidget.keySequenceChanged.connect(
-                lambda keySequence, settingWidget=settingWidget: (
-                    settingWidget.setKeySequence(keySequence.toString().split(",")[0])
-                    if keySequence.count() > 0
-                    else None
-                )
-            )
-            settingWidget.setKeySequence(
-                SettingsManager.Get(self.settingsBase + "." + setting, defaultValue)
-            )
-            settingWidget.keySequenceChanged.connect(
-                lambda sequence=None, setting=setting: [
-                    SettingsManager.Set(self.settingsBase + "." + setting, sequence.toString()),
-                    self.CheckCallable(callback),
-                ]
-            )
-            resetButton.clicked.connect(
-                lambda bt=None, setting=setting, settingWidget=settingWidget: [
-                    settingWidget.setKeySequence(defaultValue),
-                    self.CheckCallable(callback),
-                ]
-            )
         elif type == "textbox" or type == "password":
             settingWidget = QLineEdit()
             if type == "password":

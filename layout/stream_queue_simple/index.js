@@ -97,7 +97,7 @@ LoadEverything().then(() => {
                 <span class="sponsor">
                     ${player.team ? player.team : ""}
                 </span>
-                ${await Transcript(player.name)}
+                ${player.name}
                 ${team.losers ? "<span class='losers'>L</span>" : ""}
                 `
         )

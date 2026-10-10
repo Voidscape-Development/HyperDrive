@@ -40,7 +40,7 @@ LoadEverything().then(() => {
         for (const [p, player] of [team.player["1"]].entries()) {
           if (player) {
             let sponsorName = player.team ? player.team : "";
-            let playerName = await Transcript(player.name);
+            let playerName = player.name;
             let pronounHtml = `<div class="pronoun">${player.pronoun ? player.pronoun : ""}</div>`;
             let nameContent = `<span class="sponsor">${sponsorName}</span><div class="name">${playerName}</div>`;
 
@@ -154,7 +154,7 @@ LoadEverything().then(() => {
         let names = [];
         for (const [p, player] of Object.values(team.player).entries()) {
           if (player && player.name) {
-            names.push(await Transcript(player.name));
+            names.push(player.name);
           }
         }
         let playerNames = names.join(" / ");

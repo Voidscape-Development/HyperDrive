@@ -187,7 +187,7 @@ LoadEverything().then(() => {
         playersArea.appendChild(card);
 
         // Name + org tag
-        const playerName = await Transcript(player.name);
+        const playerName = player.name;
         const orgTag = player.team || "";
         SetInnerHtml($(card.querySelector(".team_name")),
           orgTag ? `<span class="sponsor">${orgTag}</span>${playerName}` : playerName,

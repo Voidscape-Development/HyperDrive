@@ -82,7 +82,7 @@ LoadEverything().then(() => {
               <span class="sponsor">
                 ${player.team ? player.team : ""}
               </span>
-              ${await Transcript(player.name)}
+              ${player.name}
             </span>
             `,
               undefined,

@@ -120,7 +120,7 @@ LoadEverything().then(() => {
               <span class="sponsor">
                 ${player.team ? player.team : ""}
               </span>
-              ${await Transcript(player.name)}
+              ${player.name}
             `
           );
 
@@ -407,7 +407,7 @@ LoadEverything().then(() => {
             `
               <div class = "versus">VS</div>
               ${set.oponent_team ? `<span class="sponsor">${set.oponent_team}</span>` : ""}
-              ${await Transcript(set.oponent_name)}
+              ${set.oponent_name}
             `
           );
           SetInnerHtml(
@@ -454,7 +454,7 @@ LoadEverything().then(() => {
         for (const [p, player] of Object.values(team.player).entries()) {
           if (player && player.name) {
             rawNames.push(player.name);
-            transcriptedNames.push(await Transcript(player.name));
+            transcriptedNames.push(player.name);
           }
         }
 

@@ -165,7 +165,7 @@ LoadEverything().then(() => {
         for (const [p, player] of [team.player["1"]].entries()) {
           if (player) {
             // Get player name presentation using player_presentation strategy
-            let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? await Transcript(player.name) : ""}`;
+            let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? player.name : ""}`;
 
             SetInnerHtml(
               $(`.p${t + 1}.container .name`),
@@ -268,7 +268,7 @@ LoadEverything().then(() => {
         let names = [];
         for (const [p, player] of Object.values(team.player).entries()) {
           if (player && player.name) {
-            names.push(await Transcript(player.name));
+            names.push(player.name);
           }
         }
         let playerNames = names.join(" / ");

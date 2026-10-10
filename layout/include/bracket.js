@@ -73,18 +73,17 @@ var HDBracket = {
   },
 
   // A team's display name: its name, or its players' names
-  async TeamName(team, transcribe = true) {
+  async TeamName(team) {
     if (!team) return "";
     const players = Object.values(team.player || {}).filter((p) => p && p.name);
     if (players.length == 1) {
       const player = players[0];
-      const name = transcribe ? await Transcript(player.name) : player.name;
-      return `<span class="sponsor">${player.team ? player.team : ""}</span> ${name}`;
+      return `<span class="sponsor">${player.team ? player.team : ""}</span> ${player.name}`;
     }
     if (team.name) return team.name;
     const names = [];
     for (const player of players) {
-      names.push(transcribe ? await Transcript(player.name) : player.name);
+      names.push(player.name);
     }
     return names.join(" / ");
   },

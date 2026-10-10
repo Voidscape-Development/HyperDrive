@@ -73,7 +73,7 @@ LoadEverything().then(() => {
                   ${player.team ? player.team.toUpperCase() : ""}
                 </span>
                 ${
-                  player.name ? await Transcript(player.name.toUpperCase()) : ""
+                  player.name ? player.name.toUpperCase() : ""
                 }
                 ${team.losers ? "(L)" : ""}
               `
@@ -85,7 +85,7 @@ LoadEverything().then(() => {
               let names = [];
               for (const [p, player] of Object.values(team.player).entries()) {
                 if (player && player.name) {
-                  names.push(await Transcript(player.name));
+                  names.push(player.name);
                 }
               }
               teamName = names.join(" / ");

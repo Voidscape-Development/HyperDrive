@@ -308,8 +308,6 @@ async function LoadEverything() {
     "gsap.min.js",
     "he.js",
     "lodash.min.js",
-    "kuroshiro.min.js",
-    "kuroshiro-analyzer-kuromoji.min.js",
     "jquery.waitforimages.min.js",
     "color-thief.min.js",
     "assetUtils.js",
@@ -358,8 +356,6 @@ async function InitAll() {
   if (hd_settings.automatic_theme) {
     GetLogoColors();
   }
-
-  await LoadKuroshiro();
 
   if (
     window.location.protocol === "file:" ||
@@ -645,56 +641,6 @@ function FitText(target) {
       }
     }
   });
-}
-
-// Load Kuroshiro, the Japanese transcription library
-async function LoadKuroshiro() {
-  window.kuroshiro = new Kuroshiro.default();
-  await window.kuroshiro.init(
-    new KuromojiAnalyzer({
-      dictPath: "../include/kuromoji",
-    }),
-  );
-}
-
-// Transcribes Japanese text to Roman characters using Kuroshiro
-async function Transcript(text) {
-  let settings = _.defaultsDeep(hd_settings.japanese_transcription, {
-    enabled: true,
-    to: "romaji",
-    mode: "normal",
-    romajiSystem: "nippon",
-  });
-
-  if (text == null || text.length == 0 || !settings.enabled) return text;
-
-  try {
-    if (window.Kuroshiro.default.Util.hasJapanese(text)) {
-      return window.kuroshiro
-        .convert(text, {
-          mode: settings.mode,
-          to: settings.to,
-          romajiSystem: settings.romajiSystem,
-        })
-        .then((res) => {
-          return `
-            <div class="hd_transcript">
-              <span class="original">
-                ${text}
-              </span>
-              <span class="transcript">
-                ${res}
-              </span>
-            </div>
-          `.trim();
-        });
-    } else {
-      return text;
-    }
-  } catch (e) {
-    console.log(e);
-    return text;
-  }
 }
 
 // Sets an element's inner HTML
@@ -1283,15 +1229,6 @@ function initOnBrowserActive(hide, show) {
   }
 }
 
-/**
- * Generates HTML for player name presentation following the player_presentation strategy:
- * - For singles: sponsor name + transcribed player name
- * - For doubles: team name (and player names if they differ from team name)
- * @param {Object} player - Player object (for singles)
- * @param {Object} team - Team object (for singles or doubles)
- * @param {Boolean} isTeams - Whether this is a doubles match
- * @returns {Promise<String>} HTML string for the name presentation
- */
 /** Determines if the browser view is currently active/visible */
 function isBrowserActive() {
   if (window.obsstudio) {

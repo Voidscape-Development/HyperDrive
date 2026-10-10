@@ -87,7 +87,7 @@ LoadEverything().then(() => {
                 <span class="sponsor">
                   ${player.team ? player.team : ""}
                 </span>
-                ${await Transcript(player.name)}
+                ${player.name}
               `,
                 undefined,
                 0
@@ -244,7 +244,7 @@ LoadEverything().then(() => {
           let names = [];
           for (const [p, player] of Object.values(team.player).entries()) {
             if (player && player.name) {
-              names.push(await Transcript(player.name));
+              names.push(player.name);
             }
           }
           let playerNames = names.join(" / ");

@@ -141,7 +141,6 @@ from .CommentaryWidget import CommentaryWidget
 from .DisplayControls import DisplayControls, DisplayControlsWidget
 from .GameAssetManager import GameAssetManager
 from .Helpers.CountryHelper import CountryHelper
-from .Hotkeys import Hotkeys
 from .LayoutOptions.LayoutThemes import LayoutThemes
 from .LayoutOptions.LayoutThemeWindow import LayoutThemeWindow
 from .PlayerDB import PlayerDB
@@ -958,7 +957,6 @@ class Window(QMainWindow):
         GameAssetManager.instance.UiMounted()
         AlertNotification.instance.UiMounted()
         AssetDownloader.instance.UiMounted()
-        Hotkeys.instance.UiMounted(self)
         PlayerDB.signals.db_updated.connect(self.webserver.ws_playerdb)
         PlayerDB.LoadDB()
 

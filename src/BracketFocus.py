@@ -1,7 +1,7 @@
 # What the bracket focus layouts (layout/bracket_focus) zoom to, as
 # bracket.focus: sets picked in the bracket widget, rounds, a player's run,
 # the set on a scoreboard, or a tour of every round. Driven from the bracket
-# widget, hotkeys and the /bracket-focus web page.
+# widget and the /bracket-focus web page.
 #
 # There's a focus per channel (bracket.focus.<channel>), so layouts in
 # different OBS sources can show different things: each picks its channel
@@ -9,7 +9,6 @@
 from qtpy.QtCore import *
 
 from .Helpers.BracketFocusHelper import *
-from .Hotkeys import Hotkeys
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 
@@ -150,8 +149,7 @@ class BracketFocusSignals(QObject):
 
 
 class BracketFocus(QObject):
-    """The focus channels, and the one the bracket widget and the hotkeys
-    act on."""
+    """The focus channels, and the one the bracket widget acts on."""
 
     instance: "BracketFocus" = None
 
@@ -170,12 +168,6 @@ class BracketFocus(QObject):
             self.channels = {MAIN_CHANNEL: self._Make(MAIN_CHANNEL), **self.channels}
         current = SettingsManager.Get("bracket_focus_current", MAIN_CHANNEL)
         self.current = current if current in self.channels else MAIN_CHANNEL
-
-        Hotkeys.signals.bracket_focus_all.connect(lambda: self.Current().ShowAll())
-        Hotkeys.signals.bracket_focus_follow.connect(lambda: self.Current().Toggle(MODE_FOLLOW))
-        Hotkeys.signals.bracket_focus_tour.connect(lambda: self.Current().Toggle(MODE_TOUR))
-        Hotkeys.signals.bracket_focus_next_round.connect(lambda: self.Current().MoveRound(1))
-        Hotkeys.signals.bracket_focus_previous_round.connect(lambda: self.Current().MoveRound(-1))
 
     def _Make(self, name, request=None):
         channel = FocusChannel(name, request, self)

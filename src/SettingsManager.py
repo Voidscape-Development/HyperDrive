@@ -11,7 +11,12 @@ class SettingsManager:
 
     # Settings of removed features, dropped from settings.json on load.
     # bsky_account held a Bluesky app password in plain text.
-    REMOVED_KEYS = ["bsky_account", "thumbnail_config", "general.disable_thumbnail_widget"]
+    REMOVED_KEYS = [
+        "bsky_account",
+        "thumbnail_config",
+        "general.disable_thumbnail_widget",
+        "hotkeys",
+    ]
 
     def SaveSettings():
         with open("./user_data/settings.json", "wb") as file:

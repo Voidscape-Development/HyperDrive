@@ -16,7 +16,6 @@ from .Helpers.CountryHelper import CountryHelper
 from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
-from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.PronounHelper import PronounHelper
 from .Helpers.QtHelper import OnFirstFocus
 from .PlayerDB import PlayerDB
@@ -304,8 +303,6 @@ class ScoreboardPlayerWidget(QGroupBox):
                 self.ExportPlayerId()
 
             self.lastExportedName = merged
-
-            self.SetRomanizedText()
 
     def ExportMergedName(self):
         with self.dataLock:
@@ -643,7 +640,6 @@ class ScoreboardPlayerWidget(QGroupBox):
             country.lineEdit().setFont(QFont(country.font().family(), 9))
 
             country.currentIndexChanged.connect(self.LoadStates)
-            country.currentIndexChanged.connect(self.SetRomanizedText)
 
             state: QComboBox = self.findChild(QComboBox, "state")
             state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
@@ -1097,17 +1093,3 @@ class ScoreboardPlayerWidget(QGroupBox):
         StateManager.Unset(f"{self.path}.wins")
         StateManager.Unset(f"{self.path}.losses")
         StateManager.Unset(f"{self.path}.winPercentage")
-
-    def SetRomanizedText(self):
-        name = self.findChild(QWidget, "name").text()
-        team = self.findChild(QWidget, "team").text()
-        romanized_data = {"name": name, "team": team}
-        country = self.findChild(QComboBox, "country")
-        if country.currentData(Qt.ItemDataRole.UserRole) != None:
-            country_code = country.currentData(Qt.ItemDataRole.UserRole).get("code")
-            if country_code:
-                romanized_data = {
-                    "name": LocaleHelper.RomanizeTextFromCountry(name, country_code),
-                    "team": LocaleHelper.RomanizeTextFromCountry(team, country_code),
-                }
-        StateManager.Set(f"{self.path}.romanized_data", romanized_data)

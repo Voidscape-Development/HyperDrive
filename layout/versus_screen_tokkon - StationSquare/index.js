@@ -58,7 +58,7 @@ LoadEverything().then(() => {
         for (const [p, player] of players.entries()) {
           SetInnerHtml(
             $(`.p${t + 1} .name`),
-            `${player.team ? `<span class="sponsor">${player.team}</span>` : ""}${await Transcript(player.name)}`
+            `${player.team ? `<span class="sponsor">${player.team}</span>` : ""}${player.name}`
           );
 
           SetInnerHtml(
@@ -223,7 +223,7 @@ LoadEverything().then(() => {
         let names = [];
         for (const [p, player] of Object.values(team.player).entries()) {
           if (player && player.name) {
-            names.push(await Transcript(player.name));
+            names.push(player.name);
           }
         }
         let playerNames = names.join(" / ");
