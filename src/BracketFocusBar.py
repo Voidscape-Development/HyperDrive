@@ -151,6 +151,7 @@ class BracketFocusBar(QWidget):
         layout.addWidget(self.status)
 
         self.view.signals.selectionChanged.connect(self.UpdateSelection)
+        self.view.signals.unselected.connect(self.Unselected)
         self.view.signals.focusSets.connect(lambda ids: self.Ch().FocusSets(ids))
         self.view.signals.focusRounds.connect(lambda keys: self.Ch().FocusRounds(keys))
         self.view.signals.focusPlayer.connect(lambda player: self.Ch().FocusPlayer(player))
@@ -226,6 +227,13 @@ class BracketFocusBar(QWidget):
             [id for id in self.view.matchItems if id in self.view.selected],
             sorted(self.view.selectedRounds),
         )
+
+    def Unselected(self, sets, rounds):
+        # Deselecting a set or round in focus takes it out of the focus too,
+        # so its highlight here and on the layout goes away
+        request = WithoutPicks(self.Ch().request, sets, rounds)
+        if request is not None:
+            self.Ch().Set(request)
 
     def PlayerPicked(self, index):
         player = self.player.itemData(index)

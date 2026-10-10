@@ -16,6 +16,9 @@ class BracketViewSignals(QObject):
     edited = Signal()
     # Sets or rounds were selected for the bracket focus layout
     selectionChanged = Signal()
+    # Sets and rounds deselected (ctrl+click or the menu), so they leave the focus
+    # if they're in it
+    unselected = Signal(list, list)
     # Asked from a menu: focus the layout on sets, rounds or a player
     focusSets = Signal(list)
     focusRounds = Signal(list)
@@ -657,12 +660,16 @@ class BracketView(QGraphicsView):
         if id in self.matchItems:
             self.matchItems[id].update()
         self.signals.selectionChanged.emit()
+        if id not in self.selected:
+            self.signals.unselected.emit([id], [])
 
     def ToggleSelectedRound(self, key):
         self.selectedRounds ^= {key}
         if key in self.headerItems:
             self.headerItems[key].UpdateStyle()
         self.signals.selectionChanged.emit()
+        if key not in self.selectedRounds:
+            self.signals.unselected.emit([], [key])
 
     def ClearSelection(self):
         self.selected = set()

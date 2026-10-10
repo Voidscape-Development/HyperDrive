@@ -3,10 +3,14 @@ query TournamentHistoryDataQuery($playerID: ID!, $gameID: ID!) {
 		recentStandings(videogameId: $gameID, limit: 10) {
 			placement
 			entrant {
+				initialSeedNum
 				event {
 					name
 					numEntrants
 					startAt
+					phases {
+						bracketType
+					}
 					tournament {
 						name
 						venueAddress

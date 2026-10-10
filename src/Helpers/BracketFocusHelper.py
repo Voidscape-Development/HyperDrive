@@ -62,6 +62,24 @@ def NormalizeRequest(request):
     return result
 
 
+def WithoutPicks(request, sets=(), rounds=()):
+    """A request picked by hand with these sets and rounds taken out of it
+    (deselected in the bracket widget), the whole bracket once nothing is
+    left, or None if they weren't in it or it wasn't picked by hand."""
+    request = NormalizeRequest(request)
+    if request["mode"] not in (MODE_SETS, MODE_ROUNDS):
+        return None
+    sets, rounds = {str(s) for s in sets or []}, {str(r) for r in rounds or []}
+    keptSets = [s for s in request["sets"] if s not in sets]
+    keptRounds = [r for r in request["rounds"] if r not in rounds]
+    if keptSets == request["sets"] and keptRounds == request["rounds"]:
+        return None
+    if not keptSets and not keptRounds:
+        return {"mode": MODE_ALL}
+    mode = MODE_SETS if keptSets else MODE_ROUNDS
+    return {"mode": mode, "sets": keptSets, "rounds": keptRounds}
+
+
 def Columns(bracket):
     """Every column of the bracket, in tour order."""
     sides = (bracket or {}).get("sides") or {}

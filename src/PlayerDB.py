@@ -14,6 +14,7 @@ from sqlmodel import Session, select
 
 from .GameAssetManager import GameAssetManager
 from .Helpers import SocialsHelper
+from .Helpers.CharacterIconHelper import PlaceholderPixmap
 from .Helpers.DictHelper import deep_clone
 from .Helpers.QtHelper import gui_thread_sync
 from .PlayerDBModels import PLAYER_FIELDS, GetEngine, MakeTag, Player
@@ -348,7 +349,9 @@ class PlayerDB:
                 if icon is None:
                     # Misses aren't cached: stockIcons is filled in after
                     # being assigned, so a missing entry may appear later
-                    path = stockIcons.get(char, {}).get(skin)
+                    icons = stockIcons.get(char, {})
+                    # A skin without an icon shows the character's default one
+                    path = icons.get(skin) or icons.get(0)
                     if path:
                         icon = QIcon(
                             QPixmap.fromImage(
@@ -357,6 +360,13 @@ class PlayerDB:
                                 )
                             )
                         )
+                        PlayerDB.iconCache[key] = icon
+                    elif char in stockIcons:
+                        # No pack has an icon for the character: its initials
+                        name = (GameAssetManager.instance.characters.get(char) or {}).get(
+                            "display_name"
+                        ) or char
+                        icon = QIcon(PlaceholderPixmap(name, 32))
                         PlayerDB.iconCache[key] = icon
                 return icon
 
