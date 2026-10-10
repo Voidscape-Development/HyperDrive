@@ -36,6 +36,7 @@ from parrygg.services.user_service_pb2_grpc import UserServiceStub
 
 from ..GameAssetManager import GameAssetManager
 from ..Helpers.CountryHelper import CountryHelper
+from ..Helpers.SeedPerformance import EventBracketType
 from ..PlayerDB import PlayerDB
 from .StartGGDataProvider import StartGGDataProvider
 from .TournamentDataProvider import TournamentDataProvider
@@ -1517,6 +1518,13 @@ class ParryGGDataProvider(TournamentDataProvider):
                         "tournament_picture": tournament_picture,
                         "entrants": event.entrant_count,
                         "event_date": event.start_date.seconds,
+                        "seed": placement.seed or None,
+                        "bracket_type": EventBracketType(
+                            [
+                                _bracket_type_name(phase.bracket_type)
+                                for phase in (result.phases or event.phases)
+                            ]
+                        ),
                     }
                 )
 

@@ -18,6 +18,7 @@ from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.DictHelper import deep_clone, deep_get
 from ..Helpers.DirHelper import ResolvePath
 from ..Helpers.LocaleHelper import LocaleHelper
+from ..Helpers.SeedPerformance import EventBracketType
 from ..PlayerDB import PlayerDB
 from ..PlayerDBModels import MakeTag
 from ..SettingsManager import SettingsManager
@@ -1794,6 +1795,10 @@ class StartGGDataProvider(TournamentDataProvider):
                     "tournament_picture": tournamentPicture,
                     "entrants": event.get("numEntrants"),
                     "event_date": event.get("startAt"),
+                    "seed": deep_get(set, "entrant.initialSeedNum"),
+                    "bracket_type": EventBracketType(
+                        [phase.get("bracketType") for phase in event.get("phases") or [] if phase]
+                    ),
                 }
 
                 set_data.append(player_history)

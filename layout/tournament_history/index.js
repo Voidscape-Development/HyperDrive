@@ -38,6 +38,7 @@ LoadEverything().then(() => {
               <div class="tournament_info">
                 <div class="tournament_name"></div>
                 <div class="event_name"></div>
+                <div class="spr"></div>
               </div>
             </div>
           </div>`;
@@ -64,6 +65,16 @@ LoadEverything().then(() => {
             } .info .tournament_info .event_name`
           ),
           tournament.event_name
+        );
+        // Seed Performance Rating: placement rounds above (+) or below (-) the seed
+        const spr = tournament.spr;
+        const sprClass = spr > 0 ? "positive" : spr < 0 ? "negative" : "even";
+        SetInnerHtml(
+          $(`.player1_content .tournament${s + 1} .info .tournament_info .spr`),
+          spr === null || spr === undefined
+            ? ""
+            : `<span class="seed">Seed ${tournament.seed}</span>` +
+                `<span class="spr_value ${sprClass}">SPR ${spr > 0 ? "+" : ""}${spr}</span>`
         );
         SetInnerHtml(
           $(`.player1_content .tournament${s + 1} .info .tournament_logo`),

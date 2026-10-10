@@ -1,10 +1,10 @@
-import math
 from datetime import datetime
 
 import orjson
 from loguru import logger
 from qtpy.QtCore import *
 
+from .Helpers.SeedPerformance import PlacementRounds, SeedPerformanceRating
 from .StateManager import StateManager
 from .TournamentDataManager import TournamentDataManager
 
@@ -188,6 +188,12 @@ class StatsUtil:
                         "tournament_name": set.get("tournament_name"),
                         "tournament_picture": set.get("tournament_picture"),
                         "entrants": set.get("entrants"),
+                        "seed": set.get("seed"),
+                        "bracket_type": set.get("bracket_type"),
+                        # Placement rounds above (positive) or below the seed
+                        "spr": SeedPerformanceRating(
+                            set.get("bracket_type"), set.get("seed"), set.get("placement")
+                        ),
                         "event_date_month": datetime.fromtimestamp(set.get("event_date")).strftime(
                             "%B"
                         ),
@@ -224,27 +230,6 @@ class StatsUtil:
         if value:
             target.deep_set(tKey, value)
 
-    # Calculation of Seeding/Placement to determine
-    # Upset Factor or Seeding Performance Rating
-    #
-    # bracket_type [STRING] = The bracket type returned from Start.GG
-    #
-    # x [INTEGER] = The seeding/placement value being used to determine
-    # the end product (Ex. Seeding for UF or Seeding/Placement for SPR)
+    # Placement rounds of a seed or placement, see Helpers.SeedPerformance
     def CalculatePlacementMath(self, bracket_type, x):
-        # Due to how the logs works, if the player is first seed,
-        # the value will always be 0 and no math needs to be done.
-        if x <= 1:
-            return 0
-
-        single_elim_calc = math.floor(math.log2(x - 1))
-        double_elim_calc = math.ceil(math.log2((2 * x) / 3))
-
-        # Double Elimination Sum of Values
-        if bracket_type == "DOUBLE_ELIMINATION":
-            return single_elim_calc + double_elim_calc
-        # Single Elimination Sum of Values
-        elif bracket_type == "SINGLE_ELIMINATION":
-            return single_elim_calc
-        else:
-            return 0
+        return PlacementRounds(bracket_type, x)

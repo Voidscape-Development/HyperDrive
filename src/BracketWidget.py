@@ -24,6 +24,11 @@ from .FlowLayout import FlowLayout
 from .GameAssetManager import GameAssetManager
 from .Hotkeys import Hotkeys
 from .PlayerList import PlayerList
+from .Scheduler import (
+    BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
+    BRACKET_AUTO_UPDATE_MIN_INTERVAL_SECS,
+    Scheduler,
+)
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .Theme import ThemedIcon
@@ -142,7 +147,15 @@ class BracketWidget(QDockWidget):
             )
         )
         self.btRefreshSets.clicked.connect(lambda: self.RefreshSets())
-        providerRow.addWidget(self.btRefreshSets)
+        self.cbAutoUpdateSets = QCheckBox(QApplication.translate("app", "Auto update"))
+        self.cbAutoUpdateSets.setToolTip(
+            QApplication.translate(
+                "app",
+                "Update the set results of the loaded bracket periodically. The interval can be changed in Settings > General.",
+            )
+        )
+        self.labelAutoUpdateTimer = QLabel()
+        providerRow.addGroup(self.btRefreshSets, self.cbAutoUpdateSets, self.labelAutoUpdateTimer)
         Hotkeys.signals.refresh_phase_group.connect(self.PhaseGroupChanged)
 
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -250,6 +263,26 @@ class BracketWidget(QDockWidget):
             self.ApplySetsUpdate
         )
         GameAssetManager.instance.signals.onLoad.connect(self.SetDefaultsFromAssets)
+
+        Scheduler.instance.Register(
+            "bracket_sets",
+            self.AutoUpdateSets,
+            SettingsManager.Get(
+                "general.bracket_auto_update_interval", BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS
+            )
+            * 1000,
+            BRACKET_AUTO_UPDATE_MIN_INTERVAL_SECS * 1000,
+        )
+        Scheduler.instance.signals.job_state_changed.connect(
+            lambda name: self.UpdateAutoUpdateTimer() if name == "bracket_sets" else None
+        )
+        Scheduler.instance.signals.tick.connect(self.UpdateAutoUpdateTimer)
+        autoUpdate = SettingsManager.Get("general.bracket_auto_update", False)
+        self.cbAutoUpdateSets.setChecked(autoUpdate)
+        if autoUpdate:
+            Scheduler.instance.Start("bracket_sets")
+        self.UpdateAutoUpdateTimer()
+        self.cbAutoUpdateSets.toggled.connect(self.ToggleAutoUpdateSets)
 
         # Changes from the last second are saved on the way out
         QApplication.instance().aboutToQuit.connect(
@@ -1156,12 +1189,64 @@ class BracketWidget(QDockWidget):
         if not self.btRefreshSets.isEnabled():
             return "ALREADY_UPDATING"
 
-        self.btRefreshSets.setEnabled(False)
-        TournamentDataManager.instance.GetTournamentPhaseGroupSets(
-            self.loadedPhaseGroupId,
-            onFinished=lambda: self.btRefreshSets.setEnabled(self.loadedPhaseGroupId is not None),
-        )
+        self.FetchSets()
         return "OK"
+
+    def FetchSets(self, onFinished=None):
+        # The button stays disabled while a fetch runs, so manual and
+        # automatic updates can't overlap
+        self.btRefreshSets.setEnabled(False)
+
+        def finished():
+            self.btRefreshSets.setEnabled(self.loadedPhaseGroupId is not None)
+            if onFinished:
+                onFinished()
+
+        TournamentDataManager.instance.GetTournamentPhaseGroupSets(
+            self.loadedPhaseGroupId, onFinished=finished
+        )
+
+    # Bracket auto update
+
+    def AutoUpdateSets(self, done):
+        # Nothing to update without a bracket loaded from the provider, or
+        # while a manual update is still running
+        if (
+            self.loadedPhaseGroupId is None
+            or TournamentDataManager.instance.provider is None
+            or not self.btRefreshSets.isEnabled()
+        ):
+            done()
+            return
+        self.FetchSets(onFinished=done)
+
+    def ToggleAutoUpdateSets(self, enabled):
+        SettingsManager.Set("general.bracket_auto_update", enabled)
+        if enabled:
+            Scheduler.instance.Start("bracket_sets", run_now=True)
+        else:
+            Scheduler.instance.Stop("bracket_sets")
+
+    def UpdateAutoUpdateTimer(self):
+        scheduler = Scheduler.instance
+        if not scheduler.IsEnabled("bracket_sets"):
+            self.labelAutoUpdateTimer.setVisible(False)
+            return
+        self.labelAutoUpdateTimer.setVisible(True)
+        if self.loadedPhaseGroupId is None:
+            self.labelAutoUpdateTimer.setText(
+                QApplication.translate("app", "Waiting for a loaded bracket")
+            )
+        elif scheduler.IsRunning("bracket_sets"):
+            self.labelAutoUpdateTimer.setText(QApplication.translate("app", "Updating..."))
+        else:
+            remaining = scheduler.RemainingMs("bracket_sets")
+            if remaining is not None:
+                self.labelAutoUpdateTimer.setText(
+                    QApplication.translate("app", "Next update in {0}s").format(
+                        round(remaining / 1000)
+                    )
+                )
 
     def ProviderPhase(self):
         return next(

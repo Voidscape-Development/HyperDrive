@@ -4,6 +4,8 @@ from qtpy.QtWidgets import *
 from ..Helpers.DynamicExport import DynamicExport
 from ..Hotkeys import Hotkeys
 from ..Scheduler import (
+    BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
+    BRACKET_AUTO_UPDATE_MIN_INTERVAL_SECS,
     COMPLETED_SETS_DEFAULT_INTERVAL_SECS,
     COMPLETED_SETS_MIN_INTERVAL_SECS,
     SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
@@ -83,6 +85,28 @@ class SettingsWindow(QDialog):
                 ),
                 None,
                 COMPLETED_SETS_MIN_INTERVAL_SECS,
+            )
+        )
+
+        generalSettings.append(
+            (
+                QApplication.translate(
+                    "settings.bracket_auto_update_interval",
+                    "Bracket auto update interval (seconds)",
+                ),
+                "bracket_auto_update_interval",
+                "spinbox",
+                BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
+                lambda: Scheduler.instance.SetInterval(
+                    "bracket_sets",
+                    SettingsManager.Get(
+                        "general.bracket_auto_update_interval",
+                        BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
+                    )
+                    * 1000,
+                ),
+                None,
+                BRACKET_AUTO_UPDATE_MIN_INTERVAL_SECS,
             )
         )
 
