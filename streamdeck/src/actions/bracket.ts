@@ -62,6 +62,7 @@ export class BracketFocusAction extends HyperDriveAction<FocusSettings> {
 				scoreboard: num(s.scoreboard, 1),
 				interval: num(s.interval, 0, 0) || undefined,
 				player: s.player,
+				phase: s.phase,
 			}),
 		);
 	}
@@ -83,6 +84,24 @@ export class BracketFocusAction extends HyperDriveAction<FocusSettings> {
 			const channels = bracketChannels(hyperdrive.state);
 			if (s.channel && !channels.includes(s.channel)) channels.push(s.channel);
 			return channels.map((c) => ({ label: c === "main" ? t("mainChannel") : c, value: c }));
+		}
+		if (name === "bracketPhases") {
+			type PhaseOption = { value: string; label: string; section: string };
+			const info = await hyperdrive.fetchJson<{ phases?: PhaseOption[] }>(bracketFocus.state(s.channel).path);
+			const phases = info?.phases ?? [{ value: "", label: "", section: "selected" }];
+			const section = (key: string, label: string): Item[] => {
+				const children = phases.filter((p) => p.section === key).map((p) => ({ label: p.label, value: p.value }));
+				return children.length ? [{ label, children }] : [];
+			};
+			const items: Item[] = [
+				{ label: t("selectedPhase"), value: "" },
+				...section("local", t("phasesLocal")),
+				...section("group", t("phasesStartgg")),
+			];
+			if (s.phase && !phases.some((p) => p.value === s.phase)) {
+				items.push({ label: s.phase, value: s.phase });
+			}
+			return items;
 		}
 		if (name === "bracketPlayers") {
 			type FocusInfo = { players?: { id: string | number; name: string; seed?: number }[] };

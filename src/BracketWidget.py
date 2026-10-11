@@ -15,10 +15,11 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .BracketExport import ExportBracket, TeamName
 from .BracketFocus import BracketFocus
 from .BracketFocusBar import BracketFocusBar
 from .BracketModel import *
-from .BracketView import BracketView, SourceText
+from .BracketView import BracketView
 from .DisplayOptions import DisplayOptionsButton
 from .FlowLayout import FlowLayout
 from .GameAssetManager import GameAssetManager
@@ -43,17 +44,6 @@ def TypeName(type):
         TYPE_ROUND_ROBIN: QApplication.translate("app", "Round Robin"),
         TYPE_SWISS: QApplication.translate("app", "Swiss"),
     }.get(type, type)
-
-
-def TeamName(playerId):
-    if playerId is None or playerId <= 0:
-        return ""
-    team = StateManager.Get(f"bracket.players.slot.{playerId}", {}) or {}
-    if team.get("name"):
-        return team.get("name")
-    return " / ".join(
-        [p.get("name", "") for p in (team.get("player") or {}).values() if p.get("name")]
-    )
 
 
 def Ordinal(n):
@@ -236,6 +226,8 @@ class BracketWidget(QDockWidget):
 
         if BracketFocus.instance is None:
             BracketFocus.instance = BracketFocus()
+        # A channel pinned to another of the phases here: send that one too
+        BracketFocus.instance.signals.localPhasesChanged.connect(self.ExportBracketState)
         self.focusBar = BracketFocusBar(self.view)
         right.layout().addWidget(self.focusBar)
 
@@ -977,25 +969,10 @@ class BracketWidget(QDockWidget):
 
     # Exporting to the layouts
 
-    def PlayerExport(self, bracket, m, slot):
-        player = m.players[slot]
-        data = {
-            "id": player if player > 0 else None,
-            "seed": bracket.SeedOf(player)
-            if player > 0 and bracket.SeedOf(player) != 9999
-            else None,
-            "name": TeamName(player) if player > 0 else "",
-            "bye": player == BYE,
-            "pending": player == PENDING,
-            # What the slot waits for, e.g. "Winner of C"
-            "source": SourceText(bracket, m.sources[slot]) if player == PENDING else "",
-            "manual": m.override[slot] is not None,
-        }
-        return data
-
     def ExportBracketState(self):
         phase = self.CurrentPhase()
         bracket = phase.bracket if phase else None
+        focus = BracketFocus.instance
 
         StateManager.Set(
             "bracket.phases",
@@ -1005,99 +982,26 @@ class BracketWidget(QDockWidget):
             ],
         )
 
+        limit = self.view.exportLimit
         if bracket is None:
             StateManager.Set("bracket.bracket", {})
-            self.FocusBracketChanged()
-            return
-
-        limit = self.view.exportLimit if not bracket.IsPool() else None
-        included = {
-            m.id
-            for m in bracket.matches.values()
-            if not m.isBye and (limit is None or bracket.InTopN(m, limit))
-        }
-
-        sets = {}
-        for m in bracket.matches.values():
-            if m.id not in included:
-                continue
-            winner = None
-            if m.winnerSlot is not None and m.finished:
-                winner = m.winnerSlot
-            elif m.IsDraw():
-                winner = "draw"
-
-            def Next(link):
-                if link is None or link[0] not in included:
-                    return None
-                return {"set": link[0], "slot": link[1]}
-
-            sets[m.id] = {
-                "id": m.id,
-                "identifier": m.identifier,
-                "side": m.side,
-                "column": m.column,
-                "row": m.row,
-                "roundName": bracket.RoundName(m.side, m.column),
-                "players": [self.PlayerExport(bracket, m, slot) for slot in range(2)],
-                "score": list(m.score),
-                "completed": bool(m.finished),
-                # 0 or 1 for the slot that won, "draw" or None
-                "winner": winner,
-                "nextWin": Next(m.nextWin),
-                "nextLose": Next(m.nextLose),
-                "loserPlacement": bracket.LoserPlacementOf(m) if not bracket.IsPool() else None,
-                "isGrandFinal": m.isGrandFinal,
-                "isReset": m.isReset,
-                "resetNeeded": not m.notNeeded,
-                "startggId": m.providerId,
-            }
-
-        sides = {}
-        for side in SIDES:
-            columns = []
-            for column in bracket.Columns(side, includeHidden=side == SIDE_GRAND_FINAL):
-                ids = [m.id for m in column if m.id in included]
-                if not ids:
-                    continue
-                columns.append(
-                    {
-                        "key": Bracket.RoundKey(side, column[0].column),
-                        "name": bracket.RoundName(side, column[0].column),
-                        "sets": ids,
-                    }
-                )
-            if columns:
-                sides[side] = columns
-
-        data = {
-            "type": bracket.type,
-            "name": phase.name,
-            "fromStartgg": bracket.fromProvider,
-            "progressionsOut": bracket.progressionsOut,
-            "limitExportNumber": limit,
-            "sides": sides,
-            "sets": sets,
-        }
-
-        if bracket.IsPool():
-            standings = bracket.GetStandings()
-            data["standings"] = [dict(row, name=TeamName(row["playerId"])) for row in standings]
-            data["totalRounds"] = bracket.totalRounds
-            data["byes"] = {
-                Bracket.RoundKey(SIDE_POOL, int(r)): [
-                    {"id": p, "name": TeamName(p)} for p in players
-                ]
-                for r, players in bracket.byes.items()
-            }
         else:
-            results = []
-            for i, player in enumerate(bracket.Results()):
-                if player > 0:
-                    results.append({"order": i + 1, "id": player, "name": TeamName(player)})
-            data["results"] = results
+            StateManager.Set("bracket.bracket", ExportBracket(bracket, phase.name, limit))
 
-        StateManager.Set("bracket.bracket", data)
+        # The phases focus channels are pinned to, other than this one
+        pinned = focus.PinnedLocalPhases() if focus is not None else set()
+        exported = {}
+        for p in self.tournament.phases:
+            if str(p.id) in pinned and p.bracket is not None:
+                exported[str(p.id)] = {
+                    "bracket": ExportBracket(p.bracket, p.name, limit),
+                    "phase": p.name,
+                    "phaseGroup": "",
+                }
+        if exported or StateManager.Get("bracket.local"):
+            StateManager.Set("bracket.local", exported)
+        if focus is not None:
+            focus.SetViewPhase(self.currentPhaseId)
         self.FocusBracketChanged()
 
     def FocusBracketChanged(self):
@@ -1110,6 +1014,8 @@ class BracketWidget(QDockWidget):
     # start.gg
 
     def UpdatePhases(self, phases):
+        if BracketFocus.instance is not None:
+            BracketFocus.instance.SetProviderPhases(phases)
         self.phaseSelection.blockSignals(True)
         self.phaseSelection.clear()
         self.phaseSelection.addItem("", {})
@@ -1204,6 +1110,20 @@ class BracketWidget(QDockWidget):
     # Bracket auto update
 
     def AutoUpdateSets(self, done):
+        # The phase groups focus channels are pinned to are updated too
+        focus = BracketFocus.instance
+        pending = {"count": 2}
+
+        def finished():
+            pending["count"] -= 1
+            if pending["count"] == 0:
+                done()
+
+        if focus is not None:
+            focus.groups.Refresh(finished)
+        else:
+            finished()
+
         # Nothing to update without a bracket loaded from the provider, or
         # while a manual update is still running
         if (
@@ -1211,9 +1131,9 @@ class BracketWidget(QDockWidget):
             or TournamentDataManager.instance.provider is None
             or not self.btRefreshSets.isEnabled()
         ):
-            done()
+            finished()
             return
-        self.FetchSets(onFinished=done)
+        self.FetchSets(onFinished=finished)
 
     def ToggleAutoUpdateSets(self, enabled):
         SettingsManager.Set("general.bracket_auto_update", enabled)

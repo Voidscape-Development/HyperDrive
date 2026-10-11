@@ -892,7 +892,8 @@ class WebServerActions(QThread):
 
     @gui_thread_sync
     def bracket_focus_set(self, request, channel=None):
-        # A focus request, or {"move": 1} for the next round (-1: previous),
+        # A focus request, {"move": 1} for the next round (-1: previous) or
+        # {"phase": "local:<id>" | "group:<id>" | ""} for the phase it shows,
         # for a channel ("channel" in the request, "main" by default)
         from .BracketFocus import BracketFocus
 
@@ -904,7 +905,9 @@ class WebServerActions(QThread):
         target = focus.Channel(channel)
         if target is None:
             return "NO_CHANNEL", 404
-        if "move" in request:
+        if "phase" in request:
+            target.SetPhase(request.get("phase"))
+        elif "move" in request:
             try:
                 target.MoveRound(1 if int(request.get("move")) >= 0 else -1)
             except (TypeError, ValueError):

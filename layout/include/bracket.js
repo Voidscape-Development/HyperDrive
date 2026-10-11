@@ -1,13 +1,50 @@
 // Helpers for layouts showing the bracket widget's export, bracket.bracket
 // (see docs/layout-data.md): its sides, columns and sets, the standings of
-// round robin and swiss pools, and the older "rounds" shape some layouts
-// were drawn around. Load after globals.js:
+// round robin and swiss pools, the older "rounds" shape some layouts
+// were drawn around, and the bracket a focus channel shows. Load after globals.js:
 //   <script src="../include/bracket.js"></script>
 var HDBracket = {
   POOL_TYPES: ["ROUND_ROBIN", "SWISS"],
 
   // Value standing for a bye in the rounds shape (any id past the players)
   BYE_ID: 99999,
+
+  // A focus channel's name as the app keeps it: no dots or extra spaces.
+  // Empty if there's none.
+  ChannelName(name) {
+    return String(name || "")
+      .replace(/\./g, " ")
+      .split(/\s+/)
+      .filter((w) => w)
+      .join(" ")
+      .slice(0, 40)
+      .trim();
+  },
+
+  // The data with the bracket of the phase a focus channel shows (it can be
+  // pinned to another phase or a start.gg phase group) in place of the
+  // bracket widget's: bracket.bracket, bracket.players, bracket.phase and
+  // bracket.phaseGroup. bracket.playersPath is where its players are in
+  // the state, for CharacterDisplay's source.
+  ForChannel(data, channel) {
+    if (!data || !data.bracket) return data;
+    const source = _.get(data, ["bracket", "focus", channel, "source"]);
+    if (!source || source.bracket == "bracket.bracket") {
+      return { ...data, bracket: { ...data.bracket, playersPath: "bracket.players" } };
+    }
+    const names = _.get(data, source.names) || {};
+    return {
+      ...data,
+      bracket: {
+        ...data.bracket,
+        bracket: _.get(data, source.bracket) || {},
+        players: _.get(data, source.players) || {},
+        phase: names.phase || "",
+        phaseGroup: names.phaseGroup || "",
+        playersPath: source.players,
+      },
+    };
+  },
 
   IsPool(bracket) {
     return HDBracket.POOL_TYPES.includes(_.get(bracket, "type"));

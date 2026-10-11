@@ -233,7 +233,7 @@
 			"Name": "Bracket Focus",
 			"UUID": "com.voidscape.hyperdrive.bracket-focus",
 			"Icon": "imgs/actions/bracket-focus",
-			"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour or a player's run.",
+			"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour, a player's run, or which phase.",
 			"PropertyInspectorPath": "ui/bracket-focus.html",
 			"Controllers": [
 				"Keypad",

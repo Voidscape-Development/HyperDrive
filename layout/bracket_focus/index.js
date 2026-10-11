@@ -1,6 +1,7 @@
-// The bracket widget's bracket (bracket.bracket), drawn once at full size
-// and zoomed to what's in focus on its channel (bracket.focus.<channel>,
-// see docs/layout-data.md):
+// The bracket of its focus channel's phase (bracket.bracket, unless the
+// channel is pinned to another phase), drawn once at full size and zoomed
+// to what's in focus on the channel (bracket.focus.<channel>, see
+// docs/layout-data.md):
 // sets and rounds picked in the bracket widget, a player's run, the set on
 // a scoreboard or a tour of the rounds. The sets in focus are outlined, the
 // rest dimmed. Nothing in focus: the whole bracket.
@@ -346,14 +347,7 @@ LoadEverything().then(() => {
   }
 
   // The channel's name as the app keeps it: no dots or extra spaces
-  const CHANNEL =
-    String(window.channel || "")
-      .replace(/\./g, " ")
-      .split(/\s+/)
-      .filter((w) => w)
-      .join(" ")
-      .slice(0, 40)
-      .trim() || "main";
+  const CHANNEL = HDBracket.ChannelName(window.channel) || "main";
 
   function Focus(data) {
     if (window.ignore_focus) return { sets: [], rounds: [] };
@@ -403,7 +397,7 @@ LoadEverything().then(() => {
     MoveCamera(FocusBox({ sets: [...inFocus], rounds: inFocus.size ? [...rounds] : [] }), animate);
   }
 
-  async function UpdatePlayer(element, playerExport, players, event) {
+  async function UpdatePlayer(element, playerExport, players, playersPath, event) {
     const team = playerExport && playerExport.id ? players[playerExport.id] : null;
     const fields = [".name", ".flagcountry", ".flagstate", ".sponsor_icon", ".avatar", ".online_avatar", ".seed"];
 
@@ -449,8 +443,8 @@ LoadEverything().then(() => {
     await CharacterDisplay(
       $(element).find(".character_container"),
       singles
-        ? { source: `bracket.players.slot.${playerExport.id}` }
-        : { slice_character: [0, 1], source: `bracket.players.slot.${playerExport.id}` },
+        ? { source: `${playersPath}.slot.${playerExport.id}` }
+        : { slice_character: [0, 1], source: `${playersPath}.slot.${playerExport.id}` },
       event
     );
   }
@@ -485,7 +479,7 @@ LoadEverything().then(() => {
         playerElement.toggleClass("won", winner === slot);
         playerElement.toggleClass("lost", winner === 1 - slot);
         playerElement.toggleClass("draw", winner === "draw");
-        await UpdatePlayer(playerElement, set.players[slot], players, event);
+        await UpdatePlayer(playerElement, set.players[slot], players, data.bracket.playersPath, event);
       }
     }
   }
@@ -500,8 +494,8 @@ LoadEverything().then(() => {
   }
 
   Update = async (event) => {
-    const data = event.data;
-    const oldData = event.oldData;
+    const data = HDBracket.ForChannel(event.data, CHANNEL);
+    const oldData = HDBracket.ForChannel(event.oldData, CHANNEL) || {};
 
     if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides) {
       $(".bf_sets, .bf_lines, .bf_standings").html("");

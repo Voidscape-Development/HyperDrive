@@ -73,6 +73,19 @@ describe("views", () => {
 		expect(views.focusKey(t, { mode: "follow", scoreboard: "1" }, state).state).toBeUndefined();
 	});
 
+	it("names the phase a channel shows, lit while it's shown", () => {
+		const pinned: State = {
+			bracket: {
+				phases: [{ id: 2, name: "Top 8" }],
+				groups: { "77": { phase: "Pools", phaseGroup: "A1" } },
+				focus: { main: { mode: "all", phase: "group:77" } },
+			},
+		};
+		expect(views.focusKey(t, { mode: "phase", phase: "group:77" }, pinned)).toMatchObject({ bottom: "Pools - A1", state: "on" });
+		expect(views.focusKey(t, { mode: "phase", phase: "local:2" }, pinned)).toMatchObject({ bottom: "Top 8", state: undefined });
+		expect(views.focusKey(t, { mode: "phase" }, pinned).bottom).toBe("Selected phase");
+	});
+
 	it("has every translation it uses", () => {
 		const all: views.Translate = (key, values) => t(key, values);
 		for (const kind of ["scores", "match", "players", "all"] as const) views.resetKey(all, { kind });

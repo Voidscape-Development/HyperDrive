@@ -26,7 +26,7 @@ export type BattleScoreSettings = { team?: string; direction?: "up" | "down" };
 export type BattlePlayerSettings = { team?: string; mode?: "next" | "player"; player?: string };
 export type BattleResetSettings = { kind?: "stocks" | "all"; requireHold?: boolean };
 export type StrikeSettings = { scoreboard?: string; command?: StrikeCommand; team?: string; requireHold?: boolean };
-export type FocusSettings = { channel?: string; mode?: FocusMode; scoreboard?: string; interval?: string; player?: string };
+export type FocusSettings = { channel?: string; mode?: FocusMode; scoreboard?: string; interval?: string; player?: string; phase?: string };
 
 export function num(value: unknown, fallback: number, min = 1): number {
 	const n = Number(value);
@@ -282,6 +282,7 @@ const FOCUS: Record<FocusMode, { icon: IconName; label: string }> = {
 	follow: { icon: "follow", label: "followSet" },
 	tour: { icon: "play", label: "tour" },
 	player: { icon: "user", label: "playerRun" },
+	phase: { icon: "layers", label: "showPhase" },
 };
 
 export function focusKey(t: Translate, s: FocusSettings, state: State): Look {
@@ -296,11 +297,18 @@ export function focusKey(t: Translate, s: FocusSettings, state: State): Look {
 		active = focus.mode === "follow" && Number(focus.scoreboard) === num(s.scoreboard, 1);
 	} else if (focus && mode === "player") {
 		active = focus.mode === "player" && String(focus.player) === String(s.player);
+	} else if (focus && mode === "phase") {
+		active = (focus.phase ?? "") === (s.phase ?? "");
 	}
 	return {
 		icon,
 		top: mode === "next-round" || mode === "previous-round" ? focus?.label || channelLabel(t, channel) : channelLabel(t, channel),
-		bottom: mode === "follow" ? t("followScoreboard", { scoreboard: num(s.scoreboard, 1) }) : t(label),
+		bottom:
+			mode === "follow"
+				? t("followScoreboard", { scoreboard: num(s.scoreboard, 1) })
+				: mode === "phase"
+					? phaseLabel(t, s.phase ?? "", state)
+					: t(label),
 		state: active ? "on" : undefined,
 	};
 }
@@ -314,6 +322,10 @@ export function focusStrip(t: Translate, s: FocusSettings, state: State): StripL
 	const bottom =
 		mode === "tour" && focus?.steps ? t("tourStep", { step: (focus.step ?? 0) + 1, steps: focus.steps }) : main === modeLabel ? "" : modeLabel;
 	return { icon: "bracket", top: channelLabel(t, channel), main, bottom };
+}
+
+export function phaseLabel(t: Translate, phase: string, state: State): string {
+	return phase ? (hd.bracketPhaseName(state, phase) ?? phase) : t("selectedPhase");
 }
 
 function channelLabel(t: Translate, channel: string): string {

@@ -53,6 +53,24 @@ def TestChannelNames():
     assert len(NormalizeChannelName("x" * 100)) == MAX_CHANNEL_NAME
 
 
+def TestPhases():
+    assert NormalizePhase(None) == PHASE_SELECTED
+    assert NormalizePhase("local:phase3") == "local:phase3"
+    assert NormalizePhase("local:") == PHASE_SELECTED
+    assert NormalizePhase("group:12345") == "group:12345"
+    # Dots would split the state key
+    assert NormalizePhase("group:1.2") == PHASE_SELECTED
+    assert NormalizePhase("other:1") == PHASE_SELECTED
+    assert ParsePhase("local:phase3") == (PHASE_LOCAL, "phase3")
+    assert PhaseSource("")["bracket"] == "bracket.bracket"
+    assert PhaseSource("local:3") == {
+        "bracket": "bracket.local.3.bracket",
+        "players": "bracket.players",
+        "names": "bracket.local.3",
+    }
+    assert PhaseSource("group:9")["players"] == "bracket.groups.9.players"
+
+
 def TestAll():
     focus = Resolve(BRACKET, {"mode": "all"})
     assert focus["sets"] == [] and focus["rounds"] == [] and focus["label"] == ""

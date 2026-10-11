@@ -53,6 +53,8 @@ SDPIComponents.i18n.locales = {
 		follow: "Follow the scoreboard's set",
 		tour: "Tour the bracket",
 		playerRun: "A player's run",
+		showPhase: "Show a phase",
+		phase: "Phase",
 		interval: "Seconds per step",
 		dialScore: "Dial: turn to change the score, push to swap the teams, touch to add (or take) a point.",
 		dialDisplay: "Dial: turn to pick a layout, push or touch to show or hide it.",

@@ -86,6 +86,15 @@ so layouts in different sources can show different things. Each layout shows
 one, picked with `?channel=<name>` in its URL (`main` without it). The
 bracket widget acts on the channel picked in the widget.
 
+A channel shows the phase selected in the bracket widget, or is pinned to a
+phase of its own: another of the widget's phases, or any start.gg phase
+group (loaded on its own, without changing the widget's phases, and updated
+with the widget's bracket auto update). Its `source` says where that
+bracket is in the state; layouts with `?channel=` use it in place of
+`bracket.bracket` and `bracket.players` (`HDBracket.ForChannel` in
+`layout/include/bracket.js` does it). The plain `layout/bracket` pages also
+take `?channel=<name>`, and show the selected phase without it.
+
 Each channel's focus:
 
 | Key | |
@@ -97,16 +106,24 @@ Each channel's focus:
 | `player` | `player`: the player's slot in `bracket.players.slot` |
 | `scoreboard` | `follow`: the scoreboard followed. Its set is the one with its start.gg set id, or between its two teams. |
 | `interval`, `step`, `steps` | `tour`: seconds per step, the step shown and how many there are |
+| `phase` | The phase shown: `""` (selected in the bracket widget), `local:<phase id>` or `group:<start.gg phase group id>` |
+| `source` | Where its bracket is: `{bracket, players, names}`, state paths of its bracket (like `bracket.bracket`), its player list (like `bracket.players`) and what has its `phase` and `phaseGroup` names |
+
+Pinned phases are sent as `bracket.local.<phase id>` (`{bracket, phase,
+phaseGroup}`, its players being the widget's `bracket.players`) and start.gg
+phase groups as `bracket.groups.<id>` (`{bracket, players, phase,
+phaseGroup}`).
 
 The same can be set from the web server, on the channel in `?channel=<name>`
 (`main` without it; 404 `NO_CHANNEL` for one that doesn't exist): `GET
 /bracket-focus` answers what's in focus, the channels and the rounds, sets
 and players there are to pick from, `POST /bracket-focus` takes `{mode, sets,
-rounds, player, scoreboard, interval}` or `{"move": 1}` (`-1`) for the next
-(previous) round. As links, e.g. for a Stream Deck: `/bracket-focus/all`,
+rounds, player, scoreboard, interval}`, `{"move": 1}` (`-1`) for the next
+(previous) round, or `{"phase": <key>}` for the phase it shows (the `GET`
+answer's `phases` lists them, `[{value, label, section}]`). As links, e.g. for a Stream Deck: `/bracket-focus/all`,
 `/bracket-focus/next-round`, `/bracket-focus/previous-round`,
 `/bracket-focus/follow?scoreboard=<n>`, `/bracket-focus/tour?interval=<seconds>`
-and `/bracket-focus/player?id=<slot>`, with `&channel=<name>` for a channel
+`/bracket-focus/player?id=<slot>` and `/bracket-focus/phase?phase=<key>`, with `&channel=<name>` for a channel
 other than `main`.
 
 The layout draws the bracket once at full size and moves and scales it to

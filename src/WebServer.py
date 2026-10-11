@@ -1106,7 +1106,9 @@ class WebServer(QThread):
     # The same as links, e.g. for a Stream Deck: /bracket-focus/all,
     # /bracket-focus/next-round, /bracket-focus/previous-round,
     # /bracket-focus/follow?scoreboard=<n>, /bracket-focus/tour?interval=<s>
-    # and /bracket-focus/player?id=<player slot>, each with &channel=<name>
+    # /bracket-focus/player?id=<player slot> and /bracket-focus/phase?phase=<key>
+    # (local:<id>, group:<id> or empty for the selected one), each with
+    # &channel=<name>
     @api.get("/bracket-focus/{action}")
     async def bracket_focus_action(action: str, request: Request):
         args = dict(request.query_params)
@@ -1117,6 +1119,7 @@ class WebServer(QThread):
             "follow": {"mode": "follow", "scoreboard": args.get("scoreboard", 1)},
             "tour": {"mode": "tour", "interval": args.get("interval")},
             "player": {"mode": "player", "player": args.get("id")},
+            "phase": {"phase": args.get("phase", "")},
         }.get(action)
         if body is None:
             return HTMLResponse("Unknown action", status_code=404)

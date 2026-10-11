@@ -259,24 +259,30 @@ class TournamentDataManager(QObject):
         )
         self.threadPool.start(worker)
 
-    def GetTournamentPhaseGroup(self, id):
+    def GetTournamentPhaseGroup(self, id, callback=None):
+        # With a callback, it gets the data instead of the bracket widget
+        # (a phase group a focus channel is pinned to)
         worker = Worker(self.provider.GetTournamentPhaseGroup, **{"id": id})
         worker.signals.result.connect(
             lambda phaseGroupData: [
                 # Which phase group this is, so its sets can be refreshed later
                 phaseGroupData.update({"phaseGroupId": id}) if phaseGroupData else None,
-                TournamentDataManager.instance.signals.tournament_phasegroup_updated.emit(
+                callback(phaseGroupData)
+                if callback
+                else TournamentDataManager.instance.signals.tournament_phasegroup_updated.emit(
                     phaseGroupData
                 ),
             ]
         )
         self.threadPool.start(worker)
 
-    def GetTournamentPhaseGroupSets(self, id, onFinished=None):
+    def GetTournamentPhaseGroupSets(self, id, onFinished=None, callback=None):
         worker = Worker(self.provider.GetTournamentPhaseGroupSets, **{"id": id})
         worker.signals.result.connect(
             lambda setsData: [
-                TournamentDataManager.instance.signals.tournament_phasegroup_sets_updated.emit(
+                callback({"phaseGroupId": id, "data": setsData or {}})
+                if callback
+                else TournamentDataManager.instance.signals.tournament_phasegroup_sets_updated.emit(
                     {"phaseGroupId": id, "data": setsData or {}}
                 )
             ]

@@ -1,7 +1,9 @@
 # The bracket widget's controls for the bracket focus layout
 # (layout/bracket_focus): zoom it to the sets and rounds selected in the
 # bracket view, a player's run, the set on a scoreboard, or a tour of the
-# rounds. They act on the focus channel picked here.
+# rounds. They act on the focus channel picked here, which can show the
+# phase selected in the widget or be pinned to another phase or start.gg
+# phase group.
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
@@ -61,7 +63,19 @@ class BracketFocusBar(QWidget):
             QApplication.translate("app", "Remove channel"), self.RemoveChannel
         )
         self.btChannels.setMenu(menu)
-        layout.addGroup(title, self.channel, self.btChannels)
+
+        # The phase the channel shows
+        self.phase = QComboBox()
+        self.phase.setMinimumWidth(130)
+        self.phase.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.phase.setToolTip(
+            QApplication.translate(
+                "app",
+                "Phase this channel shows: the one selected here, or always the same phase or start.gg phase group",
+            )
+        )
+        self.phase.activated.connect(self.PhasePicked)
+        layout.addGroup(title, self.channel, self.btChannels, self.phase)
 
         self.btAll = QPushButton(QApplication.translate("app", "Whole bracket"))
         self.btAll.setToolTip(QApplication.translate("app", "Show the whole bracket"))
@@ -152,13 +166,21 @@ class BracketFocusBar(QWidget):
 
         self.view.signals.selectionChanged.connect(self.UpdateSelection)
         self.view.signals.unselected.connect(self.Unselected)
-        self.view.signals.focusSets.connect(lambda ids: self.Ch().FocusSets(ids))
-        self.view.signals.focusRounds.connect(lambda keys: self.Ch().FocusRounds(keys))
-        self.view.signals.focusPlayer.connect(lambda player: self.Ch().FocusPlayer(player))
+        # Sets, rounds and players picked in the view are its bracket's
+        self.view.signals.focusSets.connect(
+            lambda ids: self.Ch().FocusSets(ids) if self.focus.ShowsView() else None
+        )
+        self.view.signals.focusRounds.connect(
+            lambda keys: self.Ch().FocusRounds(keys) if self.focus.ShowsView() else None
+        )
+        self.view.signals.focusPlayer.connect(
+            lambda player: self.Ch().FocusPlayer(player) if self.focus.ShowsView() else None
+        )
         self.focus.signals.changed.connect(
             lambda name: self.UpdateFocus() if name == self.focus.current else None
         )
         self.focus.signals.channelsChanged.connect(self.UpdateChannels)
+        self.focus.signals.phaseOptionsChanged.connect(self.UpdatePhases)
 
         self.UpdateSelection()
         self.UpdateChannels()
@@ -179,7 +201,28 @@ class BracketFocusBar(QWidget):
         main = self.focus.current == MAIN_CHANNEL
         self.actRename.setEnabled(not main)
         self.actRemove.setEnabled(not main)
+        self.UpdatePhases()
         self.UpdateFocus()
+
+    # Phases
+
+    def UpdatePhases(self):
+        self.phase.blockSignals(True)
+        self.phase.clear()
+        section = None
+        for option in self.focus.PhaseOptions():
+            if section is not None and option["section"] != section:
+                self.phase.insertSeparator(self.phase.count())
+            section = option["section"]
+            self.phase.addItem(option["label"], option["value"])
+        self.phase.setCurrentIndex(max(0, self.phase.findData(self.Ch().phase)))
+        self.phase.blockSignals(False)
+        self.UpdateSelection()
+        self.UpdateFocus()
+
+    def PhasePicked(self, index):
+        self.Ch().SetPhase(self.phase.itemData(index) or "")
+        self.UpdateSelection()
 
     def AskName(self, title, text=""):
         name, ok = QInputDialog.getText(
@@ -231,6 +274,8 @@ class BracketFocusBar(QWidget):
     def Unselected(self, sets, rounds):
         # Deselecting a set or round in focus takes it out of the focus too,
         # so its highlight here and on the layout goes away
+        if not self.focus.ShowsView():
+            return
         request = WithoutPicks(self.Ch().request, sets, rounds)
         if request is not None:
             self.Ch().Set(request)
@@ -249,7 +294,8 @@ class BracketFocusBar(QWidget):
             if count
             else QApplication.translate("app", "Focus selected")
         )
-        self.btSelected.setEnabled(count > 0)
+        # Only for a channel showing the bracket on screen
+        self.btSelected.setEnabled(count > 0 and self.focus.ShowsView())
         self.btClearSelection.setEnabled(count > 0)
 
     def UpdatePlayers(self):
@@ -297,6 +343,11 @@ class BracketFocusBar(QWidget):
                 focus.get("label")
                 or QApplication.translate("app", "{0} sets").format(len(focus["sets"]))
             )
+        if not self.focus.ShowsView():
+            text = f"{self.focus.PhaseLabel(self.Ch().phase)} · {text}"
         self.status.setText(text)
 
-        self.view.SetFocused(focus.get("sets"), focus.get("rounds"))
+        if self.focus.ShowsView():
+            self.view.SetFocused(focus.get("sets"), focus.get("rounds"))
+        else:
+            self.view.SetFocused(None, None)

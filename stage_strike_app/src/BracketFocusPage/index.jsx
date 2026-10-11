@@ -155,6 +155,14 @@ export default function BracketFocusPage() {
         });
     };
 
+    // The phase the channel shows: the one selected in the app, one of its
+    // phases or a start.gg phase group. The sets picked were the old one's.
+    const phases = state?.phases ?? [{value: "", section: "selected"}];
+    const pickPhase = (value) => {
+        clearSelection();
+        send({phase: value});
+    };
+
     const inFocus = new Set(focus.sets ?? []);
     const roundsInFocus = new Set(focus.rounds ?? []);
     const count = selected.size + selectedRounds.size;
@@ -186,6 +194,25 @@ export default function BracketFocusPage() {
                     {(state?.channels ?? [channel]).map((name) => <MenuItem key={name} value={name}>
                         {name}
                     </MenuItem>)}
+                </Select>
+            </FormControl>
+            <FormControl size="small" sx={{minWidth: 180}}>
+                <InputLabel>{i18n.t("bracket_focus_phase")}</InputLabel>
+                <Select
+                    label={i18n.t("bracket_focus_phase")}
+                    value={phases.some((p) => p.value === (state?.phase ?? "")) ? state?.phase ?? "" : ""}
+                    onChange={(e) => pickPhase(e.target.value)}
+                    disabled={!state}
+                    displayEmpty
+                >
+                    {phases.flatMap((p, i) => [
+                        i > 0 && p.section !== phases[i - 1].section
+                            ? <MenuItem key={`divider-${i}`} disabled divider sx={{minHeight: 0, padding: 0}}/>
+                            : null,
+                        <MenuItem key={p.value || "selected"} value={p.value}>
+                            {p.value === "" ? i18n.t("bracket_focus_phase_selected") : p.label}
+                        </MenuItem>,
+                    ]).filter(Boolean)}
                 </Select>
             </FormControl>
             <Chip

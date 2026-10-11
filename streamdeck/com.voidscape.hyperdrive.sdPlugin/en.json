@@ -44,7 +44,7 @@
 	},
 	"com.voidscape.hyperdrive.bracket-focus": {
 		"Name": "Bracket Focus",
-		"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour or a player's run."
+		"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour, a player's run, or which phase."
 	},
 	"Localization": {
 		"team": "Team {team}",
@@ -100,6 +100,10 @@
 		"tour": "Tour",
 		"tourStep": "Tour {step}/{steps}",
 		"playerRun": "Player's run",
+		"showPhase": "Show phase",
+		"selectedPhase": "Selected phase",
+		"phasesLocal": "Bracket widget",
+		"phasesStartgg": "start.gg",
 		"status": {
 			"connected": "Connected to {url}",
 			"connecting": "Connecting to {url}…",

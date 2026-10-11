@@ -5,6 +5,8 @@
 // Options (set in the .html): ALWAYS_EXPAND shows every set from the start,
 // WINNERS_ONLY / LOSERS_ONLY one side, STANDINGS_ONLY just the standings,
 // GRID_ONLY a round robin / swiss pool as a grid of who played who.
+// ?channel=<name> in the URL shows the phase that focus channel shows (it
+// can be pinned to another phase or a start.gg phase group).
 LoadEverything().then(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
@@ -20,6 +22,8 @@ LoadEverything().then(() => {
   // Set id: number used in class names (ids can be anything)
   var setIndex = {};
   var lastSignature = null;
+  // Without ?channel=, the phase selected in the bracket widget
+  const CHANNEL = HDBracket.ChannelName(window.channel);
 
   function AnimateLine(element) {
     let anim = null;
@@ -265,7 +269,7 @@ LoadEverything().then(() => {
     return anim.tweenTo(state);
   }
 
-  async function UpdatePlayer(element, playerExport, players, event) {
+  async function UpdatePlayer(element, playerExport, players, playersPath, event) {
     const team = playerExport && playerExport.id ? players[playerExport.id] : null;
     const fields = [".name", ".flagcountry", ".flagstate", ".sponsor_icon", ".avatar", ".online_avatar", ".seed"];
 
@@ -311,8 +315,8 @@ LoadEverything().then(() => {
     await CharacterDisplay(
       $(element).find(".character_container"),
       singles
-        ? { source: `bracket.players.slot.${playerExport.id}` }
-        : { slice_character: [0, 1], source: `bracket.players.slot.${playerExport.id}` },
+        ? { source: `${playersPath}.slot.${playerExport.id}` }
+        : { slice_character: [0, 1], source: `${playersPath}.slot.${playerExport.id}` },
       event
     );
   }
@@ -349,7 +353,7 @@ LoadEverything().then(() => {
         playerElement.toggleClass("won", winner === slot);
         playerElement.toggleClass("lost", winner === 1 - slot);
         playerElement.toggleClass("draw", winner === "draw");
-        await UpdatePlayer(playerElement, set.players[slot], players, event);
+        await UpdatePlayer(playerElement, set.players[slot], players, data.bracket.playersPath, event);
       }
     }
   }
@@ -386,8 +390,11 @@ LoadEverything().then(() => {
   }
 
   Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
+    let data = CHANNEL ? HDBracket.ForChannel(event.data, CHANNEL) : event.data;
+    let oldData = (CHANNEL ? HDBracket.ForChannel(event.oldData, CHANNEL) : event.oldData) || {};
+    if (data.bracket && !data.bracket.playersPath) {
+      data = { ...data, bracket: { ...data.bracket, playersPath: "bracket.players" } };
+    }
 
     if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides) {
       $(".winners_container, .losers_container, .pool_container, .grid_container, .lines").html("");

@@ -31,6 +31,47 @@ def NormalizeChannelName(name):
     return name[:MAX_CHANNEL_NAME].strip()
 
 
+# The phase a channel shows: the one selected in the bracket widget, one
+# of the widget's phases (local:<id>) or a start.gg phase group (group:<id>)
+PHASE_SELECTED = ""
+PHASE_LOCAL = "local"
+PHASE_GROUP = "group"
+
+
+def ParsePhase(key):
+    """(kind, id) of a channel's phase key, or (PHASE_SELECTED, None)."""
+    kind, _, id = str(key or "").partition(":")
+    id = id.strip()
+    # Ids go in state keys, which dots would split
+    if kind in (PHASE_LOCAL, PHASE_GROUP) and id and "." not in id:
+        return kind, id
+    return PHASE_SELECTED, None
+
+
+def NormalizePhase(key):
+    kind, id = ParsePhase(key)
+    return PHASE_SELECTED if kind == PHASE_SELECTED else f"{kind}:{id}"
+
+
+def PhaseSource(key):
+    """Where a channel's bracket is in the state: its bracket, its player
+    list, and what has its phase and phaseGroup names."""
+    kind, id = ParsePhase(key)
+    if kind == PHASE_LOCAL:
+        return {
+            "bracket": f"bracket.local.{id}.bracket",
+            "players": "bracket.players",
+            "names": f"bracket.local.{id}",
+        }
+    if kind == PHASE_GROUP:
+        return {
+            "bracket": f"bracket.groups.{id}.bracket",
+            "players": f"bracket.groups.{id}.players",
+            "names": f"bracket.groups.{id}",
+        }
+    return {"bracket": "bracket.bracket", "players": "bracket.players", "names": "bracket"}
+
+
 def NormalizeRequest(request):
     """A focus request from the app or the web page, with only the
     keys its mode uses and sane values."""
