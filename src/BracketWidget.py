@@ -57,6 +57,44 @@ def Ordinal(n):
     return QApplication.translate("app", "#{0}").format(n)
 
 
+class PhasesWindow(QWidget):
+    """The phases and players, in a window of their own floating above the
+    bracket widget: they're edited now and then, so they don't take room
+    from the bracket. It keeps its size and place."""
+
+    closed = Signal()
+
+    def __init__(self, parent):
+        super().__init__(parent, Qt.WindowType.Tool)
+        self.setWindowTitle(QApplication.translate("app", "Phases and players"))
+        self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(4, 4, 4, 4)
+        self.resize(380, 640)
+        geometry = SettingsManager.Get("bracket_phases_window", "")
+        if geometry:
+            try:
+                self.restoreGeometry(QByteArray.fromBase64(geometry.encode()))
+            except Exception:
+                pass
+
+    def SaveGeometry(self):
+        SettingsManager.Set("bracket_phases_window", bytes(self.saveGeometry().toBase64()).decode())
+
+    def moveEvent(self, event):
+        super().moveEvent(event)
+        if self.isVisible():
+            self.SaveGeometry()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.isVisible():
+            self.SaveGeometry()
+
+    def closeEvent(self, event):
+        super().closeEvent(event)
+        self.closed.emit()
+
+
 class BracketWidget(QDockWidget):
     instance: "BracketWidget" = None
 
@@ -188,9 +226,6 @@ class BracketWidget(QDockWidget):
         self.labelAutoUpdateTimer = QLabel()
         providerRow.addGroup(self.btRefreshSets, self.cbAutoUpdateSets, self.labelAutoUpdateTimer)
 
-        self.splitter = QSplitter(Qt.Orientation.Horizontal)
-        contents.layout().addWidget(self.splitter, 1)
-
         # The player list changes as it's built, which updates these
         self.view = BracketView()
         self.view.playerName = lambda player: TeamName(player, self.CurrentRosterPath())
@@ -201,11 +236,11 @@ class BracketWidget(QDockWidget):
         self.standingsTable.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.standingsTable.verticalHeader().setVisible(False)
 
-        # Left: phases, phase options and the player list
+        # Phases, phase options and the player list, in their own window
+        self.phasesWindow = PhasesWindow(self)
+        self.phasesWindow.closed.connect(lambda: self.btToggleSide.setChecked(False))
         left = QTabWidget()
-        left.setMinimumWidth(200)
-        self.splitter.addWidget(left)
-        self.sidePanel = left
+        self.phasesWindow.layout().addWidget(left)
 
         # The tabs scroll, so the window can be smaller than their contents
         def Scrolling(tab):
@@ -222,19 +257,23 @@ class BracketWidget(QDockWidget):
         self.playersStack.addWidget(self.localPlayersPage)
         left.addTab(Scrolling(self.playersStack), QApplication.translate("app", "Players"))
 
-        # Right: the bracket
+        # The bracket
         right = QWidget()
         right.setLayout(QVBoxLayout())
         right.layout().setContentsMargins(0, 0, 0, 0)
-        self.splitter.addWidget(right)
+        contents.layout().addWidget(right, 1)
 
         viewBar = FlowLayout()
         right.layout().addLayout(viewBar)
-        self.btToggleSide = QPushButton()
+        self.btToggleSide = QPushButton(QApplication.translate("app", "Phases and players"))
         self.btToggleSide.setCheckable(True)
         self.btToggleSide.setIcon(ThemedIcon("./assets/icons/people.svg"))
-        self.btToggleSide.setToolTip(QApplication.translate("app", "Show or hide the side panel"))
-        self.btToggleSide.toggled.connect(self.SetSidePanelHidden)
+        self.btToggleSide.setToolTip(
+            QApplication.translate(
+                "app", "Show or hide the window to edit the phases and the player lists"
+            )
+        )
+        self.btToggleSide.toggled.connect(self.SetPhasesWindowShown)
         self.phaseTitle = QLabel()
         font = self.phaseTitle.font()
         font.setBold(True)
@@ -282,8 +321,8 @@ class BracketWidget(QDockWidget):
         viewSplitter.addWidget(self.standingsTable)
         viewSplitter.setSizes([3, 1])
 
-        self.splitter.setSizes([320, 900])
-        self.btToggleSide.setChecked(SettingsManager.Get("bracket_player_list_hidden", False))
+        # Hidden until needed
+        self.btToggleSide.setChecked(SettingsManager.Get("bracket_phases_window_shown", False))
 
         TournamentDataManager.instance.signals.tournament_phases_updated.connect(self.UpdatePhases)
         TournamentDataManager.instance.signals.tournament_phasegroup_updated.connect(
@@ -540,10 +579,26 @@ class BracketWidget(QDockWidget):
         self.charNumber.setValue(1)
         return tab
 
-    def SetSidePanelHidden(self, hidden):
-        self.sidePanel.setHidden(hidden)
-        if SettingsManager.Get("bracket_player_list_hidden", False) != hidden:
-            SettingsManager.Set("bracket_player_list_hidden", hidden)
+    def showEvent(self, event):
+        super().showEvent(event)
+        # The phases window comes back with the widget, if it was open
+        if self.btToggleSide.isChecked():
+            QTimer.singleShot(0, lambda: self.SetPhasesWindowShown(True))
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.phasesWindow.hide()
+
+    def SetPhasesWindowShown(self, shown):
+        # While the widget is hidden, it's shown with it (showEvent)
+        if shown and self.isVisible():
+            self.phasesWindow.show()
+            self.phasesWindow.raise_()
+            self.phasesWindow.activateWindow()
+        elif not shown:
+            self.phasesWindow.hide()
+        if SettingsManager.Get("bracket_phases_window_shown", False) != shown:
+            SettingsManager.Set("bracket_phases_window_shown", shown)
 
     # Phases
 
