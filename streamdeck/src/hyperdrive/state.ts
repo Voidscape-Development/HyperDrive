@@ -250,10 +250,17 @@ export type BracketFocus = {
 	scoreboard?: number;
 	step?: number;
 	steps?: number;
+	/** Id of the phase shown, one of bracket.phases */
+	phase?: string | null;
 };
 
 export function bracketFocus(state: State, channel: string): BracketFocus | undefined {
 	return get<BracketFocus>(state, `bracket.focus.${channel}`);
+}
+
+/** A phase of the bracket widget's name, by id */
+export function bracketPhaseName(state: State, phase: string): string | undefined {
+	return get<{ id: string; name: string }[]>(state, "bracket.phases")?.find((p) => String(p.id) === phase)?.name;
 }
 
 export function bracketChannels(state: State): string[] {

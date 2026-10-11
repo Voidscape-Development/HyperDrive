@@ -70,22 +70,23 @@ export const stageStrike = {
 	},
 };
 
-export type FocusMode = "all" | "next-round" | "previous-round" | "follow" | "tour" | "player";
+export type FocusMode = "all" | "next-round" | "previous-round" | "follow" | "tour" | "player" | "phase";
 
 export const bracketFocus = {
 	set: (
 		mode: FocusMode,
-		options: { channel?: string; scoreboard?: number; interval?: number; player?: string } = {},
+		options: { channel?: string; scoreboard?: number; interval?: number; player?: string; phase?: string } = {},
 	): Request => {
 		const params = new URLSearchParams();
 		if (mode === "follow") params.set("scoreboard", String(options.scoreboard ?? 1));
 		if (mode === "tour" && options.interval) params.set("interval", String(options.interval));
 		if (mode === "player" && options.player) params.set("id", options.player);
+		if (mode === "phase") params.set("phase", options.phase ?? "");
 		if (options.channel && options.channel !== "main") params.set("channel", options.channel);
 		const query = params.toString();
 		return { path: `/bracket-focus/${mode}${query ? `?${query}` : ""}` };
 	},
-	/** What can be picked: the rounds, sets and players */
+	/** What can be picked: the rounds, sets, players and phases */
 	state: (channel?: string): Request => ({
 		path: `/bracket-focus${channel && channel !== "main" ? `?channel=${enc(channel)}` : ""}`,
 	}),

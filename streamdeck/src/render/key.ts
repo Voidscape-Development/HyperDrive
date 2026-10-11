@@ -1,9 +1,11 @@
 import { icon, type IconName } from "./icons.ts";
-import { BRAND, readableOn, shade, svgDataUrl, text } from "./svg.ts";
+import { svgDataUrl, text, THEME } from "./svg.ts";
 
 export type Look = {
-	/** A team color to fill the key with, instead of HyperDrive's */
+	/** A team color, shown as a thin bar along the edge */
 	color?: string;
+	/** A color shown as a big dot, e.g. the color a key sets */
+	swatch?: string;
 	/** Small line at the top */
 	top?: string;
 	/** The big value (a score, a name) */
@@ -12,42 +14,40 @@ export type Look = {
 	bottom?: string;
 	/** Drawn big without a main value, small in the corner with one */
 	icon?: IconName;
-	/** on: lit with a ring, off: dimmed */
+	/** on: lit with a gold ring, off: dimmed */
 	state?: "on" | "off";
 	/** HyperDrive isn't connected */
 	offline?: boolean;
 };
 
+function colors(look: Look): { fg: string; muted: string } {
+	return look.state === "off" ? { fg: THEME.off, muted: THEME.off } : { fg: THEME.gold, muted: THEME.muted };
+}
+
 function background(look: Look, width: number, height: number): string {
-	if (look.state === "off") {
-		return `<rect width="${width}" height="${height}" fill="#1b1b26"/>`;
+	return `<rect width="${width}" height="${height}" fill="${look.state === "off" ? THEME.offBackground : THEME.background}"/>`;
+}
+
+/** The team color: a bar along the bottom of a key, the left of a strip */
+function accent(look: Look, width: number, height: number, side: "bottom" | "left"): string {
+	if (!look.color || look.state === "off") {
+		return "";
 	}
-	if (look.color) {
-		return (
-			`<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">` +
-			`<stop offset="0" stop-color="${shade(look.color, 0.08)}"/><stop offset="1" stop-color="${shade(look.color, -0.35)}"/>` +
-			`</linearGradient></defs><rect width="${width}" height="${height}" fill="url(#bg)"/>`
-		);
-	}
-	return (
-		`<defs><radialGradient id="bg" cx="0.62" cy="0.3" r="0.95">` +
-		`<stop offset="0" stop-color="${BRAND.spaceLight}"/><stop offset="0.55" stop-color="${BRAND.spaceMid}"/>` +
-		`<stop offset="1" stop-color="${BRAND.spaceDark}"/></radialGradient></defs>` +
-		`<rect width="${width}" height="${height}" fill="url(#bg)"/>`
-	);
+	return side === "bottom"
+		? `<rect x="0" y="${height - 6}" width="${width}" height="6" fill="${look.color}"/>`
+		: `<rect x="0" y="0" width="6" height="${height}" fill="${look.color}"/>`;
 }
 
 function ring(look: Look, width: number, height: number): string {
 	if (look.state !== "on") {
 		return "";
 	}
-	const stroke = look.color ? readableOn(look.color) : BRAND.cyan;
-	return `<rect x="4" y="4" width="${width - 8}" height="${height - 8}" rx="14" fill="none" stroke="${stroke}" stroke-width="6"/>`;
+	return `<rect x="3" y="3" width="${width - 6}" height="${height - 6}" rx="14" fill="none" stroke="${THEME.gold}" stroke-width="4"/>`;
 }
 
 function offlineBadge(size: number, x: number, y: number): string {
 	return (
-		`<circle cx="${x + size / 2}" cy="${y + size / 2}" r="${size / 2 + 4}" fill="${BRAND.danger}"/>` +
+		`<circle cx="${x + size / 2}" cy="${y + size / 2}" r="${size / 2 + 4}" fill="${THEME.danger}"/>` +
 		icon("offline", x, y, size, "#ffffff")
 	);
 }
@@ -55,26 +55,29 @@ function offlineBadge(size: number, x: number, y: number): string {
 /** A 144x144 key image. */
 export function renderKey(look: Look): string {
 	const size = 144;
-	const fg = look.state === "off" ? "#8b8ba3" : look.color ? readableOn(look.color) : BRAND.text;
-	const muted = look.state === "off" || look.color ? fg : BRAND.muted;
+	const { fg, muted } = colors(look);
 	const parts: string[] = [background(look, size, size)];
 
 	if (look.main) {
 		if (look.icon) {
-			parts.push(icon(look.icon, 10, 10, 22, fg, 0.85));
+			parts.push(icon(look.icon, 12, 12, 20, fg));
 		}
 		parts.push(
-			text(look.top ?? "", { x: look.icon ? 82 : 72, y: 24, width: look.icon ? 104 : 128, max: 22, min: 13, color: muted, weight: 600 }),
+			text(look.top ?? "", { x: look.icon ? 82 : 72, y: 22, width: look.icon ? 100 : 124, max: 20, min: 12, color: muted, weight: 600 }),
 		);
-		parts.push(text(look.main, { x: 72, y: 80, width: 132, max: 68, min: 18, color: fg, weight: 800 }));
-		parts.push(text(look.bottom ?? "", { x: 72, y: 124, width: 128, max: 20, min: 12, color: muted, weight: 600 }));
+		parts.push(text(look.main, { x: 72, y: 78, width: 128, max: 64, min: 18, color: fg, weight: 700 }));
+		parts.push(text(look.bottom ?? "", { x: 72, y: 120, width: 124, max: 18, min: 11, color: muted, weight: 600 }));
 	} else {
-		parts.push(text(look.top ?? "", { x: 72, y: 22, width: 128, max: 20, min: 12, color: muted, weight: 600 }));
-		if (look.icon) {
-			parts.push(icon(look.icon, 44, look.top ? 40 : 30, 56, fg));
+		parts.push(text(look.top ?? "", { x: 72, y: 22, width: 124, max: 18, min: 11, color: muted, weight: 600 }));
+		const y = look.top ? 42 : 34;
+		if (look.swatch) {
+			parts.push(`<circle cx="72" cy="${y + 26}" r="24" fill="${look.swatch}" stroke="${fg}" stroke-width="2"/>`);
+		} else if (look.icon) {
+			parts.push(icon(look.icon, 46, y, 52, fg));
 		}
-		parts.push(text(look.bottom ?? "", { x: 72, y: 120, width: 128, max: 22, min: 12, color: fg, weight: 700 }));
+		parts.push(text(look.bottom ?? "", { x: 72, y: 118, width: 124, max: 20, min: 11, color: fg, weight: 600 }));
 	}
+	parts.push(accent(look, size, size, "bottom"));
 	parts.push(ring(look, size, size));
 
 	let body = parts.join("");
@@ -93,24 +96,27 @@ export type StripLook = Look & {
 export function renderStrip(look: StripLook): string {
 	const width = 200;
 	const height = 100;
-	const fg = look.state === "off" ? "#8b8ba3" : look.color ? readableOn(look.color) : BRAND.text;
-	const muted = look.state === "off" || look.color ? fg : BRAND.muted;
+	const { fg, muted } = colors(look);
 	const parts: string[] = [background(look, width, height)];
 
-	if (look.icon) {
-		parts.push(icon(look.icon, 10, 8, 20, fg, 0.9));
+	if (look.swatch) {
+		parts.push(`<circle cx="22" cy="18" r="9" fill="${look.swatch}" stroke="${fg}" stroke-width="1.5"/>`);
+	} else if (look.icon) {
+		parts.push(icon(look.icon, 14, 8, 18, fg));
 	}
+	const hasIcon = Boolean(look.icon || look.swatch);
 	parts.push(
-		text(look.top ?? "", { x: look.icon ? 38 : 12, y: 18, width: look.icon ? 152 : 176, max: 17, min: 11, color: muted, weight: 600, anchor: "start" }),
+		text(look.top ?? "", { x: hasIcon ? 40 : 14, y: 18, width: hasIcon ? 150 : 176, max: 16, min: 11, color: muted, weight: 600, anchor: "start" }),
 	);
-	parts.push(text(look.main ?? "", { x: 100, y: 54, width: 184, max: 40, min: 14, color: fg, weight: 800 }));
+	parts.push(text(look.main ?? "", { x: 100, y: 54, width: 180, max: 38, min: 14, color: fg, weight: 700 }));
 	parts.push(text(look.bottom ?? "", { x: 100, y: look.bar ? 80 : 84, width: 184, max: 16, min: 11, color: muted, weight: 600 }));
 
 	if (look.bar && look.bar.max > 0) {
 		const share = Math.max(0, Math.min(1, look.bar.value / look.bar.max));
-		parts.push(`<rect x="12" y="92" width="176" height="4" rx="2" fill="${fg}" opacity="0.25"/>`);
+		parts.push(`<rect x="12" y="92" width="176" height="4" rx="2" fill="${muted}" opacity="0.4"/>`);
 		parts.push(`<rect x="12" y="92" width="${(176 * share).toFixed(1)}" height="4" rx="2" fill="${fg}"/>`);
 	}
+	parts.push(accent(look, width, height, "left"));
 	parts.push(ring(look, width, height));
 
 	let body = parts.join("");

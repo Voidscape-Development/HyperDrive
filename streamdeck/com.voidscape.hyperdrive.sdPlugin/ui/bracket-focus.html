@@ -19,6 +19,7 @@
 				<option value="follow">__MSG_follow__</option>
 				<option value="tour">__MSG_tour__</option>
 				<option value="player">__MSG_playerRun__</option>
+				<option value="phase">__MSG_showPhase__</option>
 			</sdpi-select>
 		</sdpi-item>
 		<sdpi-item label="__MSG_scoreboard__" data-when="mode=follow" data-default="all">
@@ -29,6 +30,9 @@
 		</sdpi-item>
 		<sdpi-item label="__MSG_player__" data-when="mode=player" data-default="all">
 			<sdpi-select setting="player" datasource="bracketPlayers" hot-reload placeholder="…"></sdpi-select>
+		</sdpi-item>
+		<sdpi-item label="__MSG_phase__" data-when="mode=phase" data-default="all">
+			<sdpi-select setting="phase" datasource="bracketPhases" hot-reload placeholder="…"></sdpi-select>
 		</sdpi-item>
 		<p class="hd-hint" data-msg="dialFocus"></p>
 	</body>

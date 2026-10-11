@@ -1,5 +1,5 @@
-# What the bracket focus layouts (layout/bracket_focus) zoom to: sets of the
-# bracket widget's export (bracket.bracket, see docs/layout-data.md) picked
+# What the bracket focus layouts (layout/bracket_focus) zoom to: sets of a
+# channel's bracket (bracket.channels.<channel>, see docs/layout-data.md) picked
 # by hand, whole rounds, a player's run, the set on a scoreboard or a tour of
 # every round. No Qt here, so it can be tested on its own.
 
@@ -29,6 +29,15 @@ def NormalizeChannelName(name):
     spaces. Empty if there's nothing left."""
     name = " ".join(str(name or "").replace(".", " ").split())
     return name[:MAX_CHANNEL_NAME].strip()
+
+
+def NormalizeLimit(limit):
+    """A channel's "only show the top N": None (everything) or 2 and up."""
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        return None
+    return limit if limit >= 2 else None
 
 
 def NormalizeRequest(request):

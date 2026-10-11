@@ -25,9 +25,9 @@ import { HyperDriveAction } from "./base.ts";
 const MAX_TICKS = 3;
 
 /**
- * A team's score: a press adds a point (or takes one, per its settings),
- * holding does the opposite. On a dial: turn to change it, push to swap
- * the teams, touch to add a point.
+ * A team's score: an Add key adds a point, a Remove key takes one. On a
+ * dial: turn to change it, push to swap the teams, touch to add (or, for
+ * Remove, take) a point.
  */
 @action({ UUID: "com.voidscape.hyperdrive.score" })
 export class ScoreAction extends HyperDriveAction<ScoreSettings> {
@@ -39,15 +39,15 @@ export class ScoreAction extends HyperDriveAction<ScoreSettings> {
 		return scoreStrip(t, s, state);
 	}
 
-	protected override holds(s: ScoreSettings): boolean {
-		return s.hold !== "none";
+	protected async press(s: ScoreSettings, _held: boolean, key: KeyAction<ScoreSettings>): Promise<void> {
+		await this.run(key, this.#change(s));
 	}
 
-	protected async press(s: ScoreSettings, held: boolean, key: KeyAction<ScoreSettings>): Promise<void> {
-		const down = (s.direction === "down") !== held;
+	/** What the key does: add a point, or take one for a Remove key */
+	#change(s: ScoreSettings) {
 		const sb = num(s.scoreboard, 1);
 		const team = teamOf(s.team);
-		await this.run(key, down ? scoreboard.scoreDown(sb, team) : scoreboard.scoreUp(sb, team));
+		return s.direction === "down" ? scoreboard.scoreDown(sb, team) : scoreboard.scoreUp(sb, team);
 	}
 
 	protected override async rotate(s: ScoreSettings, ticks: number, dial: DialAction<ScoreSettings>): Promise<void> {
@@ -66,7 +66,7 @@ export class ScoreAction extends HyperDriveAction<ScoreSettings> {
 	}
 
 	protected override async touch(s: ScoreSettings, _hold: boolean, dial: DialAction<ScoreSettings>): Promise<void> {
-		await this.run(dial, scoreboard.scoreUp(num(s.scoreboard, 1), teamOf(s.team)));
+		await this.run(dial, this.#change(s));
 	}
 }
 

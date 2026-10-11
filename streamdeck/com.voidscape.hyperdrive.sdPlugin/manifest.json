@@ -1,7 +1,7 @@
 {
 	"$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
 	"Name": "HyperDrive",
-	"Version": "1.0.0.0",
+	"Version": "1.1.0.0",
 	"Author": "Voidscape Development",
 	"Description": "Control HyperDrive, the stream helper for fighting game tournaments: scores, Display Controls, Crew/Team Battle, stage strike and bracket focus, with live state on the keys.",
 	"URL": "https://github.com/Voidscape-Development/HyperDrive",
@@ -33,7 +33,7 @@
 			"Name": "Team Score",
 			"UUID": "com.voidscape.hyperdrive.score",
 			"Icon": "imgs/actions/score",
-			"Tooltip": "Adds a point to a team (hold to take one). Shows the team's score and color.",
+			"Tooltip": "Adds a point to a team, or takes one. Shows the team's score and color.",
 			"PropertyInspectorPath": "ui/score.html",
 			"Controllers": [
 				"Keypad",
@@ -52,7 +52,7 @@
 				"TriggerDescription": {
 					"Rotate": "Change score",
 					"Push": "Swap teams",
-					"Touch": "Add a point"
+					"Touch": "Add / take a point"
 				}
 			}
 		},
@@ -155,7 +155,7 @@
 			"Name": "Team Battle Score",
 			"UUID": "com.voidscape.hyperdrive.battle-score",
 			"Icon": "imgs/actions/battle-score",
-			"Tooltip": "A team scores in the Crew/Team Battle (hold to undo). Shows the active player.",
+			"Tooltip": "A team scores in the Crew/Team Battle, or undoes a point. Shows the active player.",
 			"PropertyInspectorPath": "ui/battle-score.html",
 			"Controllers": [
 				"Keypad",
@@ -233,7 +233,7 @@
 			"Name": "Bracket Focus",
 			"UUID": "com.voidscape.hyperdrive.bracket-focus",
 			"Icon": "imgs/actions/bracket-focus",
-			"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour or a player's run.",
+			"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour, a player's run, or which phase a channel shows.",
 			"PropertyInspectorPath": "ui/bracket-focus.html",
 			"Controllers": [
 				"Keypad",

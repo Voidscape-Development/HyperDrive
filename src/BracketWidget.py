@@ -1,11 +1,17 @@
 # The bracket widget: brackets of any type, built here or loaded from
 # start.gg, shown on stream through the "bracket" state.
 #
-# A tournament built here is made of phases (e.g. two round robin pools and
-# a top cut), all drawing their players from the player list. A phase's
-# seeds can be players or results of another phase, so the top cut fills
-# itself in as the pools finish. Loading a phase group from start.gg
-# replaces them with that phase group.
+# Its phases are a pool: phases built here (e.g. two round robin pools and
+# a top cut), all drawing their players from one player list, and start.gg
+# phase groups loaded into it, each with its own player list. A built
+# phase's seeds can be players or results of another built phase, so the
+# top cut fills itself in as the pools finish.
+#
+# What goes on stream is set by channels (BracketFocus), a tab each here:
+# each shows a phase of the pool, with its own top N, focus and view, so
+# several phases can be on screens at once. Channels on the same phase
+# share its data.
+import copy
 import os
 import traceback
 
@@ -15,13 +21,15 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
-from .BracketFocus import BracketFocus
+from .BracketExport import ExportBracket, RosterPath, TeamName
+from .BracketFocus import BracketFocus, FocusChannel
 from .BracketFocusBar import BracketFocusBar
 from .BracketModel import *
-from .BracketView import BracketView, SourceText
+from .BracketView import BracketView
 from .DisplayOptions import DisplayOptionsButton
 from .FlowLayout import FlowLayout
 from .GameAssetManager import GameAssetManager
+from .Helpers.BracketFocusHelper import MAIN_CHANNEL
 from .PlayerList import PlayerList
 from .Scheduler import (
     BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
@@ -45,19 +53,46 @@ def TypeName(type):
     }.get(type, type)
 
 
-def TeamName(playerId):
-    if playerId is None or playerId <= 0:
-        return ""
-    team = StateManager.Get(f"bracket.players.slot.{playerId}", {}) or {}
-    if team.get("name"):
-        return team.get("name")
-    return " / ".join(
-        [p.get("name", "") for p in (team.get("player") or {}).values() if p.get("name")]
-    )
-
-
 def Ordinal(n):
     return QApplication.translate("app", "#{0}").format(n)
+
+
+class PhasesWindow(QWidget):
+    """The phases and players, in a window of their own floating above the
+    bracket widget: they're edited now and then, so they don't take room
+    from the bracket. It keeps its size and place."""
+
+    closed = Signal()
+
+    def __init__(self, parent):
+        super().__init__(parent, Qt.WindowType.Tool)
+        self.setWindowTitle(QApplication.translate("app", "Phases and players"))
+        self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(4, 4, 4, 4)
+        self.resize(380, 640)
+        geometry = SettingsManager.Get("bracket_phases_window", "")
+        if geometry:
+            try:
+                self.restoreGeometry(QByteArray.fromBase64(geometry.encode()))
+            except Exception:
+                pass
+
+    def SaveGeometry(self):
+        SettingsManager.Set("bracket_phases_window", bytes(self.saveGeometry().toBase64()).decode())
+
+    def moveEvent(self, event):
+        super().moveEvent(event)
+        if self.isVisible():
+            self.SaveGeometry()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.isVisible():
+            self.SaveGeometry()
+
+    def closeEvent(self, event):
+        super().closeEvent(event)
+        self.closed.emit()
 
 
 class BracketWidget(QDockWidget):
@@ -78,15 +113,25 @@ class BracketWidget(QDockWidget):
         StateManager.Set("bracket", {})
 
         self.tournament = BracketTournament()
-        self.currentPhaseId = None
-        # Bracket type of each start.gg phase group asked for, by id, to know
-        # how to build the bracket when its data comes in
-        self.phaseGroupTypes = {}
-        self.loadedPhaseGroupId = None
-        # Entrants of the loaded phase group, so mains fetched in the
+        if BracketFocus.instance is None:
+            BracketFocus.instance = BracketFocus()
+        # The channel the widget shows (its view state is kept when another
+        # tab is picked)
+        self.shownChannel = None
+        # Player lists: "local" (the phases built here) and one per start.gg
+        # phase group, by its id
+        self.rosters: dict[str, PlayerList] = {}
+        # Names and bracket type of each start.gg phase group asked for, by
+        # id, to build the bracket when its data comes in
+        self.phaseGroupInfo = {}
+        # The phase group the Load button asked for, to show it once it's in
+        self.userLoad = None
+        # Phase groups whose results are being fetched
+        self.fetching = 0
+        # Entrants of each loaded phase group, so mains fetched in the
         # background after the load can be applied to their slots
-        self.loadedEntrants = []
-        self.mainsAppliedSlots = set()
+        self.groupEntrants = {}
+        self.mainsApplied = {}
         # Don't react to our own changes to the phase controls
         self.updatingControls = False
         # The player list changes while the UI is being built
@@ -100,6 +145,31 @@ class BracketWidget(QDockWidget):
         contents = QWidget()
         contents.setLayout(QVBoxLayout())
         self.setWidget(contents)
+
+        # A tab per channel
+        tabsRow = QHBoxLayout()
+        contents.layout().addLayout(tabsRow)
+        self.channelTabs = QTabBar()
+        self.channelTabs.setExpanding(False)
+        self.channelTabs.setDocumentMode(True)
+        self.channelTabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.channelTabs.currentChanged.connect(self.ChannelTabPicked)
+        self.channelTabs.customContextMenuRequested.connect(self.ChannelTabMenu)
+        self.channelTabs.tabBarDoubleClicked.connect(
+            lambda index: self.focusBar.RenameChannel() if index >= 0 else None
+        )
+        tabsRow.addWidget(self.channelTabs)
+        btAddChannel = QToolButton()
+        btAddChannel.setText("+")
+        btAddChannel.setToolTip(
+            QApplication.translate(
+                "app",
+                "New channel: shows a phase on its own, e.g. on another screen. Right-click a tab to rename or remove it.",
+            )
+        )
+        btAddChannel.clicked.connect(lambda: self.focusBar.AddChannel())
+        tabsRow.addWidget(btAddChannel)
+        tabsRow.addStretch()
 
         # Loading from start.gg
         # The bars wrap their controls, so they don't set the window's width
@@ -133,7 +203,7 @@ class BracketWidget(QDockWidget):
         self.btLoadPhaseGroup.setToolTip(
             QApplication.translate(
                 "app",
-                "Load the phase group, its players and its sets. Replaces the brackets in this widget.",
+                "Load the phase group, its players and its sets into the phases, and show it on this channel. Loading it again reloads it.",
             )
         )
         self.btLoadPhaseGroup.clicked.connect(self.PhaseGroupChanged)
@@ -142,7 +212,7 @@ class BracketWidget(QDockWidget):
         self.btRefreshSets.setToolTip(
             QApplication.translate(
                 "app",
-                "Update only the set results of the loaded bracket, without reloading its players",
+                "Update only the set results of the loaded phase groups, without reloading their players",
             )
         )
         self.btRefreshSets.clicked.connect(lambda: self.RefreshSets())
@@ -150,30 +220,27 @@ class BracketWidget(QDockWidget):
         self.cbAutoUpdateSets.setToolTip(
             QApplication.translate(
                 "app",
-                "Update the set results of the loaded bracket periodically. The interval can be changed in Settings > General.",
+                "Update the set results of the loaded phase groups periodically. The interval can be changed in Settings > General.",
             )
         )
         self.labelAutoUpdateTimer = QLabel()
         providerRow.addGroup(self.btRefreshSets, self.cbAutoUpdateSets, self.labelAutoUpdateTimer)
 
-        self.splitter = QSplitter(Qt.Orientation.Horizontal)
-        contents.layout().addWidget(self.splitter, 1)
-
         # The player list changes as it's built, which updates these
         self.view = BracketView()
-        self.view.playerName = TeamName
-        self.view.rosterIds = lambda: range(1, len(self.playerList.slotWidgets) + 1)
+        self.view.playerName = lambda player: TeamName(player, self.CurrentRosterPath())
+        self.view.rosterIds = lambda: range(1, len(self.CurrentRoster().slotWidgets) + 1)
         self.view.signals.edited.connect(self.BracketEdited)
         self.standingsTable = QTableWidget()
         self.standingsTable.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.standingsTable.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.standingsTable.verticalHeader().setVisible(False)
 
-        # Left: phases, phase options and the player list
+        # Phases, phase options and the player list, in their own window
+        self.phasesWindow = PhasesWindow(self)
+        self.phasesWindow.closed.connect(lambda: self.btToggleSide.setChecked(False))
         left = QTabWidget()
-        left.setMinimumWidth(200)
-        self.splitter.addWidget(left)
-        self.sidePanel = left
+        self.phasesWindow.layout().addWidget(left)
 
         # The tabs scroll, so the window can be smaller than their contents
         def Scrolling(tab):
@@ -184,21 +251,29 @@ class BracketWidget(QDockWidget):
             return scroll
 
         left.addTab(Scrolling(self.BuildPhasesTab()), QApplication.translate("app", "Phases"))
-        left.addTab(Scrolling(self.BuildPlayersTab()), QApplication.translate("app", "Players"))
+        # The player list of the channel's phase
+        self.playersStack = QStackedWidget()
+        self.localPlayersPage = self.BuildPlayersTab()
+        self.playersStack.addWidget(self.localPlayersPage)
+        left.addTab(Scrolling(self.playersStack), QApplication.translate("app", "Players"))
 
-        # Right: the bracket
+        # The bracket
         right = QWidget()
         right.setLayout(QVBoxLayout())
         right.layout().setContentsMargins(0, 0, 0, 0)
-        self.splitter.addWidget(right)
+        contents.layout().addWidget(right, 1)
 
         viewBar = FlowLayout()
         right.layout().addLayout(viewBar)
-        self.btToggleSide = QPushButton()
+        self.btToggleSide = QPushButton(QApplication.translate("app", "Phases and players"))
         self.btToggleSide.setCheckable(True)
         self.btToggleSide.setIcon(ThemedIcon("./assets/icons/people.svg"))
-        self.btToggleSide.setToolTip(QApplication.translate("app", "Show or hide the side panel"))
-        self.btToggleSide.toggled.connect(self.SetSidePanelHidden)
+        self.btToggleSide.setToolTip(
+            QApplication.translate(
+                "app", "Show or hide the window to edit the phases and the player lists"
+            )
+        )
+        self.btToggleSide.toggled.connect(self.SetPhasesWindowShown)
         self.phaseTitle = QLabel()
         font = self.phaseTitle.font()
         font.setBold(True)
@@ -209,7 +284,7 @@ class BracketWidget(QDockWidget):
         self.limitExport.setToolTip(
             QApplication.translate(
                 "app",
-                "Only the sets of players that can still finish in the top N are sent to the layouts",
+                "Only the sets of players that can still finish in the top N are sent to this channel's layouts",
             )
         )
         self.limitExport.toggled.connect(self.ExportOptionsChanged)
@@ -234,8 +309,8 @@ class BracketWidget(QDockWidget):
         btFit.clicked.connect(lambda: self.view.FitInView())
         viewBar.addWidget(btFit)
 
-        if BracketFocus.instance is None:
-            BracketFocus.instance = BracketFocus()
+        BracketFocus.instance.signals.channelsChanged.connect(self.ChannelsChanged)
+        BracketFocus.instance.signals.settingsChanged.connect(self.ChannelSettingsChanged)
         self.focusBar = BracketFocusBar(self.view)
         right.layout().addWidget(self.focusBar)
 
@@ -246,8 +321,8 @@ class BracketWidget(QDockWidget):
         viewSplitter.addWidget(self.standingsTable)
         viewSplitter.setSizes([3, 1])
 
-        self.splitter.setSizes([320, 900])
-        self.btToggleSide.setChecked(SettingsManager.Get("bracket_player_list_hidden", False))
+        # Hidden until needed
+        self.btToggleSide.setChecked(SettingsManager.Get("bracket_phases_window_shown", False))
 
         TournamentDataManager.instance.signals.tournament_phases_updated.connect(self.UpdatePhases)
         TournamentDataManager.instance.signals.tournament_phasegroup_updated.connect(
@@ -284,6 +359,14 @@ class BracketWidget(QDockWidget):
             lambda: self.Save() if self.saveTimer.isActive() else None
         )
 
+        # bracket.players follows the main channel's player list, which can
+        # change without the widget hearing of it (e.g. characters loading)
+        self.mirrorTimer = QTimer(self)
+        self.mirrorTimer.setInterval(1000)
+        self.mirrorTimer.timeout.connect(self.MirrorPlayers)
+        self.mirrorTimer.start()
+
+        self.UpdateTabs()
         self.ready = True
         self.Load()
 
@@ -446,7 +529,8 @@ class BracketWidget(QDockWidget):
         row = QHBoxLayout()
         tab.layout().addLayout(row)
 
-        self.playerList = PlayerList(base="bracket.players")
+        self.playerList = PlayerList(base=RosterPath())
+        self.rosters["local"] = self.playerList
 
         def Spin(label, minimum, setter):
             col = QVBoxLayout()
@@ -470,12 +554,15 @@ class BracketWidget(QDockWidget):
         self.charNumber = Spin(
             QApplication.translate("app", "Characters per player"),
             0,
-            self.playerList.SetCharactersPerPlayer,
+            self.CharactersPerPlayerChanged,
         )
 
         self.displayOptions = DisplayOptionsButton("bracket_display_options")
         self.displayOptions.changed.connect(
-            lambda: self.playerList.SetHiddenElements(self.displayOptions.HiddenElements())
+            lambda: [
+                roster.SetHiddenElements(self.displayOptions.HiddenElements())
+                for roster in self.rosters.values()
+            ]
         )
         self.playerList.SetHiddenElements(self.displayOptions.HiddenElements())
         row.addWidget(self.displayOptions, 0, Qt.AlignmentFlag.AlignBottom)
@@ -492,15 +579,33 @@ class BracketWidget(QDockWidget):
         self.charNumber.setValue(1)
         return tab
 
-    def SetSidePanelHidden(self, hidden):
-        self.sidePanel.setHidden(hidden)
-        if SettingsManager.Get("bracket_player_list_hidden", False) != hidden:
-            SettingsManager.Set("bracket_player_list_hidden", hidden)
+    def showEvent(self, event):
+        super().showEvent(event)
+        # The phases window comes back with the widget, if it was open
+        if self.btToggleSide.isChecked():
+            QTimer.singleShot(0, lambda: self.SetPhasesWindowShown(True))
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.phasesWindow.hide()
+
+    def SetPhasesWindowShown(self, shown):
+        # While the widget is hidden, it's shown with it (showEvent)
+        if shown and self.isVisible():
+            self.phasesWindow.show()
+            self.phasesWindow.raise_()
+            self.phasesWindow.activateWindow()
+        elif not shown:
+            self.phasesWindow.hide()
+        if SettingsManager.Get("bracket_phases_window_shown", False) != shown:
+            SettingsManager.Set("bracket_phases_window_shown", shown)
 
     # Phases
 
     def CurrentPhase(self) -> BracketPhase:
-        return self.tournament.GetPhase(self.currentPhaseId)
+        """The current channel's phase."""
+        phase = self.Ch().phase
+        return self.tournament.GetPhase(phase) if phase else None
 
     def RosterIds(self):
         return list(range(1, len(self.playerList.slotWidgets) + 1))
@@ -515,55 +620,65 @@ class BracketWidget(QDockWidget):
         phase.seedSources = [{"type": "player", "player": p} for p in self.RosterIds()]
         phase.Generate(self.tournament.SeedPlayers(phase))
         self.tournament.AddPhase(phase)
-        self.currentPhaseId = phase.id
-        self.RefreshPhaseList()
-        self.Changed()
+        # Shown on this channel
+        self.Ch().SetPhase(phase.id)
+        self.saveTimer.start()
         return phase
 
     def RemovePhase(self):
         phase = self.CurrentPhase()
         if phase is None:
             return
+        text = QApplication.translate("app", "Remove {0}? Its results will be lost.").format(
+            phase.name
+        )
+        others = [n for n in BracketFocus.instance.ChannelsOn(phase.id) if n != self.Ch().name]
+        if others:
+            text += "\n\n" + QApplication.translate(
+                "app", "These channels show it too, and will show another phase: {0}"
+            ).format(", ".join(others))
         if (
-            QMessageBox.question(
-                self,
-                QApplication.translate("app", "Remove phase"),
-                QApplication.translate("app", "Remove {0}? Its results will be lost.").format(
-                    phase.name
-                ),
-            )
+            QMessageBox.question(self, QApplication.translate("app", "Remove phase"), text)
             != QMessageBox.StandardButton.Yes
         ):
             return
         self.tournament.RemovePhase(phase.id)
+        if phase.providerPhaseGroupId is not None:
+            id = str(phase.providerPhaseGroupId)
+            self.DropRoster(id)
+            self.groupEntrants.pop(id, None)
+        self.tournament.Resolve()
         if not self.tournament.phases:
             self.NewPhase()
-            return
-        self.currentPhaseId = self.tournament.phases[0].id
-        self.RefreshPhaseList()
-        self.Changed()
+        # Its channels show the first phase
+        self.FixChannelPhases()
+        self.saveTimer.start()
 
     def RefreshPhaseList(self):
+        """The phases, with the channels showing each. The current
+        channel's is selected."""
         self.phaseList.blockSignals(True)
         self.phaseList.clear()
         for phase in self.tournament.phases:
-            item = QListWidgetItem(f"{phase.name} ({TypeName(phase.type)})")
+            text = f"{phase.name} ({TypeName(phase.type)})"
+            if phase.providerPhaseGroupId is not None:
+                text += " · start.gg"
+            channels = BracketFocus.instance.ChannelsOn(phase.id)
+            if channels:
+                text += "  ◀ " + ", ".join(channels)
+            item = QListWidgetItem(text)
             item.setData(Qt.ItemDataRole.UserRole, phase.id)
             self.phaseList.addItem(item)
         index = next(
-            (i for i, p in enumerate(self.tournament.phases) if p.id == self.currentPhaseId), 0
+            (i for i, p in enumerate(self.tournament.phases) if p.id == self.Ch().phase), -1
         )
         self.phaseList.setCurrentRow(index)
         self.phaseList.blockSignals(False)
-        self.PhaseSelected(index)
 
     def PhaseSelected(self, row):
+        # Picking a phase shows it on the current channel
         if 0 <= row < len(self.tournament.phases):
-            self.currentPhaseId = self.tournament.phases[row].id
-        self.UpdateControls()
-        phase = self.CurrentPhase()
-        self.view.SetBracket(phase.bracket if phase else None)
-        self.UpdateView()
+            self.Ch().SetPhase(self.tournament.phases[row].id)
 
     def UpdateControls(self):
         phase = self.CurrentPhase()
@@ -624,7 +739,7 @@ class BracketWidget(QDockWidget):
             )
             self.providerNotice.setVisible(not local)
             self.btRemovePhase.setEnabled(len(self.tournament.phases) > 1)
-            self.btRefreshSets.setEnabled(self.loadedPhaseGroupId is not None)
+            self.btRefreshSets.setEnabled(bool(self.ProviderPhases()) and not self.fetching)
             self.RefreshSeedsTable()
         finally:
             self.updatingControls = False
@@ -640,10 +755,12 @@ class BracketWidget(QDockWidget):
                 )
             )
         for other in self.tournament.phases:
+            # start.gg's phase groups have their own players
             if (
                 other.id == phase.id
                 or self.tournament.DependsOn(other, phase)
                 or other.bracket is None
+                or other.providerPhaseGroupId is not None
             ):
                 continue
             for place in range(1, len(other.bracket.Results()) + 1):
@@ -735,6 +852,7 @@ class BracketWidget(QDockWidget):
             if p.id != phase.id
             and not self.tournament.DependsOn(p, phase)
             and p.bracket is not None
+            and p.providerPhaseGroupId is None
         ]
         if not others:
             QMessageBox.information(
@@ -906,11 +1024,8 @@ class BracketWidget(QDockWidget):
             self.RefreshSeedsTable()
 
     def ExportOptionsChanged(self, *args):
-        self.view.exportLimit = (
-            self.limitExportNumber.value() if self.limitExport.isChecked() else None
-        )
-        self.view.Refresh()
-        self.UpdateView()
+        # The channel's top N
+        self.Ch().SetLimit(self.limitExportNumber.value() if self.limitExport.isChecked() else None)
 
     def Changed(self, rebuildView=True):
         phase = self.CurrentPhase()
@@ -965,7 +1080,7 @@ class BracketWidget(QDockWidget):
                 elif key == "gameDiff":
                     value = f"{row['gameDiff']:+d}"
                 elif key == "playerName":
-                    value = TeamName(row["playerId"])
+                    value = TeamName(row["playerId"], self.CurrentRosterPath())
                 elif key == "seed":
                     value = str(bracket.SeedOf(row["playerId"]))
                 else:
@@ -975,129 +1090,261 @@ class BracketWidget(QDockWidget):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.standingsTable.setItem(r, c, item)
 
+    # Channels: a tab each. The widget shows the current channel's phase,
+    # its top N and its view of the bracket (zoom, scroll and selection)
+
+    def Ch(self) -> FocusChannel:
+        return BracketFocus.instance.Current()
+
+    def UpdateTabs(self):
+        focus = BracketFocus.instance
+        self.channelTabs.blockSignals(True)
+        while self.channelTabs.count():
+            self.channelTabs.removeTab(0)
+        for name in focus.channels:
+            index = self.channelTabs.addTab(name)
+            self.channelTabs.setTabData(index, name)
+            self.channelTabs.setTabToolTip(
+                index,
+                QApplication.translate(
+                    "app", "Layouts show this channel with ?channel={0} in their URL"
+                ).format(name)
+                if name != MAIN_CHANNEL
+                else QApplication.translate(
+                    "app", "Layouts without ?channel= in their URL show this channel"
+                ),
+            )
+        names = list(focus.channels)
+        self.channelTabs.setCurrentIndex(names.index(focus.current))
+        self.channelTabs.blockSignals(False)
+
+    def ChannelTabPicked(self, index):
+        name = self.channelTabs.tabData(index)
+        if name and name != BracketFocus.instance.current:
+            self.SaveViewState()
+            BracketFocus.instance.SetCurrent(name)
+
+    def ChannelTabMenu(self, pos):
+        index = self.channelTabs.tabAt(pos)
+        if index < 0:
+            return
+        name = self.channelTabs.tabData(index)
+        if name != BracketFocus.instance.current:
+            self.channelTabs.setCurrentIndex(index)
+        menu = QMenu(self)
+        menu.addAction(QApplication.translate("app", "New channel..."), self.focusBar.AddChannel)
+        rename = menu.addAction(
+            QApplication.translate("app", "Rename channel..."), self.focusBar.RenameChannel
+        )
+        remove = menu.addAction(
+            QApplication.translate("app", "Remove channel"), self.focusBar.RemoveChannel
+        )
+        rename.setEnabled(name != MAIN_CHANNEL)
+        remove.setEnabled(name != MAIN_CHANNEL)
+        menu.exec(self.channelTabs.mapToGlobal(pos))
+
+    def ChannelsChanged(self):
+        """Channels were added, removed or renamed, or another tab was picked."""
+        self.UpdateTabs()
+        self.FixChannelPhases()
+        self.ShowChannel()
+
+    def ChannelSettingsChanged(self, name):
+        """A channel's phase or top N changed, here or from the web page."""
+        if not self.ready:
+            return
+        if name == BracketFocus.instance.current:
+            phase = self.CurrentPhase()
+            if self.view.bracket is not (phase.bracket if phase else None):
+                self.ShowChannel()
+                return
+            self.view.exportLimit = self.Ch().limit
+            self.UpdateLimitControls()
+            self.view.Refresh()
+        self.RefreshPhaseList()
+        self.UpdateView()
+
+    def FixChannelPhases(self):
+        """Channels showing a phase that isn't there show the first one."""
+        ids = [p.id for p in self.tournament.phases]
+        for channel in list(BracketFocus.instance.channels.values()):
+            if channel.phase not in ids:
+                channel.SetPhase(ids[0] if ids else None)
+
+    def SaveViewState(self):
+        channel = BracketFocus.instance.channels.get(self.shownChannel)
+        if channel is None:
+            return
+        channel.viewState = {
+            "phase": channel.phase,
+            "transform": self.view.transform(),
+            "scroll": (
+                self.view.horizontalScrollBar().value(),
+                self.view.verticalScrollBar().value(),
+            ),
+            "selected": set(self.view.selected),
+            "rounds": set(self.view.selectedRounds),
+        }
+
+    def ShowChannel(self):
+        """Shows the current channel: its phase, players, top N and view."""
+        channel = self.Ch()
+        phase = self.CurrentPhase()
+        self.shownChannel = channel.name
+        self.view.exportLimit = channel.limit
+        self.UpdateLimitControls()
+
+        state = channel.viewState
+        if state is not None and state.get("phase") != channel.phase:
+            state = None
+        self.view.SetBracket(phase.bracket if phase else None, fit=state is None)
+        if state is not None:
+            self.view.setTransform(state["transform"])
+            h, v = state["scroll"]
+            QTimer.singleShot(
+                0,
+                lambda: (
+                    self.view.horizontalScrollBar().setValue(h),
+                    self.view.verticalScrollBar().setValue(v),
+                ),
+            )
+            self.view.SetSelection(state["selected"], state["rounds"])
+        else:
+            self.view.SetSelection(set(), set())
+
+        self.playersStack.setCurrentWidget(self.RosterPage(self.RosterKey(phase)))
+        self.RefreshPhaseList()
+        self.UpdateControls()
+        self.UpdateView()
+        self.focusBar.UpdateFocus()
+
+    def UpdateLimitControls(self):
+        limit = self.Ch().limit
+        for widget in (self.limitExport, self.limitExportNumber):
+            widget.blockSignals(True)
+        self.limitExport.setChecked(limit is not None)
+        if limit is not None:
+            self.limitExportNumber.setValue(limit)
+        for widget in (self.limitExport, self.limitExportNumber):
+            widget.blockSignals(False)
+
+    # Player lists: the phases built here share one, each start.gg phase
+    # group has its own
+
+    def RosterKey(self, phase):
+        if phase is not None and phase.providerPhaseGroupId is not None:
+            return str(phase.providerPhaseGroupId)
+        return "local"
+
+    def CurrentRosterPath(self):
+        return RosterPath(self.RosterKey(self.CurrentPhase()))
+
+    def CurrentRoster(self) -> PlayerList:
+        return self.rosters.get(self.RosterKey(self.CurrentPhase())) or self.playerList
+
+    def RosterPage(self, key):
+        roster = self.rosters.get(key)
+        return getattr(roster, "page", None) or self.localPlayersPage
+
+    def GroupRoster(self, id) -> PlayerList:
+        """A start.gg phase group's player list, made the first time."""
+        id = str(id)
+        if id in self.rosters:
+            return self.rosters[id]
+        page = QWidget()
+        page.setLayout(QVBoxLayout())
+        title = QLabel()
+        title.setWordWrap(True)
+        page.layout().addWidget(title)
+        roster = PlayerList(base=RosterPath(id))
+        roster.SetCharactersPerPlayer(self.playerList.charactersPerPlayer)
+        roster.SetHiddenElements(self.displayOptions.HiddenElements())
+        roster.signals.DataChanged.connect(self.PlayersChanged)
+        page.layout().addWidget(roster)
+        self.playersStack.addWidget(page)
+        roster.page = page
+        roster.title = title
+        self.rosters[id] = roster
+        return roster
+
+    def DropRoster(self, id):
+        roster = self.rosters.pop(str(id), None)
+        if roster is None:
+            return
+        self.playersStack.removeWidget(roster.page)
+        roster.page.deleteLater()
+        StateManager.Unset(RosterPath(str(id)))
+
+    def MirrorPlayers(self):
+        """bracket.players is the main channel's player list, for layouts
+        reading it."""
+        main = BracketFocus.instance.channels[MAIN_CHANNEL]
+        phase = self.tournament.GetPhase(main.phase) if main.phase else None
+        players = StateManager.Get(RosterPath(self.RosterKey(phase)), {}) or {}
+        if players != (StateManager.Get("bracket.players", {}) or {}):
+            StateManager.Set("bracket.players", copy.deepcopy(players))
+
     # Exporting to the layouts
 
-    def PlayerExport(self, bracket, m, slot):
-        player = m.players[slot]
-        data = {
-            "id": player if player > 0 else None,
-            "seed": bracket.SeedOf(player)
-            if player > 0 and bracket.SeedOf(player) != 9999
-            else None,
-            "name": TeamName(player) if player > 0 else "",
-            "bye": player == BYE,
-            "pending": player == PENDING,
-            # What the slot waits for, e.g. "Winner of C"
-            "source": SourceText(bracket, m.sources[slot]) if player == PENDING else "",
-            "manual": m.override[slot] is not None,
+    def ChannelExport(self, phase, limit, cache):
+        if phase is None:
+            return {
+                "bracket": {},
+                "phase": "",
+                "phaseGroup": "",
+                "phaseId": None,
+                "playersPath": RosterPath(),
+            }
+        path = RosterPath(self.RosterKey(phase))
+        key = (phase.id, limit)
+        if key not in cache:
+            cache[key] = (
+                ExportBracket(phase.bracket, phase.name, limit, path) if phase.bracket else {}
+            )
+        provider = phase.providerPhaseGroupId is not None
+        info = phase.providerInfo or {}
+        return {
+            "bracket": cache[key],
+            "phase": (info.get("phase") or phase.name) if provider else phase.name,
+            "phaseGroup": (info.get("group") or "") if provider else "",
+            "phaseId": phase.id,
+            "playersPath": path,
         }
-        return data
 
     def ExportBracketState(self):
-        phase = self.CurrentPhase()
-        bracket = phase.bracket if phase else None
+        focus = BracketFocus.instance
+        main = focus.channels[MAIN_CHANNEL]
 
         StateManager.Set(
             "bracket.phases",
             [
-                {"id": p.id, "name": p.name, "type": p.type, "current": p.id == self.currentPhaseId}
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "type": p.type,
+                    "source": "startgg" if p.providerPhaseGroupId is not None else "local",
+                    "phaseGroupId": p.providerPhaseGroupId,
+                    "channels": focus.ChannelsOn(p.id),
+                    "current": p.id == main.phase,
+                }
                 for p in self.tournament.phases
             ],
         )
 
-        if bracket is None:
-            StateManager.Set("bracket.bracket", {})
-            self.FocusBracketChanged()
-            return
-
-        limit = self.view.exportLimit if not bracket.IsPool() else None
-        included = {
-            m.id
-            for m in bracket.matches.values()
-            if not m.isBye and (limit is None or bracket.InTopN(m, limit))
+        cache = {}
+        channels = {
+            name: self.ChannelExport(
+                self.tournament.GetPhase(c.phase) if c.phase else None, c.limit, cache
+            )
+            for name, c in focus.channels.items()
         }
+        StateManager.Set("bracket.channels", channels)
 
-        sets = {}
-        for m in bracket.matches.values():
-            if m.id not in included:
-                continue
-            winner = None
-            if m.winnerSlot is not None and m.finished:
-                winner = m.winnerSlot
-            elif m.IsDraw():
-                winner = "draw"
-
-            def Next(link):
-                if link is None or link[0] not in included:
-                    return None
-                return {"set": link[0], "slot": link[1]}
-
-            sets[m.id] = {
-                "id": m.id,
-                "identifier": m.identifier,
-                "side": m.side,
-                "column": m.column,
-                "row": m.row,
-                "roundName": bracket.RoundName(m.side, m.column),
-                "players": [self.PlayerExport(bracket, m, slot) for slot in range(2)],
-                "score": list(m.score),
-                "completed": bool(m.finished),
-                # 0 or 1 for the slot that won, "draw" or None
-                "winner": winner,
-                "nextWin": Next(m.nextWin),
-                "nextLose": Next(m.nextLose),
-                "loserPlacement": bracket.LoserPlacementOf(m) if not bracket.IsPool() else None,
-                "isGrandFinal": m.isGrandFinal,
-                "isReset": m.isReset,
-                "resetNeeded": not m.notNeeded,
-                "startggId": m.providerId,
-            }
-
-        sides = {}
-        for side in SIDES:
-            columns = []
-            for column in bracket.Columns(side, includeHidden=side == SIDE_GRAND_FINAL):
-                ids = [m.id for m in column if m.id in included]
-                if not ids:
-                    continue
-                columns.append(
-                    {
-                        "key": Bracket.RoundKey(side, column[0].column),
-                        "name": bracket.RoundName(side, column[0].column),
-                        "sets": ids,
-                    }
-                )
-            if columns:
-                sides[side] = columns
-
-        data = {
-            "type": bracket.type,
-            "name": phase.name,
-            "fromStartgg": bracket.fromProvider,
-            "progressionsOut": bracket.progressionsOut,
-            "limitExportNumber": limit,
-            "sides": sides,
-            "sets": sets,
-        }
-
-        if bracket.IsPool():
-            standings = bracket.GetStandings()
-            data["standings"] = [dict(row, name=TeamName(row["playerId"])) for row in standings]
-            data["totalRounds"] = bracket.totalRounds
-            data["byes"] = {
-                Bracket.RoundKey(SIDE_POOL, int(r)): [
-                    {"id": p, "name": TeamName(p)} for p in players
-                ]
-                for r, players in bracket.byes.items()
-            }
-        else:
-            results = []
-            for i, player in enumerate(bracket.Results()):
-                if player > 0:
-                    results.append({"order": i + 1, "id": player, "name": TeamName(player)})
-            data["results"] = results
-
-        StateManager.Set("bracket.bracket", data)
+        # The main channel's, as the layouts always had it
+        StateManager.Set("bracket.bracket", channels[MAIN_CHANNEL]["bracket"])
+        StateManager.Set("bracket.phase", channels[MAIN_CHANNEL]["phase"])
+        StateManager.Set("bracket.phaseGroup", channels[MAIN_CHANNEL]["phaseGroup"])
+        self.MirrorPlayers()
         self.FocusBracketChanged()
 
     def FocusBracketChanged(self):
@@ -1107,7 +1354,8 @@ class BracketWidget(QDockWidget):
         if getattr(self, "focusBar", None) is not None:
             self.focusBar.UpdatePlayers()
 
-    # start.gg
+    # start.gg: phase groups are loaded into the phases, each with its own
+    # player list. Loading one again reloads it.
 
     def UpdatePhases(self, phases):
         self.phaseSelection.blockSignals(True)
@@ -1119,13 +1367,6 @@ class BracketWidget(QDockWidget):
         self.UpdatePhaseGroups()
 
     def UpdatePhaseGroups(self):
-        try:
-            StateManager.Set(
-                "bracket.phase", (self.phaseSelection.currentData() or {}).get("name", "")
-            )
-        except Exception:
-            StateManager.Set("bracket.phase", "")
-
         self.phaseGroupSelection.clear()
         provider = TournamentDataManager.instance.provider
         supported = getattr(provider, "SUPPORTS_BRACKETS", False)
@@ -1136,80 +1377,76 @@ class BracketWidget(QDockWidget):
                 model.item(model.rowCount() - 1).setEnabled(False)
 
     def PhaseGroupChanged(self):
-        try:
-            if len((self.phaseSelection.currentData() or {}).get("groups", [])) > 1:
-                StateManager.Set(
-                    "bracket.phaseGroup", (self.phaseGroupSelection.currentData() or {}).get("name")
-                )
-            else:
-                StateManager.Set("bracket.phaseGroup", "")
-        except Exception:
-            StateManager.Set("bracket.phaseGroup", "")
-
         phaseGroup = self.phaseGroupSelection.currentData()
         if phaseGroup is None or TournamentDataManager.instance.provider is None:
             return
-
-        local = [
-            p
-            for p in self.tournament.phases
-            if p.bracket is not None
-            and not p.bracket.fromProvider
-            and any(m.finished for m in p.bracket.matches.values())
-        ]
-        if local and self.isVisible():
-            answer = QMessageBox.question(
-                self,
-                QApplication.translate("app", "Load phase group"),
-                QApplication.translate(
-                    "app",
-                    "Loading a phase group replaces the brackets built here, and their results. Continue?",
-                ),
-            )
-            if answer != QMessageBox.StandardButton.Yes:
-                return
-
-        self.phaseGroupTypes[str(phaseGroup.get("id"))] = phaseGroup.get("bracketType")
+        phase = self.phaseSelection.currentData() or {}
+        groups = phase.get("groups") or []
+        id = str(phaseGroup.get("id"))
+        self.phaseGroupInfo[id] = {
+            "phase": phase.get("name") or "",
+            "group": (phaseGroup.get("name") or "") if len(groups) > 1 else "",
+            "bracketType": phaseGroup.get("bracketType"),
+        }
+        # Shown on this channel once it's in
+        self.userLoad = id
         TournamentDataManager.instance.GetTournamentPhaseGroup(phaseGroup.get("id"))
+
+    def ProviderPhases(self):
+        return [p for p in self.tournament.phases if p.providerPhaseGroupId is not None]
+
+    def ProviderPhase(self, id):
+        return next(
+            (p for p in self.ProviderPhases() if str(p.providerPhaseGroupId) == str(id)), None
+        )
 
     def RefreshSets(self):
         # Returns what it did, for the web server's update-bracket-sets
-        selected = self.phaseGroupSelection.currentData()
-        if self.loadedPhaseGroupId is None:
+        if not self.ProviderPhases():
+            selected = self.phaseGroupSelection.currentData()
             if selected is None or selected.get("id") is None:
                 return "NO_PHASE_GROUP"
             self.PhaseGroupChanged()
             return "RELOADING_PHASE_GROUP"
 
-        if not self.btRefreshSets.isEnabled():
+        if self.fetching:
             return "ALREADY_UPDATING"
 
         self.FetchSets()
         return "OK"
 
     def FetchSets(self, onFinished=None):
+        """Fetches the results of every phase group loaded."""
+        ids = [str(p.providerPhaseGroupId) for p in self.ProviderPhases()]
+        if not ids:
+            if onFinished:
+                onFinished()
+            return
         # The button stays disabled while a fetch runs, so manual and
         # automatic updates can't overlap
+        self.fetching = len(ids)
         self.btRefreshSets.setEnabled(False)
 
         def finished():
-            self.btRefreshSets.setEnabled(self.loadedPhaseGroupId is not None)
+            self.fetching -= 1
+            if self.fetching > 0:
+                return
+            self.btRefreshSets.setEnabled(bool(self.ProviderPhases()))
             if onFinished:
                 onFinished()
 
-        TournamentDataManager.instance.GetTournamentPhaseGroupSets(
-            self.loadedPhaseGroupId, onFinished=finished
-        )
+        for id in ids:
+            TournamentDataManager.instance.GetTournamentPhaseGroupSets(id, onFinished=finished)
 
     # Bracket auto update
 
     def AutoUpdateSets(self, done):
-        # Nothing to update without a bracket loaded from the provider, or
-        # while a manual update is still running
+        # Nothing to update without a phase group loaded, or while a manual
+        # update is still running
         if (
-            self.loadedPhaseGroupId is None
+            not self.ProviderPhases()
             or TournamentDataManager.instance.provider is None
-            or not self.btRefreshSets.isEnabled()
+            or self.fetching
         ):
             done()
             return
@@ -1228,7 +1465,7 @@ class BracketWidget(QDockWidget):
             self.labelAutoUpdateTimer.setVisible(False)
             return
         self.labelAutoUpdateTimer.setVisible(True)
-        if self.loadedPhaseGroupId is None:
+        if not self.ProviderPhases():
             self.labelAutoUpdateTimer.setText(
                 QApplication.translate("app", "Waiting for a loaded bracket")
             )
@@ -1243,35 +1480,21 @@ class BracketWidget(QDockWidget):
                     )
                 )
 
-    def ProviderPhase(self):
-        return next(
-            (
-                p
-                for p in self.tournament.phases
-                if p.bracket is not None
-                and p.bracket.fromProvider
-                and str(p.providerPhaseGroupId) == str(self.loadedPhaseGroupId)
-            ),
-            None,
-        )
-
     def ApplySetsUpdate(self, update):
-        if self.loadedPhaseGroupId is None or str(update.get("phaseGroupId")) != str(
-            self.loadedPhaseGroupId
-        ):
+        id = update.get("phaseGroupId")
+        phase = self.ProviderPhase(id)
+        if phase is None or phase.bracket is None:
             return
-        phase = self.ProviderPhase()
         sets = (update.get("data") or {}).get("sets") or []
-        if phase is None or not sets:
+        if not sets:
             logger.warning("Got no sets for the phase group; bracket left as is")
             return
         try:
             if not ApplyProviderUpdate(phase.bracket, sets):
                 logger.info("The phase group's sets changed since it was loaded; reloading it")
-                TournamentDataManager.instance.GetTournamentPhaseGroup(self.loadedPhaseGroupId)
+                TournamentDataManager.instance.GetTournamentPhaseGroup(id)
                 return
-            self.tournament.Resolve()
-            if phase.id == self.currentPhaseId:
+            if phase.id == self.Ch().phase:
                 self.view.Refresh()
             self.Changed(rebuildView=False)
         except Exception:
@@ -1280,9 +1503,8 @@ class BracketWidget(QDockWidget):
     def UpdatePhaseGroup(self, data):
         if not data:
             return
-        phaseGroupId = data.get("phaseGroupId")
+        id = str(data.get("phaseGroupId"))
         entrants = data.get("entrants") or []
-        type = self.phaseGroupTypes.get(str(phaseGroupId)) or TYPE_DOUBLE_ELIMINATION
         sets = data.get("sets")
         if not entrants or not sets:
             logger.warning(
@@ -1290,9 +1512,12 @@ class BracketWidget(QDockWidget):
             )
             return
 
+        existing = self.ProviderPhase(id)
+        info = dict(existing.providerInfo if existing else {})
+        info.update(self.phaseGroupInfo.get(id, {}))
         try:
             bracket = FromProviderSets(
-                type,
+                info.get("bracketType") or (existing.type if existing else TYPE_DOUBLE_ELIMINATION),
                 sets,
                 len(entrants),
                 data.get("entrantIds"),
@@ -1304,78 +1529,88 @@ class BracketWidget(QDockWidget):
             return
 
         # The same phase group again: keep the names typed in for its rounds
-        previous = (
-            self.ProviderPhase() if str(self.loadedPhaseGroupId) == str(phaseGroupId) else None
-        )
-        if previous is not None and previous.bracket is not None:
-            bracket.roundNames = previous.bracket.roundNames
+        if existing is not None and existing.bracket is not None:
+            bracket.roundNames = existing.bracket.roundNames
 
         with StateManager.SaveBlock():
-            self.playerList.setUpdatesEnabled(False)
+            roster = self.GroupRoster(id)
+            roster.setUpdatesEnabled(False)
             try:
-                self.playerList.signals.DataChanged.disconnect(self.PlayersChanged)
+                roster.signals.DataChanged.disconnect(self.PlayersChanged)
             except (TypeError, RuntimeError):
                 pass
             try:
-                self.loadedEntrants = entrants
-                self.mainsAppliedSlots = set()
-                self.playerList.LoadFromStandings(entrants, enrichBlocking=False)
-                self.slotNumber.blockSignals(True)
-                self.slotNumber.setValue(len(self.playerList.slotWidgets))
-                self.slotNumber.blockSignals(False)
-                self.playerPerTeam.blockSignals(True)
-                self.playerPerTeam.setValue(max(1, self.playerList.playersPerTeam))
-                self.playerPerTeam.blockSignals(False)
+                self.groupEntrants[id] = entrants
+                self.mainsApplied[id] = set()
+                roster.LoadFromStandings(entrants, enrichBlocking=False)
             finally:
-                self.playerList.signals.DataChanged.connect(self.PlayersChanged)
-                self.playerList.setUpdatesEnabled(True)
+                roster.signals.DataChanged.connect(self.PlayersChanged)
+                roster.setUpdatesEnabled(True)
 
-            name = StateManager.Get("bracket.phase") or QApplication.translate("app", "start.gg")
-            group = StateManager.Get("bracket.phaseGroup")
-            if group:
-                name = f"{name} - {group}"
-
-            tournament = BracketTournament()
-            phase = BracketPhase(tournament.NewPhaseId(), name, bracket.type)
+            if existing is not None:
+                phase = existing
+                phase.type = bracket.type
+            else:
+                name = " - ".join(n for n in (info.get("phase"), info.get("group")) if n)
+                phase = BracketPhase(
+                    self.tournament.NewPhaseId(),
+                    name or QApplication.translate("app", "start.gg"),
+                    bracket.type,
+                )
+                phase.providerPhaseGroupId = id
+                self.tournament.AddPhase(phase)
             phase.bracket = bracket
-            phase.providerPhaseGroupId = phaseGroupId
+            phase.providerInfo = info
             phase.seedSources = [
                 {"type": "player", "player": p} for p in range(1, len(entrants) + 1)
             ]
-            tournament.AddPhase(phase)
-            self.tournament = tournament
-            self.currentPhaseId = phase.id
-            self.loadedPhaseGroupId = phaseGroupId
+            roster.title.setText(
+                QApplication.translate("app", "{0}: its players, from start.gg").format(phase.name)
+            )
 
+            # Loaded from here: shown on this channel
+            if self.userLoad == id:
+                self.userLoad = None
+                if self.Ch().phase != phase.id:
+                    self.Ch().SetPhase(phase.id)
+                    self.saveTimer.start()
+                    return
+            if self.Ch().phase == phase.id:
+                self.view.SetBracket(bracket, fit=existing is None)
             self.RefreshPhaseList()
-            self.view.SetBracket(bracket, fit=previous is None)
             self.Changed(rebuildView=False)
 
     def ApplyFetchedMains(self):
         provider = TournamentDataManager.instance.provider
-        if provider is None or not self.loadedEntrants:
+        if provider is None:
             return
-        slots = self.playerList.slotWidgets
-        toUpdate = []
-        for i, entrant in enumerate(self.loadedEntrants):
-            if i >= len(slots) or i in self.mainsAppliedSlots:
+        for id, entrants in self.groupEntrants.items():
+            roster = self.rosters.get(id)
+            if roster is None:
                 continue
-            for player in (entrant or {}).get("players") or []:
-                if not player.get("mains") and provider.GetCachedMains(player):
-                    toUpdate.append(i)
-                    break
-        if not toUpdate:
-            return
-        self.mainsAppliedSlots.update(toUpdate)
-        with StateManager.SaveBlock():
-            self.playerList.childDataChangedLock = True
-            try:
-                for i in toUpdate:
-                    slots[i].SetTeamData(self.loadedEntrants[i], enrichBlocking=False)
-            except Exception:
-                logger.error(traceback.format_exc())
-            finally:
-                self.playerList.childDataChangedLock = False
+            applied = self.mainsApplied.setdefault(id, set())
+            slots = roster.slotWidgets
+            toUpdate = []
+            for i, entrant in enumerate(entrants):
+                if i >= len(slots) or i in applied:
+                    continue
+                for player in (entrant or {}).get("players") or []:
+                    if not player.get("mains") and provider.GetCachedMains(player):
+                        toUpdate.append(i)
+                        break
+            if not toUpdate:
+                continue
+            applied.update(toUpdate)
+            with StateManager.SaveBlock():
+                roster.childDataChangedLock = True
+                try:
+                    for i in toUpdate:
+                        slots[i].SetTeamData(entrants[i], enrichBlocking=False)
+                except Exception:
+                    logger.error(traceback.format_exc())
+                finally:
+                    roster.childDataChangedLock = False
+        self.MirrorPlayers()
 
     def SetDefaultsFromAssets(self):
         if StateManager.Get("game.defaults"):
@@ -1394,13 +1629,23 @@ class BracketWidget(QDockWidget):
             or self.playerList.charactersPerPlayer != characters
         ):
             self.playerList.SetSizesGradually(players, characters)
+        # start.gg's player lists keep their team sizes
+        for key, roster in self.rosters.items():
+            if key != "local" and roster.charactersPerPlayer != characters:
+                roster.SetCharactersPerPlayer(characters)
 
-    # Saving, so a tournament run in HyperDrive survives a restart
+    def CharactersPerPlayerChanged(self, value):
+        for roster in self.rosters.values():
+            roster.SetCharactersPerPlayer(value)
 
-    def RosterSnapshot(self):
+    # Saving, so a tournament run in HyperDrive survives a restart. The
+    # channels are saved in the settings (BracketFocus).
+
+    def RosterSnapshot(self, key="local"):
         roster = []
-        for i in self.RosterIds():
-            slot = StateManager.Get(f"bracket.players.slot.{i}", {}) or {}
+        count = len(self.rosters[key].slotWidgets) if key in self.rosters else 0
+        for i in range(1, count + 1):
+            slot = StateManager.Get(f"{RosterPath(key)}.slot.{i}", {}) or {}
             players = []
             for p in (slot.get("player") or {}).values():
                 players.append(
@@ -1424,9 +1669,7 @@ class BracketWidget(QDockWidget):
         try:
             data = {
                 "tournament": self.tournament.ToDict(),
-                "currentPhase": self.currentPhaseId,
-                "loadedPhaseGroupId": self.loadedPhaseGroupId,
-                "roster": self.RosterSnapshot(),
+                "rosters": {key: self.RosterSnapshot(key) for key in self.rosters},
             }
             os.makedirs(os.path.dirname(SAVE_PATH), exist_ok=True)
             tmp = SAVE_PATH + ".tmp"
@@ -1445,28 +1688,44 @@ class BracketWidget(QDockWidget):
         except Exception:
             logger.error(f"Couldn't read {SAVE_PATH}: {traceback.format_exc()}")
 
+        main = BracketFocus.instance.channels[MAIN_CHANNEL]
         if data:
             try:
-                roster = data.get("roster") or []
-                if roster:
-                    self.slotNumber.blockSignals(True)
-                    self.slotNumber.setValue(max(2, len(roster)))
-                    self.slotNumber.blockSignals(False)
-                    playersPerTeam = max([len(t.get("players") or []) for t in roster] + [1])
-                    self.playerPerTeam.setValue(playersPerTeam)
-                    self.playerList.LoadFromStandings(roster, enrichBlocking=False)
                 self.tournament = BracketTournament.FromDict(data.get("tournament"))
-                self.currentPhaseId = data.get("currentPhase")
-                self.loadedPhaseGroupId = data.get("loadedPhaseGroupId")
-                if self.ProviderPhase() is None:
-                    self.loadedPhaseGroupId = None
+                rosters = data.get("rosters")
+                if rosters is None:
+                    # Saved before channels: one player list, the loaded
+                    # phase group's if there was one, and the phase shown
+                    group = data.get("loadedPhaseGroupId")
+                    key = str(group) if group and self.ProviderPhase(group) else "local"
+                    rosters = {key: data.get("roster") or []}
+                    if main.phase is None and data.get("currentPhase"):
+                        main.phase = str(data.get("currentPhase"))
+
+                local = rosters.get("local") or []
+                if local:
+                    self.slotNumber.blockSignals(True)
+                    self.slotNumber.setValue(max(2, len(local)))
+                    self.slotNumber.blockSignals(False)
+                    playersPerTeam = max([len(t.get("players") or []) for t in local] + [1])
+                    self.playerPerTeam.setValue(playersPerTeam)
+                    self.playerList.LoadFromStandings(local, enrichBlocking=False)
+                for key, roster in rosters.items():
+                    phase = self.ProviderPhase(key) if key != "local" else None
+                    if phase is None:
+                        continue
+                    groupRoster = self.GroupRoster(key)
+                    groupRoster.LoadFromStandings(roster, enrichBlocking=False)
+                    groupRoster.title.setText(
+                        QApplication.translate("app", "{0}: its players, from start.gg").format(
+                            phase.name
+                        )
+                    )
             except Exception:
                 logger.error(traceback.format_exc())
                 self.tournament = BracketTournament()
 
         if not self.tournament.phases:
             self.NewPhase()
-        else:
-            if self.CurrentPhase() is None:
-                self.currentPhaseId = self.tournament.phases[0].id
-            self.RefreshPhaseList()
+        self.FixChannelPhases()
+        self.ShowChannel()

@@ -53,6 +53,13 @@ def TestChannelNames():
     assert len(NormalizeChannelName("x" * 100)) == MAX_CHANNEL_NAME
 
 
+def TestLimit():
+    assert NormalizeLimit(None) is None
+    assert NormalizeLimit("8") == 8
+    assert NormalizeLimit(1) is None
+    assert NormalizeLimit("x") is None
+
+
 def TestAll():
     focus = Resolve(BRACKET, {"mode": "all"})
     assert focus["sets"] == [] and focus["rounds"] == [] and focus["label"] == ""

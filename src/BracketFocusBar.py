@@ -1,7 +1,8 @@
 # The bracket widget's controls for the bracket focus layout
 # (layout/bracket_focus): zoom it to the sets and rounds selected in the
 # bracket view, a player's run, the set on a scoreboard, or a tour of the
-# rounds. They act on the focus channel picked here.
+# rounds. They act on the channel of the widget's current tab; the channels
+# are added, renamed and removed from the tabs.
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
@@ -35,33 +36,7 @@ class BracketFocusBar(QWidget):
             )
         )
 
-        # The channel the controls act on
-        self.channel = QComboBox()
-        self.channel.setMinimumWidth(90)
-        self.channel.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
-        self.channel.setToolTip(
-            QApplication.translate(
-                "app",
-                "Focus channel: each bracket focus layout shows one, picked with ?channel=<name> in its URL (main without it)",
-            )
-        )
-        self.channel.activated.connect(
-            lambda index: self.focus.SetCurrent(self.channel.itemData(index))
-        )
-        self.btChannels = QToolButton()
-        self.btChannels.setText("⋯")
-        self.btChannels.setToolTip(QApplication.translate("app", "Add, rename or remove channels"))
-        self.btChannels.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-        menu = QMenu(self.btChannels)
-        menu.addAction(QApplication.translate("app", "New channel..."), self.AddChannel)
-        self.actRename = menu.addAction(
-            QApplication.translate("app", "Rename channel..."), self.RenameChannel
-        )
-        self.actRemove = menu.addAction(
-            QApplication.translate("app", "Remove channel"), self.RemoveChannel
-        )
-        self.btChannels.setMenu(menu)
-        layout.addGroup(title, self.channel, self.btChannels)
+        layout.addWidget(title)
 
         self.btAll = QPushButton(QApplication.translate("app", "Whole bracket"))
         self.btAll.setToolTip(QApplication.translate("app", "Show the whole bracket"))
@@ -158,28 +133,16 @@ class BracketFocusBar(QWidget):
         self.focus.signals.changed.connect(
             lambda name: self.UpdateFocus() if name == self.focus.current else None
         )
-        self.focus.signals.channelsChanged.connect(self.UpdateChannels)
+        self.focus.signals.channelsChanged.connect(self.UpdateFocus)
 
         self.UpdateSelection()
-        self.UpdateChannels()
+        self.UpdateFocus()
 
     def Ch(self):
         """The channel the controls act on."""
         return self.focus.Current()
 
-    # Channels
-
-    def UpdateChannels(self):
-        self.channel.blockSignals(True)
-        self.channel.clear()
-        for name in self.focus.channels:
-            self.channel.addItem(name, name)
-        self.channel.setCurrentIndex(max(0, self.channel.findData(self.focus.current)))
-        self.channel.blockSignals(False)
-        main = self.focus.current == MAIN_CHANNEL
-        self.actRename.setEnabled(not main)
-        self.actRemove.setEnabled(not main)
-        self.UpdateFocus()
+    # Channels (from the widget's tabs)
 
     def AskName(self, title, text=""):
         name, ok = QInputDialog.getText(
@@ -193,30 +156,34 @@ class BracketFocusBar(QWidget):
         return NormalizeChannelName(name) if ok else None
 
     def AddChannel(self):
-        name = self.AskName(QApplication.translate("app", "New focus channel"))
+        name = self.AskName(QApplication.translate("app", "New channel"))
         if name and self.focus.AddChannel(name) is None:
             self.NameTaken(name)
 
     def RenameChannel(self):
         old = self.focus.current
-        name = self.AskName(QApplication.translate("app", "Rename focus channel"), old)
+        if old == MAIN_CHANNEL:
+            return
+        name = self.AskName(QApplication.translate("app", "Rename channel"), old)
         if name and name != old and self.focus.RenameChannel(old, name) is None:
             self.NameTaken(name)
 
     def NameTaken(self, name):
         QMessageBox.warning(
             self,
-            QApplication.translate("app", "Focus channel"),
+            QApplication.translate("app", "Channel"),
             QApplication.translate("app", 'There\'s already a channel named "{0}".').format(name),
         )
 
     def RemoveChannel(self):
         name = self.focus.current
+        if name == MAIN_CHANNEL:
+            return
         answer = QMessageBox.question(
             self,
-            QApplication.translate("app", "Remove focus channel"),
+            QApplication.translate("app", "Remove channel"),
             QApplication.translate(
-                "app", 'Remove the channel "{0}"? Layouts showing it will show the whole bracket.'
+                "app", 'Remove the channel "{0}"? Layouts showing it will show nothing.'
             ).format(name),
         )
         if answer == QMessageBox.StandardButton.Yes:

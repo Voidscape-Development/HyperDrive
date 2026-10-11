@@ -1,13 +1,53 @@
 // Helpers for layouts showing the bracket widget's export, bracket.bracket
 // (see docs/layout-data.md): its sides, columns and sets, the standings of
-// round robin and swiss pools, and the older "rounds" shape some layouts
-// were drawn around. Load after globals.js:
+// round robin and swiss pools, the older "rounds" shape some layouts
+// were drawn around, and the bracket a focus channel shows. Load after globals.js:
 //   <script src="../include/bracket.js"></script>
 var HDBracket = {
   POOL_TYPES: ["ROUND_ROBIN", "SWISS"],
 
   // Value standing for a bye in the rounds shape (any id past the players)
   BYE_ID: 99999,
+
+  // A focus channel's name as the app keeps it: no dots or extra spaces.
+  // Empty if there's none.
+  ChannelName(name) {
+    return String(name || "")
+      .replace(/\./g, " ")
+      .split(/\s+/)
+      .filter((w) => w)
+      .join(" ")
+      .slice(0, 40)
+      .trim();
+  },
+
+  // The data with a channel's bracket (bracket.channels.<channel>: the
+  // phase it shows, with its top N) in place of the main channel's:
+  // bracket.bracket, bracket.players, bracket.phase and bracket.phaseGroup.
+  // bracket.playersPath is where its players are in the state, for
+  // CharacterDisplay's source. A channel that isn't there shows nothing.
+  ForChannel(data, channel) {
+    if (!data || !data.bracket) return data;
+    const exported = _.get(data, ["bracket", "channels", channel]);
+    if (!exported) {
+      if (channel != "main" || data.bracket.channels) {
+        return { ...data, bracket: { ...data.bracket, bracket: {}, players: {}, playersPath: "bracket.players" } };
+      }
+      // Sent before channels existed
+      return { ...data, bracket: { ...data.bracket, playersPath: "bracket.players" } };
+    }
+    return {
+      ...data,
+      bracket: {
+        ...data.bracket,
+        bracket: exported.bracket || {},
+        players: _.get(data, exported.playersPath) || {},
+        phase: exported.phase || "",
+        phaseGroup: exported.phaseGroup || "",
+        playersPath: exported.playersPath,
+      },
+    };
+  },
 
   IsPool(bracket) {
     return HDBracket.POOL_TYPES.includes(_.get(bracket, "type"));

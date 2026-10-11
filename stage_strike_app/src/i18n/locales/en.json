@@ -128,5 +128,6 @@
     "bracket_focus_selected_n": "Focus selected ({{value}})",
     "bracket_focus_unselect": "Unselect",
     "bracket_focus_tbd": "TBD",
-    "bracket_focus_channel": "Channel"
+    "bracket_focus_channel": "Channel",
+    "bracket_focus_phase": "Phase"
 }

@@ -6,9 +6,38 @@ players' socials and custom data, and the layout theme in use.
 
 ## `bracket`
 
+The bracket widget's phases are a pool: phases built in it and start.gg
+phase groups loaded into it (each loaded group is a phase; loading it again
+reloads it). What goes on stream is set by channels, a tab each in the
+widget: each channel shows one phase of the pool, with its own "only show
+the top N", its own focus (`bracket.focus`) and, in the widget, its own
+view and selection. Several channels can show the same phase; they share
+its data. `main` is always there, and layouts without `?channel=` show it.
+
+### `bracket.channels`
+
+Each channel's bracket, by name: `{"main": {...}, "TV 1": {...}}`.
+
+| Key | |
+| - | - |
+| `bracket` | Its phase's bracket, with its top N: as `bracket.bracket` below |
+| `phase`, `phaseGroup` | The start.gg phase and phase group names, or the phase's name and `""` for a phase built in the widget |
+| `phaseId` | The phase's id in `bracket.phases` |
+| `playersPath` | Where its player list is in the state (`bracket.rosters.<key>`) |
+
+`HDBracket.ForChannel(data, channel)` in `layout/include/bracket.js` puts a
+channel's bracket in place of `bracket.bracket`, `bracket.players`,
+`bracket.phase` and `bracket.phaseGroup`, so a layout can show any channel.
+`layout/bracket_focus` and the `layout/bracket` pages take `?channel=<name>`.
+
+### `bracket.rosters`
+
+The player lists: `local` for the phases built in the widget, and one per
+start.gg phase group loaded, by its id. Each as `bracket.players`.
+
 ### `bracket.bracket`
 
-The bracket of the phase selected in the bracket widget.
+The main channel's bracket (also in `bracket.channels.main.bracket`).
 
 | Key | |
 | - | - |
@@ -78,13 +107,11 @@ row player's side) and a blank cell where a player meets themselves.
 
 ### `bracket.focus`
 
-What the bracket focus layout (`layout/bracket_focus`) zooms to, set from
-the bracket widget's "Layout focus" bar or the `/bracket-focus-app`
-web page. There's one per focus channel, by name: `{"main": {...}, "Losers
-cam": {...}}`. `main` is always there; more are added in the bracket widget,
-so layouts in different sources can show different things. Each layout shows
-one, picked with `?channel=<name>` in its URL (`main` without it). The
-bracket widget acts on the channel picked in the widget.
+What the bracket focus layout (`layout/bracket_focus`) zooms to, per channel
+(see `bracket` above), set from the bracket widget's "Layout focus" bar,
+the `/bracket-focus-app` web page or a Stream Deck: `{"main": {...}, "TV 1":
+{...}}`. Each layout shows one, picked with `?channel=<name>` in its URL
+(`main` without it).
 
 Each channel's focus:
 
@@ -94,19 +121,22 @@ Each channel's focus:
 | `sets` | Ids of the sets in focus, in the bracket's order. Empty: the whole bracket. |
 | `rounds` | Keys of the rounds in focus (`winners:2`...) |
 | `label` | What's in focus, e.g. the round's or the player's name |
-| `player` | `player`: the player's slot in `bracket.players.slot` |
+| `player` | `player`: the player's slot in the channel's player list |
 | `scoreboard` | `follow`: the scoreboard followed. Its set is the one with its start.gg set id, or between its two teams. |
 | `interval`, `step`, `steps` | `tour`: seconds per step, the step shown and how many there are |
+| `phase` | Id of the phase the channel shows, in `bracket.phases` |
 
 The same can be set from the web server, on the channel in `?channel=<name>`
 (`main` without it; 404 `NO_CHANNEL` for one that doesn't exist): `GET
 /bracket-focus` answers what's in focus, the channels and the rounds, sets
 and players there are to pick from, `POST /bracket-focus` takes `{mode, sets,
-rounds, player, scoreboard, interval}` or `{"move": 1}` (`-1`) for the next
-(previous) round. As links, e.g. for a Stream Deck: `/bracket-focus/all`,
+rounds, player, scoreboard, interval}`, `{"move": 1}` (`-1`) for the next
+(previous) round, or `{"phase": <id>}` for the phase it shows (the `GET`
+answer's `phases` lists them, `[{value, label, section}]`, section `local`
+or `startgg`; 404 `NO_PHASE` for one that isn't there). As links, e.g. for a Stream Deck: `/bracket-focus/all`,
 `/bracket-focus/next-round`, `/bracket-focus/previous-round`,
 `/bracket-focus/follow?scoreboard=<n>`, `/bracket-focus/tour?interval=<seconds>`
-and `/bracket-focus/player?id=<slot>`, with `&channel=<name>` for a channel
+`/bracket-focus/player?id=<slot>` and `/bracket-focus/phase?phase=<id>`, with `&channel=<name>` for a channel
 other than `main`.
 
 The layout draws the bracket once at full size and moves and scales it to
@@ -116,11 +146,14 @@ the whole bracket, `?max_zoom=<percent>` to change how big it draws a set.
 
 ### `bracket.phases`
 
-Every phase of the bracket widget: `[{id, name, type, current}]`.
+Every phase of the pool: `[{id, name, type, source, phaseGroupId, channels,
+current}]`. `source` is `local` (built in the widget) or `startgg`,
+`channels` the channels showing it, `current` whether the main channel does.
 
 ### `bracket.players`, `bracket.phase`, `bracket.phaseGroup`
 
-The player list (unchanged), and the start.gg phase and phase group names.
+The main channel's player list, and its phase and phase group names (as in
+`bracket.channels`).
 
 ## `stream_queue`
 

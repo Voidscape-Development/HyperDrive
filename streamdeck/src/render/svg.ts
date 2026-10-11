@@ -2,18 +2,14 @@
 
 export const FONT = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 
-/** HyperDrive's colors, from assets/icons/icon.svg */
-export const BRAND = {
-	spaceLight: "#4c2fd6",
-	spaceMid: "#22176e",
-	spaceDark: "#0b0b2b",
-	cyan: "#22d3ee",
-	violet: "#8b5cf6",
-	pink: "#ec4899",
-	text: "#ffffff",
-	muted: "#a5b4fc",
-	off: "#3f3f55",
-	danger: "#f43f5e",
+/** The keys' colors: flat black, with gold for text, icons and what's lit */
+export const THEME = {
+	background: "#0a0a0a",
+	gold: "#d4af37",
+	muted: "#8a7a4a",
+	offBackground: "#000000",
+	off: "#4a4436",
+	danger: "#e5484d",
 };
 
 export function escapeXml(text: string): string {
@@ -62,35 +58,7 @@ export function text(
 	const fit = fitText(value, opts.width, opts.max, opts.min);
 	return (
 		`<text x="${opts.x}" y="${opts.y}" font-family="${FONT}" font-size="${fit.size}" ` +
-		`font-weight="${opts.weight ?? 700}" fill="${opts.color ?? BRAND.text}" text-anchor="${opts.anchor ?? "middle"}" ` +
+		`font-weight="${opts.weight ?? 700}" fill="${opts.color ?? THEME.gold}" text-anchor="${opts.anchor ?? "middle"}" ` +
 		`dominant-baseline="central"${opts.opacity !== undefined ? ` opacity="${opts.opacity}"` : ""}>${escapeXml(fit.text)}</text>`
 	);
-}
-
-function channels(hex: string): [number, number, number] {
-	const h = hex.replace("#", "").slice(0, 6);
-	return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number];
-}
-
-/** Mixes a color with black (amount < 0) or white (amount > 0). */
-export function shade(hex: string, amount: number): string {
-	const target = amount < 0 ? 0 : 255;
-	const a = Math.abs(amount);
-	return (
-		"#" +
-		channels(hex)
-			.map((c) => Math.round(c + (target - c) * a))
-			.map((c) => c.toString(16).padStart(2, "0"))
-			.join("")
-	);
-}
-
-/** White or near-black, whichever reads better on the color. */
-export function readableOn(hex: string): string {
-	const [r, g, b] = channels(hex).map((c) => {
-		const s = c / 255;
-		return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-	});
-	const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-	return luminance > 0.4 ? "#111122" : "#ffffff";
 }

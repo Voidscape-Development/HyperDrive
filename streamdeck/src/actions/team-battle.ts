@@ -21,7 +21,7 @@ import { HyperDriveAction, type Item } from "./base.ts";
 /**
  * A team scores in the Crew/Team Battle: in Stock Pool the other team's
  * active player loses a stock, in First To the team's player wins a game.
- * Holding undoes a point. On a dial: turn to score or undo, push or touch
+ * A Remove key undoes a point. On a dial: turn to score or undo, push or touch
  * for the team's next player.
  */
 @action({ UUID: "com.voidscape.hyperdrive.battle-score" })
@@ -34,14 +34,9 @@ export class BattleScoreAction extends HyperDriveAction<BattleScoreSettings> {
 		return battleStrip(t, s, state);
 	}
 
-	protected override holds(s: BattleScoreSettings): boolean {
-		return s.hold !== "none";
-	}
-
-	protected async press(s: BattleScoreSettings, held: boolean, key: KeyAction<BattleScoreSettings>): Promise<void> {
-		const down = (s.direction === "down") !== held;
+	protected async press(s: BattleScoreSettings, _held: boolean, key: KeyAction<BattleScoreSettings>): Promise<void> {
 		const team = teamOf(s.team);
-		await this.run(key, down ? teamBattle.scoreDown(team) : teamBattle.scoreUp(team));
+		await this.run(key, s.direction === "down" ? teamBattle.scoreDown(team) : teamBattle.scoreUp(team));
 	}
 
 	protected override async rotate(s: BattleScoreSettings, ticks: number, dial: DialAction<BattleScoreSettings>): Promise<void> {

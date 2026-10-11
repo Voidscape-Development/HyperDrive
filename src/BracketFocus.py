@@ -1,11 +1,14 @@
-# What the bracket focus layouts (layout/bracket_focus) zoom to, as
-# bracket.focus: sets picked in the bracket widget, rounds, a player's run,
-# the set on a scoreboard, or a tour of every round. Driven from the bracket
-# widget and the /bracket-focus web page.
+# The bracket channels. Each channel shows a phase of the bracket widget's
+# pool (a phase built there or a start.gg phase group loaded into it), with
+# its own "only show the top N" and its own focus: what the bracket focus
+# layouts (layout/bracket_focus) zoom to, as bracket.focus.<channel>: sets
+# picked in the bracket widget, rounds, a player's run, the set on a
+# scoreboard, or a tour of every round. Channels showing the same phase
+# share its data. The bracket widget has a tab per channel; the
+# /bracket-focus web page and the Stream Deck drive them too.
 #
-# There's a focus per channel (bracket.focus.<channel>), so layouts in
-# different OBS sources can show different things: each picks its channel
-# with ?channel=<name>, "main" by default.
+# Layouts pick their channel with ?channel=<name>, "main" by default. The
+# bracket widget sends each channel's bracket as bracket.channels.<channel>.
 from qtpy.QtCore import *
 
 from .Helpers.BracketFocusHelper import *
@@ -19,16 +22,23 @@ class FocusChannelSignals(QObject):
 
 
 class FocusChannel(QObject):
-    """One channel's focus: its request, the tour's step and timers."""
+    """One channel: its phase, its top N, its focus request, the tour's
+    step and timers, and how the bracket widget's view was left on it."""
 
     # How often the set on the followed scoreboard is checked, in ms
     FOLLOW_INTERVAL = 1000
 
-    def __init__(self, name, request=None, parent=None):
+    def __init__(self, name, request=None, phase=None, limit=None, parent=None):
         super().__init__(parent)
         self.signals = FocusChannelSignals()
         self.name = name
         self.request = NormalizeRequest(request)
+        # Id of the phase shown (None: none yet)
+        self.phase = str(phase) if phase not in (None, "") else None
+        self.limit = NormalizeLimit(limit)
+        # The bracket widget's view of it: zoom, scroll and selection.
+        # Not saved.
+        self.viewState = None
         self.step = 0
         self.focus = None
 
@@ -40,7 +50,33 @@ class FocusChannel(QObject):
         self._StartTimers()
 
     def Bracket(self):
-        return StateManager.Get("bracket.bracket", {}) or {}
+        return StateManager.Get(f"bracket.channels.{self.name}.bracket", {}) or {}
+
+    def SetPhase(self, phase):
+        """Shows another phase of the pool, by id."""
+        phase = str(phase) if phase not in (None, "") else None
+        if phase == self.phase:
+            return
+        self.phase = phase
+        # Sets, rounds and players picked are the old bracket's
+        if self.request.get("mode") in (MODE_SETS, MODE_ROUNDS, MODE_PLAYER):
+            self.request = {"mode": MODE_ALL}
+        self.step = 0
+        self.viewState = None
+        self._StartTimers()
+        self._SettingsChanged()
+
+    def SetLimit(self, limit):
+        limit = NormalizeLimit(limit)
+        if limit != self.limit:
+            self.limit = limit
+            self._SettingsChanged()
+
+    def _SettingsChanged(self):
+        if BracketFocus.instance is not None:
+            BracketFocus.instance.SaveChannels()
+            BracketFocus.instance.signals.settingsChanged.emit(self.name)
+        self.Refresh(force=True)
 
     # Changing the focus
 
@@ -135,6 +171,7 @@ class FocusChannel(QObject):
         focus = Resolve(bracket, self.request, score, self.step)
         if focus.get("mode") == MODE_TOUR:
             self.step = focus.get("step", 0)
+        focus["phase"] = self.phase
         if force or focus != self.focus:
             self.focus = focus
             StateManager.Set(f"bracket.focus.{self.name}", focus)
@@ -146,10 +183,12 @@ class BracketFocusSignals(QObject):
     changed = Signal(str)
     # Channels were added, removed or renamed, or another one was picked
     channelsChanged = Signal()
+    # A channel's phase or top N changed (its name): its bracket is sent again
+    settingsChanged = Signal(str)
 
 
 class BracketFocus(QObject):
-    """The focus channels, and the one the bracket widget acts on."""
+    """The channels, and the one the bracket widget shows."""
 
     instance: "BracketFocus" = None
 
@@ -160,28 +199,33 @@ class BracketFocus(QObject):
 
         saved = SettingsManager.Get("bracket_focus_channels", {})
         saved = saved if isinstance(saved, dict) else {}
-        for name, request in saved.items():
+        for name, data in saved.items():
             name = NormalizeChannelName(name)
+            data = data if isinstance(data, dict) else {}
             if name and name not in self.channels:
-                self._Add(name, request)
+                self._Add(name, data, data.get("phase"), data.get("limit"))
         if MAIN_CHANNEL not in self.channels:
             self.channels = {MAIN_CHANNEL: self._Make(MAIN_CHANNEL), **self.channels}
         current = SettingsManager.Get("bracket_focus_current", MAIN_CHANNEL)
         self.current = current if current in self.channels else MAIN_CHANNEL
 
-    def _Make(self, name, request=None):
-        channel = FocusChannel(name, request, self)
+    def _Make(self, name, request=None, phase=None, limit=None):
+        channel = FocusChannel(name, request, phase, limit, self)
         channel.signals.changed.connect(lambda: self.signals.changed.emit(channel.name))
         return channel
 
-    def _Add(self, name, request=None):
-        channel = self._Make(name, request)
+    def _Add(self, name, request=None, phase=None, limit=None):
+        channel = self._Make(name, request, phase, limit)
         self.channels[name] = channel
         return channel
 
     def SaveChannels(self):
         SettingsManager.Set(
-            "bracket_focus_channels", {name: c.request for name, c in self.channels.items()}
+            "bracket_focus_channels",
+            {
+                name: dict(c.request, phase=c.phase, limit=c.limit)
+                for name, c in self.channels.items()
+            },
         )
         SettingsManager.Set("bracket_focus_current", self.current)
 
@@ -202,16 +246,18 @@ class BracketFocus(QObject):
             self.SaveChannels()
             self.signals.channelsChanged.emit()
 
-    def AddChannel(self, name):
-        """Adds a channel, showing the whole bracket. Returns its name, or
-        None if the name can't be used."""
+    def AddChannel(self, name, phase=None):
+        """Adds a channel showing the phase (the current channel's by
+        default) and picks it. Returns its name, or None if the name can't
+        be used."""
         name = NormalizeChannelName(name)
         if not name or name in self.channels:
             return None
-        self._Add(name).Refresh(force=True)
+        self._Add(name, phase=phase if phase is not None else self.Current().phase)
         self.current = name
         self.SaveChannels()
         self.signals.channelsChanged.emit()
+        self.signals.settingsChanged.emit(name)
         return name
 
     def RemoveChannel(self, name):
@@ -221,6 +267,7 @@ class BracketFocus(QObject):
         channel.Stop()
         channel.deleteLater()
         StateManager.Unset(f"bracket.focus.{name}")
+        StateManager.Unset(f"bracket.channels.{name}")
         if self.current == name:
             self.current = MAIN_CHANNEL
         self.SaveChannels()
@@ -228,22 +275,27 @@ class BracketFocus(QObject):
         return True
 
     def RenameChannel(self, name, new):
-        """Renames a channel, keeping its focus. The layouts showing it have
-        to be changed to the new name."""
+        """Renames a channel, keeping its phase and focus. The layouts
+        showing it have to be changed to the new name."""
         new = NormalizeChannelName(new)
         if name == MAIN_CHANNEL or name not in self.channels or not new or new in self.channels:
             return None
-        channel = self.channels.pop(name)
         StateManager.Unset(f"bracket.focus.{name}")
-        channel.name = new
+        StateManager.Unset(f"bracket.channels.{name}")
         # In the same place in the list
-        self.channels[new] = channel
+        self.channels = {(new if n == name else n): c for n, c in self.channels.items()}
+        channel = self.channels[new]
+        channel.name = new
         if self.current == name:
             self.current = new
-        channel.Refresh(force=True)
         self.SaveChannels()
         self.signals.channelsChanged.emit()
+        self.signals.settingsChanged.emit(new)
         return new
+
+    def ChannelsOn(self, phase):
+        """Names of the channels showing a phase."""
+        return [n for n, c in self.channels.items() if c.phase == str(phase)]
 
     def Refresh(self):
         for channel in list(self.channels.values()):
@@ -264,6 +316,16 @@ class BracketFocus(QObject):
         return {
             "channel": channel.name,
             "channels": list(self.channels.keys()),
+            "phase": channel.phase,
+            # The pool: [{value, label, section}], section "local" or "startgg"
+            "phases": [
+                {
+                    "value": p.get("id"),
+                    "label": p.get("name") or "",
+                    "section": p.get("source") or "local",
+                }
+                for p in StateManager.Get("bracket.phases", []) or []
+            ],
             "focus": channel.focus or Resolve(bracket, channel.request),
             "name": bracket.get("name", ""),
             "rounds": [
@@ -285,3 +347,8 @@ class BracketFocus(QObject):
             ],
             "players": sorted(players.values(), key=lambda p: (p.get("seed") or 9999, p["name"])),
         }
+
+    def HasPhase(self, phase):
+        return any(
+            str(p.get("id")) == str(phase) for p in StateManager.Get("bracket.phases", []) or []
+        )
