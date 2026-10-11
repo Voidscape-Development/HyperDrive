@@ -88,16 +88,12 @@ export class BracketFocusAction extends HyperDriveAction<FocusSettings> {
 		if (name === "bracketPhases") {
 			type PhaseOption = { value: string; label: string; section: string };
 			const info = await hyperdrive.fetchJson<{ phases?: PhaseOption[] }>(bracketFocus.state(s.channel).path);
-			const phases = info?.phases ?? [{ value: "", label: "", section: "selected" }];
+			const phases = info?.phases ?? [];
 			const section = (key: string, label: string): Item[] => {
 				const children = phases.filter((p) => p.section === key).map((p) => ({ label: p.label, value: p.value }));
 				return children.length ? [{ label, children }] : [];
 			};
-			const items: Item[] = [
-				{ label: t("selectedPhase"), value: "" },
-				...section("local", t("phasesLocal")),
-				...section("group", t("phasesStartgg")),
-			];
+			const items: Item[] = [...section("local", t("phasesLocal")), ...section("startgg", t("phasesStartgg"))];
 			if (s.phase && !phases.some((p) => p.value === s.phase)) {
 				items.push({ label: s.phase, value: s.phase });
 			}

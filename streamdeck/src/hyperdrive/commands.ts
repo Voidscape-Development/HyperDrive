@@ -81,7 +81,6 @@ export const bracketFocus = {
 		if (mode === "follow") params.set("scoreboard", String(options.scoreboard ?? 1));
 		if (mode === "tour" && options.interval) params.set("interval", String(options.interval));
 		if (mode === "player" && options.player) params.set("id", options.player);
-		// "" is the phase selected in the bracket widget
 		if (mode === "phase") params.set("phase", options.phase ?? "");
 		if (options.channel && options.channel !== "main") params.set("channel", options.channel);
 		const query = params.toString();

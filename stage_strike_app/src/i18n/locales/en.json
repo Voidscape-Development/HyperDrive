@@ -129,6 +129,5 @@
     "bracket_focus_unselect": "Unselect",
     "bracket_focus_tbd": "TBD",
     "bracket_focus_channel": "Channel",
-    "bracket_focus_phase": "Phase",
-    "bracket_focus_phase_selected": "Selected phase"
+    "bracket_focus_phase": "Phase"
 }

@@ -1106,8 +1106,8 @@ class WebServer(QThread):
     # The same as links, e.g. for a Stream Deck: /bracket-focus/all,
     # /bracket-focus/next-round, /bracket-focus/previous-round,
     # /bracket-focus/follow?scoreboard=<n>, /bracket-focus/tour?interval=<s>
-    # /bracket-focus/player?id=<player slot> and /bracket-focus/phase?phase=<key>
-    # (local:<id>, group:<id> or empty for the selected one), each with
+    # /bracket-focus/player?id=<player slot> and /bracket-focus/phase?phase=<id>
+    # (a phase of the bracket widget the channel shows), each with
     # &channel=<name>
     @api.get("/bracket-focus/{action}")
     async def bracket_focus_action(action: str, request: Request):

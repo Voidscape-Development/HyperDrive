@@ -671,6 +671,16 @@ class BracketView(QGraphicsView):
         if key not in self.selectedRounds:
             self.signals.unselected.emit([], [key])
 
+    def SetSelection(self, sets, rounds):
+        """Selects these sets and rounds (e.g. a channel's, coming back to it)."""
+        self.selected = set(sets or []) & set(self.matchItems.keys())
+        self.selectedRounds = set(rounds or []) & set(self.headerItems.keys())
+        for item in self.matchItems.values():
+            item.update()
+        for header in self.headerItems.values():
+            header.UpdateStyle()
+        self.signals.selectionChanged.emit()
+
     def ClearSelection(self):
         self.selected = set()
         self.selectedRounds = set()

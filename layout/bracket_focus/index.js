@@ -1,13 +1,12 @@
-// The bracket of its focus channel's phase (bracket.bracket, unless the
-// channel is pinned to another phase), drawn once at full size and zoomed
-// to what's in focus on the channel (bracket.focus.<channel>, see
-// docs/layout-data.md):
+// Its channel's bracket (bracket.channels.<channel>), drawn once at full
+// size and zoomed to what's in focus on the channel (bracket.focus.<channel>,
+// see docs/layout-data.md):
 // sets and rounds picked in the bracket widget, a player's run, the set on
 // a scoreboard or a tour of the rounds. The sets in focus are outlined, the
 // rest dimmed. Nothing in focus: the whole bracket.
 // Options, in the .html or the URL (?channel=Losers%20cam&max_zoom=150):
-//   channel       the focus channel shown (default: main), as named in the
-//                 bracket widget
+//   channel       the channel shown (default: main), as named in the
+//                 bracket widget's tabs
 //   NO_TITLE      no title bar, the bracket takes the whole page
 //   ignore_focus  always the whole bracket
 //   max_zoom      the most a set is enlarged, in % (default: the layout

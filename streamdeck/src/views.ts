@@ -298,7 +298,7 @@ export function focusKey(t: Translate, s: FocusSettings, state: State): Look {
 	} else if (focus && mode === "player") {
 		active = focus.mode === "player" && String(focus.player) === String(s.player);
 	} else if (focus && mode === "phase") {
-		active = (focus.phase ?? "") === (s.phase ?? "");
+		active = !!s.phase && focus.phase === s.phase;
 	}
 	return {
 		icon,
@@ -325,7 +325,7 @@ export function focusStrip(t: Translate, s: FocusSettings, state: State): StripL
 }
 
 export function phaseLabel(t: Translate, phase: string, state: State): string {
-	return phase ? (hd.bracketPhaseName(state, phase) ?? phase) : t("selectedPhase");
+	return phase ? (hd.bracketPhaseName(state, phase) ?? phase) : t("pickPhase");
 }
 
 function channelLabel(t: Translate, channel: string): string {

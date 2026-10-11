@@ -76,14 +76,16 @@ describe("views", () => {
 	it("names the phase a channel shows, lit while it's shown", () => {
 		const pinned: State = {
 			bracket: {
-				phases: [{ id: 2, name: "Top 8" }],
-				groups: { "77": { phase: "Pools", phaseGroup: "A1" } },
-				focus: { main: { mode: "all", phase: "group:77" } },
+				phases: [
+					{ id: "phase1", name: "Pools - A1" },
+					{ id: "phase2", name: "Top 8" },
+				],
+				focus: { main: { mode: "all", phase: "phase1" } },
 			},
 		};
-		expect(views.focusKey(t, { mode: "phase", phase: "group:77" }, pinned)).toMatchObject({ bottom: "Pools - A1", state: "on" });
-		expect(views.focusKey(t, { mode: "phase", phase: "local:2" }, pinned)).toMatchObject({ bottom: "Top 8", state: undefined });
-		expect(views.focusKey(t, { mode: "phase" }, pinned).bottom).toBe("Selected phase");
+		expect(views.focusKey(t, { mode: "phase", phase: "phase1" }, pinned)).toMatchObject({ bottom: "Pools - A1", state: "on" });
+		expect(views.focusKey(t, { mode: "phase", phase: "phase2" }, pinned)).toMatchObject({ bottom: "Top 8", state: undefined });
+		expect(views.focusKey(t, { mode: "phase" }, pinned)).toMatchObject({ bottom: "Pick a phase", state: undefined });
 	});
 
 	it("has every translation it uses", () => {

@@ -5,8 +5,8 @@
 // Options (set in the .html): ALWAYS_EXPAND shows every set from the start,
 // WINNERS_ONLY / LOSERS_ONLY one side, STANDINGS_ONLY just the standings,
 // GRID_ONLY a round robin / swiss pool as a grid of who played who.
-// ?channel=<name> in the URL shows the phase that focus channel shows (it
-// can be pinned to another phase or a start.gg phase group).
+// ?channel=<name> in the URL shows that channel of the bracket widget (the
+// main one without it).
 LoadEverything().then(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
@@ -22,7 +22,7 @@ LoadEverything().then(() => {
   // Set id: number used in class names (ids can be anything)
   var setIndex = {};
   var lastSignature = null;
-  // Without ?channel=, the phase selected in the bracket widget
+  // Without ?channel=, the main channel (bracket.bracket)
   const CHANNEL = HDBracket.ChannelName(window.channel);
 
   function AnimateLine(element) {

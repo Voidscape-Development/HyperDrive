@@ -46,7 +46,7 @@ SDPIComponents.i18n.locales = {
 		rps: "Won rock-paper-scissors",
 		win: "Won the game",
 		winner: "Winner",
-		channel: "Focus channel",
+		channel: "Channel",
 		focusAll: "Whole bracket",
 		nextRound: "Next round",
 		previousRound: "Previous round",

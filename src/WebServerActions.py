@@ -774,12 +774,17 @@ class WebServerActions(QThread):
             TournamentDataManager.instance.signals.tournament_phasegroup_updated.emit(data)
             return "OK"
 
+        # The main channel's phase, when it's one of start.gg's
+        selected_phase = None
         for phase in TournamentDataManager.instance.provider.GetTournamentPhases():
             if phase.get("name") == phase_name:
                 selected_phase = phase
                 break
+        if selected_phase is None:
+            return "NO_PHASE_GROUP"
 
-        groups = selected_phase.get("groups")
+        groups = selected_phase.get("groups") or []
+        selected_group = None
         if len(groups) == 1:
             selected_group = groups[
                 0
@@ -789,22 +794,27 @@ class WebServerActions(QThread):
                 if group.get("name") == group_name:
                     selected_group = group
                     break
+        if selected_group is None:
+            return "NO_PHASE_GROUP"
 
-        data = self._fetch_phase_group(selected_group)
+        data = self._fetch_phase_group(selected_group, selected_phase)
         TournamentDataManager.instance.signals.tournament_phasegroup_updated.emit(data)
         return "OK"
 
-    def _fetch_phase_group(self, group):
+    def _fetch_phase_group(self, group, phase=None):
         phase_group_id = group.get("id")
         data = TournamentDataManager.instance.provider.GetTournamentPhaseGroup(phase_group_id)
         if data:
-            # So the bracket widget knows which phase group (and bracket
-            # type, e.g. round robin) it's loading
+            # So the bracket widget knows which phase group (its names and
+            # bracket type, e.g. round robin) it's loading
             data["phaseGroupId"] = phase_group_id
             if BracketWidget.instance is not None:
-                BracketWidget.instance.phaseGroupTypes[str(phase_group_id)] = group.get(
-                    "bracketType"
-                )
+                groups = (phase or {}).get("groups") or []
+                BracketWidget.instance.phaseGroupInfo[str(phase_group_id)] = {
+                    "phase": (phase or {}).get("name") or "",
+                    "group": (group.get("name") or "") if len(groups) > 1 else "",
+                    "bracketType": group.get("bracketType"),
+                }
         return data
 
     @gui_thread_sync
@@ -893,8 +903,8 @@ class WebServerActions(QThread):
     @gui_thread_sync
     def bracket_focus_set(self, request, channel=None):
         # A focus request, {"move": 1} for the next round (-1: previous) or
-        # {"phase": "local:<id>" | "group:<id>" | ""} for the phase it shows,
-        # for a channel ("channel" in the request, "main" by default)
+        # {"phase": <id>} for the phase of the bracket widget it shows, for
+        # a channel ("channel" in the request, "main" by default)
         from .BracketFocus import BracketFocus
 
         focus = BracketFocus.instance
@@ -906,6 +916,8 @@ class WebServerActions(QThread):
         if target is None:
             return "NO_CHANNEL", 404
         if "phase" in request:
+            if not focus.HasPhase(request.get("phase")):
+                return "NO_PHASE", 404
             target.SetPhase(request.get("phase"))
         elif "move" in request:
             try:

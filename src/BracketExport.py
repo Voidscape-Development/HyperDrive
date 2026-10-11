@@ -1,13 +1,20 @@
-# A bracket as the layouts get it (bracket.bracket, see docs/layout-data.md).
-# Used for the phase selected in the bracket widget, and for the phases and
-# start.gg phase groups focus channels are pinned to.
+# A bracket as the layouts get it (bracket.channels.<channel>.bracket, and
+# bracket.bracket for the main channel, see docs/layout-data.md).
 from .BracketModel import *
 from .BracketView import SourceText
 from .StateManager import StateManager
 
 
-def TeamName(playerId, players="bracket.players"):
-    """A player slot's name, from the player list kept at players."""
+def RosterPath(key="local"):
+    """Where a player list is in the state: "local" for the phases built in
+    the bracket widget, a start.gg phase group's id for its entrants."""
+    return f"bracket.rosters.{key}"
+
+
+def TeamName(playerId, players=None):
+    """A player slot's name, from the player list kept at players (the
+    phases built in the bracket widget's by default)."""
+    players = players or RosterPath()
     if playerId is None or playerId <= 0:
         return ""
     team = StateManager.Get(f"{players}.slot.{playerId}", {}) or {}
@@ -32,9 +39,11 @@ def PlayerExport(bracket, m, slot, teamName):
     }
 
 
-def ExportBracket(bracket, name, limit=None, players="bracket.players"):
+def ExportBracket(bracket, name, limit=None, players=None):
     """The bracket's export. limit: only its top N (elimination); players:
     where its player list is in the state."""
+
+    players = players or RosterPath()
 
     def teamName(p):
         return TeamName(p, players)

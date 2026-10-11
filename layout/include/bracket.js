@@ -21,27 +21,30 @@ var HDBracket = {
       .trim();
   },
 
-  // The data with the bracket of the phase a focus channel shows (it can be
-  // pinned to another phase or a start.gg phase group) in place of the
-  // bracket widget's: bracket.bracket, bracket.players, bracket.phase and
-  // bracket.phaseGroup. bracket.playersPath is where its players are in
-  // the state, for CharacterDisplay's source.
+  // The data with a channel's bracket (bracket.channels.<channel>: the
+  // phase it shows, with its top N) in place of the main channel's:
+  // bracket.bracket, bracket.players, bracket.phase and bracket.phaseGroup.
+  // bracket.playersPath is where its players are in the state, for
+  // CharacterDisplay's source. A channel that isn't there shows nothing.
   ForChannel(data, channel) {
     if (!data || !data.bracket) return data;
-    const source = _.get(data, ["bracket", "focus", channel, "source"]);
-    if (!source || source.bracket == "bracket.bracket") {
+    const exported = _.get(data, ["bracket", "channels", channel]);
+    if (!exported) {
+      if (channel != "main" || data.bracket.channels) {
+        return { ...data, bracket: { ...data.bracket, bracket: {}, players: {}, playersPath: "bracket.players" } };
+      }
+      // Sent before channels existed
       return { ...data, bracket: { ...data.bracket, playersPath: "bracket.players" } };
     }
-    const names = _.get(data, source.names) || {};
     return {
       ...data,
       bracket: {
         ...data.bracket,
-        bracket: _.get(data, source.bracket) || {},
-        players: _.get(data, source.players) || {},
-        phase: names.phase || "",
-        phaseGroup: names.phaseGroup || "",
-        playersPath: source.players,
+        bracket: exported.bracket || {},
+        players: _.get(data, exported.playersPath) || {},
+        phase: exported.phase || "",
+        phaseGroup: exported.phaseGroup || "",
+        playersPath: exported.playersPath,
       },
     };
   },

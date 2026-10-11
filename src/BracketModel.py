@@ -980,6 +980,8 @@ class Bracket:
             "totalRounds": self.totalRounds,
             "byes": self.byes,
             "nextId": self._nextId,
+            # Provider brackets: slot of each entrant, to apply updates
+            "entrantIndex": getattr(self, "entrantIndex", {}),
         }
 
     @classmethod
@@ -994,6 +996,7 @@ class Bracket:
         bracket.totalRounds = int(data.get("totalRounds") or 0)
         bracket.byes = dict(data.get("byes") or {})
         bracket._nextId = int(data.get("nextId") or len(bracket.matches) + 1)
+        bracket.entrantIndex = dict(data.get("entrantIndex") or {})
         bracket._Build()
         return bracket
 
@@ -1476,8 +1479,10 @@ class BracketPhase:
         self.progressionsOut = 0
         self.swissRounds = 0
         self.bracket: Bracket = None
-        # The provider's phase group this was loaded from
+        # The provider's phase group this was loaded from, and its names
+        # and bracket type there: {"phase", "group", "bracketType"}
         self.providerPhaseGroupId = None
+        self.providerInfo = {}
 
     def WinnersSeedCount(self):
         return len(self.seedSources) - self.losersSeedCount
@@ -1511,6 +1516,7 @@ class BracketPhase:
             "swissRounds": self.swissRounds,
             "bracket": self.bracket.ToDict() if self.bracket else None,
             "providerPhaseGroupId": self.providerPhaseGroupId,
+            "providerInfo": self.providerInfo,
         }
 
     @classmethod
@@ -1525,6 +1531,7 @@ class BracketPhase:
         phase.progressionsOut = int(data.get("progressionsOut") or 0)
         phase.swissRounds = int(data.get("swissRounds") or 0)
         phase.providerPhaseGroupId = data.get("providerPhaseGroupId")
+        phase.providerInfo = dict(data.get("providerInfo") or {})
         if data.get("bracket"):
             phase.bracket = Bracket.FromDict(data["bracket"])
         return phase

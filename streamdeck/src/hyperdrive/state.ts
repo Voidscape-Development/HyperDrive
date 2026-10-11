@@ -250,25 +250,17 @@ export type BracketFocus = {
 	scoreboard?: number;
 	step?: number;
 	steps?: number;
-	/** The phase shown: "" (selected in the bracket widget), local:<id> or group:<id> */
-	phase?: string;
+	/** Id of the phase shown, one of bracket.phases */
+	phase?: string | null;
 };
 
 export function bracketFocus(state: State, channel: string): BracketFocus | undefined {
 	return get<BracketFocus>(state, `bracket.focus.${channel}`);
 }
 
-/** A phase's name: one of the bracket widget's (local:<id>) or a start.gg phase group (group:<id>) */
+/** A phase of the bracket widget's name, by id */
 export function bracketPhaseName(state: State, phase: string): string | undefined {
-	const [kind, id] = phase.split(":");
-	if (kind === "local") {
-		return get<{ id: number; name: string }[]>(state, "bracket.phases")?.find((p) => String(p.id) === id)?.name;
-	}
-	if (kind === "group" && id) {
-		const group = get<{ phase?: string; phaseGroup?: string }>(state, `bracket.groups.${id}`);
-		return [group?.phase, group?.phaseGroup].filter((n) => n).join(" - ") || undefined;
-	}
-	return undefined;
+	return get<{ id: string; name: string }[]>(state, "bracket.phases")?.find((p) => String(p.id) === phase)?.name;
 }
 
 export function bracketChannels(state: State): string[] {
