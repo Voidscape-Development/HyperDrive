@@ -4,7 +4,7 @@
 	"Category": "HyperDrive",
 	"com.voidscape.hyperdrive.score": {
 		"Name": "Team Score",
-		"Tooltip": "Adds a point to a team (hold to take one). Shows the team's score and color."
+		"Tooltip": "Adds a point to a team, or takes one. Shows the team's score and color."
 	},
 	"com.voidscape.hyperdrive.swap-teams": {
 		"Name": "Swap Teams",
@@ -28,7 +28,7 @@
 	},
 	"com.voidscape.hyperdrive.battle-score": {
 		"Name": "Team Battle Score",
-		"Tooltip": "A team scores in the Crew/Team Battle (hold to undo). Shows the active player."
+		"Tooltip": "A team scores in the Crew/Team Battle, or undoes a point. Shows the active player."
 	},
 	"com.voidscape.hyperdrive.battle-player": {
 		"Name": "Team Battle Player",

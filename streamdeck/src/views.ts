@@ -15,13 +15,14 @@ export type Translate = (key: string, values?: Record<string, string | number>) 
 // ---------------------------------------------------------------------------
 // Settings, as saved by the property inspectors (selects save strings)
 
-export type ScoreSettings = { scoreboard?: string; team?: string; direction?: "up" | "down"; hold?: "opposite" | "none" };
+/** direction is the key's type: Add ("up") or Remove ("down") */
+export type ScoreSettings = { scoreboard?: string; team?: string; direction?: "up" | "down" };
 export type SwapSettings = { scoreboard?: string };
 export type ResetSettings = { scoreboard?: string; kind?: ResetKind; requireHold?: boolean };
 export type TeamColorSettings = { scoreboard?: string; team?: string; color?: string };
 export type LoadSetSettings = { scoreboard?: string; source?: "queue" | "stream" | "selector" };
 export type DisplaySettings = { target?: string; action?: "toggle" | "show" | "hide" };
-export type BattleScoreSettings = { team?: string; direction?: "up" | "down"; hold?: "opposite" | "none" };
+export type BattleScoreSettings = { team?: string; direction?: "up" | "down" };
 export type BattlePlayerSettings = { team?: string; mode?: "next" | "player"; player?: string };
 export type BattleResetSettings = { kind?: "stocks" | "all"; requireHold?: boolean };
 export type StrikeSettings = { scoreboard?: string; command?: StrikeCommand; team?: string; requireHold?: boolean };
@@ -102,8 +103,7 @@ export function teamColorKey(t: Translate, s: TeamColorSettings, state: State): 
 	const color = validColor(s.color) ?? "#e54c4c";
 	const current = hd.scoreboardTeam(state, sb, team)?.color;
 	return {
-		color,
-		icon: "color",
+		swatch: color,
 		bottom: t("team", { team }),
 		state: current?.toLowerCase() === color.toLowerCase() ? "on" : undefined,
 	};

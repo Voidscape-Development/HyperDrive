@@ -105,13 +105,13 @@ action HyperDrive refuses (e.g. nothing to undo).
 
 | Action | Key | Dial (Stream Deck +) |
 | - | - | - |
-| Team Score | Adds a point (or takes one), holding does the opposite. Shows the team, its score and color | Turn: change the score. Push: swap the teams. Touch: add a point |
+| Team Score | Add or Remove type: adds a point, or takes one. Shows the team, its score and color | Turn: change the score. Push: swap the teams. Touch: add (or take) a point |
 | Swap Teams | Swaps the scoreboard's teams | |
 | Reset Scoreboard | The scores, the match, the players or everything. Held, so it isn't pressed by mistake | |
 | Team Color | Sets a team's color, lit while the team has it | |
 | Load Set | The next set of the stream queue (shown on the key), the set on stream, or the set selector | |
 | Display Controls | Toggles, shows or hides a layout folder, a group or everything. Lit while shown | Turn: pick the layout. Push or touch: show/hide it |
-| Team Battle Score | A team scores (Stock Pool: the other team loses a stock), holding undoes it. Shows the active player | Turn: score or undo. Push or touch: next player |
+| Team Battle Score | Add or Remove type: a team scores (Stock Pool: the other team loses a stock), or undoes a point. Shows the active player | Turn: score or undo. Push or touch: next player |
 | Team Battle Player | Makes the next player, or a given one, active | |
 | Team Battle Reset | Every player's stocks, or the whole battle. Held | |
 | Stage Strike | Undo, redo, restart (held), or the winner of rock-paper-scissors or of the game | |

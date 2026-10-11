@@ -27,7 +27,7 @@ const actions: Record<string, { icon: IconName; key: Look }> = {
 	score: { icon: "plus", key: { color: "#e54c4c", icon: "plus", top: "Team 1", main: "0" } },
 	"swap-teams": { icon: "swap", key: { icon: "swap", bottom: "Swap teams" } },
 	reset: { icon: "reset", key: { icon: "reset", top: "Hold to reset", bottom: "Reset scores" } },
-	"team-color": { icon: "color", key: { color: "#e54c4c", icon: "color", bottom: "Team 1" } },
+	"team-color": { icon: "color", key: { swatch: "#e54c4c", bottom: "Team 1" } },
 	"load-set": { icon: "queue", key: { icon: "queue", bottom: "Load next" } },
 	display: { icon: "eye", key: { icon: "eye", bottom: "Display" } },
 	"battle-score": { icon: "stocks", key: { icon: "plus", top: "Team 1", main: "—" } },

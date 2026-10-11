@@ -46,6 +46,7 @@ describe("views", () => {
 	it("lights a team color key while the team has it", () => {
 		expect(views.teamColorKey(t, { team: "1", color: "#E54C4C" }, state).state).toBe("on");
 		expect(views.teamColorKey(t, { team: "1", color: "#000000" }, state).state).toBeUndefined();
+		expect(views.teamColorKey(t, { team: "1", color: "#2e89ff" }, state).swatch).toBe("#2e89ff");
 	});
 
 	it("shows whether a layout is shown", () => {
@@ -105,5 +106,13 @@ describe("rendering", () => {
 	it("marks offline images", () => {
 		expect(renderKey({ main: "1", offline: true })).toContain('opacity="0.35"');
 		expect(renderStrip({ main: "1" })).toMatch(/^<svg[^>]+width="200" height="100"/);
+	});
+
+	it("draws black and gold keys, with the team color as a bar", () => {
+		const svg = renderKey({ color: "#e54c4c", main: "2" });
+		expect(svg).toContain('fill="#0a0a0a"');
+		expect(svg).toContain('fill="#d4af37"');
+		expect(svg).toContain('<rect x="0" y="138" width="144" height="6" fill="#e54c4c"/>');
+		expect(renderKey({ swatch: "#2e89ff", bottom: "Team 2" })).toContain('<circle cx="72" cy="60" r="24" fill="#2e89ff"');
 	});
 });
