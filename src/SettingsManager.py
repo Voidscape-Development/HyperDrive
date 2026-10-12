@@ -8,6 +8,7 @@ from .Helpers.DictHelper import *
 class SettingsManager:
     settings = {}
     load_error: str | None = None
+    first_launch = False
 
     # Settings of removed features, dropped from settings.json on load.
     # bsky_account held a Bluesky app password in plain text.
@@ -60,7 +61,10 @@ class SettingsManager:
         return deep_get(SettingsManager.settings, key, default)
 
 
-if not os.path.isfile("./user_data/settings.json"):
+# No settings yet: HyperDrive is running for the first time (the guide opens
+# on its Getting Started page)
+SettingsManager.first_launch = not os.path.isfile("./user_data/settings.json")
+if SettingsManager.first_launch:
     SettingsManager.SaveSettings()
 
 SettingsManager.LoadSettings()

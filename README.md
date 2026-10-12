@@ -26,6 +26,8 @@ HTML overlays that you add to OBS or any other streaming software as browser sou
   (see [`docs/layout-data.md`](docs/layout-data.md#custom-player-data-custom)).
 - **Web pages for your phone or a second screen:** a remote scoreboard, stage strike and
   character select, served by HyperDrive itself.
+- **A built-in guide** (Help > Guide) explaining every part of HyperDrive, with search and
+  links that open the window being described. Its pages are in [`docs/wiki`](docs/wiki).
 
 To show a layout in OBS, add a Browser source with *Local file* checked, pick the
 layout's `.html` file in [`layout/`](layout) and set the size to 1920x1080.
@@ -56,6 +58,7 @@ these from any device on the same network at `http://<HyperDrive's address>:5500
 | `/character-select` | Character select for the players |
 | `/bracket-focus-app` | What the bracket focus layout zooms to: sets, rounds, a player's run, the set on stream or a tour of the rounds |
 | `/admin` | Player database editor |
+| `/wiki` | The guide (Help > Guide in the app) |
 | `/api/docs` | The web server's endpoints |
 
 ## Event Stats
@@ -214,6 +217,10 @@ To work on layouts:
 
 - [`layout/README.md`](layout/README.md) explains how to test layouts in a browser.
 - [`docs/layout-data.md`](docs/layout-data.md) describes the data HyperDrive sends to them.
+
+The in-app guide's pages are Markdown files in [`docs/wiki`](docs/wiki), listed in
+`contents.json`; its *Development* page explains how to edit them, and
+`test/test_wiki.py` checks their links.
 
 GitHub Actions does the rest:
 

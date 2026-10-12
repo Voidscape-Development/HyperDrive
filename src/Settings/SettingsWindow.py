@@ -22,6 +22,8 @@ from .TournamentTermsSettings import TournamentTermsSettings
 class SettingsWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        # key -> the page's item in the list, see Open()
+        self.pageKeys = {}
 
     def UiMounted(self):
         self.setWindowTitle(QApplication.translate("Settings", "Settings"))
@@ -155,10 +157,11 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "General"),
             SettingsWidget("general", generalSettings),
+            "general",
         )
 
         self.add_setting_widget(
-            QApplication.translate("settings", "Appearance"), AppearanceSettings()
+            QApplication.translate("settings", "Appearance"), AppearanceSettings(), "appearance"
         )
 
         # Scoreboard settings. Stored under general, where they were before
@@ -269,6 +272,7 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "Scoreboard"),
             SettingsWidget("general", scoreboardSettings),
+            "scoreboard",
         )
 
         # State Manager settings, also stored under general
@@ -297,6 +301,7 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "State Manager"),
             SettingsWidget("general", stateManagerSettings),
+            "state-manager",
         )
 
         # Add Display Options settings
@@ -386,6 +391,7 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "Default Display Options"),
             SettingsWidget("display_options", displaySettings),
+            "display-options",
         )
 
         # The rows above every character in the character select grid
@@ -412,13 +418,18 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "Character Select"),
             SettingsWidget("character_picker", characterSelectSettings),
+            "character-select",
         )
 
         self.add_setting_widget(
-            QApplication.translate("settings", "Match & Phase Names"), TournamentTermsSettings()
+            QApplication.translate("settings", "Match & Phase Names"),
+            TournamentTermsSettings(),
+            "match-names",
         )
 
-        self.add_setting_widget(QApplication.translate("settings", "Pronouns"), PronounSettings())
+        self.add_setting_widget(
+            QApplication.translate("settings", "Pronouns"), PronounSettings(), "pronouns"
+        )
 
         # Add API Key settings
         APIKeySettings = []
@@ -481,6 +492,7 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "API Keys"),
             SettingsWidget("api_keys", APIKeySettings),
+            "api-keys",
         )
 
         # Reporting sets to start.gg from the scoreboard's Games window
@@ -523,6 +535,7 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "start.gg Reporting"),
             SettingsWidget("startgg_reporting", reportingSettings),
+            "startgg-reporting",
         )
 
         # Twitch predictions for the set on stream, see src/TwitchPredictions.py
@@ -592,11 +605,22 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "Twitch Predictions"),
             SettingsWidget("twitch_predictions", predictionSettings),
+            "twitch-predictions",
         )
 
         self.resize(1000, 500)
         QApplication.processEvents()
         splitter.setSizes([200, self.width() - 200])
+
+    def Open(self, key=None):
+        """Shows the window, on the page with that key if given (e.g. "api-keys",
+        used by the guide's links)"""
+        item = self.pageKeys.get(key)
+        if item is not None:
+            self.selection_list.setCurrentItem(item)
+        self.show()
+        self.raise_()
+        self.activateWindow()
 
     def on_selection_changed(self, index):
         # Get the selected item and its associated widget
@@ -606,7 +630,7 @@ class SettingsWindow(QDialog):
         # Set the current widget in the stack
         self.settings_stack.setCurrentWidget(widget)
 
-    def add_setting_widget(self, name, widget):
+    def add_setting_widget(self, name, widget, key=None):
         # Create a scroll area for the setting widget
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -616,6 +640,8 @@ class SettingsWindow(QDialog):
         item = QListWidgetItem(name)
         item.setData(Qt.UserRole, scroll_area)
         self.selection_list.addItem(item)
+        if key:
+            self.pageKeys[key] = item
 
         # Add the setting widget to the stack
         self.settings_stack.addWidget(scroll_area)

@@ -29,6 +29,7 @@ from .ScoreboardManager import ScoreboardManager
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .WebServerActions import ScoreboardNotAvailable, WebServerActions
+from .Wiki import HOME_PAGE, WebPage, WebSearchPage
 
 log = logging.getLogger("socketio.server")
 log.setLevel(logging.ERROR)
@@ -1266,6 +1267,25 @@ class WebServer(QThread):
             os.path.join(os.path.abspath("."), "stage_strike_app/build/index.html"),
             headers={"Cache-Control": "no-cache"},
         )
+
+    # The in-app guide (docs/wiki), for a phone or a second screen
+    @api.get("/wiki", response_class=HTMLResponse)
+    async def wiki_home():
+        content = WebPage(HOME_PAGE)
+        if content is None:
+            return HTMLResponse("The guide wasn't found", status_code=404)
+        return HTMLResponse(content)
+
+    @api.get("/wiki/search", response_class=HTMLResponse)
+    async def wiki_search(q: str = ""):
+        return HTMLResponse(WebSearchPage(q))
+
+    @api.get("/wiki/{page}", response_class=HTMLResponse)
+    async def wiki_page(page: str):
+        content = WebPage(page)
+        if content is None:
+            return HTMLResponse(WebSearchPage(page.replace("-", " ")), status_code=404)
+        return HTMLResponse(content)
 
     # Registered last by __init__, as it matches every path
     async def file_request(filename: str):
