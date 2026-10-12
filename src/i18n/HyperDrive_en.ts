@@ -4,7 +4,7 @@
 <context>
     <name>About</name>
     <message>
-        <location filename="../HyperDrive.py" line="803"/>
+        <location filename="../HyperDrive.py" line="816"/>
         <location filename="../layout/About.ui" line="17"/>
         <source>About</source>
         <translation type="unfinished"></translation>
@@ -444,7 +444,7 @@
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../HyperDrive.py" line="798"/>
+        <location filename="../HyperDrive.py" line="811"/>
         <location filename="../Settings/SettingsWindow.py" line="27"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
@@ -490,7 +490,7 @@
     <name>app</name>
     <message>
         <location filename="../PlayerListWidget.py" line="42"/>
-        <location filename="../HyperDrive.py" line="450"/>
+        <location filename="../HyperDrive.py" line="461"/>
         <source>Player List</source>
         <translation type="unfinished"></translation>
     </message>
@@ -693,7 +693,7 @@
     </message>
     <message>
         <location filename="../ScoreboardStageWidget.py" line="473"/>
-        <location filename="../HyperDrive.py" line="1240"/>
+        <location filename="../HyperDrive.py" line="1253"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
@@ -718,38 +718,38 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="182"/>
-        <location filename="../HyperDrive.py" line="220"/>
-        <location filename="../HyperDrive.py" line="769"/>
-        <location filename="../HyperDrive.py" line="1177"/>
+        <location filename="../HyperDrive.py" line="184"/>
+        <location filename="../HyperDrive.py" line="222"/>
+        <location filename="../HyperDrive.py" line="782"/>
+        <location filename="../HyperDrive.py" line="1190"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="184"/>
+        <location filename="../HyperDrive.py" line="186"/>
         <source>The program will now close.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="385"/>
+        <location filename="../HyperDrive.py" line="387"/>
         <location filename="../BracketWidget.py" line="108"/>
         <source>Bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="391"/>
+        <location filename="../HyperDrive.py" line="393"/>
         <source>Tournament Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="405"/>
-        <location filename="../HyperDrive.py" line="409"/>
+        <location filename="../HyperDrive.py" line="407"/>
+        <location filename="../HyperDrive.py" line="411"/>
         <source>Scoreboard Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="152"/>
-        <location filename="../StreamQueueWidget.py" line="363"/>
+        <location filename="../StreamQueueWidget.py" line="173"/>
+        <location filename="../StreamQueueWidget.py" line="394"/>
         <location filename="../ScoreboardManager.py" line="59"/>
         <location filename="../ScoreboardManager.py" line="98"/>
         <location filename="../ScoreboardManager.py" line="111"/>
@@ -757,225 +757,225 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="413"/>
+        <location filename="../HyperDrive.py" line="415"/>
         <location filename="../GameReportWidget.py" line="196"/>
         <source>Stage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../CommentaryWidget.py" line="21"/>
-        <location filename="../HyperDrive.py" line="425"/>
+        <location filename="../HyperDrive.py" line="436"/>
         <source>Commentary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="476"/>
+        <location filename="../HyperDrive.py" line="488"/>
         <source>Set tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="519"/>
-        <location filename="../HyperDrive.py" line="1038"/>
-        <location filename="../HyperDrive.py" line="1048"/>
+        <location filename="../HyperDrive.py" line="531"/>
+        <location filename="../HyperDrive.py" line="1051"/>
+        <location filename="../HyperDrive.py" line="1061"/>
         <source>Pull Latest Completed Sets from StartGG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="603"/>
+        <location filename="../HyperDrive.py" line="615"/>
         <source>Always on top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="606"/>
-        <location filename="../HyperDrive.py" line="1269"/>
+        <location filename="../HyperDrive.py" line="618"/>
+        <location filename="../HyperDrive.py" line="1282"/>
         <source>Check for updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="610"/>
+        <location filename="../HyperDrive.py" line="622"/>
         <location filename="../AssetDownloader.py" line="81"/>
         <source>Download assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="624"/>
+        <location filename="../HyperDrive.py" line="636"/>
         <source>Toggle widgets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="650"/>
-        <location filename="../HyperDrive.py" line="1351"/>
+        <location filename="../HyperDrive.py" line="663"/>
+        <location filename="../HyperDrive.py" line="1364"/>
         <source>Migrate Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="656"/>
+        <location filename="../HyperDrive.py" line="669"/>
         <source>Program Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="664"/>
+        <location filename="../HyperDrive.py" line="677"/>
         <source>Program language changed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="667"/>
+        <location filename="../HyperDrive.py" line="680"/>
         <source>System language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="692"/>
+        <location filename="../HyperDrive.py" line="705"/>
         <source>Game Asset Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="701"/>
+        <location filename="../HyperDrive.py" line="714"/>
         <source>Game Asset Language changed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="704"/>
-        <location filename="../HyperDrive.py" line="741"/>
+        <location filename="../HyperDrive.py" line="717"/>
+        <location filename="../HyperDrive.py" line="754"/>
         <source>Same as program language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="729"/>
+        <location filename="../HyperDrive.py" line="742"/>
         <source>Tournament term language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="738"/>
+        <location filename="../HyperDrive.py" line="751"/>
         <source>Tournament term language changed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="771"/>
+        <location filename="../HyperDrive.py" line="784"/>
         <source>A new window has been opened in your default webbrowser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="776"/>
+        <location filename="../HyperDrive.py" line="789"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="778"/>
+        <location filename="../HyperDrive.py" line="791"/>
         <source>Report a bug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="787"/>
+        <location filename="../HyperDrive.py" line="800"/>
         <source>Contribute to the Asset Database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="845"/>
+        <location filename="../HyperDrive.py" line="858"/>
         <source>Modded content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="890"/>
+        <location filename="../HyperDrive.py" line="903"/>
         <source>Reload game assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="915"/>
+        <location filename="../HyperDrive.py" line="928"/>
         <source>Number of Scoreboards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="918"/>
+        <location filename="../HyperDrive.py" line="931"/>
         <source>Modify Tab Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1043"/>
+        <location filename="../HyperDrive.py" line="1056"/>
         <source>Pull Latest Completed Sets from ParryGG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1161"/>
+        <location filename="../HyperDrive.py" line="1174"/>
         <source>Updates aren&apos;t available for HyperDrive yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1179"/>
+        <location filename="../HyperDrive.py" line="1192"/>
         <source>Failed to fetch version from github:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1211"/>
+        <location filename="../HyperDrive.py" line="1224"/>
         <source>Updater</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1218"/>
+        <location filename="../HyperDrive.py" line="1231"/>
         <source>New version available:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1228"/>
+        <location filename="../HyperDrive.py" line="1241"/>
         <source>Update to latest version?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1300"/>
+        <location filename="../HyperDrive.py" line="1313"/>
         <source>Change Tab Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1305"/>
+        <location filename="../HyperDrive.py" line="1318"/>
         <source>Scoreboard Number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1315"/>
+        <location filename="../HyperDrive.py" line="1328"/>
         <source>Set Tab Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1338"/>
+        <location filename="../HyperDrive.py" line="1351"/>
         <source>Migrate Scoreboard Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1343"/>
+        <location filename="../HyperDrive.py" line="1356"/>
         <source>File Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1345"/>
+        <location filename="../HyperDrive.py" line="1358"/>
         <source>Find File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1356"/>
+        <location filename="../HyperDrive.py" line="1369"/>
         <source>Open Layout Javascript File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1358"/>
+        <location filename="../HyperDrive.py" line="1371"/>
         <source>Javascript File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1389"/>
+        <location filename="../HyperDrive.py" line="1402"/>
         <source>Migration Complete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1393"/>
+        <location filename="../HyperDrive.py" line="1406"/>
         <source>Layout Migration has completed!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1395"/>
+        <location filename="../HyperDrive.py" line="1408"/>
         <source>Close Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1242"/>
+        <location filename="../HyperDrive.py" line="1255"/>
         <location filename="../AssetDownloader.py" line="351"/>
         <location filename="../AssetDownloader.py" line="564"/>
         <location filename="../TournamentDataManager.py" line="235"/>
@@ -984,94 +984,94 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="203"/>
+        <location filename="../HyperDrive.py" line="205"/>
         <source>Update download complete. The program will extract the update upon closing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="207"/>
+        <location filename="../HyperDrive.py" line="209"/>
         <source>Please ensure the layout folder or its contents aren&apos;t open in another application before closing this window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="432"/>
-        <location filename="../HyperDrive.py" line="419"/>
+        <location filename="../StreamQueueWidget.py" line="523"/>
+        <location filename="../HyperDrive.py" line="421"/>
         <source>Stream Queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="483"/>
+        <location filename="../HyperDrive.py" line="495"/>
         <source>Select event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="486"/>
+        <location filename="../HyperDrive.py" line="498"/>
         <source>Switch to another event of the same tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="494"/>
+        <location filename="../HyperDrive.py" line="506"/>
         <source>Repull entrants</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="497"/>
+        <location filename="../HyperDrive.py" line="509"/>
         <source>Pull the event&apos;s entrants again, to get players who registered after it was loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="529"/>
+        <location filename="../HyperDrive.py" line="541"/>
         <source>Auto pull</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="531"/>
+        <location filename="../HyperDrive.py" line="543"/>
         <source>Pull the latest completed sets periodically. The interval can be changed in Settings &gt; General.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="616"/>
+        <location filename="../HyperDrive.py" line="628"/>
         <source>Player database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="619"/>
+        <location filename="../HyperDrive.py" line="631"/>
         <source>Seed editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1018"/>
+        <location filename="../HyperDrive.py" line="1031"/>
         <source>Waiting for a tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1021"/>
+        <location filename="../HyperDrive.py" line="1034"/>
         <source>Pulling...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1026"/>
+        <location filename="../HyperDrive.py" line="1039"/>
         <source>Next pull in {0}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1230"/>
+        <location filename="../HyperDrive.py" line="1243"/>
         <source>NOTE: This will open a new tab in your browser and close HyperDrive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1159"/>
-        <location filename="../HyperDrive.py" line="1256"/>
+        <location filename="../HyperDrive.py" line="1172"/>
+        <location filename="../HyperDrive.py" line="1269"/>
         <source>Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1258"/>
+        <location filename="../HyperDrive.py" line="1271"/>
         <source>You&apos;re already using the latest version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1272"/>
+        <location filename="../HyperDrive.py" line="1285"/>
         <source>Update available!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1647,26 +1647,26 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="75"/>
+        <location filename="../StreamQueueWidget.py" line="96"/>
         <location filename="../SelectStationWindow.py" line="77"/>
         <location filename="../SelectSetWindow.py" line="98"/>
         <source>Stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="175"/>
+        <location filename="../StreamQueueWidget.py" line="196"/>
         <location filename="../SelectSetWindow.py" line="99"/>
         <source>Station</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="398"/>
+        <location filename="../HyperDrive.py" line="400"/>
         <location filename="../TeamBattleWidget.py" line="91"/>
         <source>Crew/Team Battle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="72"/>
+        <location filename="../StreamQueueWidget.py" line="93"/>
         <location filename="../TeamBattleWidget.py" line="194"/>
         <location filename="../BracketWidget.py" line="192"/>
         <location filename="../SelectSetWindow.py" line="100"/>
@@ -1674,9 +1674,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="73"/>
-        <location filename="../StreamQueueWidget.py" line="173"/>
-        <location filename="../StreamQueueWidget.py" line="393"/>
+        <location filename="../StreamQueueWidget.py" line="94"/>
+        <location filename="../StreamQueueWidget.py" line="194"/>
+        <location filename="../StreamQueueWidget.py" line="424"/>
         <location filename="../TeamBattleWidget.py" line="195"/>
         <location filename="../SelectSetWindow.py" line="101"/>
         <source>Match</source>
@@ -1811,9 +1811,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="41"/>
-        <location filename="../StreamQueueWidget.py" line="118"/>
-        <location filename="../StreamQueueWidget.py" line="119"/>
+        <location filename="../StreamQueueWidget.py" line="52"/>
+        <location filename="../StreamQueueWidget.py" line="139"/>
+        <location filename="../StreamQueueWidget.py" line="140"/>
         <location filename="../BracketView.py" line="41"/>
         <source>TBD</source>
         <translation type="unfinished"></translation>
@@ -1888,7 +1888,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="52"/>
+        <location filename="../StreamQueueWidget.py" line="63"/>
         <location filename="../BracketView.py" line="357"/>
         <source>Finished</source>
         <translation type="unfinished"></translation>
@@ -2124,8 +2124,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="74"/>
-        <location filename="../StreamQueueWidget.py" line="174"/>
+        <location filename="../StreamQueueWidget.py" line="95"/>
+        <location filename="../StreamQueueWidget.py" line="195"/>
         <location filename="../DisplayOptions.py" line="71"/>
         <location filename="../PlayerDBWindow.py" line="910"/>
         <location filename="../TeamBattleWidget.py" line="161"/>
@@ -2175,12 +2175,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="200"/>
+        <location filename="../TournamentInfoWidget.py" line="203"/>
         <source>The tournament URL could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="202"/>
+        <location filename="../TournamentInfoWidget.py" line="205"/>
         <source>Make sure that your tournament URL is correctly formatted and points to an existing event, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2316,7 +2316,7 @@
         <location filename="../GameAssetManager.py" line="414"/>
         <location filename="../GameAssetManager.py" line="928"/>
         <location filename="../GameAssetManager.py" line="951"/>
-        <location filename="../HyperDrive.py" line="948"/>
+        <location filename="../HyperDrive.py" line="961"/>
         <source>Invalid JSON file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2336,7 +2336,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="48"/>
+        <location filename="../StreamQueueWidget.py" line="59"/>
         <location filename="../SelectEventWindow.py" line="109"/>
         <source>In progress</source>
         <translation type="unfinished"></translation>
@@ -2494,8 +2494,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="206"/>
-        <location filename="../StreamQueueWidget.py" line="422"/>
+        <location filename="../StreamQueueWidget.py" line="235"/>
+        <location filename="../StreamQueueWidget.py" line="453"/>
         <location filename="../PlayerMediaTabs.py" line="214"/>
         <location filename="../BracketWidget.py" line="389"/>
         <source>Remove</source>
@@ -2705,6 +2705,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../StreamQueueWidget.py" line="749"/>
+        <location filename="../StreamQueueWidget.py" line="764"/>
         <location filename="../BracketWidget.py" line="1557"/>
         <source>start.gg</source>
         <translation type="unfinished"></translation>
@@ -2755,267 +2757,346 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="42"/>
-        <location filename="../StreamQueueWidget.py" line="117"/>
+        <location filename="../StreamQueueWidget.py" line="53"/>
+        <location filename="../StreamQueueWidget.py" line="138"/>
         <source>{0} vs {1}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="50"/>
+        <location filename="../StreamQueueWidget.py" line="61"/>
         <source>Called</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="61"/>
+        <location filename="../StreamQueueWidget.py" line="71"/>
+        <source>Now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="72"/>
+        <source>~{0} min ({1})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="82"/>
         <source>Add a set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="66"/>
+        <location filename="../StreamQueueWidget.py" line="87"/>
         <location filename="../DisplayControls.py" line="185"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="94"/>
+        <location filename="../StreamQueueWidget.py" line="115"/>
         <source>Loading sets...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="106"/>
+        <location filename="../StreamQueueWidget.py" line="127"/>
         <source>No tournament loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="130"/>
+        <location filename="../StreamQueueWidget.py" line="151"/>
         <location filename="../BracketFocusBar.py" line="265"/>
         <source>{0} sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="155"/>
+        <location filename="../StreamQueueWidget.py" line="176"/>
         <source>The scoreboard showing this stream&apos;s sets. It gets the next set of the queue once its set is over, depending on the &quot;after a set&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="162"/>
+        <location filename="../StreamQueueWidget.py" line="183"/>
         <source>Load next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="176"/>
+        <location filename="../StreamQueueWidget.py" line="197"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="195"/>
-        <location filename="../StreamQueueWidget.py" line="362"/>
-        <location filename="../StreamQueueWidget.py" line="414"/>
-        <source>Load into scoreboard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../StreamQueueWidget.py" line="199"/>
-        <source>Move up</source>
+        <location filename="../StreamQueueWidget.py" line="198"/>
+        <source>Starts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="203"/>
-        <source>Move down</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../StreamQueueWidget.py" line="208"/>
-        <source>Takes the set out of this queue. start.gg&apos;s queue isn&apos;t changed.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../StreamQueueWidget.py" line="215"/>
-        <source>Add set...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../StreamQueueWidget.py" line="218"/>
-        <source>Add custom...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../StreamQueueWidget.py" line="220"/>
-        <source>A set that isn&apos;t on start.gg, e.g. an exhibition</source>
+        <source>When the set should start, with sets taking as long as the event&apos;s last sets did</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="224"/>
-        <source>Reset</source>
+        <location filename="../StreamQueueWidget.py" line="393"/>
+        <location filename="../StreamQueueWidget.py" line="445"/>
+        <source>Load into scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="226"/>
-        <source>Back to start.gg&apos;s queue, undoing the changes made here</source>
+        <location filename="../StreamQueueWidget.py" line="228"/>
+        <source>Move up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="232"/>
+        <source>Move down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="237"/>
+        <source>Takes the set out of this queue. start.gg&apos;s queue isn&apos;t changed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="244"/>
+        <source>Add set...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="247"/>
+        <source>Add custom...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="249"/>
+        <source>A set that isn&apos;t on start.gg, e.g. an exhibition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="253"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="255"/>
+        <source>Back to start.gg&apos;s queue, undoing the changes made here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="278"/>
         <location filename="../CharacterPicker.py" line="441"/>
         <location filename="../CharacterPicker.py" line="467"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="278"/>
+        <location filename="../StreamQueueWidget.py" line="309"/>
         <source>Added here, not in start.gg&apos;s queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="284"/>
+        <location filename="../StreamQueueWidget.py" line="315"/>
         <source>On stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="337"/>
+        <location filename="../StreamQueueWidget.py" line="368"/>
         <source>Reset queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="338"/>
+        <location filename="../StreamQueueWidget.py" line="369"/>
         <source>Undo the changes made to {0}&apos;s queue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="385"/>
+        <location filename="../StreamQueueWidget.py" line="416"/>
         <source>Add custom set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="391"/>
+        <location filename="../StreamQueueWidget.py" line="422"/>
         <source>Player/Team 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="392"/>
+        <location filename="../StreamQueueWidget.py" line="423"/>
         <source>Player/Team 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="416"/>
+        <location filename="../StreamQueueWidget.py" line="447"/>
         <source>Move to the top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="448"/>
+        <location filename="../StreamQueueWidget.py" line="473"/>
+        <source>On start.gg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="477"/>
+        <source>Its bracket hasn&apos;t started on start.gg yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="482"/>
+        <source>Call the set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="487"/>
+        <source>Assign to {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="495"/>
+        <source>start.gg has no stream named {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="497"/>
+        <source>Assign to station</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="499"/>
+        <source>Station {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="512"/>
+        <source>Update the streams and stations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="545"/>
         <source>Update the queues now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="451"/>
+        <location filename="../StreamQueueWidget.py" line="548"/>
+        <location filename="../EventStatsWidget.py" line="100"/>
         <source>Update every</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="457"/>
+        <location filename="../StreamQueueWidget.py" line="554"/>
+        <location filename="../EventStatsWidget.py" line="112"/>
         <location filename="../BracketFocusBar.py" line="112"/>
         <source> s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="467"/>
+        <location filename="../StreamQueueWidget.py" line="564"/>
         <source>After a set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="469"/>
+        <location filename="../StreamQueueWidget.py" line="566"/>
         <source>Do nothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="471"/>
+        <location filename="../StreamQueueWidget.py" line="568"/>
         <source>Ask to load the next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="474"/>
+        <location filename="../StreamQueueWidget.py" line="571"/>
         <source>Load the next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="477"/>
+        <location filename="../StreamQueueWidget.py" line="574"/>
         <source>What happens when the set on a stream&apos;s scoreboard is over (reported, or finished on start.gg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="491"/>
+        <location filename="../StreamQueueWidget.py" line="588"/>
         <source>Add start.gg&apos;s streams automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="496"/>
+        <location filename="../StreamQueueWidget.py" line="593"/>
         <source>Add stream...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="507"/>
+        <location filename="../StreamQueueWidget.py" line="604"/>
         <source>Add a stream by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="513"/>
+        <location filename="../StreamQueueWidget.py" line="610"/>
         <source>No streams yet. Streams in start.gg&apos;s stream queue show up here, or add one with +.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="603"/>
+        <location filename="../StreamQueueWidget.py" line="713"/>
+        <location filename="../EventStatsWidget.py" line="328"/>
         <source>Updated {0}s ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="605"/>
+        <location filename="../StreamQueueWidget.py" line="715"/>
+        <location filename="../EventStatsWidget.py" line="325"/>
         <location filename="../BracketWidget.py" line="1473"/>
         <source>Updating...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="652"/>
+        <location filename="../StreamQueueWidget.py" line="750"/>
+        <source>Set a start.gg API token in Settings &gt; API Keys first, from an account that&apos;s an admin of the tournament.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="765"/>
+        <source>start.gg refused it: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StreamQueueWidget.py" line="814"/>
         <source>Remove stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="653"/>
+        <location filename="../StreamQueueWidget.py" line="815"/>
         <source>Remove {0}? start.gg&apos;s streams can be added back with +.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="666"/>
+        <location filename="../StreamQueueWidget.py" line="828"/>
         <source>Add stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="667"/>
+        <location filename="../StreamQueueWidget.py" line="829"/>
         <source>Stream name (e.g. the Twitch channel). A stream in start.gg&apos;s stream queue gets its queue.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="753"/>
+        <location filename="../StreamQueueWidget.py" line="915"/>
         <source>Next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="754"/>
+        <location filename="../StreamQueueWidget.py" line="916"/>
         <source>Load {0} into {1}?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="139"/>
+        <location filename="../StartGGReporter.py" line="158"/>
         <source>This set can&apos;t be reported: its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="206"/>
+        <location filename="../StartGGReporter.py" line="225"/>
         <source>Set reset on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="223"/>
+        <location filename="../StartGGReporter.py" line="242"/>
         <source>{0} Retrying in {1}s.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../StartGGReporter.py" line="275"/>
+        <source>This set can&apos;t be changed: its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3501,7 +3582,7 @@ Drop an image here.</source>
     </message>
     <message>
         <location filename="../DisplayControls.py" line="163"/>
-        <location filename="../HyperDrive.py" line="432"/>
+        <location filename="../HyperDrive.py" line="443"/>
         <source>Display Controls</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3580,11 +3661,97 @@ Drop an image here.</source>
         <source>Remove group</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="78"/>
+        <location filename="../HyperDrive.py" line="427"/>
+        <source>Event Stats</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="96"/>
+        <source>Update now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="102"/>
+        <source>The first update of an event pulls all of its completed sets, which takes a while for a big event. Later ones only pull the new sets.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="117"/>
+        <source>Pull all sets again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="119"/>
+        <source>Forgets the sets already pulled, e.g. after sets were reset on start.gg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="128"/>
+        <source>League</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="131"/>
+        <source>Paste the start.gg link of the league (circuit) to show its standings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="287"/>
+        <source>Event stats are only available for start.gg events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="291"/>
+        <source>The sets couldn&apos;t be pulled, trying again next update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="320"/>
+        <source>Pulling completed sets... {0}/{1}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="339"/>
+        <source>{0} sets, {1} games, {2} DQs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="343"/>
+        <source>a set takes ~{0} min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="350"/>
+        <source>Most played: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="357"/>
+        <source>Biggest upset: {0} ({1}) over {2} ({3})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="367"/>
+        <source>Schedule: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="375"/>
+        <source>League: {0} ({1} players)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EventStatsWidget.py" line="380"/>
+        <source>No league: paste its link above</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>layout_themes</name>
     <message>
-        <location filename="../HyperDrive.py" line="645"/>
+        <location filename="../HyperDrive.py" line="658"/>
         <source>Layout themes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3725,13 +3892,13 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1271"/>
+        <location filename="../HyperDrive.py" line="1284"/>
         <location filename="../Helpers/VersionHelper.py" line="33"/>
         <source>[</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1273"/>
+        <location filename="../HyperDrive.py" line="1286"/>
         <location filename="../Helpers/VersionHelper.py" line="35"/>
         <location filename="../Helpers/VersionHelper.py" line="37"/>
         <source>]</source>
@@ -3786,13 +3953,18 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="463"/>
+        <location filename="../Settings/SettingsWindow.py" line="482"/>
         <source>API Keys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="505"/>
+        <location filename="../Settings/SettingsWindow.py" line="524"/>
         <source>start.gg Reporting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="593"/>
+        <source>Twitch Predictions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3817,6 +3989,7 @@ Drop an image here.</source>
     <message>
         <location filename="../Settings/SettingsWindow.py" line="436"/>
         <location filename="../Settings/SettingsWindow.py" line="455"/>
+        <location filename="../Settings/SettingsWindow.py" line="474"/>
         <source>Please note that the API Key will be stored in plain text on your computer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3828,6 +4001,16 @@ Drop an image here.</source>
     <message>
         <location filename="../Settings/SettingsWindow.py" line="450"/>
         <source>Needed to report sets to start.gg from the scoreboard&apos;s Games window. Create a token at start.gg &gt; Developer Settings, with an account that&apos;s an admin of the tournament.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="464"/>
+        <source>Twitch (predictions)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="469"/>
+        <source>A user access token of your channel with the channel:manage:predictions scope, e.g. from a token generator for Twitch&apos;s API. See Settings &gt; Twitch Predictions.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4342,22 +4525,22 @@ Drop an image here.</source>
 <context>
     <name>settings.startgg_reporting</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="471"/>
+        <location filename="../Settings/SettingsWindow.py" line="490"/>
         <source>Send each game to start.gg as it&apos;s played (otherwise games are sent when the set is reported)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="479"/>
+        <location filename="../Settings/SettingsWindow.py" line="498"/>
         <source>Lets viewers follow the set on start.gg live. Uses one request per change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="487"/>
+        <location filename="../Settings/SettingsWindow.py" line="506"/>
         <source>Mark sets as in progress on start.gg when they&apos;re loaded on a scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="498"/>
+        <location filename="../Settings/SettingsWindow.py" line="517"/>
         <source>Ask before reporting a set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4454,6 +4637,59 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
+    <name>settings.twitch_predictions</name>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="531"/>
+        <source>Run Twitch predictions for the set on stream</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="538"/>
+        <source>Needs the Twitch token of Settings &gt; API Keys, and a channel that&apos;s a Twitch affiliate or partner.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="544"/>
+        <source>Scoreboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="549"/>
+        <source>The number of the scoreboard of the stream</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="554"/>
+        <source>Start one when a set is loaded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="562"/>
+        <source>Resolve it with the winner when the set is over</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="570"/>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="575"/>
+        <source>{team1}, {team2} and {round} are replaced. Twitch allows 45 characters.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="581"/>
+        <source>Seconds viewers have to predict</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="588"/>
+        <source>From 30 to 1800</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>tips</name>
     <message>
         <location filename="../Helpers/AltTextHelper.py" line="68"/>
@@ -4464,17 +4700,17 @@ Drop an image here.</source>
 <context>
     <name>updater</name>
     <message>
-        <location filename="../HyperDrive.py" line="225"/>
+        <location filename="../HyperDrive.py" line="227"/>
         <source>Error while backing up the layout folder:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="232"/>
+        <location filename="../HyperDrive.py" line="234"/>
         <source>Retry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="234"/>
+        <location filename="../HyperDrive.py" line="236"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
