@@ -4,7 +4,7 @@
 <context>
     <name>About</name>
     <message>
-        <location filename="../HyperDrive.py" line="816"/>
+        <location filename="../HyperDrive.py" line="829"/>
         <location filename="../layout/About.ui" line="17"/>
         <source>About</source>
         <translation>Über</translation>
@@ -576,8 +576,8 @@
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../HyperDrive.py" line="811"/>
-        <location filename="../Settings/SettingsWindow.py" line="27"/>
+        <location filename="../HyperDrive.py" line="824"/>
+        <location filename="../Settings/SettingsWindow.py" line="29"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -622,7 +622,7 @@
     <name>app</name>
     <message>
         <location filename="../PlayerListWidget.py" line="42"/>
-        <location filename="../HyperDrive.py" line="461"/>
+        <location filename="../HyperDrive.py" line="463"/>
         <source>Player List</source>
         <translation>Spielerliste</translation>
     </message>
@@ -840,7 +840,7 @@
     </message>
     <message>
         <location filename="../ScoreboardStageWidget.py" line="473"/>
-        <location filename="../HyperDrive.py" line="1253"/>
+        <location filename="../HyperDrive.py" line="1284"/>
         <source>Update</source>
         <translation></translation>
     </message>
@@ -850,7 +850,7 @@
         <translation>Speichern unter</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="186"/>
+        <location filename="../HyperDrive.py" line="188"/>
         <source>The program will now close.</source>
         <translation>Das Programm wird nun geschlossen.</translation>
     </message>
@@ -859,19 +859,19 @@
         <translation>Thumbnail-Einstellungen</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="387"/>
+        <location filename="../HyperDrive.py" line="389"/>
         <location filename="../BracketWidget.py" line="108"/>
         <source>Bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="393"/>
+        <location filename="../HyperDrive.py" line="395"/>
         <source>Tournament Info</source>
         <translation>Turnierdaten</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="407"/>
-        <location filename="../HyperDrive.py" line="411"/>
+        <location filename="../HyperDrive.py" line="409"/>
+        <location filename="../HyperDrive.py" line="413"/>
         <source>Scoreboard Manager</source>
         <translation type="unfinished"></translation>
     </message>
@@ -886,12 +886,12 @@
     </message>
     <message>
         <location filename="../CommentaryWidget.py" line="21"/>
-        <location filename="../HyperDrive.py" line="436"/>
+        <location filename="../HyperDrive.py" line="438"/>
         <source>Commentary</source>
         <translation>Kommentar</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="488"/>
+        <location filename="../HyperDrive.py" line="490"/>
         <source>Set tournament</source>
         <translation>Turnier auswählen</translation>
     </message>
@@ -900,25 +900,25 @@
         <translation>Turnier und Sets von StartGG-User laden</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="531"/>
-        <location filename="../HyperDrive.py" line="1051"/>
-        <location filename="../HyperDrive.py" line="1061"/>
+        <location filename="../HyperDrive.py" line="533"/>
+        <location filename="../HyperDrive.py" line="1082"/>
+        <location filename="../HyperDrive.py" line="1092"/>
         <source>Pull Latest Completed Sets from StartGG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="615"/>
+        <location filename="../HyperDrive.py" line="617"/>
         <source>Always on top</source>
         <translation>Immer im Vordergrund halten</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="618"/>
-        <location filename="../HyperDrive.py" line="1282"/>
+        <location filename="../HyperDrive.py" line="620"/>
+        <location filename="../HyperDrive.py" line="1313"/>
         <source>Check for updates</source>
         <translation>Auf Updates prüfen</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="622"/>
+        <location filename="../HyperDrive.py" line="624"/>
         <location filename="../AssetDownloader.py" line="81"/>
         <source>Download assets</source>
         <translation>Assets herunterladen</translation>
@@ -928,28 +928,28 @@
         <translation>Heller Modus</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="636"/>
+        <location filename="../HyperDrive.py" line="638"/>
         <source>Toggle widgets</source>
         <translation>Widgets ein- und ausschalten</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="663"/>
-        <location filename="../HyperDrive.py" line="1364"/>
+        <location filename="../HyperDrive.py" line="665"/>
+        <location filename="../HyperDrive.py" line="1420"/>
         <source>Migrate Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="669"/>
+        <location filename="../HyperDrive.py" line="671"/>
         <source>Program Language</source>
         <translation>Sprache des Programms</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="680"/>
+        <location filename="../HyperDrive.py" line="682"/>
         <source>System language</source>
         <translation>Systemsprache</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="205"/>
+        <location filename="../HyperDrive.py" line="207"/>
         <source>Update download complete. The program will extract the update upon closing.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -958,8 +958,8 @@
         <translation>Sprache für Exportiertes</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="717"/>
-        <location filename="../HyperDrive.py" line="754"/>
+        <location filename="../HyperDrive.py" line="719"/>
+        <location filename="../HyperDrive.py" line="756"/>
         <source>Same as program language</source>
         <translation>gleich der Programmsprache</translation>
     </message>
@@ -972,92 +972,97 @@
         <translation>Standardsprache Turnierphasenbezeichnung geändert.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="705"/>
+        <location filename="../HyperDrive.py" line="707"/>
         <source>Game Asset Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="714"/>
+        <location filename="../HyperDrive.py" line="716"/>
         <source>Game Asset Language changed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="742"/>
+        <location filename="../HyperDrive.py" line="744"/>
         <source>Tournament term language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="751"/>
+        <location filename="../HyperDrive.py" line="753"/>
         <source>Tournament term language changed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="784"/>
+        <location filename="../HyperDrive.py" line="786"/>
         <source>A new window has been opened in your default webbrowser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="789"/>
+        <location filename="../HyperDrive.py" line="791"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="791"/>
+        <location filename="../HyperDrive.py" line="798"/>
+        <source>Guide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../HyperDrive.py" line="804"/>
         <source>Report a bug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="800"/>
+        <location filename="../HyperDrive.py" line="813"/>
         <source>Contribute to the Asset Database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="858"/>
+        <location filename="../HyperDrive.py" line="886"/>
         <source>Modded content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="903"/>
+        <location filename="../HyperDrive.py" line="931"/>
         <source>Reload game assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="928"/>
+        <location filename="../HyperDrive.py" line="956"/>
         <source>Number of Scoreboards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="931"/>
+        <location filename="../HyperDrive.py" line="959"/>
         <source>Modify Tab Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1056"/>
+        <location filename="../HyperDrive.py" line="1087"/>
         <source>Pull Latest Completed Sets from ParryGG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1174"/>
+        <location filename="../HyperDrive.py" line="1205"/>
         <source>Updates aren&apos;t available for HyperDrive yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1192"/>
+        <location filename="../HyperDrive.py" line="1223"/>
         <source>Failed to fetch version from github:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1224"/>
+        <location filename="../HyperDrive.py" line="1255"/>
         <source>Updater</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1231"/>
+        <location filename="../HyperDrive.py" line="1262"/>
         <source>New version available:</source>
         <translation>Neue Version verfügbar:</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1241"/>
+        <location filename="../HyperDrive.py" line="1272"/>
         <source>Update to latest version?</source>
         <translation>Auf neueste Version updaten?</translation>
     </message>
@@ -1066,62 +1071,62 @@
         <translation>ACHTUNG! FÜR /layout/ WIRD EIN BACKUP ERSTELLT, ALLE ANDEREN VERZEICHNISSE WERDEN ÜBERSCHRIEBEN</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1313"/>
+        <location filename="../HyperDrive.py" line="1344"/>
         <source>Change Tab Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1318"/>
+        <location filename="../HyperDrive.py" line="1349"/>
         <source>Scoreboard Number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1328"/>
+        <location filename="../HyperDrive.py" line="1359"/>
         <source>Set Tab Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1351"/>
+        <location filename="../HyperDrive.py" line="1407"/>
         <source>Migrate Scoreboard Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1356"/>
+        <location filename="../HyperDrive.py" line="1412"/>
         <source>File Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1358"/>
+        <location filename="../HyperDrive.py" line="1414"/>
         <source>Find File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1369"/>
+        <location filename="../HyperDrive.py" line="1425"/>
         <source>Open Layout Javascript File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1371"/>
+        <location filename="../HyperDrive.py" line="1427"/>
         <source>Javascript File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1402"/>
+        <location filename="../HyperDrive.py" line="1458"/>
         <source>Migration Complete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1406"/>
+        <location filename="../HyperDrive.py" line="1462"/>
         <source>Layout Migration has completed!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1408"/>
+        <location filename="../HyperDrive.py" line="1464"/>
         <source>Close Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1255"/>
+        <location filename="../HyperDrive.py" line="1286"/>
         <location filename="../AssetDownloader.py" line="351"/>
         <location filename="../AssetDownloader.py" line="564"/>
         <location filename="../TournamentDataManager.py" line="235"/>
@@ -1131,67 +1136,67 @@
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="523"/>
-        <location filename="../HyperDrive.py" line="421"/>
+        <location filename="../HyperDrive.py" line="423"/>
         <source>Stream Queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="495"/>
+        <location filename="../HyperDrive.py" line="497"/>
         <source>Select event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="498"/>
+        <location filename="../HyperDrive.py" line="500"/>
         <source>Switch to another event of the same tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="506"/>
+        <location filename="../HyperDrive.py" line="508"/>
         <source>Repull entrants</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="509"/>
+        <location filename="../HyperDrive.py" line="511"/>
         <source>Pull the event&apos;s entrants again, to get players who registered after it was loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="541"/>
+        <location filename="../HyperDrive.py" line="543"/>
         <source>Auto pull</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="543"/>
+        <location filename="../HyperDrive.py" line="545"/>
         <source>Pull the latest completed sets periodically. The interval can be changed in Settings &gt; General.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="628"/>
+        <location filename="../HyperDrive.py" line="630"/>
         <source>Player database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="631"/>
+        <location filename="../HyperDrive.py" line="633"/>
         <source>Seed editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1031"/>
+        <location filename="../HyperDrive.py" line="1062"/>
         <source>Waiting for a tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1034"/>
+        <location filename="../HyperDrive.py" line="1065"/>
         <source>Pulling...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1039"/>
+        <location filename="../HyperDrive.py" line="1070"/>
         <source>Next pull in {0}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1243"/>
+        <location filename="../HyperDrive.py" line="1274"/>
         <source>NOTE: This will open a new tab in your browser and close HyperDrive.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1200,7 +1205,7 @@
         <translation>Update wird heruntergeladen...</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="209"/>
+        <location filename="../HyperDrive.py" line="211"/>
         <source>Please ensure the layout folder or its contents aren&apos;t open in another application before closing this window.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1209,8 +1214,8 @@
         <translation>Update ausgeführt.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1172"/>
-        <location filename="../HyperDrive.py" line="1269"/>
+        <location filename="../HyperDrive.py" line="1203"/>
+        <location filename="../HyperDrive.py" line="1300"/>
         <source>Info</source>
         <translation>Info</translation>
     </message>
@@ -1219,12 +1224,12 @@
         <translation>Update durchgeführt! Das Programm wird beendet.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1271"/>
+        <location filename="../HyperDrive.py" line="1302"/>
         <source>You&apos;re already using the latest version</source>
         <translation>Die neuese Version ist bereits installiert</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1285"/>
+        <location filename="../HyperDrive.py" line="1316"/>
         <source>Update available!</source>
         <translation>Update verfügbar!</translation>
     </message>
@@ -1238,7 +1243,7 @@
         <translation>Name des Spiels</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="677"/>
+        <location filename="../HyperDrive.py" line="679"/>
         <source>Program language changed successfully.</source>
         <translation>Sprache erfolgreich geändert.</translation>
     </message>
@@ -1422,7 +1427,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="400"/>
+        <location filename="../HyperDrive.py" line="402"/>
         <location filename="../TeamBattleWidget.py" line="91"/>
         <source>Crew/Team Battle</source>
         <translation type="unfinished"></translation>
@@ -1990,7 +1995,7 @@
         <translation>Punkte</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="415"/>
+        <location filename="../HyperDrive.py" line="417"/>
         <location filename="../GameReportWidget.py" line="196"/>
         <source>Stage</source>
         <translation></translation>
@@ -2096,10 +2101,10 @@
         <translation>TEAM {0}</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="184"/>
-        <location filename="../HyperDrive.py" line="222"/>
-        <location filename="../HyperDrive.py" line="782"/>
-        <location filename="../HyperDrive.py" line="1190"/>
+        <location filename="../HyperDrive.py" line="186"/>
+        <location filename="../HyperDrive.py" line="224"/>
+        <location filename="../HyperDrive.py" line="784"/>
+        <location filename="../HyperDrive.py" line="1221"/>
         <source>Warning</source>
         <translation>ACHTUNG</translation>
     </message>
@@ -2568,7 +2573,7 @@
         <location filename="../GameAssetManager.py" line="414"/>
         <location filename="../GameAssetManager.py" line="928"/>
         <location filename="../GameAssetManager.py" line="951"/>
-        <location filename="../HyperDrive.py" line="961"/>
+        <location filename="../HyperDrive.py" line="989"/>
         <source>Invalid JSON file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3834,7 +3839,7 @@ Drop an image here.</source>
     </message>
     <message>
         <location filename="../DisplayControls.py" line="163"/>
-        <location filename="../HyperDrive.py" line="443"/>
+        <location filename="../HyperDrive.py" line="445"/>
         <source>Display Controls</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3915,7 +3920,7 @@ Drop an image here.</source>
     </message>
     <message>
         <location filename="../EventStatsWidget.py" line="78"/>
-        <location filename="../HyperDrive.py" line="427"/>
+        <location filename="../HyperDrive.py" line="429"/>
         <source>Event Stats</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4003,7 +4008,7 @@ Drop an image here.</source>
 <context>
     <name>layout_themes</name>
     <message>
-        <location filename="../HyperDrive.py" line="658"/>
+        <location filename="../HyperDrive.py" line="660"/>
         <source>Layout themes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4144,13 +4149,13 @@ Drop an image here.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1284"/>
+        <location filename="../HyperDrive.py" line="1315"/>
         <location filename="../Helpers/VersionHelper.py" line="33"/>
         <source>[</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1286"/>
+        <location filename="../HyperDrive.py" line="1317"/>
         <location filename="../Helpers/VersionHelper.py" line="35"/>
         <location filename="../Helpers/VersionHelper.py" line="37"/>
         <source>]</source>
@@ -4165,57 +4170,57 @@ Drop an image here.</source>
 <context>
     <name>settings</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="156"/>
+        <location filename="../Settings/SettingsWindow.py" line="158"/>
         <source>General</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="161"/>
+        <location filename="../Settings/SettingsWindow.py" line="164"/>
         <source>Appearance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="270"/>
+        <location filename="../Settings/SettingsWindow.py" line="273"/>
         <source>Scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="298"/>
+        <location filename="../Settings/SettingsWindow.py" line="302"/>
         <source>State Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="387"/>
+        <location filename="../Settings/SettingsWindow.py" line="392"/>
         <source>Default Display Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="413"/>
+        <location filename="../Settings/SettingsWindow.py" line="419"/>
         <source>Character Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="418"/>
+        <location filename="../Settings/SettingsWindow.py" line="425"/>
         <source>Match &amp; Phase Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="421"/>
+        <location filename="../Settings/SettingsWindow.py" line="431"/>
         <source>Pronouns</source>
         <translation type="unfinished">Pronomen</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="482"/>
+        <location filename="../Settings/SettingsWindow.py" line="493"/>
         <source>API Keys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="524"/>
+        <location filename="../Settings/SettingsWindow.py" line="536"/>
         <source>start.gg Reporting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="593"/>
+        <location filename="../Settings/SettingsWindow.py" line="606"/>
         <source>Twitch Predictions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4229,39 +4234,39 @@ Drop an image here.</source>
 <context>
     <name>settings.api_keys</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="427"/>
+        <location filename="../Settings/SettingsWindow.py" line="438"/>
         <source>ParryGG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="432"/>
+        <location filename="../Settings/SettingsWindow.py" line="443"/>
         <source>You can get an API Key from parry.gg/api-keys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="436"/>
-        <location filename="../Settings/SettingsWindow.py" line="455"/>
-        <location filename="../Settings/SettingsWindow.py" line="474"/>
+        <location filename="../Settings/SettingsWindow.py" line="447"/>
+        <location filename="../Settings/SettingsWindow.py" line="466"/>
+        <location filename="../Settings/SettingsWindow.py" line="485"/>
         <source>Please note that the API Key will be stored in plain text on your computer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="445"/>
+        <location filename="../Settings/SettingsWindow.py" line="456"/>
         <source>start.gg (reporting sets)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="450"/>
+        <location filename="../Settings/SettingsWindow.py" line="461"/>
         <source>Needed to report sets to start.gg from the scoreboard&apos;s Games window. Create a token at start.gg &gt; Developer Settings, with an account that&apos;s an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="464"/>
+        <location filename="../Settings/SettingsWindow.py" line="475"/>
         <source>Twitch (predictions)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="469"/>
+        <location filename="../Settings/SettingsWindow.py" line="480"/>
         <source>A user access token of your channel with the channel:manage:predictions scope, e.g. from a token generator for Twitch&apos;s API. See Settings &gt; Twitch Predictions.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4508,7 +4513,7 @@ Drop an image here.</source>
 <context>
     <name>settings.bracket_auto_update_interval</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="92"/>
+        <location filename="../Settings/SettingsWindow.py" line="94"/>
         <source>Bracket auto update interval (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4516,12 +4521,12 @@ Drop an image here.</source>
 <context>
     <name>settings.character_picker</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="394"/>
+        <location filename="../Settings/SettingsWindow.py" line="400"/>
         <source>Show the player&apos;s mains in the character grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="402"/>
+        <location filename="../Settings/SettingsWindow.py" line="408"/>
         <source>Show recently picked characters in the character grid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4529,7 +4534,7 @@ Drop an image here.</source>
 <context>
     <name>settings.compact_players</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="379"/>
+        <location filename="../Settings/SettingsWindow.py" line="384"/>
         <source>Compact Player Cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4537,7 +4542,7 @@ Drop an image here.</source>
 <context>
     <name>settings.completed_sets_pull_interval</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="71"/>
+        <location filename="../Settings/SettingsWindow.py" line="73"/>
         <source>Completed sets auto pull interval (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4545,7 +4550,7 @@ Drop an image here.</source>
 <context>
     <name>settings.control_score_from_stage_strike</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="170"/>
+        <location filename="../Settings/SettingsWindow.py" line="173"/>
         <source>Enable score control from the stage striking app</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4553,12 +4558,12 @@ Drop an image here.</source>
 <context>
     <name>settings.custom_player_export</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="114"/>
+        <location filename="../Settings/SettingsWindow.py" line="116"/>
         <source>Export custom player data from user_data/custom_player_export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="122"/>
+        <location filename="../Settings/SettingsWindow.py" line="124"/>
         <source>Sends the files in a folder named after a player&apos;s tag (or sponsor and tag) to the layouts, as the player&apos;s custom data. Changes to the files show up on stream within a second.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4566,7 +4571,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_autoupdate</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="182"/>
+        <location filename="../Settings/SettingsWindow.py" line="185"/>
         <source>Disable automatic set updating for the scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4574,7 +4579,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_export</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="288"/>
+        <location filename="../Settings/SettingsWindow.py" line="292"/>
         <source>Disable HyperDrive file exporting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4582,7 +4587,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_overwrite</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="240"/>
+        <location filename="../Settings/SettingsWindow.py" line="243"/>
         <source>Do not override existing values in the local player database (takes effect on next restart)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4590,7 +4595,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_scoreupdate</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="228"/>
+        <location filename="../Settings/SettingsWindow.py" line="231"/>
         <source>Disable automatic score updating for the scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4598,7 +4603,7 @@ Drop an image here.</source>
 <context>
     <name>settings.force_no_mains_on_new_set_loads</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="216"/>
+        <location filename="../Settings/SettingsWindow.py" line="219"/>
         <source>Do not update character data when a set is loaded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4606,17 +4611,17 @@ Drop an image here.</source>
 <context>
     <name>settings.general</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="53"/>
+        <location filename="../Settings/SettingsWindow.py" line="55"/>
         <source>Webserver Port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="62"/>
+        <location filename="../Settings/SettingsWindow.py" line="64"/>
         <source>Enable profanity filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="279"/>
+        <location filename="../Settings/SettingsWindow.py" line="283"/>
         <source>Enable StateManager Logging</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4631,12 +4636,12 @@ Drop an image here.</source>
 <context>
     <name>settings.local_player_data</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="252"/>
+        <location filename="../Settings/SettingsWindow.py" line="255"/>
         <source>Use the local player database for player info when loading sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="260"/>
+        <location filename="../Settings/SettingsWindow.py" line="263"/>
         <source>Sets, the stream queue and station sets are loaded without the players&apos; socials, pronouns and location, which come from the local player database instead. Players not in it yet are looked up once and saved to it.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4677,7 +4682,7 @@ Drop an image here.</source>
 <context>
     <name>settings.scoreboard_auto_update_interval</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="194"/>
+        <location filename="../Settings/SettingsWindow.py" line="197"/>
         <source>Scoreboard automatic set updating interval (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4685,7 +4690,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_additional</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="370"/>
+        <location filename="../Settings/SettingsWindow.py" line="375"/>
         <source>Show Additional Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4693,7 +4698,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_birthday</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="334"/>
+        <location filename="../Settings/SettingsWindow.py" line="339"/>
         <source>Show Birthday</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4701,7 +4706,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_characters</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="352"/>
+        <location filename="../Settings/SettingsWindow.py" line="357"/>
         <source>Show Characters</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4709,7 +4714,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_location</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="343"/>
+        <location filename="../Settings/SettingsWindow.py" line="348"/>
         <source>Show Location</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4717,7 +4722,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_name</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="307"/>
+        <location filename="../Settings/SettingsWindow.py" line="312"/>
         <source>Show Real Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4725,7 +4730,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_pronouns</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="361"/>
+        <location filename="../Settings/SettingsWindow.py" line="366"/>
         <source>Show Pronouns</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4733,7 +4738,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_seed</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="325"/>
+        <location filename="../Settings/SettingsWindow.py" line="330"/>
         <source>Show Seed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4741,7 +4746,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_social</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="316"/>
+        <location filename="../Settings/SettingsWindow.py" line="321"/>
         <source>Show Social Media</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4749,22 +4754,22 @@ Drop an image here.</source>
 <context>
     <name>settings.startgg_reporting</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="490"/>
+        <location filename="../Settings/SettingsWindow.py" line="502"/>
         <source>Send each game to start.gg as it&apos;s played (otherwise games are sent when the set is reported)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="498"/>
+        <location filename="../Settings/SettingsWindow.py" line="510"/>
         <source>Lets viewers follow the set on start.gg live. Uses one request per change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="506"/>
+        <location filename="../Settings/SettingsWindow.py" line="518"/>
         <source>Mark sets as in progress on start.gg when they&apos;re loaded on a scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="517"/>
+        <location filename="../Settings/SettingsWindow.py" line="529"/>
         <source>Ask before reporting a set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4788,7 +4793,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_battle_default_first_to</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="145"/>
+        <location filename="../Settings/SettingsWindow.py" line="147"/>
         <source>Crew/Team Battle: games to win a matchup (First To)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4796,7 +4801,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_battle_default_stocks</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="133"/>
+        <location filename="../Settings/SettingsWindow.py" line="135"/>
         <source>Crew/Team Battle: starting stocks per player (Stock Pool)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4863,52 +4868,52 @@ Drop an image here.</source>
 <context>
     <name>settings.twitch_predictions</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="531"/>
+        <location filename="../Settings/SettingsWindow.py" line="544"/>
         <source>Run Twitch predictions for the set on stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="538"/>
+        <location filename="../Settings/SettingsWindow.py" line="551"/>
         <source>Needs the Twitch token of Settings &gt; API Keys, and a channel that&apos;s a Twitch affiliate or partner.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="544"/>
+        <location filename="../Settings/SettingsWindow.py" line="557"/>
         <source>Scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="549"/>
+        <location filename="../Settings/SettingsWindow.py" line="562"/>
         <source>The number of the scoreboard of the stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="554"/>
+        <location filename="../Settings/SettingsWindow.py" line="567"/>
         <source>Start one when a set is loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="562"/>
+        <location filename="../Settings/SettingsWindow.py" line="575"/>
         <source>Resolve it with the winner when the set is over</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="570"/>
+        <location filename="../Settings/SettingsWindow.py" line="583"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="575"/>
+        <location filename="../Settings/SettingsWindow.py" line="588"/>
         <source>{team1}, {team2} and {round} are replaced. Twitch allows 45 characters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="581"/>
+        <location filename="../Settings/SettingsWindow.py" line="594"/>
         <source>Seconds viewers have to predict</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="588"/>
+        <location filename="../Settings/SettingsWindow.py" line="601"/>
         <source>From 30 to 1800</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4939,19 +4944,68 @@ Drop an image here.</source>
 <context>
     <name>updater</name>
     <message>
-        <location filename="../HyperDrive.py" line="227"/>
+        <location filename="../HyperDrive.py" line="229"/>
         <source>Error while backing up the layout folder:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="234"/>
+        <location filename="../HyperDrive.py" line="236"/>
         <source>Retry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="236"/>
+        <location filename="../HyperDrive.py" line="238"/>
         <source>Cancel</source>
         <translation type="unfinished">Abbrechen</translation>
+    </message>
+</context>
+<context>
+    <name>wiki</name>
+    <message>
+        <location filename="../WikiWindow.py" line="42"/>
+        <location filename="../WikiWindow.py" line="196"/>
+        <source>HyperDrive Guide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../WikiWindow.py" line="57"/>
+        <source>Back</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../WikiWindow.py" line="63"/>
+        <source>Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../WikiWindow.py" line="68"/>
+        <source>Home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../WikiWindow.py" line="73"/>
+        <source>Search the guide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../WikiWindow.py" line="167"/>
+        <source>The page {0} doesn&apos;t exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../WikiWindow.py" line="245"/>
+        <source>No pages match your search.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../WikiWindow.py" line="261"/>
+        <source>Opens it in HyperDrive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../WikiWindow.py" line="294"/>
+        <source>This version of HyperDrive can&apos;t open {0}.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
