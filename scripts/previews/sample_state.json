@@ -4333,6 +4333,1010 @@
       "winner_team_name": ""
     }
   },
+  "event_stats": {
+    "average_set_minutes": 16,
+    "characters": {
+      "1": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pickel_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_pickel_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 262,
+              "y": 165
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "pickel",
+        "en_name": "Steve",
+        "games": 9,
+        "name": "Steve",
+        "play_rate": 8,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 67,
+        "wins": 6
+      },
+      "10": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_zelda_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_zelda_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 244,
+              "y": 163
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "zelda",
+        "en_name": "Zelda",
+        "games": 6,
+        "name": "Zelda",
+        "play_rate": 5,
+        "players": 1,
+        "sets": 2,
+        "win_rate": 50,
+        "wins": 3
+      },
+      "11": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_kirby_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_kirby_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 280,
+              "y": 189
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "kirby",
+        "en_name": "Kirby",
+        "games": 6,
+        "name": "Kirby",
+        "play_rate": 5,
+        "players": 1,
+        "sets": 2,
+        "win_rate": 33,
+        "wins": 2
+      },
+      "12": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_inkling_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_inkling_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 251,
+              "y": 176
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "inkling",
+        "en_name": "Inkling",
+        "games": 6,
+        "name": "Inkling",
+        "play_rate": 5,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 33,
+        "wins": 2
+      },
+      "13": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_mario_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_mario_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 207,
+              "y": 187
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "mario",
+        "en_name": "Mario",
+        "games": 5,
+        "name": "Mario",
+        "play_rate": 4,
+        "players": 1,
+        "sets": 2,
+        "win_rate": 80,
+        "wins": 4
+      },
+      "14": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_sonic_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_sonic_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 255,
+              "y": 207
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "sonic",
+        "en_name": "Sonic",
+        "games": 5,
+        "name": "Sonic",
+        "play_rate": 4,
+        "players": 1,
+        "sets": 2,
+        "win_rate": 60,
+        "wins": 3
+      },
+      "15": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_eflame_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_eflame_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 188,
+              "y": 177
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "eflame",
+        "en_name": "Pyra / Mythra",
+        "games": 5,
+        "name": "Pyra / Mythra",
+        "play_rate": 4,
+        "players": 1,
+        "sets": 2,
+        "win_rate": 20,
+        "wins": 1
+      },
+      "16": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_peach_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_peach_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 250,
+              "y": 178
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "peach",
+        "en_name": "Peach",
+        "games": 4,
+        "name": "Peach",
+        "play_rate": 4,
+        "players": 1,
+        "sets": 2,
+        "win_rate": 50,
+        "wins": 2
+      },
+      "2": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_wolf_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_wolf_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 245,
+              "y": 170
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "wolf",
+        "en_name": "Wolf",
+        "games": 9,
+        "name": "Wolf",
+        "play_rate": 8,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 56,
+        "wins": 5
+      },
+      "3": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_snake_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_snake_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 342,
+              "y": 143
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "snake",
+        "en_name": "Snake",
+        "games": 9,
+        "name": "Snake",
+        "play_rate": 8,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 56,
+        "wins": 5
+      },
+      "4": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_palutena_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_palutena_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 280,
+              "y": 161
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "palutena",
+        "en_name": "Palutena",
+        "games": 8,
+        "name": "Palutena",
+        "play_rate": 7,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 75,
+        "wins": 6
+      },
+      "5": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_captain_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_captain_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 249,
+              "y": 164
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "captain",
+        "en_name": "Captain Falcon",
+        "games": 8,
+        "name": "Captain Falcon",
+        "play_rate": 7,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 62,
+        "wins": 5
+      },
+      "6": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_lucina_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_lucina_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 271,
+              "y": 156
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "lucina",
+        "en_name": "Lucina",
+        "games": 8,
+        "name": "Lucina",
+        "play_rate": 7,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 50,
+        "wins": 4
+      },
+      "7": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_donkey_00.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_donkey_00.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 283,
+              "y": 151
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "donkey",
+        "en_name": "Donkey Kong",
+        "games": 8,
+        "name": "Donkey Kong",
+        "play_rate": 7,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 38,
+        "wins": 3
+      },
+      "8": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pikachu_03.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_pikachu_03.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 246,
+              "y": 195
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "pikachu",
+        "en_name": "Pikachu",
+        "games": 8,
+        "name": "Pikachu",
+        "play_rate": 7,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 38,
+        "wins": 3
+      },
+      "9": {
+        "assets": {
+          "base_files/icon": {
+            "asset": "./user_data/games/ssbu//base_files/icon/chara_2_ken_01.png",
+            "average_size": {
+              "x": 64.0,
+              "y": 64.0
+            },
+            "image_size": {
+              "x": 64,
+              "y": 64
+            },
+            "type": [
+              "icon"
+            ]
+          },
+          "full": {
+            "asset": "./user_data/games/ssbu//full/chara_1_ken_01.png",
+            "average_size": {
+              "x": 511.8150289017341,
+              "y": 511.8150289017341
+            },
+            "eyesight": {
+              "x": 244,
+              "y": 165
+            },
+            "image_size": {
+              "x": 512,
+              "y": 512
+            },
+            "type": [
+              "full"
+            ]
+          }
+        },
+        "codename": "ken",
+        "en_name": "Ken",
+        "games": 8,
+        "name": "Ken",
+        "play_rate": 7,
+        "players": 1,
+        "sets": 3,
+        "win_rate": 25,
+        "wins": 2
+      }
+    },
+    "dqs": 0,
+    "event_completed": false,
+    "games": 56,
+    "overperformers": {
+      "1": {
+        "name": "Gale",
+        "placement": 4,
+        "players": {
+          "1": {
+            "gamertag": "Gale",
+            "sponsor": ""
+          }
+        },
+        "seed": 14,
+        "spr": 4
+      },
+      "2": {
+        "name": "Marlowe",
+        "placement": 2,
+        "players": {
+          "1": {
+            "gamertag": "Marlowe",
+            "sponsor": ""
+          }
+        },
+        "seed": 3,
+        "spr": 1
+      },
+      "3": {
+        "name": "Drift",
+        "placement": 7,
+        "players": {
+          "1": {
+            "gamertag": "Drift",
+            "sponsor": ""
+          }
+        },
+        "seed": 11,
+        "spr": 1
+      }
+    },
+    "sets": 21,
+    "stages": {
+      "1": {
+        "codename": "BattleFieldS",
+        "games": 11,
+        "name": "Small Battlefield",
+        "path": "./user_data/games/ssbu/stage_icon/stage_2_BattleFieldS.png",
+        "play_rate": 20
+      },
+      "2": {
+        "codename": "Animal_City",
+        "games": 11,
+        "name": "Town and City",
+        "path": "./user_data/games/ssbu/stage_icon/stage_2_Animal_City.png",
+        "play_rate": 20
+      },
+      "3": {
+        "codename": "Poke_Stadium2",
+        "games": 10,
+        "name": "Pokémon Stadium 2",
+        "path": "./user_data/games/ssbu/stage_icon/stage_2_Poke_Stadium2.png",
+        "play_rate": 18
+      },
+      "4": {
+        "codename": "Poke_Kalos",
+        "games": 10,
+        "name": "Kalos Pokémon League",
+        "path": "./user_data/games/ssbu/stage_icon/stage_2_Poke_Kalos.png",
+        "play_rate": 18
+      },
+      "5": {
+        "codename": "BattleField",
+        "games": 8,
+        "name": "Battlefield",
+        "path": "./user_data/games/ssbu/stage_icon/stage_2_BattleField.png",
+        "play_rate": 14
+      },
+      "6": {
+        "codename": "Yoshi_Story",
+        "games": 6,
+        "name": "Super Happy Tree",
+        "path": "./user_data/games/ssbu/stage_icon/stage_2_Yoshi_Story.png",
+        "play_rate": 11
+      }
+    },
+    "underperformers": {
+      "1": {
+        "name": "GG | Kestrel",
+        "placement": 3,
+        "players": {
+          "1": {
+            "gamertag": "Kestrel",
+            "sponsor": "GG"
+          }
+        },
+        "seed": 2,
+        "spr": -1
+      },
+      "2": {
+        "name": "NX | Quill",
+        "placement": 5,
+        "players": {
+          "1": {
+            "gamertag": "Quill",
+            "sponsor": "NX"
+          }
+        },
+        "seed": 4,
+        "spr": -1
+      },
+      "3": {
+        "name": "Ember",
+        "placement": 7,
+        "players": {
+          "1": {
+            "gamertag": "Ember",
+            "sponsor": ""
+          }
+        },
+        "seed": 5,
+        "spr": -1
+      },
+      "4": {
+        "name": "Pixel",
+        "placement": 9,
+        "players": {
+          "1": {
+            "gamertag": "Pixel",
+            "sponsor": ""
+          }
+        },
+        "seed": 7,
+        "spr": -1
+      },
+      "5": {
+        "name": "RB | Saffron",
+        "placement": 9,
+        "players": {
+          "1": {
+            "gamertag": "Saffron",
+            "sponsor": "RB"
+          }
+        },
+        "seed": 8,
+        "spr": -1
+      },
+      "6": {
+        "name": "Echo",
+        "placement": 13,
+        "players": {
+          "1": {
+            "gamertag": "Echo",
+            "sponsor": ""
+          }
+        },
+        "seed": 12,
+        "spr": -1
+      }
+    },
+    "updated": 1781907600,
+    "upsets": {
+      "1": {
+        "completed_at": 1781894160,
+        "loser": {
+          "name": "Marlowe",
+          "players": {
+            "1": {
+              "gamertag": "Marlowe",
+              "sponsor": ""
+            }
+          },
+          "seed": 3
+        },
+        "loser_score": 1,
+        "phase_id": "B1",
+        "phase_name": "Pools",
+        "round_name": "Winners Round 1",
+        "upset_factor": 5,
+        "winner": {
+          "name": "Gale",
+          "players": {
+            "1": {
+              "gamertag": "Gale",
+              "sponsor": ""
+            }
+          },
+          "seed": 14
+        },
+        "winner_score": 2
+      },
+      "2": {
+        "completed_at": 1781895480,
+        "loser": {
+          "name": "Ember",
+          "players": {
+            "1": {
+              "gamertag": "Ember",
+              "sponsor": ""
+            }
+          },
+          "seed": 5
+        },
+        "loser_score": 0,
+        "phase_id": "B1",
+        "phase_name": "Pools",
+        "round_name": "Winners Round 1",
+        "upset_factor": 2,
+        "winner": {
+          "name": "Echo",
+          "players": {
+            "1": {
+              "gamertag": "Echo",
+              "sponsor": ""
+            }
+          },
+          "seed": 12
+        },
+        "winner_score": 2
+      },
+      "3": {
+        "completed_at": 1781896140,
+        "loser": {
+          "name": "VX | Tundra",
+          "players": {
+            "1": {
+              "gamertag": "Tundra",
+              "sponsor": "VX"
+            }
+          },
+          "seed": 6
+        },
+        "loser_score": 1,
+        "phase_id": "A1",
+        "phase_name": "Pools",
+        "round_name": "Winners Round 1",
+        "upset_factor": 2,
+        "winner": {
+          "name": "Drift",
+          "players": {
+            "1": {
+              "gamertag": "Drift",
+              "sponsor": ""
+            }
+          },
+          "seed": 11
+        },
+        "winner_score": 2
+      },
+      "4": {
+        "completed_at": 1781897100,
+        "loser": {
+          "name": "RB | Saffron",
+          "players": {
+            "1": {
+              "gamertag": "Saffron",
+              "sponsor": "RB"
+            }
+          },
+          "seed": 8
+        },
+        "loser_score": 0,
+        "phase_id": "A1",
+        "phase_name": "Pools",
+        "round_name": "Winners Round 1",
+        "upset_factor": 1,
+        "winner": {
+          "name": "Bolt",
+          "players": {
+            "1": {
+              "gamertag": "Bolt",
+              "sponsor": ""
+            }
+          },
+          "seed": 9
+        },
+        "winner_score": 2
+      }
+    }
+  },
   "game": {
     "codename": "ssbu",
     "defaults": null,
@@ -6815,43 +7819,77 @@
   },
   "layout_theme": {
     "css": {
+      "--animation-speed": "100%",
+      "--bracket-focus-color": "#d02670",
+      "--bracket-focus-dim": "30%",
+      "--bracket-focus-max-zoom": "200%",
       "--bracket-lines-color": "#000000",
       "--bracket-score-background": "#fe3636",
       "--bracket-sponsor-background": "#fe3636",
+      "--bracket-winner-color": "#d02670",
       "--chip-background": "#121212",
       "--chip-text-color": "#ffffff",
+      "--event-stats-characters-count": "10",
+      "--event-stats-performers-count": "5",
+      "--event-stats-stages-count": "6",
+      "--event-stats-upsets-count": "6",
       "--general-background": "#121212",
       "--general-border-radius": "0px",
+      "--general-chip-radius": "5px",
       "--general-font-family": "inherit",
       "--general-primary-color": "#d02670",
       "--general-secondary-color": "#121212",
       "--general-text-color": "#ffffff",
+      "--league-players-count": "16",
+      "--stage-strike-selected-color": "#d02670",
+      "--stage-strike-striked-color": "rgba(0, 0, 0, 0.69)",
+      "--standings-highlight-top": "0",
+      "--stream-queue-sets-count": "0",
+      "--teams-team1-color": "#e53935",
+      "--teams-team1-score-color": "#ffffff",
+      "--teams-team2-color": "#1e88e5",
+      "--teams-team2-score-color": "#ffffff",
       "--versus-team1-sponsor-color": "#000000",
       "--versus-team2-sponsor-color": "#000000"
     },
     "name": "Default",
-    "stylesheet": ":root {\n  --general-primary-color: #d02670;\n  --general-secondary-color: #121212;\n  --general-text-color: #ffffff;\n  --general-background: #121212;\n  --general-font-family: inherit;\n  --general-border-radius: 0px;\n  --chip-text-color: #ffffff;\n  --chip-background: #121212;\n  --bracket-score-background: #fe3636;\n  --bracket-sponsor-background: #fe3636;\n  --bracket-lines-color: #000000;\n  --versus-team1-sponsor-color: #000000;\n  --versus-team2-sponsor-color: #000000;\n}\n",
+    "stylesheet": ":root {\n  --general-primary-color: #d02670;\n  --general-secondary-color: #121212;\n  --general-text-color: #ffffff;\n  --general-background: #121212;\n  --general-font-family: inherit;\n  --general-border-radius: 0px;\n  --general-chip-radius: 5px;\n  --animation-speed: 100%;\n  --teams-team1-color: #e53935;\n  --teams-team2-color: #1e88e5;\n  --teams-team1-score-color: #ffffff;\n  --teams-team2-score-color: #ffffff;\n  --chip-text-color: #ffffff;\n  --chip-background: #121212;\n  --bracket-score-background: #fe3636;\n  --bracket-sponsor-background: #fe3636;\n  --bracket-winner-color: #d02670;\n  --bracket-lines-color: #000000;\n  --bracket-focus-color: #d02670;\n  --bracket-focus-dim: 30%;\n  --bracket-focus-max-zoom: 200%;\n  --standings-highlight-top: 0;\n  --stage-strike-striked-color: rgba(0, 0, 0, 0.69);\n  --stage-strike-selected-color: #d02670;\n  --stream-queue-sets-count: 0;\n  --event-stats-characters-count: 10;\n  --event-stats-stages-count: 6;\n  --event-stats-upsets-count: 6;\n  --event-stats-performers-count: 5;\n  --league-players-count: 16;\n  --versus-team1-sponsor-color: #000000;\n  --versus-team2-sponsor-color: #000000;\n}\n",
     "values": {
+      "animation": {
+        "enabled": true,
+        "speed": 100
+      },
       "bracket": {
         "avatar_display": true,
         "character_display": true,
         "country_flag_display": true,
+        "dim_losers": true,
+        "focus_color": "#d02670",
+        "focus_dim": 30,
+        "focus_label_display": true,
+        "focus_max_zoom": 200,
+        "identifier_display": false,
         "lines_color": "#000000",
+        "pending_display": true,
+        "round_names_display": true,
         "score_background": {
           "color": "#fe3636",
           "color2": "#121212",
           "direction": "to right",
           "gradient": false
         },
+        "seed_display": true,
         "sponsor_background": {
           "color": "#fe3636",
           "color2": "#121212",
           "direction": "to right",
           "gradient": false
         },
-        "state_flag_display": true
+        "state_flag_display": true,
+        "winner_color": "#d02670"
       },
       "chip": {
+        "avatar_display": true,
         "background": {
           "color": "#121212",
           "color2": "#121212",
@@ -6859,13 +7897,26 @@
           "gradient": false
         },
         "country_flag_display": true,
+        "losers_display": true,
         "pronouns_display": true,
         "seed_display": true,
         "social_media_display": true,
         "state_flag_display": true,
         "text_color": "#ffffff"
       },
+      "event_stats": {
+        "characters_count": 10,
+        "performers_count": 5,
+        "seed_display": true,
+        "spr_display": true,
+        "stages_count": 6,
+        "summary_display": true,
+        "upset_factor_display": true,
+        "upsets_count": 6,
+        "win_rate_display": true
+      },
       "general": {
+        "apply_colors": false,
         "background": {
           "color": "#121212",
           "color2": "#121212",
@@ -6873,14 +7924,176 @@
           "gradient": false
         },
         "border_radius": 0,
+        "chip_radius": 5,
         "font_family": "",
         "primary_color": "#d02670",
         "secondary_color": "#121212",
-        "text_color": "#ffffff"
+        "text_case": "layout",
+        "text_color": "#ffffff",
+        "text_outline": true
+      },
+      "league": {
+        "logo_display": true,
+        "on_stream_display": true,
+        "players_count": 16,
+        "sponsor_display": true
+      },
+      "schedule": {
+        "date_display": true,
+        "logo_display": true,
+        "next_display": true,
+        "state_display": true
+      },
+      "stage_strike": {
+        "selected_color": "#d02670",
+        "stage_names_display": true,
+        "striked_color": "#b0000000",
+        "striker_display": true
+      },
+      "standings": {
+        "buchholz_display": false,
+        "game_diff_display": true,
+        "highlight_top": 0,
+        "points_display": true
+      },
+      "stream_queue": {
+        "avatar_display": true,
+        "eta_display": true,
+        "first_set_display": true,
+        "sets_count": 0,
+        "station_display": false
+      },
+      "teams": {
+        "team1_color": "#e53935",
+        "team1_score_color": "#ffffff",
+        "team2_color": "#1e88e5",
+        "team2_score_color": "#ffffff"
       },
       "versus": {
+        "custom_sponsor_colors": false,
         "team1_sponsor_color": "#000000",
         "team2_sponsor_color": "#000000"
+      }
+    }
+  },
+  "league": {
+    "banner": "",
+    "logo": "",
+    "name": "HyperDrive Circuit 2026",
+    "players": 128,
+    "slug": "tournament/hyperdrive-circuit-2026",
+    "standings": {
+      "1": {
+        "gamertag": "Kestrel",
+        "placement": 1,
+        "player_id": 2,
+        "points": 920,
+        "sponsor": "GG"
+      },
+      "10": {
+        "gamertag": "Bolt",
+        "placement": 10,
+        "player_id": 9,
+        "points": 380,
+        "sponsor": ""
+      },
+      "11": {
+        "gamertag": "Echo",
+        "placement": 11,
+        "player_id": 12,
+        "points": 345,
+        "sponsor": ""
+      },
+      "12": {
+        "gamertag": "Drift",
+        "placement": 12,
+        "player_id": 11,
+        "points": 300,
+        "sponsor": ""
+      },
+      "13": {
+        "gamertag": "Gale",
+        "placement": 13,
+        "player_id": 14,
+        "points": 260,
+        "sponsor": ""
+      },
+      "14": {
+        "gamertag": "Flint",
+        "placement": 14,
+        "player_id": 13,
+        "points": 220,
+        "sponsor": ""
+      },
+      "15": {
+        "gamertag": "Iris",
+        "placement": 15,
+        "player_id": 16,
+        "points": 190,
+        "sponsor": ""
+      },
+      "16": {
+        "gamertag": "Harbor",
+        "placement": 16,
+        "player_id": 15,
+        "points": 150,
+        "sponsor": ""
+      },
+      "2": {
+        "gamertag": "Azure",
+        "placement": 2,
+        "player_id": 1,
+        "points": 845,
+        "sponsor": "HD"
+      },
+      "3": {
+        "gamertag": "Quill",
+        "placement": 3,
+        "player_id": 4,
+        "points": 790,
+        "sponsor": "NX"
+      },
+      "4": {
+        "gamertag": "Marlowe",
+        "placement": 4,
+        "player_id": 3,
+        "points": 640,
+        "sponsor": ""
+      },
+      "5": {
+        "gamertag": "Pixel",
+        "placement": 5,
+        "player_id": 7,
+        "points": 615,
+        "sponsor": ""
+      },
+      "6": {
+        "gamertag": "Ember",
+        "placement": 6,
+        "player_id": 5,
+        "points": 560,
+        "sponsor": ""
+      },
+      "7": {
+        "gamertag": "Tundra",
+        "placement": 7,
+        "player_id": 6,
+        "points": 470,
+        "sponsor": "VX"
+      },
+      "8": {
+        "gamertag": "Cinder",
+        "placement": 8,
+        "player_id": 10,
+        "points": 455,
+        "sponsor": ""
+      },
+      "9": {
+        "gamertag": "Saffron",
+        "placement": 9,
+        "player_id": 8,
+        "points": 430,
+        "sponsor": "RB"
       }
     }
   },
@@ -7635,6 +8848,176 @@
       }
     }
   },
+  "schedule": {
+    "event_start": {
+      "date": "2026-06-19",
+      "start_at": 1781892000,
+      "time": "18:00",
+      "weekday": "Friday"
+    },
+    "next": {
+      "date": "2026-06-19",
+      "identifier": "F",
+      "minutes": 40,
+      "phases": [
+        "Round 2 Pools"
+      ],
+      "pools": [
+        "F1",
+        "F2"
+      ],
+      "start_at": 1781910000,
+      "state": "upcoming",
+      "time": "23:00",
+      "weekday": "Friday"
+    },
+    "phases": {
+      "1": {
+        "bracket_type": null,
+        "date": "2026-06-19",
+        "groups": 8,
+        "name": "Round 1 Pools",
+        "start_at": 1781892000,
+        "state": "completed",
+        "time": "18:00",
+        "waves": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "weekday": "Friday"
+      },
+      "2": {
+        "bracket_type": null,
+        "date": "2026-06-19",
+        "groups": 4,
+        "name": "Round 2 Pools",
+        "start_at": 1781906400,
+        "state": "active",
+        "time": "22:00",
+        "waves": [
+          "E",
+          "F"
+        ],
+        "weekday": "Friday"
+      },
+      "3": {
+        "bracket_type": null,
+        "date": "2026-06-20",
+        "groups": 1,
+        "name": "Top 24",
+        "start_at": 1781917200,
+        "state": "upcoming",
+        "time": "01:00",
+        "waves": [],
+        "weekday": "Saturday"
+      },
+      "4": {
+        "bracket_type": null,
+        "date": "2026-06-20",
+        "groups": 1,
+        "name": "Top 8",
+        "start_at": 1781978400,
+        "state": "upcoming",
+        "time": "18:00",
+        "waves": [],
+        "weekday": "Saturday"
+      }
+    },
+    "waves": {
+      "1": {
+        "date": "2026-06-19",
+        "identifier": "A",
+        "phases": [
+          "Round 1 Pools"
+        ],
+        "pools": [
+          "A1",
+          "A2"
+        ],
+        "start_at": 1781892000,
+        "state": "completed",
+        "time": "18:00",
+        "weekday": "Friday"
+      },
+      "2": {
+        "date": "2026-06-19",
+        "identifier": "B",
+        "phases": [
+          "Round 1 Pools"
+        ],
+        "pools": [
+          "B1",
+          "B2"
+        ],
+        "start_at": 1781895600,
+        "state": "completed",
+        "time": "19:00",
+        "weekday": "Friday"
+      },
+      "3": {
+        "date": "2026-06-19",
+        "identifier": "C",
+        "phases": [
+          "Round 1 Pools"
+        ],
+        "pools": [
+          "C1",
+          "C2"
+        ],
+        "start_at": 1781899200,
+        "state": "completed",
+        "time": "20:00",
+        "weekday": "Friday"
+      },
+      "4": {
+        "date": "2026-06-19",
+        "identifier": "D",
+        "phases": [
+          "Round 1 Pools"
+        ],
+        "pools": [
+          "D1",
+          "D2"
+        ],
+        "start_at": 1781902800,
+        "state": "completed",
+        "time": "21:00",
+        "weekday": "Friday"
+      },
+      "5": {
+        "date": "2026-06-19",
+        "identifier": "E",
+        "phases": [
+          "Round 2 Pools"
+        ],
+        "pools": [
+          "E1",
+          "E2"
+        ],
+        "start_at": 1781906400,
+        "state": "active",
+        "time": "22:00",
+        "weekday": "Friday"
+      },
+      "6": {
+        "date": "2026-06-19",
+        "identifier": "F",
+        "phases": [
+          "Round 2 Pools"
+        ],
+        "pools": [
+          "F1",
+          "F2"
+        ],
+        "start_at": 1781910000,
+        "state": "upcoming",
+        "time": "23:00",
+        "weekday": "Friday"
+      }
+    }
+  },
   "score": {
     "1": {
       "best_of": 5,
@@ -8193,10 +9576,1291 @@
     }
   },
   "stream_queue": {
-    "byName": {},
+    "average_set_minutes": 16,
+    "byName": {
+      "hyperdrive_tv": [
+        {
+          "best_of": 5,
+          "best_of_text": "Best of 5",
+          "eta": 1791766172,
+          "eta_minutes": 0,
+          "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+          "id": 1001,
+          "isCurrentEvent": true,
+          "match": "Winners Semi-Final",
+          "onStream": false,
+          "phase": "Top 24",
+          "position": 1,
+          "queueKey": "set:1001",
+          "source": "startgg",
+          "started_at": null,
+          "state": 1,
+          "station": -1,
+          "team": {
+            "1": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/br.svg",
+                    "code": "BR",
+                    "display_name": "Brazil",
+                    "emoji": "🇧🇷",
+                    "en_name": "Brazil",
+                    "latitude": "-10.00000000",
+                    "longitude": "-55.00000000",
+                    "name": "Brazil"
+                  },
+                  "mergedName": "HD|Azure",
+                  "name": "Azure",
+                  "online_avatar": "",
+                  "pronoun": "she/her",
+                  "real_name": "Ana Silva",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/BR/SP.png",
+                    "code": "SP",
+                    "latitude": "-23.55051990",
+                    "longitude": "-46.63330940",
+                    "name": "São Paulo",
+                    "original_code": "SP"
+                  },
+                  "team": "HD",
+                  "twitter": "azure_hd"
+                }
+              },
+              "seed": 1,
+              "teamName": "HD | Azure"
+            },
+            "2": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/ca.svg",
+                    "code": "CA",
+                    "display_name": "Canada",
+                    "emoji": "🇨🇦",
+                    "en_name": "Canada",
+                    "latitude": "60.00000000",
+                    "longitude": "-95.00000000",
+                    "name": "Canada"
+                  },
+                  "mergedName": "NX|Quill",
+                  "name": "Quill",
+                  "online_avatar": "",
+                  "pronoun": "they/them",
+                  "real_name": "Quinn Hale",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/CA/ON.png",
+                    "code": "ON",
+                    "latitude": "50.00067800",
+                    "longitude": "-86.00097700",
+                    "name": "Ontario",
+                    "original_code": "ON"
+                  },
+                  "team": "NX",
+                  "twitter": "quill_nx"
+                }
+              },
+              "seed": 4,
+              "teamName": "NX | Quill"
+            }
+          }
+        },
+        {
+          "best_of": 5,
+          "best_of_text": "Best of 5",
+          "eta": 1791767132,
+          "eta_minutes": 16,
+          "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+          "id": 1002,
+          "isCurrentEvent": true,
+          "match": "Winners Semi-Final",
+          "onStream": false,
+          "phase": "Top 24",
+          "position": 2,
+          "queueKey": "set:1002",
+          "source": "startgg",
+          "started_at": null,
+          "state": 1,
+          "station": -1,
+          "team": {
+            "1": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/jp.svg",
+                    "code": "JP",
+                    "display_name": "Japan",
+                    "emoji": "🇯🇵",
+                    "en_name": "Japan",
+                    "latitude": "36.00000000",
+                    "longitude": "138.00000000",
+                    "name": "Japan"
+                  },
+                  "mergedName": "GG|Kestrel",
+                  "name": "Kestrel",
+                  "online_avatar": "",
+                  "pronoun": "he/him",
+                  "real_name": "Kenji Sato",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/JP/13.png",
+                    "code": "13",
+                    "latitude": "35.67686010",
+                    "longitude": "139.76389470",
+                    "name": "Tokyo",
+                    "original_code": "13"
+                  },
+                  "team": "GG",
+                  "twitter": "kestrel_gg"
+                }
+              },
+              "seed": 2,
+              "teamName": "GG | Kestrel"
+            },
+            "2": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/us.svg",
+                    "code": "US",
+                    "display_name": "United States",
+                    "emoji": "🇺🇸",
+                    "en_name": "United States",
+                    "latitude": "38.00000000",
+                    "longitude": "-97.00000000",
+                    "name": "United States"
+                  },
+                  "mergedName": "Marlowe",
+                  "name": "Marlowe",
+                  "online_avatar": "",
+                  "pronoun": "she/her",
+                  "real_name": "Mia Lowe",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/US/CA.png",
+                    "code": "CA",
+                    "latitude": "36.70146310",
+                    "longitude": "-118.75599700",
+                    "name": "California",
+                    "original_code": "CA"
+                  },
+                  "team": "",
+                  "twitter": "marlowe"
+                }
+              },
+              "seed": 3,
+              "teamName": "Marlowe"
+            }
+          }
+        },
+        {
+          "best_of": 3,
+          "best_of_text": "Best of 3",
+          "eta": 1791768092,
+          "eta_minutes": 32,
+          "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+          "id": 1003,
+          "isCurrentEvent": true,
+          "match": "Losers Round 3",
+          "onStream": false,
+          "phase": "Top 24",
+          "position": 3,
+          "queueKey": "set:1003",
+          "source": "startgg",
+          "started_at": null,
+          "state": 1,
+          "station": -1,
+          "team": {
+            "1": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/se.svg",
+                    "code": "SE",
+                    "display_name": "Sweden",
+                    "emoji": "🇸🇪",
+                    "en_name": "Sweden",
+                    "latitude": "62.00000000",
+                    "longitude": "15.00000000",
+                    "name": "Sweden"
+                  },
+                  "mergedName": "VX|Tundra",
+                  "name": "Tundra",
+                  "online_avatar": "",
+                  "pronoun": "he/him",
+                  "real_name": "Tomas Berg",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/SE/AB.png",
+                    "code": "AB",
+                    "latitude": "59.33361730",
+                    "longitude": "18.02769730",
+                    "name": "Stockholm",
+                    "original_code": "AB"
+                  },
+                  "team": "VX",
+                  "twitter": "tundra_vx"
+                }
+              },
+              "seed": 6,
+              "teamName": "VX | Tundra"
+            },
+            "2": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/us.svg",
+                    "code": "US",
+                    "display_name": "United States",
+                    "emoji": "🇺🇸",
+                    "en_name": "United States",
+                    "latitude": "38.00000000",
+                    "longitude": "-97.00000000",
+                    "name": "United States"
+                  },
+                  "mergedName": "Bolt",
+                  "name": "Bolt",
+                  "online_avatar": "",
+                  "pronoun": "",
+                  "real_name": "Ben Ortiz",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/US/TX.png",
+                    "code": "TX",
+                    "latitude": "31.26389050",
+                    "longitude": "-98.54561160",
+                    "name": "Texas",
+                    "original_code": "TX"
+                  },
+                  "team": "",
+                  "twitter": "bolt"
+                }
+              },
+              "seed": 9,
+              "teamName": "Bolt"
+            }
+          }
+        },
+        {
+          "best_of": 3,
+          "best_of_text": "Best of 3",
+          "eta": 1791769052,
+          "eta_minutes": 48,
+          "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+          "id": 1004,
+          "isCurrentEvent": true,
+          "match": "Losers Round 3",
+          "onStream": false,
+          "phase": "Top 24",
+          "position": 4,
+          "queueKey": "set:1004",
+          "source": "startgg",
+          "started_at": null,
+          "state": 1,
+          "station": -1,
+          "team": {
+            "1": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/mx.svg",
+                    "code": "MX",
+                    "display_name": "Mexico",
+                    "emoji": "🇲🇽",
+                    "en_name": "Mexico",
+                    "latitude": "23.00000000",
+                    "longitude": "-102.00000000",
+                    "name": "Mexico"
+                  },
+                  "mergedName": "Ember",
+                  "name": "Ember",
+                  "online_avatar": "",
+                  "pronoun": "she/her",
+                  "real_name": "Elena Ruiz",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/MX/JAL.png",
+                    "code": "JAL",
+                    "latitude": "20.33333310",
+                    "longitude": "-103.66666710",
+                    "name": "Jalisco",
+                    "original_code": "JAL"
+                  },
+                  "team": "",
+                  "twitter": "ember"
+                }
+              },
+              "seed": 5,
+              "teamName": "Ember"
+            },
+            "2": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/kr.svg",
+                    "code": "KR",
+                    "display_name": "South Korea",
+                    "emoji": "🇰🇷",
+                    "en_name": "South Korea",
+                    "latitude": "37.00000000",
+                    "longitude": "127.50000000",
+                    "name": "South Korea"
+                  },
+                  "mergedName": "Cinder",
+                  "name": "Cinder",
+                  "online_avatar": "",
+                  "pronoun": "",
+                  "real_name": "Chloe Park",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/KR/11.png",
+                    "code": "11",
+                    "latitude": "37.56653500",
+                    "longitude": "126.97796920",
+                    "name": "Seoul",
+                    "original_code": "11"
+                  },
+                  "team": "",
+                  "twitter": "cinder"
+                }
+              },
+              "seed": 10,
+              "teamName": "Cinder"
+            }
+          }
+        }
+      ],
+      "hyperdrive_tv2": [
+        {
+          "best_of": 3,
+          "best_of_text": "Best of 3",
+          "eta": 1791766172,
+          "eta_minutes": 0,
+          "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+          "id": 1005,
+          "isCurrentEvent": true,
+          "match": "Losers Round 2",
+          "onStream": false,
+          "phase": "Top 24",
+          "position": 1,
+          "queueKey": "set:1005",
+          "source": "startgg",
+          "started_at": null,
+          "state": 1,
+          "station": -1,
+          "team": {
+            "1": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/cl.svg",
+                    "code": "CL",
+                    "display_name": "Chile",
+                    "emoji": "🇨🇱",
+                    "en_name": "Chile",
+                    "latitude": "-30.00000000",
+                    "longitude": "-71.00000000",
+                    "name": "Chile"
+                  },
+                  "mergedName": "Drift",
+                  "name": "Drift",
+                  "online_avatar": "",
+                  "pronoun": "",
+                  "real_name": "Diego Lopez",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/CL/RM.png",
+                    "code": "RM",
+                    "latitude": "-33.57393410",
+                    "longitude": "-70.62055180",
+                    "name": "Región Metropolitana de Santiago",
+                    "original_code": "RM"
+                  },
+                  "team": "",
+                  "twitter": "drift"
+                }
+              },
+              "seed": 11,
+              "teamName": "Drift"
+            },
+            "2": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/us.svg",
+                    "code": "US",
+                    "display_name": "United States",
+                    "emoji": "🇺🇸",
+                    "en_name": "United States",
+                    "latitude": "38.00000000",
+                    "longitude": "-97.00000000",
+                    "name": "United States"
+                  },
+                  "mergedName": "Gale",
+                  "name": "Gale",
+                  "online_avatar": "",
+                  "pronoun": "",
+                  "real_name": "Grace Lee",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/US/NY.png",
+                    "code": "NY",
+                    "latitude": "40.71277530",
+                    "longitude": "-74.00597280",
+                    "name": "New York",
+                    "original_code": "NY"
+                  },
+                  "team": "",
+                  "twitter": "gale"
+                }
+              },
+              "seed": 14,
+              "teamName": "Gale"
+            }
+          }
+        },
+        {
+          "best_of": 3,
+          "best_of_text": "Best of 3",
+          "eta": 1791767132,
+          "eta_minutes": 16,
+          "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+          "id": 1006,
+          "isCurrentEvent": true,
+          "match": "Losers Round 2",
+          "onStream": false,
+          "phase": "Top 24",
+          "position": 2,
+          "queueKey": "set:1006",
+          "source": "startgg",
+          "started_at": null,
+          "state": 1,
+          "station": -1,
+          "team": {
+            "1": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/au.svg",
+                    "code": "AU",
+                    "display_name": "Australia",
+                    "emoji": "🇦🇺",
+                    "en_name": "Australia",
+                    "latitude": "-27.00000000",
+                    "longitude": "133.00000000",
+                    "name": "Australia"
+                  },
+                  "mergedName": "Echo",
+                  "name": "Echo",
+                  "online_avatar": "",
+                  "pronoun": "",
+                  "real_name": "Emma Clark",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/AU/NSW.png",
+                    "code": "NSW",
+                    "latitude": "-31.87598350",
+                    "longitude": "147.28694930",
+                    "name": "New South Wales",
+                    "original_code": "NSW"
+                  },
+                  "team": "",
+                  "twitter": "echo"
+                }
+              },
+              "seed": 12,
+              "teamName": "Echo"
+            },
+            "2": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/de.svg",
+                    "code": "DE",
+                    "display_name": "Germany",
+                    "emoji": "🇩🇪",
+                    "en_name": "Germany",
+                    "latitude": "51.00000000",
+                    "longitude": "9.00000000",
+                    "name": "Germany"
+                  },
+                  "mergedName": "Flint",
+                  "name": "Flint",
+                  "online_avatar": "",
+                  "pronoun": "",
+                  "real_name": "Felix Wagner",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/DE/BE.png",
+                    "code": "BE",
+                    "latitude": "52.51088500",
+                    "longitude": "13.39893670",
+                    "name": "Berlin",
+                    "original_code": "BE"
+                  },
+                  "team": "",
+                  "twitter": "flint"
+                }
+              },
+              "seed": 13,
+              "teamName": "Flint"
+            }
+          }
+        },
+        {
+          "best_of": 3,
+          "best_of_text": "Best of 3",
+          "eta": 1791768092,
+          "eta_minutes": 32,
+          "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+          "id": 1007,
+          "isCurrentEvent": true,
+          "match": "Losers Round 2",
+          "onStream": false,
+          "phase": "Top 24",
+          "position": 3,
+          "queueKey": "set:1007",
+          "source": "startgg",
+          "started_at": null,
+          "state": 1,
+          "station": -1,
+          "team": {
+            "1": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/pt.svg",
+                    "code": "PT",
+                    "display_name": "Portugal",
+                    "emoji": "🇵🇹",
+                    "en_name": "Portugal",
+                    "latitude": "39.50000000",
+                    "longitude": "-8.00000000",
+                    "name": "Portugal"
+                  },
+                  "mergedName": "Harbor",
+                  "name": "Harbor",
+                  "online_avatar": "",
+                  "pronoun": "",
+                  "real_name": "Hugo Costa",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/PT/11.png",
+                    "code": "11",
+                    "latitude": "38.70775070",
+                    "longitude": "-9.13659190",
+                    "name": "Lisbon",
+                    "original_code": "11"
+                  },
+                  "team": "",
+                  "twitter": "harbor"
+                }
+              },
+              "seed": 15,
+              "teamName": "Harbor"
+            },
+            "2": {
+              "losers": false,
+              "player": {
+                "1": {
+                  "country": {
+                    "asset": "./assets/country_flag/gb.svg",
+                    "code": "GB",
+                    "display_name": "United Kingdom",
+                    "emoji": "🇬🇧",
+                    "en_name": "United Kingdom",
+                    "latitude": "54.00000000",
+                    "longitude": "-2.00000000",
+                    "name": "United Kingdom"
+                  },
+                  "mergedName": "RB|Saffron",
+                  "name": "Saffron",
+                  "online_avatar": "",
+                  "pronoun": "she/her",
+                  "real_name": "Sara Khan",
+                  "socials": {},
+                  "state": {
+                    "asset": "./assets/state_flag/GB/ENG.png",
+                    "code": "ENG",
+                    "latitude": "52.53102140",
+                    "longitude": "-1.26490620",
+                    "name": "England",
+                    "original_code": "ENG"
+                  },
+                  "team": "RB",
+                  "twitter": "saffron_rb"
+                }
+              },
+              "seed": 8,
+              "teamName": "RB | Saffron"
+            }
+          }
+        }
+      ]
+    },
     "currentStream": null,
-    "lastUpdated": null,
-    "streams": []
+    "lastUpdated": 1791766172.1477509,
+    "streams": [
+      {
+        "manual": false,
+        "name": "hyperdrive_tv",
+        "scoreboard": 1,
+        "sets": [
+          {
+            "best_of": 5,
+            "best_of_text": "Best of 5",
+            "eta": 1791766172,
+            "eta_minutes": 0,
+            "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+            "id": 1001,
+            "isCurrentEvent": true,
+            "match": "Winners Semi-Final",
+            "onStream": false,
+            "phase": "Top 24",
+            "position": 1,
+            "queueKey": "set:1001",
+            "source": "startgg",
+            "started_at": null,
+            "state": 1,
+            "station": -1,
+            "team": {
+              "1": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/br.svg",
+                      "code": "BR",
+                      "display_name": "Brazil",
+                      "emoji": "🇧🇷",
+                      "en_name": "Brazil",
+                      "latitude": "-10.00000000",
+                      "longitude": "-55.00000000",
+                      "name": "Brazil"
+                    },
+                    "mergedName": "HD|Azure",
+                    "name": "Azure",
+                    "online_avatar": "",
+                    "pronoun": "she/her",
+                    "real_name": "Ana Silva",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/BR/SP.png",
+                      "code": "SP",
+                      "latitude": "-23.55051990",
+                      "longitude": "-46.63330940",
+                      "name": "São Paulo",
+                      "original_code": "SP"
+                    },
+                    "team": "HD",
+                    "twitter": "azure_hd"
+                  }
+                },
+                "seed": 1,
+                "teamName": "HD | Azure"
+              },
+              "2": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/ca.svg",
+                      "code": "CA",
+                      "display_name": "Canada",
+                      "emoji": "🇨🇦",
+                      "en_name": "Canada",
+                      "latitude": "60.00000000",
+                      "longitude": "-95.00000000",
+                      "name": "Canada"
+                    },
+                    "mergedName": "NX|Quill",
+                    "name": "Quill",
+                    "online_avatar": "",
+                    "pronoun": "they/them",
+                    "real_name": "Quinn Hale",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/CA/ON.png",
+                      "code": "ON",
+                      "latitude": "50.00067800",
+                      "longitude": "-86.00097700",
+                      "name": "Ontario",
+                      "original_code": "ON"
+                    },
+                    "team": "NX",
+                    "twitter": "quill_nx"
+                  }
+                },
+                "seed": 4,
+                "teamName": "NX | Quill"
+              }
+            }
+          },
+          {
+            "best_of": 5,
+            "best_of_text": "Best of 5",
+            "eta": 1791767132,
+            "eta_minutes": 16,
+            "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+            "id": 1002,
+            "isCurrentEvent": true,
+            "match": "Winners Semi-Final",
+            "onStream": false,
+            "phase": "Top 24",
+            "position": 2,
+            "queueKey": "set:1002",
+            "source": "startgg",
+            "started_at": null,
+            "state": 1,
+            "station": -1,
+            "team": {
+              "1": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/jp.svg",
+                      "code": "JP",
+                      "display_name": "Japan",
+                      "emoji": "🇯🇵",
+                      "en_name": "Japan",
+                      "latitude": "36.00000000",
+                      "longitude": "138.00000000",
+                      "name": "Japan"
+                    },
+                    "mergedName": "GG|Kestrel",
+                    "name": "Kestrel",
+                    "online_avatar": "",
+                    "pronoun": "he/him",
+                    "real_name": "Kenji Sato",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/JP/13.png",
+                      "code": "13",
+                      "latitude": "35.67686010",
+                      "longitude": "139.76389470",
+                      "name": "Tokyo",
+                      "original_code": "13"
+                    },
+                    "team": "GG",
+                    "twitter": "kestrel_gg"
+                  }
+                },
+                "seed": 2,
+                "teamName": "GG | Kestrel"
+              },
+              "2": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/us.svg",
+                      "code": "US",
+                      "display_name": "United States",
+                      "emoji": "🇺🇸",
+                      "en_name": "United States",
+                      "latitude": "38.00000000",
+                      "longitude": "-97.00000000",
+                      "name": "United States"
+                    },
+                    "mergedName": "Marlowe",
+                    "name": "Marlowe",
+                    "online_avatar": "",
+                    "pronoun": "she/her",
+                    "real_name": "Mia Lowe",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/US/CA.png",
+                      "code": "CA",
+                      "latitude": "36.70146310",
+                      "longitude": "-118.75599700",
+                      "name": "California",
+                      "original_code": "CA"
+                    },
+                    "team": "",
+                    "twitter": "marlowe"
+                  }
+                },
+                "seed": 3,
+                "teamName": "Marlowe"
+              }
+            }
+          },
+          {
+            "best_of": 3,
+            "best_of_text": "Best of 3",
+            "eta": 1791768092,
+            "eta_minutes": 32,
+            "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+            "id": 1003,
+            "isCurrentEvent": true,
+            "match": "Losers Round 3",
+            "onStream": false,
+            "phase": "Top 24",
+            "position": 3,
+            "queueKey": "set:1003",
+            "source": "startgg",
+            "started_at": null,
+            "state": 1,
+            "station": -1,
+            "team": {
+              "1": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/se.svg",
+                      "code": "SE",
+                      "display_name": "Sweden",
+                      "emoji": "🇸🇪",
+                      "en_name": "Sweden",
+                      "latitude": "62.00000000",
+                      "longitude": "15.00000000",
+                      "name": "Sweden"
+                    },
+                    "mergedName": "VX|Tundra",
+                    "name": "Tundra",
+                    "online_avatar": "",
+                    "pronoun": "he/him",
+                    "real_name": "Tomas Berg",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/SE/AB.png",
+                      "code": "AB",
+                      "latitude": "59.33361730",
+                      "longitude": "18.02769730",
+                      "name": "Stockholm",
+                      "original_code": "AB"
+                    },
+                    "team": "VX",
+                    "twitter": "tundra_vx"
+                  }
+                },
+                "seed": 6,
+                "teamName": "VX | Tundra"
+              },
+              "2": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/us.svg",
+                      "code": "US",
+                      "display_name": "United States",
+                      "emoji": "🇺🇸",
+                      "en_name": "United States",
+                      "latitude": "38.00000000",
+                      "longitude": "-97.00000000",
+                      "name": "United States"
+                    },
+                    "mergedName": "Bolt",
+                    "name": "Bolt",
+                    "online_avatar": "",
+                    "pronoun": "",
+                    "real_name": "Ben Ortiz",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/US/TX.png",
+                      "code": "TX",
+                      "latitude": "31.26389050",
+                      "longitude": "-98.54561160",
+                      "name": "Texas",
+                      "original_code": "TX"
+                    },
+                    "team": "",
+                    "twitter": "bolt"
+                  }
+                },
+                "seed": 9,
+                "teamName": "Bolt"
+              }
+            }
+          },
+          {
+            "best_of": 3,
+            "best_of_text": "Best of 3",
+            "eta": 1791769052,
+            "eta_minutes": 48,
+            "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+            "id": 1004,
+            "isCurrentEvent": true,
+            "match": "Losers Round 3",
+            "onStream": false,
+            "phase": "Top 24",
+            "position": 4,
+            "queueKey": "set:1004",
+            "source": "startgg",
+            "started_at": null,
+            "state": 1,
+            "station": -1,
+            "team": {
+              "1": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/mx.svg",
+                      "code": "MX",
+                      "display_name": "Mexico",
+                      "emoji": "🇲🇽",
+                      "en_name": "Mexico",
+                      "latitude": "23.00000000",
+                      "longitude": "-102.00000000",
+                      "name": "Mexico"
+                    },
+                    "mergedName": "Ember",
+                    "name": "Ember",
+                    "online_avatar": "",
+                    "pronoun": "she/her",
+                    "real_name": "Elena Ruiz",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/MX/JAL.png",
+                      "code": "JAL",
+                      "latitude": "20.33333310",
+                      "longitude": "-103.66666710",
+                      "name": "Jalisco",
+                      "original_code": "JAL"
+                    },
+                    "team": "",
+                    "twitter": "ember"
+                  }
+                },
+                "seed": 5,
+                "teamName": "Ember"
+              },
+              "2": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/kr.svg",
+                      "code": "KR",
+                      "display_name": "South Korea",
+                      "emoji": "🇰🇷",
+                      "en_name": "South Korea",
+                      "latitude": "37.00000000",
+                      "longitude": "127.50000000",
+                      "name": "South Korea"
+                    },
+                    "mergedName": "Cinder",
+                    "name": "Cinder",
+                    "online_avatar": "",
+                    "pronoun": "",
+                    "real_name": "Chloe Park",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/KR/11.png",
+                      "code": "11",
+                      "latitude": "37.56653500",
+                      "longitude": "126.97796920",
+                      "name": "Seoul",
+                      "original_code": "11"
+                    },
+                    "team": "",
+                    "twitter": "cinder"
+                  }
+                },
+                "seed": 10,
+                "teamName": "Cinder"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "manual": false,
+        "name": "hyperdrive_tv2",
+        "scoreboard": null,
+        "sets": [
+          {
+            "best_of": 3,
+            "best_of_text": "Best of 3",
+            "eta": 1791766172,
+            "eta_minutes": 0,
+            "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+            "id": 1005,
+            "isCurrentEvent": true,
+            "match": "Losers Round 2",
+            "onStream": false,
+            "phase": "Top 24",
+            "position": 1,
+            "queueKey": "set:1005",
+            "source": "startgg",
+            "started_at": null,
+            "state": 1,
+            "station": -1,
+            "team": {
+              "1": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/cl.svg",
+                      "code": "CL",
+                      "display_name": "Chile",
+                      "emoji": "🇨🇱",
+                      "en_name": "Chile",
+                      "latitude": "-30.00000000",
+                      "longitude": "-71.00000000",
+                      "name": "Chile"
+                    },
+                    "mergedName": "Drift",
+                    "name": "Drift",
+                    "online_avatar": "",
+                    "pronoun": "",
+                    "real_name": "Diego Lopez",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/CL/RM.png",
+                      "code": "RM",
+                      "latitude": "-33.57393410",
+                      "longitude": "-70.62055180",
+                      "name": "Región Metropolitana de Santiago",
+                      "original_code": "RM"
+                    },
+                    "team": "",
+                    "twitter": "drift"
+                  }
+                },
+                "seed": 11,
+                "teamName": "Drift"
+              },
+              "2": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/us.svg",
+                      "code": "US",
+                      "display_name": "United States",
+                      "emoji": "🇺🇸",
+                      "en_name": "United States",
+                      "latitude": "38.00000000",
+                      "longitude": "-97.00000000",
+                      "name": "United States"
+                    },
+                    "mergedName": "Gale",
+                    "name": "Gale",
+                    "online_avatar": "",
+                    "pronoun": "",
+                    "real_name": "Grace Lee",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/US/NY.png",
+                      "code": "NY",
+                      "latitude": "40.71277530",
+                      "longitude": "-74.00597280",
+                      "name": "New York",
+                      "original_code": "NY"
+                    },
+                    "team": "",
+                    "twitter": "gale"
+                  }
+                },
+                "seed": 14,
+                "teamName": "Gale"
+              }
+            }
+          },
+          {
+            "best_of": 3,
+            "best_of_text": "Best of 3",
+            "eta": 1791767132,
+            "eta_minutes": 16,
+            "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+            "id": 1006,
+            "isCurrentEvent": true,
+            "match": "Losers Round 2",
+            "onStream": false,
+            "phase": "Top 24",
+            "position": 2,
+            "queueKey": "set:1006",
+            "source": "startgg",
+            "started_at": null,
+            "state": 1,
+            "station": -1,
+            "team": {
+              "1": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/au.svg",
+                      "code": "AU",
+                      "display_name": "Australia",
+                      "emoji": "🇦🇺",
+                      "en_name": "Australia",
+                      "latitude": "-27.00000000",
+                      "longitude": "133.00000000",
+                      "name": "Australia"
+                    },
+                    "mergedName": "Echo",
+                    "name": "Echo",
+                    "online_avatar": "",
+                    "pronoun": "",
+                    "real_name": "Emma Clark",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/AU/NSW.png",
+                      "code": "NSW",
+                      "latitude": "-31.87598350",
+                      "longitude": "147.28694930",
+                      "name": "New South Wales",
+                      "original_code": "NSW"
+                    },
+                    "team": "",
+                    "twitter": "echo"
+                  }
+                },
+                "seed": 12,
+                "teamName": "Echo"
+              },
+              "2": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/de.svg",
+                      "code": "DE",
+                      "display_name": "Germany",
+                      "emoji": "🇩🇪",
+                      "en_name": "Germany",
+                      "latitude": "51.00000000",
+                      "longitude": "9.00000000",
+                      "name": "Germany"
+                    },
+                    "mergedName": "Flint",
+                    "name": "Flint",
+                    "online_avatar": "",
+                    "pronoun": "",
+                    "real_name": "Felix Wagner",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/DE/BE.png",
+                      "code": "BE",
+                      "latitude": "52.51088500",
+                      "longitude": "13.39893670",
+                      "name": "Berlin",
+                      "original_code": "BE"
+                    },
+                    "team": "",
+                    "twitter": "flint"
+                  }
+                },
+                "seed": 13,
+                "teamName": "Flint"
+              }
+            }
+          },
+          {
+            "best_of": 3,
+            "best_of_text": "Best of 3",
+            "eta": 1791768092,
+            "eta_minutes": 32,
+            "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
+            "id": 1007,
+            "isCurrentEvent": true,
+            "match": "Losers Round 2",
+            "onStream": false,
+            "phase": "Top 24",
+            "position": 3,
+            "queueKey": "set:1007",
+            "source": "startgg",
+            "started_at": null,
+            "state": 1,
+            "station": -1,
+            "team": {
+              "1": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/pt.svg",
+                      "code": "PT",
+                      "display_name": "Portugal",
+                      "emoji": "🇵🇹",
+                      "en_name": "Portugal",
+                      "latitude": "39.50000000",
+                      "longitude": "-8.00000000",
+                      "name": "Portugal"
+                    },
+                    "mergedName": "Harbor",
+                    "name": "Harbor",
+                    "online_avatar": "",
+                    "pronoun": "",
+                    "real_name": "Hugo Costa",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/PT/11.png",
+                      "code": "11",
+                      "latitude": "38.70775070",
+                      "longitude": "-9.13659190",
+                      "name": "Lisbon",
+                      "original_code": "11"
+                    },
+                    "team": "",
+                    "twitter": "harbor"
+                  }
+                },
+                "seed": 15,
+                "teamName": "Harbor"
+              },
+              "2": {
+                "losers": false,
+                "player": {
+                  "1": {
+                    "country": {
+                      "asset": "./assets/country_flag/gb.svg",
+                      "code": "GB",
+                      "display_name": "United Kingdom",
+                      "emoji": "🇬🇧",
+                      "en_name": "United Kingdom",
+                      "latitude": "54.00000000",
+                      "longitude": "-2.00000000",
+                      "name": "United Kingdom"
+                    },
+                    "mergedName": "RB|Saffron",
+                    "name": "Saffron",
+                    "online_avatar": "",
+                    "pronoun": "she/her",
+                    "real_name": "Sara Khan",
+                    "socials": {},
+                    "state": {
+                      "asset": "./assets/state_flag/GB/ENG.png",
+                      "code": "ENG",
+                      "latitude": "52.53102140",
+                      "longitude": "-1.26490620",
+                      "name": "England",
+                      "original_code": "ENG"
+                    },
+                    "team": "RB",
+                    "twitter": "saffron_rb"
+                  }
+                },
+                "seed": 8,
+                "teamName": "RB | Saffron"
+              }
+            }
+          }
+        ]
+      }
+    ]
   },
   "team_battle": {
     "battle_mode": "STOCK_POOL",

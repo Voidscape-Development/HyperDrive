@@ -881,6 +881,32 @@ class WebServerActions(QThread):
             return error, 400 if error in ("UNKNOWN_ACTION", "UNKNOWN_KIND") else 404
         return result
 
+    # Twitch prediction of the stream's scoreboard: action is "start",
+    # "lock", "resolve" (with team 1 or 2), "cancel", or None for its state
+    @gui_thread_sync
+    def twitch_prediction(self, action=None, team=None):
+        from .TwitchPredictions import TwitchPredictionsHook
+
+        hook = TwitchPredictionsHook.instance
+        if hook is None:
+            return "NO_TWITCH_PREDICTIONS", 503
+        manager = hook.manager
+        if action is None:
+            return manager.State()
+        if action == "start":
+            return hook.StartForScoreboard()
+        if action == "lock":
+            manager.Lock()
+        elif action == "cancel":
+            manager.Cancel()
+        elif action == "resolve":
+            if str(team) not in ("1", "2"):
+                return "UNKNOWN_TEAM", 400
+            manager.Resolve(int(team))
+        else:
+            return "UNKNOWN_ACTION", 400
+        return manager.State()
+
     @gui_thread_sync
     def display_register(self, groups):
         from .DisplayControls import DisplayControls

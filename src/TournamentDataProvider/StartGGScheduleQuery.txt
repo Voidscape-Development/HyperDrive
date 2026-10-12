@@ -1,0 +1,27 @@
+query ScheduleQuery($eventSlug: String!) {
+	event(slug: $eventSlug) {
+		startAt
+		phases {
+			id
+			name
+			phaseOrder
+			state
+			groupCount
+			bracketType
+		}
+		phaseGroups {
+			id
+			displayIdentifier
+			startAt
+			state
+			phase {
+				id
+			}
+			wave {
+				id
+				identifier
+				startAt
+			}
+		}
+	}
+}

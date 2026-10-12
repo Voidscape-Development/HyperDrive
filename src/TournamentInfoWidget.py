@@ -157,6 +157,9 @@ class TournamentInfoWidget(QDockWidget):
                 widget.editingFinished.emit()
             for widget in self.findChildren(QSpinBox):
                 widget.setValue(0)
+            # The tournament's images, which have no widget
+            StateManager.Set("tournamentInfo.logo", "")
+            StateManager.Set("tournamentInfo.banner", "")
 
         for key in data.keys():
             try:

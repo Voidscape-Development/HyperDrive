@@ -1,29 +1,8 @@
 LoadEverything().then(() => {
-    let config = {
-        "assets": {
-          "default": {}
-        },
-        "stream": "",
-        "default_stream" : "",
-        "sets_displayed" : -1,
-        "display_first_set": true,
-        "station" : -1,
-        "currentEventOnly": false,
-        "display" : {
-            "station" : false,
-            "country_flag" : true,
-            "state_flag" : true,
-            "avatar" : true,
-            "stream_name": "multistream"
-        },
-        "minimum_determined_players": 1
-    }
     
     function isDefault(value){
         return value === "" || value === -1 || value === undefined || value === null
     }
-
-    let window_config = window.config || {}
 
     function assignDefault(target, source){
         for (k in target){
@@ -42,15 +21,53 @@ LoadEverything().then(() => {
         }
     }
 
-    assignDefault(config, hd_settings);
+    // Settings the layout theme's "Stream queue" section can change
+    const theme_settings = [
+        ["sets_displayed", "stream_queue", "sets_count", 0],
+        ["display_first_set", "stream_queue", "first_set_display", true],
+        ["display.eta", "stream_queue", "eta_display", true],
+        ["display.station", "stream_queue", "station_display", false],
+        ["display.avatar", "stream_queue", "avatar_display", true],
+    ];
 
-    if (!config.display){
-        config.display = {};
+    function build_config(){
+        let config = {
+            "assets": {
+              "default": {}
+            },
+            "stream": "",
+            "default_stream" : "",
+            "sets_displayed" : -1,
+            "display_first_set": true,
+            "station" : -1,
+            "currentEventOnly": false,
+            "display" : {
+                "station" : false,
+                "country_flag" : true,
+                "state_flag" : true,
+                "avatar" : true,
+                "stream_name": "multistream",
+                "eta": true
+            },
+            "minimum_determined_players": 1
+        }
+        assignDefault(config, hd_settings);
+        if (!config.display){
+            config.display = {};
+        }
+        return ThemeSettings(config, theme_settings);
     }
 
-    let first_index = config.display_first_set ? 0 : 1    
-    let sets_nb = config.sets_displayed;
-    if (sets_nb < 0) sets_nb = undefined;
+    let config, first_index, sets_nb;
+
+    function apply_config(){
+        config = build_config();
+        first_index = config.display_first_set ? 0 : 1;
+        sets_nb = config.sets_displayed;
+        if (sets_nb < 0) sets_nb = undefined;
+    }
+
+    apply_config();
 
     gsap.config({ nullTargetWarn: false, trialWarn: false });
 
@@ -74,11 +91,40 @@ LoadEverything().then(() => {
         current_set_nb = 0;
     }
 
+    // Each stream's queue, by stream name: what the Stream Queue widget
+    // sends (stream_queue.byName), or the old streamQueue
+    function stream_queues(data){
+        return _.get(data, "stream_queue.byName") || (data && data.streamQueue) || {};
+    }
+
+    // A stream's queue, its name in any case
+    function stream_queue(data, streamName){
+        let queues = stream_queues(data);
+        if (queues[streamName]) return queues[streamName];
+        let lname = String(streamName || "").toLowerCase();
+        let key = Object.keys(queues).find(k => k.toLowerCase() == lname);
+        return key ? queues[key] : undefined;
+    }
+
+    // The stream linked to this scoreboard in the Stream Queue widget
+    function scoreboard_stream(data){
+        let streams = _.get(data, "stream_queue.streams") || [];
+        let stream = streams.find(s => String(s.scoreboard) == String(window.scoreboardNumber));
+        return stream ? stream.name : null;
+    }
+
+    // "~15 min" until the set should start, from the Stream Queue widget
+    function eta_text(set){
+        if (!config.display.eta || set.eta_minutes === undefined || set.eta_minutes === null) return "";
+        if (set.eta_minutes <= 0) return "";
+        return `~${set.eta_minutes} min`;
+    }
+
 
     function online_avatar_html(player, t){
         return `
             <div class = "p${t}_avatar avatar_container">
-                <img class="avatar" src='${player.online_avatar}' />
+                ${player.online_avatar ? `<img class="avatar" src='${player.online_avatar}' />` : ""}
             </div>
         `
     }
@@ -89,10 +135,13 @@ LoadEverything().then(() => {
 
         if (!team) return `<div class = "p${t} tbd_container"><div class = "TBD">TBD</div></div>`;
 
-        let player = team.player["1"];
+        let player = team.player["1"] || {};
+        // Sets typed in by hand have no flags
+        let country = player.country || {};
+        let state = player.state || {};
 
         resolver.add(`.set${current_set_nb} .p${t} .tag`, 
-            isTeams ? team.name :
+            isTeams ? (team.teamName || team.name) :
                 `
                 <span class="sponsor">
                     ${player.team ? player.team : ""}
@@ -102,7 +151,7 @@ LoadEverything().then(() => {
                 `
         )
 
-        resolver.add(`.set${s - 1} .p${t} .twitter`, 
+        resolver.add(`.set${current_set_nb} .p${t} .twitter`, 
             (!isTeams) ?  `<span class="twitter_logo"></span>${String(player.twitter)}` : ""  
         )
 
@@ -111,8 +160,8 @@ LoadEverything().then(() => {
                 ${isTeams || !config.display.avatar ? "" : online_avatar_html(player, t)}
                 <div class = "flags">
                     ${ isTeams ? "" :
-                        (player.country.asset && config.display.country_flag ? `<img class='flag' src='../../${player.country.asset.toLowerCase()}' />` : "") +
-                        (player.state.asset && config.display.state_flag? `<img class='flag' src='../../${player.state.asset.toLowerCase()}' />` : "")
+                        (country.asset && config.display.country_flag ? `<img class='flag' src='../../${country.asset.toLowerCase()}' />` : "") +
+                        (state.asset && config.display.state_flag? `<img class='flag' src='../../${state.asset}' />` : "")
                     }
                 </div>
                 <div class = "name">
@@ -137,10 +186,12 @@ LoadEverything().then(() => {
 
     async function queue_html(queue, resolver, display_set_station, station = -1){
         let html = "";
+        // sets_displayed is for each stream
+        let shown = 0;
 
 
         for (const [s, set] of Object.values(queue).slice(first_index).entries()){
-            if (sets_nb && (current_set_nb >= sets_nb)) break;
+            if (sets_nb && (shown >= sets_nb)) break;
             if (!set.team) continue;
             if (config.minimum_determined_players > 0 && !set.team[""+config.minimum_determined_players]) continue;
 
@@ -163,11 +214,12 @@ LoadEverything().then(() => {
                 </div>
             `;
 
-            resolver.add(`.set${current_set_nb} .match`, set.match);
+            resolver.add(`.set${current_set_nb} .match`, [set.match, eta_text(set)].filter(Boolean).join(" · "));
             resolver.add(`.set${current_set_nb} .phase`, set.phase);
             resolver.add(`.set${current_set_nb} .station`, "Station " + set.station);
 
             current_set_nb++;
+            shown++;
         }
 
         return html;
@@ -181,7 +233,7 @@ LoadEverything().then(() => {
 
     async function display_allstream(data, oldData){
         console.log("Display AllStream")
-        if (previous_display == 1 && oldData.streamQueue && JSON.stringify(data.streamQueue) != JSON.stringify(oldData.streamQueue)) return;
+        if (previous_display == 1 && oldData && JSON.stringify(stream_queues(data)) == JSON.stringify(stream_queues(oldData))) return;
 
         previous_display = 1
 
@@ -190,11 +242,12 @@ LoadEverything().then(() => {
 
         resetSetsCount();
 
-        for (stream in data.streamQueue){
+        let queues = stream_queues(data);
+        for (let stream in queues){
             if (config.display.stream_name){
                 html += stream_name_html(stream)
             }
-            html += await queue_html(data.streamQueue[stream], resolver, config.display.station, config.station)
+            html += await queue_html(queues[stream], resolver, config.display.station, config.station)
         }
 
         update_content(html, resolver);
@@ -203,14 +256,14 @@ LoadEverything().then(() => {
     async function display_stream(data, oldData, streamName){
         console.log("Display Stream", streamName)
 
-        if (previous_display == streamName && oldData.streamQueue && (!data.streamQueue || JSON.stringify(data.streamQueue[streamName]) == JSON.stringify(oldData.streamQueue[streamName]))) return;
+        if (previous_display == streamName && oldData && JSON.stringify(stream_queue(data, streamName)) == JSON.stringify(stream_queue(oldData, streamName))) return;
 
         previous_display = streamName
 
         let html = ""
         let resolver = new ContentResolver();
 
-        let queue = data.streamQueue[streamName];
+        let queue = stream_queue(data, streamName);
         if (queue)  {
             if (config.display.stream_name == true){
                 html += stream_name_html(streamName)
@@ -266,6 +319,12 @@ LoadEverything().then(() => {
         let data = event.data;
         let oldData = event.oldData;
 
+        // The layout theme's settings changed: everything is drawn again
+        if (!_.isEqual(_.get(data, "layout_theme.values.stream_queue"), _.get(oldData, "layout_theme.values.stream_queue"))){
+            apply_config();
+            previous_display = null;
+        }
+
 
         //let stream = config.stream || data.score[window.scoreboardNumber].station || config.default_stream
         console.log("---- data : ", data, oldData)
@@ -287,6 +346,8 @@ LoadEverything().then(() => {
                 } else {
                     display_stream(data, oldData, hd_station)
                 }
+            } else if (scoreboard_stream(data)) {
+                display_stream(data, oldData, scoreboard_stream(data));
             } else if (config.default_stream) {
                 display_stream(data, oldData, config.default_stream);
             } else {

@@ -1,0 +1,18 @@
+{
+  "title": "SCHEDULE",
+  "show": "phases",
+  "display": {
+    "logo": true,
+    "date": true,
+    "state": true,
+    "next": true
+  },
+  "labels": {
+    "upcoming": "UPCOMING",
+    "active": "LIVE",
+    "completed": "DONE",
+    "next": "UP NEXT",
+    "wave": "Wave {0}",
+    "minutes": "in {0} min"
+  }
+}

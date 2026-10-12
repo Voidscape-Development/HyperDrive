@@ -357,6 +357,123 @@ def LayoutThemeSchema():
             ],
         ),
         Section(
+            "stream_queue",
+            _tr("Stream queue"),
+            [
+                Field(
+                    "sets_count",
+                    _tr("Sets displayed"),
+                    FIELD_NUMBER,
+                    0,
+                    minimum=0,
+                    maximum=20,
+                    tooltip=_tr("0: as many as the layout's own settings say (all by default)"),
+                ),
+                Field(
+                    "first_set_display",
+                    _tr("Display the first set of the queue"),
+                    FIELD_CHECKBOX,
+                    True,
+                    tooltip=_tr("Off: skips the set being played, which stays first in the queue"),
+                ),
+                Field("eta_display", _tr("Display when sets should start"), FIELD_CHECKBOX, True),
+                Field("station_display", _tr("Display stations"), FIELD_CHECKBOX, False),
+                Field("avatar_display", _tr("Display player avatars"), FIELD_CHECKBOX, True),
+            ],
+        ),
+        Section(
+            "event_stats",
+            _tr("Event stats"),
+            [
+                Field(
+                    "characters_count",
+                    _tr("Characters displayed"),
+                    FIELD_NUMBER,
+                    10,
+                    minimum=1,
+                    maximum=30,
+                ),
+                Field(
+                    "stages_count", _tr("Stages displayed"), FIELD_NUMBER, 6, minimum=1, maximum=12
+                ),
+                Field(
+                    "upsets_count", _tr("Upsets displayed"), FIELD_NUMBER, 6, minimum=1, maximum=10
+                ),
+                Field(
+                    "performers_count",
+                    _tr("Over/underperformers displayed"),
+                    FIELD_NUMBER,
+                    5,
+                    minimum=1,
+                    maximum=8,
+                ),
+                Field(
+                    "summary_display",
+                    _tr("Display the number of sets and games"),
+                    FIELD_CHECKBOX,
+                    True,
+                ),
+                Field("win_rate_display", _tr("Display win rates"), FIELD_CHECKBOX, True),
+                Field("seed_display", _tr("Display seeds"), FIELD_CHECKBOX, True),
+                Field(
+                    "upset_factor_display",
+                    _tr("Display upset factors"),
+                    FIELD_CHECKBOX,
+                    True,
+                ),
+                Field(
+                    "spr_display",
+                    _tr("Display Seed Performance Ratings"),
+                    FIELD_CHECKBOX,
+                    True,
+                    tooltip=_tr("How many placements above or below their seed players finished"),
+                ),
+            ],
+        ),
+        Section(
+            "schedule",
+            _tr("Schedule"),
+            [
+                Field("logo_display", _tr("Display the tournament logo"), FIELD_CHECKBOX, True),
+                Field("date_display", _tr("Display the day"), FIELD_CHECKBOX, True),
+                Field(
+                    "state_display",
+                    _tr("Display done, live or upcoming"),
+                    FIELD_CHECKBOX,
+                    True,
+                ),
+                Field(
+                    "next_display",
+                    _tr("Display what's next"),
+                    FIELD_CHECKBOX,
+                    True,
+                    tooltip=_tr("The next phase or wave, with how long until it starts"),
+                ),
+            ],
+        ),
+        Section(
+            "league",
+            _tr("League standings"),
+            [
+                Field(
+                    "players_count",
+                    _tr("Players displayed"),
+                    FIELD_NUMBER,
+                    16,
+                    minimum=1,
+                    maximum=32,
+                ),
+                Field("logo_display", _tr("Display the league logo"), FIELD_CHECKBOX, True),
+                Field("sponsor_display", _tr("Display sponsors"), FIELD_CHECKBOX, True),
+                Field(
+                    "on_stream_display",
+                    _tr("Highlight the players on the scoreboard"),
+                    FIELD_CHECKBOX,
+                    True,
+                ),
+            ],
+        ),
+        Section(
             "versus",
             _tr("Versus"),
             [

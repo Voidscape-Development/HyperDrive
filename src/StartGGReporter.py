@@ -10,7 +10,16 @@ import requests
 from loguru import logger
 from qtpy.QtCore import *
 
-from .GameReport import CURRENT_USER, MARK_IN_PROGRESS, REPORT_SET, RESET_SET, UPDATE_SET
+from .GameReport import (
+    ASSIGN_STATION,
+    ASSIGN_STREAM,
+    CURRENT_USER,
+    MARK_IN_PROGRESS,
+    MARK_SET_CALLED,
+    REPORT_SET,
+    RESET_SET,
+    UPDATE_SET,
+)
 from .SettingsManager import SettingsManager
 from .Workers import Worker
 
@@ -23,6 +32,16 @@ KIND_START = "start"
 KIND_UPDATE = "update"
 KIND_REPORT = "report"
 KIND_RESET = "reset"
+# Not tied to a scoreboard, see RunAction
+KIND_CALL = "call"
+KIND_ASSIGN_STREAM = "assign_stream"
+KIND_ASSIGN_STATION = "assign_station"
+
+ACTION_QUERIES = {
+    KIND_CALL: MARK_SET_CALLED,
+    KIND_ASSIGN_STREAM: ASSIGN_STREAM,
+    KIND_ASSIGN_STATION: ASSIGN_STATION,
+}
 
 STATUS_IDLE = "idle"
 STATUS_PENDING = "pending"
@@ -244,6 +263,48 @@ class StartGGReporter(QObject):
         may have changed since)."""
         if request is not None:
             self.Submit(scoreboard, request["kind"], request["setId"], request.get("variables"))
+
+    def RunAction(self, kind, setId, variables=None, callback=None):
+        """Calls a set, or assigns it to a stream or a station, on
+        start.gg. Not queued like reports: it's one request, retried while
+        the network fails. callback(ok, message) is called on the UI thread."""
+        callback = callback or (lambda ok, message: None)
+        if not IsReportableSetId(setId):
+            callback(
+                False,
+                QCoreApplication.translate(
+                    "app", "This set can't be changed: its bracket hasn't started on start.gg yet"
+                ),
+            )
+            return
+        query = ACTION_QUERIES[kind]
+        variables = dict(variables or {}, setId=str(setId))
+        token = Token()
+
+        def Run(progress_callback=None, cancel_event=None):
+            for attempt in range(len(RETRY_DELAYS) + 1):
+                try:
+                    Send(query, variables, token)
+                    return (True, "")
+                except RetryableError as e:
+                    if attempt == len(RETRY_DELAYS) or (cancel_event and cancel_event.is_set()):
+                        return (False, str(e))
+                    time.sleep(RETRY_DELAYS[attempt])
+                except Exception as e:
+                    return (False, str(e))
+            return (False, "")
+
+        def Done(result):
+            ok, message = result
+            if ok:
+                logger.info(f"start.gg: {kind} for set {setId} done")
+            else:
+                logger.error(f"start.gg: {kind} for set {setId} failed: {message}")
+            callback(ok, message)
+
+        worker = Worker(Run)
+        worker.signals.result.connect(Done)
+        self.threadPool.start(worker)
 
     def TestToken(self, callback):
         """Calls callback(ok, message) with who the token belongs to."""

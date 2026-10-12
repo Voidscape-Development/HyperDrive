@@ -11,9 +11,18 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .EventStats import Durations
 from .Scheduler import Scheduler
 from .ScoreboardManager import ScoreboardManager
 from .SettingsManager import SettingsManager
+from .StartGGReporter import (
+    KIND_ASSIGN_STATION,
+    KIND_ASSIGN_STREAM,
+    KIND_CALL,
+    HasToken,
+    IsReportableSetId,
+    StartGGReporter,
+)
 from .StateManager import StateManager
 from .StreamQueue import *
 from .Theme import ThemedIcon
@@ -23,6 +32,8 @@ from .Workers import Worker
 JOB_NAME = "stream_queue"
 DEFAULT_INTERVAL_SECS = 15
 MIN_INTERVAL_SECS = 5
+# How long sets take is pulled again at most this often, with the queues
+DURATIONS_INTERVAL_SECS = 120
 
 
 def SetTitle(data):
@@ -51,6 +62,16 @@ def StateText(data):
     if state == STATE_COMPLETED:
         return QApplication.translate("app", "Finished")
     return ""
+
+
+def EtaText(eta, minutes):
+    if eta is None:
+        return ""
+    if minutes == 0:
+        return QApplication.translate("app", "Now")
+    return QApplication.translate("app", "~{0} min ({1})").format(
+        minutes, time.strftime("%H:%M", time.localtime(eta))
+    )
 
 
 class AddStartggSetDialog(QDialog):
@@ -166,7 +187,7 @@ class StreamQueueTab(QWidget):
         top.addStretch()
 
         self.tree = QTreeWidget()
-        self.tree.setColumnCount(5)
+        self.tree.setColumnCount(6)
         self.tree.setHeaderLabels(
             [
                 "#",
@@ -174,7 +195,15 @@ class StreamQueueTab(QWidget):
                 QApplication.translate("app", "Players"),
                 QApplication.translate("app", "Station"),
                 QApplication.translate("app", "Status"),
+                QApplication.translate("app", "Starts"),
             ]
+        )
+        self.tree.headerItem().setToolTip(
+            5,
+            QApplication.translate(
+                "app",
+                "When the set should start, with sets taking as long as the event's last sets did",
+            ),
         )
         self.tree.setRootIsDecorated(False)
         self.tree.setAlternatingRowColors(True)
@@ -258,6 +287,7 @@ class StreamQueueTab(QWidget):
             selected = self.SelectedKey()
             onStream = self.owner.OnStream().get(self.name)
             self.tree.clear()
+            etas = self.owner.model.Estimates(self.name, onStream, self.owner.durations)
             for i, entry in enumerate(self.owner.model.Queue(self.name)):
                 data = entry.get("set") or {}
                 item = QTreeWidgetItem(
@@ -269,6 +299,7 @@ class StreamQueueTab(QWidget):
                         if data.get("station") not in (None, -1, "")
                         else "",
                         StateText(data),
+                        EtaText(*etas[i]),
                     ]
                 )
                 item.setData(0, Qt.ItemDataRole.UserRole, entry["key"])
@@ -284,12 +315,12 @@ class StreamQueueTab(QWidget):
                     item.setText(4, QApplication.translate("app", "On stream"))
                     font = item.font(4)
                     font.setBold(True)
-                    for c in range(5):
+                    for c in range(6):
                         item.setFont(c, font)
                 self.tree.addTopLevelItem(item)
                 if entry["key"] == selected:
                     self.tree.setCurrentItem(item)
-            for c in (0, 1, 3, 4):
+            for c in (0, 1, 3, 4, 5):
                 self.tree.resizeColumnToContents(c)
         finally:
             self.updating = False
@@ -420,7 +451,67 @@ class StreamQueueTab(QWidget):
             ],
         )
         menu.addAction(QApplication.translate("app", "Remove"), self.RemoveSelected)
+        self.AddStartggActions(menu)
         menu.exec(self.tree.viewport().mapToGlobal(pos))
+
+    def SelectedSetId(self):
+        """start.gg id of the selected set, or None for a set typed in by hand."""
+        key = self.SelectedKey()
+        entry = next((e for e in self.owner.model.Queue(self.name) if e["key"] == key), None)
+        if entry is None or entry.get("source") == SOURCE_CUSTOM:
+            return None
+        return (entry.get("set") or {}).get("id")
+
+    def AddStartggActions(self, menu):
+        """Calling the set, or assigning it to this stream or a station, on
+        start.gg (with the API token of Settings > API Keys)."""
+        setId = self.SelectedSetId()
+        provider = TournamentDataManager.instance.provider
+        if setId is None or provider is None or provider.name != "StartGG":
+            return
+        menu.addSeparator()
+        startgg = menu.addMenu(QApplication.translate("app", "On start.gg"))
+        if not IsReportableSetId(setId):
+            startgg.setEnabled(False)
+            startgg.setToolTip(
+                QApplication.translate("app", "Its bracket hasn't started on start.gg yet")
+            )
+            return
+
+        startgg.addAction(
+            QApplication.translate("app", "Call the set"),
+            lambda: self.owner.RunStartggAction(KIND_CALL, setId),
+        )
+        stream = self.owner.StartggStream(self.name)
+        action = startgg.addAction(
+            QApplication.translate("app", "Assign to {0}").format(self.name),
+            lambda: self.owner.RunStartggAction(
+                KIND_ASSIGN_STREAM, setId, {"streamId": str(stream["id"])}
+            ),
+        )
+        if stream is None:
+            action.setEnabled(False)
+            action.setToolTip(
+                QApplication.translate("app", "start.gg has no stream named {0}").format(self.name)
+            )
+        stations = startgg.addMenu(QApplication.translate("app", "Assign to station"))
+        for station in self.owner.streamsStations.get("stations") or []:
+            label = QApplication.translate("app", "Station {0}").format(station.get("number"))
+            if station.get("stream"):
+                label += f" ({station['stream']})"
+            stations.addAction(
+                label,
+                lambda station=station: self.owner.RunStartggAction(
+                    KIND_ASSIGN_STATION, setId, {"stationId": str(station["id"])}
+                ),
+            )
+        if stations.isEmpty():
+            stations.setEnabled(False)
+        startgg.addSeparator()
+        startgg.addAction(
+            QApplication.translate("app", "Update the streams and stations"),
+            self.owner.LoadStreamsStations,
+        )
 
 
 class StreamQueueWidget(QDockWidget):
@@ -436,6 +527,12 @@ class StreamQueueWidget(QDockWidget):
         self.threadPool = QThreadPool()
         self.model = StreamQueueModel.FromDict(SettingsManager.Get("stream_queue", {}))
         self.tabs: dict[str, StreamQueueTab] = {}
+        # How long the event's sets take (EventStats.Durations), for when
+        # each set should start
+        self.durations = {}
+        self.durationsUpdated = 0
+        # start.gg's streams and stations, with their ids
+        self.streamsStations = {}
 
         contents = QWidget()
         contents.setLayout(QVBoxLayout())
@@ -540,6 +637,10 @@ class StreamQueueWidget(QDockWidget):
     # Updating from start.gg
 
     def TournamentChanged(self):
+        self.durations = {}
+        self.durationsUpdated = 0
+        self.streamsStations = {}
+        self.LoadStreamsStations()
         provider = TournamentDataManager.instance.provider
         if provider is not None and self.autoRefresh.isChecked():
             Scheduler.instance.Start(JOB_NAME, run_now=True)
@@ -566,9 +667,15 @@ class StreamQueueWidget(QDockWidget):
             done()
             return
         addedIds = self.model.AddedSetIds()
+        fetchDurations = time.time() - self.durationsUpdated >= DURATIONS_INTERVAL_SECS
 
         def Fetch(progress_callback=None, cancel_event=None):
             result = {"queues": provider.GetStreamQueue(), "added": {}}
+            if fetchDurations:
+                try:
+                    result["durations"] = provider.GetSetDurations()
+                except Exception:
+                    logger.error(traceback.format_exc())
             for setId in addedIds:
                 try:
                     data = provider.GetFutureMatch(setId)
@@ -592,6 +699,9 @@ class StreamQueueWidget(QDockWidget):
         try:
             self.model.SetProviderQueues((result or {}).get("queues") or {})
             self.model.SetAddedSetData((result or {}).get("added") or {})
+            if (result or {}).get("durations") is not None:
+                self.durations = Durations(result["durations"])
+                self.durationsUpdated = time.time()
         except Exception:
             logger.error(traceback.format_exc())
         self.Changed(save=False)
@@ -604,6 +714,58 @@ class StreamQueueWidget(QDockWidget):
         if JOB_NAME in Scheduler.instance.jobs and Scheduler.instance.IsRunning(JOB_NAME):
             parts.append(QApplication.translate("app", "Updating..."))
         self.statusLabel.setText(" · ".join(parts))
+
+    # start.gg's streams and stations
+
+    def LoadStreamsStations(self):
+        provider = TournamentDataManager.instance.provider
+        if provider is None:
+            return
+        worker = Worker(provider.GetStreamsAndStations)
+        worker.signals.result.connect(
+            lambda result, provider=provider: self.StreamsStationsLoaded(result, provider)
+        )
+        self.threadPool.start(worker)
+
+    def StreamsStationsLoaded(self, result, provider):
+        if provider is TournamentDataManager.instance.provider:
+            self.streamsStations = result or {}
+
+    def StartggStream(self, name):
+        lname = str(name or "").lower()
+        return next(
+            (
+                s
+                for s in self.streamsStations.get("streams") or []
+                if str(s.get("name") or "").lower() == lname
+            ),
+            None,
+        )
+
+    def RunStartggAction(self, kind, setId, variables=None):
+        if not HasToken():
+            QMessageBox.warning(
+                self,
+                QApplication.translate("app", "start.gg"),
+                QApplication.translate(
+                    "app",
+                    "Set a start.gg API token in Settings > API Keys first, from an account that's an admin of the tournament.",
+                ),
+            )
+            return
+
+        def Done(ok, message):
+            if ok:
+                # start.gg's queues changed
+                self.Refresh()
+            else:
+                QMessageBox.warning(
+                    self,
+                    QApplication.translate("app", "start.gg"),
+                    QApplication.translate("app", "start.gg refused it: {0}").format(message),
+                )
+
+        StartGGReporter.instance.RunAction(kind, setId, variables, Done)
 
     # Tabs
 
@@ -783,7 +945,7 @@ class StreamQueueWidget(QDockWidget):
 
     def Export(self):
         try:
-            data = self.model.Export(self.OnStream())
+            data = self.model.Export(self.OnStream(), self.durations)
             data["currentStream"] = SettingsManager.Get("twitch_username")
             StateManager.Set("stream_queue", data)
         except Exception:

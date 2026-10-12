@@ -21,6 +21,7 @@ This layout can display all of these things depending on the following :
 - You can also use the options (either in settings.json or `window.settings`, see below) : 
   - The "stream" option will override the stream selected in HyperDrive : if there is a name between the quotes next to "stream", it will display the queue for that stream no matter what.
   - the "default_stream" option does the opposite : a stream name specified here will be used only if there is no stream selected in HyperDrive.  
+- Otherwise, the stream linked to this layout's scoreboard in HyperDrive's Stream Queue window (its "Scoreboard" option) is displayed.
 There is no way to display the queue for an arbitrary station, you can only display the station tracked in HyperDrive.
 
 If you do not specify a stream or station anywhere (nothing in the options and nothing tracked in HyperDrive), the layout will enter global mode, and display sets for the global stream queue.  
@@ -41,6 +42,8 @@ Options can be defined in two places :
 
 Basically settings.json contains the global options, and if you want to use multiple instances of the layout with different behaviors you copy index.html and use window.settings to override the relevant options.  
 
+The "Stream queue" section of HyperDrive's Layout themes window can also change the number of sets, the first set, start times, stations and avatars, without editing files. A theme value only replaces settings.json's when it's changed from its default, and window.settings still wins over it.
+
 So, now that you understand options, here are all the possible options and what they do
 
 | Option | Effect
@@ -49,7 +52,7 @@ So, now that you understand options, here are all the possible options and what 
 | default_stream | see above
 | force_multistream | If `true`, the layout will always be in global mode.
 | display_stream_name | If the value is "multistream", the name of the streams will be displayed but only in global mode. If `true`, it will be here even when displaying only one stream. If `false`, never.
-| sets_displayed | How many sets are displayed. If -1, no limit, all sets in the queue are displayed, if 0 or more only the first x sets will be listed. 
+| sets_displayed | How many sets are displayed for each stream. If -1, no limit, all sets in the queue are displayed, if 0 or more only the first x sets will be listed. 
 | display_first_set | if `false`, the first set in the queue will be skipped. Why would you want that ? Well, when a set is started, it stays in the queue, so you may want to only have future sets. 
 | minimum_dtermined_players | Sets might have "indermined" players (basically, if you added a set to the stream queue before 2 players qualified for this set). This option limits the display to only sets with a minimum number of players qualified. 2 means only display sets where we know who both players are, 0 means display everything. If the value is below 2, players that aren't determined yet will appear as a big "TBD" (To Be Determined) in the layout.
 | station | Remember how you can assign a *station* to a *stream* ? When that's been done for your stream, you can limit the display to only one station. If the value is 2, and stations 1, 2 and 3 are assigned to the stream displayed currently, the matches assigned to stations 1 and 3 will not show up, despite being in the queue for the displayed stream.  *Note : this is different from displaying the queue for a station by tracking that station in HyperDrive. Basically, HyperDrive only pulls the queues for all streams and the station tracked in HyperDrive. If you want to display the station tracked in HyperDrive, it will work even if not streamed. If you use this option, you can target an arbitrary station without tracking it in HyperDrive, but it has to be assigned to a stream, and you need to select that stream using the options.*
@@ -58,5 +61,6 @@ So, now that you understand options, here are all the possible options and what 
 | display.country_flag | The flag of each player's countries
 | display.state_flag | The flag of each player's state/region
 | display.station | The station assigned to this set. 
+| display.eta | When the set should start (e.g. "~15 min"), after the round name. HyperDrive estimates it from how long the event's last sets took.
 
 Is there something you don't understand ? A problem with the layout ? Message [@TwilCynder](https://twitter.com/TwilCynder) on twitter.

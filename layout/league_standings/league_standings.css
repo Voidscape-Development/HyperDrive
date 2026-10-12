@@ -1,0 +1,104 @@
+/* The league standings page. Colors, fonts and radii come from main.css and
+   the layout theme. */
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--text-color);
+  background: transparent;
+}
+
+body.hd-text-upper .ls-container {
+  text-transform: uppercase;
+}
+
+.ls-container {
+  visibility: hidden;
+  position: absolute;
+  inset: 70px 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+body .ls-container.ls-empty {
+  display: none;
+}
+
+.ls-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ls-logo {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+}
+
+.ls-title {
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.ls-subtitle {
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ls-rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  gap: 10px 24px;
+}
+
+.ls-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px;
+  background: var(--bg-fill, var(--bg-color));
+  border-radius: var(--border-radius);
+  font-size: 26px;
+  min-width: 0;
+}
+
+.ls-on-stream {
+  box-shadow: inset 0 0 0 3px var(--accent-color);
+}
+
+.ls-rank {
+  min-width: 36px;
+  font-weight: 700;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ls-name {
+  flex: 1;
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.ls-sponsor {
+  margin-right: 8px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ls-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+small {
+  font-size: 0.7em;
+  color: rgba(255, 255, 255, 0.6);
+}

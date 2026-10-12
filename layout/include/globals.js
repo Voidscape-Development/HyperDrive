@@ -13,6 +13,8 @@ var maxAppliedDeltaIdx = -1;
 // The settings under /layout/settings.json (global) are merged with /layout/<directory>/settings.json (local),
 // where the local settings have priority over global ones
 var hd_settings = {};
+// The settings the page's window.settings sets, which win over the layout theme
+var hd_page_settings = {};
 
 // This is called once after initialization. Layouts should reimplement this function.
 var Start = async () => {
@@ -529,6 +531,20 @@ function ThemeValue(section, field, fallback) {
   return _.get(data, ["layout_theme", "values", section, field], fallback);
 }
 
+// A layout's settings with the layout theme's on top: overrides is
+// [[setting path, section, field, theme default, (value) => setting value]],
+// e.g. [["display.seed", "event_stats", "seed_display", true]]. A theme value
+// only counts when it's not its default, so the default theme leaves the
+// layout's settings.json as it is. The page's own window.settings still wins.
+function ThemeSettings(settings, overrides) {
+  const theme = {};
+  for (const [path, section, field, fallback, convert] of overrides) {
+    const value = ThemeValue(section, field, fallback);
+    if (!_.isEqual(value, fallback)) _.set(theme, path, convert ? convert(value) : value);
+  }
+  return _.merge({}, settings, theme, hd_page_settings);
+}
+
 // A player's or commentator's custom data, from the file named key in their
 // folder in user_data/custom_player_export/, e.g. CustomData(player, "bio").
 // Text files give their text, .json files what they hold; fallback when the
@@ -581,6 +597,9 @@ async function LoadSettings() {
     console.log("Could not load local settings.json");
     console.log(e);
   }
+
+  // What the page itself sets, before window.settings becomes all of them
+  hd_page_settings = _.cloneDeep(window.settings || {});
 
   hd_settings = _.defaultsDeep(
     window.settings,

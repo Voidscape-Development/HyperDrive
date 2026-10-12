@@ -139,6 +139,7 @@ from .AlertNotification import AlertNotification
 from .BracketWidget import BracketWidget
 from .CommentaryWidget import CommentaryWidget
 from .DisplayControls import DisplayControls, DisplayControlsWidget
+from .EventStatsWidget import EventStatsWidget
 from .GameAssetManager import GameAssetManager
 from .Helpers.CountryHelper import CountryHelper
 from .LayoutOptions.LayoutThemes import LayoutThemes
@@ -161,6 +162,7 @@ from .StreamQueueWidget import StreamQueueWidget
 from .TeamBattleWidget import TeamBattleWidget
 from .TournamentDataManager import TournamentDataManager
 from .TournamentInfoWidget import TournamentInfoWidget
+from .TwitchPredictions import TwitchPredictionsHook
 from .Workers import *
 
 # autopep8: on
@@ -420,6 +422,15 @@ class Window(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, streamQueue)
         self.dockWidgets.append(streamQueue)
 
+        eventStats = EventStatsWidget()
+        eventStats.setWindowIcon(ThemedIcon("assets/icons/info.svg"))
+        eventStats.setObjectName(QApplication.translate("app", "Event Stats"))
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, eventStats)
+        self.dockWidgets.append(eventStats)
+
+        # Twitch predictions for the set on stream (off until enabled in the settings)
+        TwitchPredictionsHook()
+
         commentary = CommentaryWidget()
         commentary.setWindowIcon(ThemedIcon("assets/icons/mic.svg"))
         commentary.setObjectName(QApplication.translate("app", "Commentary"))
@@ -458,6 +469,7 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, playerList)
         self.tabifyDockWidget(self.scoreboard, bracket)
         self.tabifyDockWidget(self.scoreboard, streamQueue)
+        self.tabifyDockWidget(self.scoreboard, eventStats)
         self.tabifyDockWidget(self.scoreboard, displayControls)
         self.scoreboard.raise_()
 
@@ -632,6 +644,7 @@ class Window(QMainWindow):
         toggleWidgets.addAction(playerList.toggleViewAction())
         toggleWidgets.addAction(bracket.toggleViewAction())
         toggleWidgets.addAction(streamQueue.toggleViewAction())
+        toggleWidgets.addAction(eventStats.toggleViewAction())
         toggleWidgets.addAction(displayControls.toggleViewAction())
 
         self.optionsBt.menu().addSeparator()

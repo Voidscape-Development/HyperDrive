@@ -1,0 +1,12 @@
+{
+  "players_displayed": 16,
+  "display": {
+    "logo": true,
+    "sponsor": true,
+    "on_stream": true
+  },
+  "labels": {
+    "points": "PTS",
+    "players": "{0} players"
+  }
+}

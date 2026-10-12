@@ -16,6 +16,10 @@ query TournamentDataQuery($eventSlug: String!) {
 			venueAddress
 			startAt
 			endAt
+			images {
+				type
+				url
+			}
 		}
 	}
 }
