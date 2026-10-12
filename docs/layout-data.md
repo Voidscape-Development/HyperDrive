@@ -456,6 +456,15 @@ it before each `Update()`:
 A `hd_theme` event is sent on `document` after it's applied, and
 `ThemeValue(section, field, fallback)` reads a value.
 
+`ThemeSettings(settings, overrides)` puts theme values on top of a layout's
+own settings, for layouts whose settings the theme can change: `overrides` is
+`[[setting path, section, field, theme default, (value) => setting], ...]`.
+A theme value only counts when it isn't its field's default (so the default
+theme keeps the layout's `settings.json`), and the page's own
+`window.settings` still wins. The stream queue (`stream_queue` section), event
+stats (`event_stats`), schedule (`schedule`) and league standings (`league`)
+layouts read theirs this way.
+
 ## `display`
 
 What the Display Controls window (and its `/display/...` links, see the

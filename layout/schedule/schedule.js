@@ -24,6 +24,14 @@ const SC_DEFAULTS = {
   },
 };
 
+// Settings the layout theme's "Schedule" section can change
+const SC_THEME = [
+  ["display.logo", "schedule", "logo_display", true],
+  ["display.date", "schedule", "date_display", true],
+  ["display.state", "schedule", "state_display", true],
+  ["display.next", "schedule", "next_display", true],
+];
+
 function SCEscape(text) {
   return String(text ?? "")
     .replace(/&/g, "&amp;")
@@ -116,9 +124,13 @@ LoadEverything().then(() => {
     const changed =
       !event.oldData ||
       !_.isEqual(schedule, _.get(event.oldData, "schedule")) ||
-      !_.isEqual(_.get(event.data, "tournamentInfo"), _.get(event.oldData, "tournamentInfo"));
+      !_.isEqual(_.get(event.data, "tournamentInfo"), _.get(event.oldData, "tournamentInfo")) ||
+      !_.isEqual(
+        _.get(event.data, "layout_theme.values.schedule"),
+        _.get(event.oldData, "layout_theme.values.schedule"),
+      );
     if (!changed) return;
-    const config = _.defaultsDeep({}, hd_settings, SC_DEFAULTS);
+    const config = ThemeSettings(_.defaultsDeep({}, hd_settings, SC_DEFAULTS), SC_THEME);
     const items = config.show == "waves" ? schedule.waves : schedule.phases;
     $(".sc-container").html(SCHtml(schedule, event.data, config));
     $(".sc-container").toggleClass("sc-empty", _.isEmpty(items));

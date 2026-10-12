@@ -72,7 +72,9 @@ The Event Stats window pulls, for a start.gg event:
 - **A league's standings:** paste the league's start.gg link (start.gg rarely links events
   to their league), shown by [`layout/league_standings`](layout/league_standings).
 
-The schedule and the league are pulled whenever an event is loaded. The tournament's logo
+Their options (how many characters, upsets or players, what's displayed) are in
+the Layout themes window, under Event stats, Schedule and League standings. The schedule
+and the league are pulled whenever an event is loaded. The tournament's logo
 and banner from start.gg are sent to the layouts too (`tournamentInfo.logo` and
 `tournamentInfo.banner`).
 

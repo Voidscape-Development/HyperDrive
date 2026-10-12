@@ -17,6 +17,14 @@ const LS_DEFAULTS = {
   },
 };
 
+// Settings the layout theme's "League standings" section can change
+const LS_THEME = [
+  ["players_displayed", "league", "players_count", 16],
+  ["display.logo", "league", "logo_display", true],
+  ["display.sponsor", "league", "sponsor_display", true],
+  ["display.on_stream", "league", "on_stream_display", true],
+];
+
 function LSEscape(text) {
   return String(text ?? "")
     .replace(/&/g, "&amp;")
@@ -88,9 +96,13 @@ LoadEverything().then(() => {
     const changed =
       !event.oldData ||
       !_.isEqual(league, _.get(event.oldData, "league")) ||
-      !_.isEqual(LSOnStream(event.data), LSOnStream(event.oldData));
+      !_.isEqual(LSOnStream(event.data), LSOnStream(event.oldData)) ||
+      !_.isEqual(
+        _.get(event.data, "layout_theme.values.league"),
+        _.get(event.oldData, "layout_theme.values.league"),
+      );
     if (!changed) return;
-    const config = _.defaultsDeep({}, hd_settings, LS_DEFAULTS);
+    const config = ThemeSettings(_.defaultsDeep({}, hd_settings, LS_DEFAULTS), LS_THEME);
     $(".ls-container").html(LSHtml(league, event.data, config));
     $(".ls-container").toggleClass("ls-empty", _.isEmpty(league.standings));
   };

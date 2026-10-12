@@ -7819,43 +7819,77 @@
   },
   "layout_theme": {
     "css": {
+      "--animation-speed": "100%",
+      "--bracket-focus-color": "#d02670",
+      "--bracket-focus-dim": "30%",
+      "--bracket-focus-max-zoom": "200%",
       "--bracket-lines-color": "#000000",
       "--bracket-score-background": "#fe3636",
       "--bracket-sponsor-background": "#fe3636",
+      "--bracket-winner-color": "#d02670",
       "--chip-background": "#121212",
       "--chip-text-color": "#ffffff",
+      "--event-stats-characters-count": "10",
+      "--event-stats-performers-count": "5",
+      "--event-stats-stages-count": "6",
+      "--event-stats-upsets-count": "6",
       "--general-background": "#121212",
       "--general-border-radius": "0px",
+      "--general-chip-radius": "5px",
       "--general-font-family": "inherit",
       "--general-primary-color": "#d02670",
       "--general-secondary-color": "#121212",
       "--general-text-color": "#ffffff",
+      "--league-players-count": "16",
+      "--stage-strike-selected-color": "#d02670",
+      "--stage-strike-striked-color": "rgba(0, 0, 0, 0.69)",
+      "--standings-highlight-top": "0",
+      "--stream-queue-sets-count": "0",
+      "--teams-team1-color": "#e53935",
+      "--teams-team1-score-color": "#ffffff",
+      "--teams-team2-color": "#1e88e5",
+      "--teams-team2-score-color": "#ffffff",
       "--versus-team1-sponsor-color": "#000000",
       "--versus-team2-sponsor-color": "#000000"
     },
     "name": "Default",
-    "stylesheet": ":root {\n  --general-primary-color: #d02670;\n  --general-secondary-color: #121212;\n  --general-text-color: #ffffff;\n  --general-background: #121212;\n  --general-font-family: inherit;\n  --general-border-radius: 0px;\n  --chip-text-color: #ffffff;\n  --chip-background: #121212;\n  --bracket-score-background: #fe3636;\n  --bracket-sponsor-background: #fe3636;\n  --bracket-lines-color: #000000;\n  --versus-team1-sponsor-color: #000000;\n  --versus-team2-sponsor-color: #000000;\n}\n",
+    "stylesheet": ":root {\n  --general-primary-color: #d02670;\n  --general-secondary-color: #121212;\n  --general-text-color: #ffffff;\n  --general-background: #121212;\n  --general-font-family: inherit;\n  --general-border-radius: 0px;\n  --general-chip-radius: 5px;\n  --animation-speed: 100%;\n  --teams-team1-color: #e53935;\n  --teams-team2-color: #1e88e5;\n  --teams-team1-score-color: #ffffff;\n  --teams-team2-score-color: #ffffff;\n  --chip-text-color: #ffffff;\n  --chip-background: #121212;\n  --bracket-score-background: #fe3636;\n  --bracket-sponsor-background: #fe3636;\n  --bracket-winner-color: #d02670;\n  --bracket-lines-color: #000000;\n  --bracket-focus-color: #d02670;\n  --bracket-focus-dim: 30%;\n  --bracket-focus-max-zoom: 200%;\n  --standings-highlight-top: 0;\n  --stage-strike-striked-color: rgba(0, 0, 0, 0.69);\n  --stage-strike-selected-color: #d02670;\n  --stream-queue-sets-count: 0;\n  --event-stats-characters-count: 10;\n  --event-stats-stages-count: 6;\n  --event-stats-upsets-count: 6;\n  --event-stats-performers-count: 5;\n  --league-players-count: 16;\n  --versus-team1-sponsor-color: #000000;\n  --versus-team2-sponsor-color: #000000;\n}\n",
     "values": {
+      "animation": {
+        "enabled": true,
+        "speed": 100
+      },
       "bracket": {
         "avatar_display": true,
         "character_display": true,
         "country_flag_display": true,
+        "dim_losers": true,
+        "focus_color": "#d02670",
+        "focus_dim": 30,
+        "focus_label_display": true,
+        "focus_max_zoom": 200,
+        "identifier_display": false,
         "lines_color": "#000000",
+        "pending_display": true,
+        "round_names_display": true,
         "score_background": {
           "color": "#fe3636",
           "color2": "#121212",
           "direction": "to right",
           "gradient": false
         },
+        "seed_display": true,
         "sponsor_background": {
           "color": "#fe3636",
           "color2": "#121212",
           "direction": "to right",
           "gradient": false
         },
-        "state_flag_display": true
+        "state_flag_display": true,
+        "winner_color": "#d02670"
       },
       "chip": {
+        "avatar_display": true,
         "background": {
           "color": "#121212",
           "color2": "#121212",
@@ -7863,13 +7897,26 @@
           "gradient": false
         },
         "country_flag_display": true,
+        "losers_display": true,
         "pronouns_display": true,
         "seed_display": true,
         "social_media_display": true,
         "state_flag_display": true,
         "text_color": "#ffffff"
       },
+      "event_stats": {
+        "characters_count": 10,
+        "performers_count": 5,
+        "seed_display": true,
+        "spr_display": true,
+        "stages_count": 6,
+        "summary_display": true,
+        "upset_factor_display": true,
+        "upsets_count": 6,
+        "win_rate_display": true
+      },
       "general": {
+        "apply_colors": false,
         "background": {
           "color": "#121212",
           "color2": "#121212",
@@ -7877,12 +7924,53 @@
           "gradient": false
         },
         "border_radius": 0,
+        "chip_radius": 5,
         "font_family": "",
         "primary_color": "#d02670",
         "secondary_color": "#121212",
-        "text_color": "#ffffff"
+        "text_case": "layout",
+        "text_color": "#ffffff",
+        "text_outline": true
+      },
+      "league": {
+        "logo_display": true,
+        "on_stream_display": true,
+        "players_count": 16,
+        "sponsor_display": true
+      },
+      "schedule": {
+        "date_display": true,
+        "logo_display": true,
+        "next_display": true,
+        "state_display": true
+      },
+      "stage_strike": {
+        "selected_color": "#d02670",
+        "stage_names_display": true,
+        "striked_color": "#b0000000",
+        "striker_display": true
+      },
+      "standings": {
+        "buchholz_display": false,
+        "game_diff_display": true,
+        "highlight_top": 0,
+        "points_display": true
+      },
+      "stream_queue": {
+        "avatar_display": true,
+        "eta_display": true,
+        "first_set_display": true,
+        "sets_count": 0,
+        "station_display": false
+      },
+      "teams": {
+        "team1_color": "#e53935",
+        "team1_score_color": "#ffffff",
+        "team2_color": "#1e88e5",
+        "team2_score_color": "#ffffff"
       },
       "versus": {
+        "custom_sponsor_colors": false,
         "team1_sponsor_color": "#000000",
         "team2_sponsor_color": "#000000"
       }

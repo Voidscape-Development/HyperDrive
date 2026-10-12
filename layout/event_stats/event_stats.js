@@ -27,8 +27,21 @@ const ES_DEFAULTS = {
   },
 };
 
+// Settings the layout theme's "Event stats" section can change
+const ES_THEME = [
+  ["characters_displayed", "event_stats", "characters_count", 10],
+  ["stages_displayed", "event_stats", "stages_count", 6],
+  ["upsets_displayed", "event_stats", "upsets_count", 6],
+  ["performers_displayed", "event_stats", "performers_count", 5],
+  ["display.summary", "event_stats", "summary_display", true],
+  ["display.win_rate", "event_stats", "win_rate_display", true],
+  ["display.seed", "event_stats", "seed_display", true],
+  ["display.upset_factor", "event_stats", "upset_factor_display", true],
+  ["display.spr", "event_stats", "spr_display", true],
+];
+
 function ESConfig() {
-  return _.defaultsDeep({}, hd_settings, ES_DEFAULTS);
+  return ThemeSettings(_.defaultsDeep({}, hd_settings, ES_DEFAULTS), ES_THEME);
 }
 
 function ESEscape(text) {
@@ -243,7 +256,11 @@ LoadEverything().then(() => {
     const changed =
       !event.oldData ||
       !_.isEqual(stats, _.get(event.oldData, "event_stats")) ||
-      _.get(event.data, "game.codename") != _.get(event.oldData, "game.codename");
+      _.get(event.data, "game.codename") != _.get(event.oldData, "game.codename") ||
+      !_.isEqual(
+        _.get(event.data, "layout_theme.values.event_stats"),
+        _.get(event.oldData, "layout_theme.values.event_stats"),
+      );
     if (!changed) return;
     const config = ESConfig();
     $(".es-container").html(render(stats, config));

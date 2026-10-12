@@ -1,30 +1,8 @@
 LoadEverything().then(() => {
-    let config = {
-        "assets": {
-          "default": {}
-        },
-        "stream": "",
-        "default_stream" : "",
-        "sets_displayed" : -1,
-        "display_first_set": true,
-        "station" : -1,
-        "currentEventOnly": false,
-        "display" : {
-            "station" : false,
-            "country_flag" : true,
-            "state_flag" : true,
-            "avatar" : true,
-            "stream_name": "multistream",
-            "eta": true
-        },
-        "minimum_determined_players": 1
-    }
     
     function isDefault(value){
         return value === "" || value === -1 || value === undefined || value === null
     }
-
-    let window_config = window.config || {}
 
     function assignDefault(target, source){
         for (k in target){
@@ -43,15 +21,53 @@ LoadEverything().then(() => {
         }
     }
 
-    assignDefault(config, hd_settings);
+    // Settings the layout theme's "Stream queue" section can change
+    const theme_settings = [
+        ["sets_displayed", "stream_queue", "sets_count", 0],
+        ["display_first_set", "stream_queue", "first_set_display", true],
+        ["display.eta", "stream_queue", "eta_display", true],
+        ["display.station", "stream_queue", "station_display", false],
+        ["display.avatar", "stream_queue", "avatar_display", true],
+    ];
 
-    if (!config.display){
-        config.display = {};
+    function build_config(){
+        let config = {
+            "assets": {
+              "default": {}
+            },
+            "stream": "",
+            "default_stream" : "",
+            "sets_displayed" : -1,
+            "display_first_set": true,
+            "station" : -1,
+            "currentEventOnly": false,
+            "display" : {
+                "station" : false,
+                "country_flag" : true,
+                "state_flag" : true,
+                "avatar" : true,
+                "stream_name": "multistream",
+                "eta": true
+            },
+            "minimum_determined_players": 1
+        }
+        assignDefault(config, hd_settings);
+        if (!config.display){
+            config.display = {};
+        }
+        return ThemeSettings(config, theme_settings);
     }
 
-    let first_index = config.display_first_set ? 0 : 1    
-    let sets_nb = config.sets_displayed;
-    if (sets_nb < 0) sets_nb = undefined;
+    let config, first_index, sets_nb;
+
+    function apply_config(){
+        config = build_config();
+        first_index = config.display_first_set ? 0 : 1;
+        sets_nb = config.sets_displayed;
+        if (sets_nb < 0) sets_nb = undefined;
+    }
+
+    apply_config();
 
     gsap.config({ nullTargetWarn: false, trialWarn: false });
 
@@ -170,10 +186,12 @@ LoadEverything().then(() => {
 
     async function queue_html(queue, resolver, display_set_station, station = -1){
         let html = "";
+        // sets_displayed is for each stream
+        let shown = 0;
 
 
         for (const [s, set] of Object.values(queue).slice(first_index).entries()){
-            if (sets_nb && (current_set_nb >= sets_nb)) break;
+            if (sets_nb && (shown >= sets_nb)) break;
             if (!set.team) continue;
             if (config.minimum_determined_players > 0 && !set.team[""+config.minimum_determined_players]) continue;
 
@@ -201,6 +219,7 @@ LoadEverything().then(() => {
             resolver.add(`.set${current_set_nb} .station`, "Station " + set.station);
 
             current_set_nb++;
+            shown++;
         }
 
         return html;
@@ -299,6 +318,12 @@ LoadEverything().then(() => {
     Update = async (event) => {
         let data = event.data;
         let oldData = event.oldData;
+
+        // The layout theme's settings changed: everything is drawn again
+        if (!_.isEqual(_.get(data, "layout_theme.values.stream_queue"), _.get(oldData, "layout_theme.values.stream_queue"))){
+            apply_config();
+            previous_display = null;
+        }
 
 
         //let stream = config.stream || data.score[window.scoreboardNumber].station || config.default_stream
