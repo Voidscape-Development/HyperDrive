@@ -232,3 +232,19 @@ body {
     font-size: 25px;
     font-weight: bold;
 }
+/* A 50px row only fits the player's name, and VS over the round */
+.extra,
+.phase {
+    display: none;
+}
+
+.vs {
+    font-size: 26px;
+    line-height: 1;
+}
+
+.match {
+    font-size: 16px;
+    margin-bottom: 0;
+    white-space: nowrap;
+}

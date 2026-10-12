@@ -21,6 +21,7 @@ This layout can display all of these things depending on the following :
 - You can also use the options (either in settings.json or `window.settings`, see below) : 
   - The "stream" option will override the stream selected in HyperDrive : if there is a name between the quotes next to "stream", it will display the queue for that stream no matter what.
   - the "default_stream" option does the opposite : a stream name specified here will be used only if there is no stream selected in HyperDrive.  
+- Otherwise, the stream linked to this layout's scoreboard in HyperDrive's Stream Queue window (its "Scoreboard" option) is displayed.
 There is no way to display the queue for an arbitrary station, you can only display the station tracked in HyperDrive.
 
 If you do not specify a stream or station anywhere (nothing in the options and nothing tracked in HyperDrive), the layout will enter global mode, and display sets for the global stream queue.  
@@ -58,5 +59,6 @@ So, now that you understand options, here are all the possible options and what 
 | display.country_flag | The flag of each player's countries
 | display.state_flag | The flag of each player's state/region
 | display.station | The station assigned to this set. 
+| display.eta | When the set should start (e.g. "~15 min"), after the round name. HyperDrive estimates it from how long the event's last sets took.
 
 Is there something you don't understand ? A problem with the layout ? Message [@TwilCynder](https://twitter.com/TwilCynder) on twitter.

@@ -14,7 +14,8 @@ LoadEverything().then(() => {
             "country_flag" : true,
             "state_flag" : true,
             "avatar" : true,
-            "stream_name": "multistream"
+            "stream_name": "multistream",
+            "eta": true
         },
         "minimum_determined_players": 1
     }
@@ -74,11 +75,40 @@ LoadEverything().then(() => {
         current_set_nb = 0;
     }
 
+    // Each stream's queue, by stream name: what the Stream Queue widget
+    // sends (stream_queue.byName), or the old streamQueue
+    function stream_queues(data){
+        return _.get(data, "stream_queue.byName") || (data && data.streamQueue) || {};
+    }
+
+    // A stream's queue, its name in any case
+    function stream_queue(data, streamName){
+        let queues = stream_queues(data);
+        if (queues[streamName]) return queues[streamName];
+        let lname = String(streamName || "").toLowerCase();
+        let key = Object.keys(queues).find(k => k.toLowerCase() == lname);
+        return key ? queues[key] : undefined;
+    }
+
+    // The stream linked to this scoreboard in the Stream Queue widget
+    function scoreboard_stream(data){
+        let streams = _.get(data, "stream_queue.streams") || [];
+        let stream = streams.find(s => String(s.scoreboard) == String(window.scoreboardNumber));
+        return stream ? stream.name : null;
+    }
+
+    // "~15 min" until the set should start, from the Stream Queue widget
+    function eta_text(set){
+        if (!config.display.eta || set.eta_minutes === undefined || set.eta_minutes === null) return "";
+        if (set.eta_minutes <= 0) return "";
+        return `~${set.eta_minutes} min`;
+    }
+
 
     function online_avatar_html(player, t){
         return `
             <div class = "p${t}_avatar avatar_container">
-                <img class="avatar" src='${player.online_avatar}' />
+                ${player.online_avatar ? `<img class="avatar" src='${player.online_avatar}' />` : ""}
             </div>
         `
     }
@@ -89,10 +119,13 @@ LoadEverything().then(() => {
 
         if (!team) return `<div class = "p${t} tbd_container"><div class = "TBD">TBD</div></div>`;
 
-        let player = team.player["1"];
+        let player = team.player["1"] || {};
+        // Sets typed in by hand have no flags
+        let country = player.country || {};
+        let state = player.state || {};
 
         resolver.add(`.set${current_set_nb} .p${t} .tag`, 
-            isTeams ? team.name :
+            isTeams ? (team.teamName || team.name) :
                 `
                 <span class="sponsor">
                     ${player.team ? player.team : ""}
@@ -102,7 +135,7 @@ LoadEverything().then(() => {
                 `
         )
 
-        resolver.add(`.set${s - 1} .p${t} .twitter`, 
+        resolver.add(`.set${current_set_nb} .p${t} .twitter`, 
             (!isTeams) ?  `<span class="twitter_logo"></span>${String(player.twitter)}` : ""  
         )
 
@@ -111,8 +144,8 @@ LoadEverything().then(() => {
                 ${isTeams && !config.display.avatar ? "" : online_avatar_html(player, t)}
                 <div class = "flags">
                     ${ isTeams ? "" :
-                        (player.country.asset && config.display.country_flag ? `<img class='flag' src='../../${player.country.asset.toLowerCase()}' />` : "") +
-                        (player.state.asset && config.display.state_flag? `<img class='flag' src='../../${player.state.asset.toLowerCase()}' />` : "")
+                        (country.asset && config.display.country_flag ? `<img class='flag' src='../../${country.asset.toLowerCase()}' />` : "") +
+                        (state.asset && config.display.state_flag? `<img class='flag' src='../../${state.asset}' />` : "")
                     }
                 </div>
                 <div class = "name">
@@ -162,7 +195,7 @@ LoadEverything().then(() => {
                 </div>
             `;
 
-            resolver.add(`.set${current_set_nb} .match`, set.match);
+            resolver.add(`.set${current_set_nb} .match`, [set.match, eta_text(set)].filter(Boolean).join(" · "));
             resolver.add(`.set${current_set_nb} .phase`, set.phase);
             resolver.add(`.set${current_set_nb} .station`, "Station " + set.station);
 
@@ -180,7 +213,7 @@ LoadEverything().then(() => {
 
     async function display_allstream(data, oldData){
         console.log("Display AllStream")
-        if (previous_display == 1 && oldData.streamQueue && JSON.stringify(data.streamQueue) != JSON.stringify(oldData.streamQueue)) return;
+        if (previous_display == 1 && oldData && JSON.stringify(stream_queues(data)) == JSON.stringify(stream_queues(oldData))) return;
 
         previous_display = 1
 
@@ -189,11 +222,12 @@ LoadEverything().then(() => {
 
         resetSetsCount();
 
-        for (stream in data.streamQueue){
+        let queues = stream_queues(data);
+        for (let stream in queues){
             if (config.display.stream_name){
                 html += stream_name_html(stream)
             }
-            html += await queue_html(data.streamQueue[stream], resolver, config.display.station, config.station)
+            html += await queue_html(queues[stream], resolver, config.display.station, config.station)
         }
 
         update_content(html, resolver);
@@ -203,14 +237,14 @@ LoadEverything().then(() => {
         console.log("Display Stream", streamName)
 
         console.log(previous_display)
-        if (previous_display == streamName && oldData.streamQueue && (!data.streamQueue || JSON.stringify(data.streamQueue[streamName]) == JSON.stringify(oldData.streamQueue[streamName]))) return;
+        if (previous_display == streamName && oldData && JSON.stringify(stream_queue(data, streamName)) == JSON.stringify(stream_queue(oldData, streamName))) return;
 
         previous_display = streamName
 
         let html = ""
         let resolver = new ContentResolver();
 
-        let queue = data.streamQueue[streamName];
+        let queue = stream_queue(data, streamName);
         if (queue)  {
             if (config.display.stream_name == true){
                 html += stream_name_html(streamName)
@@ -224,7 +258,7 @@ LoadEverything().then(() => {
         update_content(html, resolver);
     }
 
-    async function display_station(oldData, data){
+    async function display_station(data, oldData){
         console.log("Display Station")
         if (previous_display == 2 && oldData.score && oldData.score[window.scoreboardNumber].station_queue && JSON.stringify(data.score[window.scoreboardNumber].station_queue) == JSON.stringify(oldData.score[window.scoreboardNumber].station_queue)) return;
     
@@ -288,6 +322,8 @@ LoadEverything().then(() => {
                 } else {
                     display_stream(data, oldData, hd_station)
                 }
+            } else if (scoreboard_stream(data)) {
+                display_stream(data, oldData, scoreboard_stream(data));
             } else if (config.default_stream) {
                 display_stream(data, oldData, config.default_stream);
             } else {
