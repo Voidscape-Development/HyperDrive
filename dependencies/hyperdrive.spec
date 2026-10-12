@@ -23,6 +23,8 @@ a = Analysis(
         ('../src/layout/*', 'src/layout'),
 #       ('../stage_strike_app/build/*', 'stage_strike_app/build'),
         ('../src/TournamentDataProvider/*.txt', 'src/TournamentDataProvider'),
+        # The in-app guide, also shipped next to the executable
+        ('../docs/wiki', 'docs/wiki'),
         # The player database admin page's templates and static files
         *collect_data_files('sqladmin'),
     ],

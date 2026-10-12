@@ -12,6 +12,7 @@ dependencies = [
     "fastapi>=0.142.2",
     "grpcio",
     "loguru==0.7.3",
+    "markdown>=3.10.3",
     "msgpack>=1.1.2",
     "orjson",
     "parrygg>=0.1.6",

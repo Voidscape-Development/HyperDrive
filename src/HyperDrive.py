@@ -163,6 +163,8 @@ from .TeamBattleWidget import TeamBattleWidget
 from .TournamentDataManager import TournamentDataManager
 from .TournamentInfoWidget import TournamentInfoWidget
 from .TwitchPredictions import TwitchPredictionsHook
+from .Wiki import GETTING_STARTED_PAGE, Wiki
+from .WikiWindow import WikiWindow
 from .Workers import *
 
 # autopep8: on
@@ -788,6 +790,17 @@ class Window(QMainWindow):
 
         helpMenu = QMenu(QApplication.translate("app", "Help") + menu_margin, self.optionsBt.menu())
         self.optionsBt.menu().addMenu(helpMenu)
+
+        # The in-app guide, docs/wiki. English pages stand in for the ones
+        # not translated to the program's language.
+        Wiki.Load(LocaleHelper.programLocale)
+        self.wikiWindow = WikiWindow(self)
+        action = helpMenu.addAction(QApplication.translate("app", "Guide"))
+        action.setIcon(ThemedIcon("assets/icons/book.svg"))
+        action.triggered.connect(lambda: self.wikiWindow.Open())
+
+        helpMenu.addSeparator()
+
         action = helpMenu.addAction(QApplication.translate("app", "Report a bug"))
         issues_url = f"{PROJECT_URL}/issues"
         action.triggered.connect(
@@ -810,12 +823,27 @@ class Window(QMainWindow):
 
         action = self.optionsBt.menu().addAction(QApplication.translate("Settings", "Settings"))
         action.setIcon(ThemedIcon("assets/icons/settings.svg"))
-        action.triggered.connect(lambda: self.settingsWindow.show())
+        action.triggered.connect(lambda: self.settingsWindow.Open())
 
         self.aboutWidget = AboutWidget()
         action = self.optionsBt.menu().addAction(QApplication.translate("About", "About"))
         action.setIcon(ThemedIcon("assets/icons/info.svg"))
         action.triggered.connect(lambda: self.aboutWidget.show())
+
+        self.RegisterGuideLinks(
+            {
+                "scoreboard": self.scoreboard,
+                "stage-strike": self.stageWidget,
+                "commentary": commentary,
+                "tournament-info": tournamentInfo,
+                "team-battle": teamBattle,
+                "player-list": playerList,
+                "bracket": bracket,
+                "stream-queue": streamQueue,
+                "event-stats": eventStats,
+                "display-controls": displayControls,
+            }
+        )
 
         # Game Select and Scoreboard Count
         hbox = QHBoxLayout()
@@ -972,6 +1000,9 @@ class Window(QMainWindow):
         AssetDownloader.instance.UiMounted()
         PlayerDB.signals.db_updated.connect(self.webserver.ws_playerdb)
         PlayerDB.LoadDB()
+
+        if SettingsManager.first_launch:
+            self.wikiWindow.Open(GETTING_STARTED_PAGE)
 
     def SetGame(self, mods_active=False):
         index = next(
@@ -1345,6 +1376,31 @@ class Window(QMainWindow):
         self.layoutThemes.show()
         self.layoutThemes.raise_()
         self.layoutThemes.activateWindow()
+
+    def RegisterGuideLinks(self, docks):
+        """What the guide's hyperdrive://open/<target> links open"""
+
+        def ShowDock(dock):
+            dock.show()
+            dock.raise_()
+
+        for target, dock in docks.items():
+            WikiWindow.RegisterAppLink(target, lambda d=dock: ShowDock(d))
+
+        # settings/<page> opens a page of the settings, e.g. settings/api-keys
+        WikiWindow.RegisterAppLink("settings", lambda page=None: self.settingsWindow.Open(page))
+        WikiWindow.RegisterAppLink("player-database", lambda: self.playerDBWindow.Open(0))
+        WikiWindow.RegisterAppLink("seed-editor", lambda: self.playerDBWindow.Open(1))
+        WikiWindow.RegisterAppLink("layout-themes", self.OpenLayoutThemes)
+        WikiWindow.RegisterAppLink(
+            "download-assets", lambda: AssetDownloader.instance.DownloadAssets(self)
+        )
+        WikiWindow.RegisterAppLink(
+            "set-tournament",
+            lambda: TournamentDataManager.instance.SetStartggEventSlug(self),
+        )
+        WikiWindow.RegisterAppLink("migrate-layout", self.MigrateWindow)
+        WikiWindow.RegisterAppLink("about", lambda: self.aboutWidget.show())
 
     def MigrateWindow(self):
         migrateWindow = QDialog(self)

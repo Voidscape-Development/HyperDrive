@@ -1,0 +1,83 @@
+# Bracket
+
+The [Bracket](hyperdrive://open/bracket) tab shows brackets on stream: start.gg phase
+groups, or brackets you build yourself. It supports double elimination, single elimination,
+round robin and swiss.
+
+## Loading a bracket from start.gg
+
+With a [tournament](tournaments.md) loaded:
+
+1. Pick the **Phase** and the **Phase Group** (e.g. *Top 8*).
+2. Click **Load**. The group's players and sets are loaded, and shown on this channel.
+   Loading it again reloads it.
+
+**Update sets** updates the results without reloading the players. **Auto update** does it
+periodically, as the bracket progresses; the interval is in
+[Settings › General](hyperdrive://open/settings/general).
+
+Results come from start.gg. Changes you make here only change what's shown on stream.
+
+## Building a bracket by hand
+
+Click **Phases** to open the phases and players window, then **New phase**:
+
+| Option | What it does |
+| - | - |
+| **Name**, **Type** | The phase's name, and double elimination, single elimination, round robin or swiss |
+| **Starting in losers** | How many of the last seeds start on the losers side |
+| **Grand final reset**, **3rd place match** | Extra sets |
+| **Players going on** | How many players go on to another phase instead of playing to a champion |
+| **Seeds** | The players, in seed order. ▲ ▼ move them |
+| **Take from phases…** | Seeds this phase with the top players of other phases (e.g. pools), spread out so players from the same pool don't meet early |
+| **Player list order** | Seeds it with the player list, in its order |
+| **Rebuild bracket** | Builds the bracket again from the seeds, clearing its results |
+| **Pair next round** (swiss) | Pairs the next round from the standings, avoiding rematches |
+
+**Players** edits the player list. Double-click a set in the bracket to enter its score.
+
+## What goes on stream
+
+- **Only show the top**: only sends the sets of players who can still finish in the top N,
+  e.g. a top 8 out of a bigger bracket.
+- **Clear manual changes**: puts back the players the bracket gives each set, undoing
+  players placed by hand.
+- **Fit** zooms the view to the whole bracket.
+
+## Channels
+
+Each tab of the bracket is a *channel*: it shows one phase on its own, e.g. a pool bracket
+on one screen and top 8 on another. **+** adds a channel; right-click a tab to rename or
+remove it.
+
+Layouts show the `main` channel. Add `?channel=<name>` to a layout's URL to show another one.
+
+## Bracket focus
+
+`layout/bracket_focus` zooms to part of the bracket and follows the action. The **Layout
+focus** bar picks what it shows:
+
+| Control | What it does |
+| - | - |
+| **Whole bracket** | Shows everything |
+| **Focus selected** | Zooms to the sets and rounds you Ctrl+click, and highlights them |
+| **Previous round**, **Next round** | Steps through the rounds |
+| **Player's run…** | Zooms to every set of a player |
+| **Follow scoreboard** | Keeps zooming to the set on a scoreboard |
+| **Round tour** | Shows the whole bracket, then each round in turn, over and over |
+
+The focus can also be driven from a phone at `/bracket-focus-app` (see
+[Web pages](web-pages.md)) or a [Stream Deck](stream-deck.md).
+
+## Layouts
+
+| Layout | Shows |
+| - | - |
+| `bracket/index.html`, `index_expanded.html` | The bracket |
+| `bracket/winners_only.html`, `losers_only.html` | One side |
+| `bracket/round_robin.html`, `standings.html` | Round robin and swiss |
+| `bracket_ultimate/` | A bracket with character art |
+| `bracket_focus/` | The zooming bracket |
+
+The bracket's colors and options are in [Layout themes](layout-themes.md), under Bracket and
+Standings.

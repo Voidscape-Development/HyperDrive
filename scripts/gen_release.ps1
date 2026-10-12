@@ -53,6 +53,9 @@ try {
     }
     New-Item -Path "HyperDrive\stage_strike_app" -ItemType Directory | Out-Null
     Copy-Item -Recurse -Force "stage_strike_app\build" "HyperDrive\stage_strike_app\build"
+    # The in-app guide's pages
+    New-Item -Path "HyperDrive\docs" -ItemType Directory | Out-Null
+    Copy-Item -Recurse -Force "docs\wiki" "HyperDrive\docs\wiki"
     Copy-Item -Force "LICENSE" "HyperDrive\LICENSE"
     Copy-Item -Force "HyperDrive.exe" "HyperDrive\HyperDrive.exe"
 

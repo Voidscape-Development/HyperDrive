@@ -1,0 +1,50 @@
+{
+  "sections": [
+    {
+      "title": "Getting started",
+      "pages": ["home", "getting-started", "obs-setup", "main-window"]
+    },
+    {
+      "title": "Running a stream",
+      "pages": [
+        "scoreboard",
+        "games-and-reporting",
+        "stage-strike",
+        "commentary",
+        "stream-queue",
+        "display-controls"
+      ]
+    },
+    {
+      "title": "Tournament data",
+      "pages": [
+        "tournaments",
+        "bracket",
+        "player-list",
+        "event-stats",
+        "tournament-info",
+        "team-battle"
+      ]
+    },
+    {
+      "title": "Players and assets",
+      "pages": ["player-database", "game-assets"]
+    },
+    {
+      "title": "Customizing",
+      "pages": ["layout-themes", "settings", "twitch-predictions"]
+    },
+    {
+      "title": "Phones and controllers",
+      "pages": ["web-pages", "stream-deck", "remote-control"]
+    },
+    {
+      "title": "Layout makers and developers",
+      "pages": ["making-layouts", "development"]
+    },
+    {
+      "title": "Help",
+      "pages": ["troubleshooting"]
+    }
+  ]
+}

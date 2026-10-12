@@ -26,8 +26,11 @@ if [ ! -f HyperDrive.exe ]; then
   exit 1
 fi
 
-# Create HyperDrive dir and its stage_strike_app folders
-mkdir -p HyperDrive/stage_strike_app/build
+# Create HyperDrive dir and its stage_strike_app and docs folders
+mkdir -p HyperDrive/stage_strike_app/build HyperDrive/docs
+
+# The in-app guide's pages
+cp -R docs/wiki HyperDrive/docs/
 
 cp -R assets \
 	layout \
