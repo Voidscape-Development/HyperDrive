@@ -459,6 +459,25 @@ class SettingsWindow(QDialog):
             )
         )
 
+        APIKeySettings.append(
+            (
+                QApplication.translate("settings.api_keys", "Twitch (predictions)"),
+                "twitch",
+                "password",
+                "",
+                None,
+                QApplication.translate(
+                    "settings.api_keys",
+                    "A user access token of your channel with the channel:manage:predictions scope, e.g. from a token generator for Twitch's API. See Settings > Twitch Predictions.",
+                )
+                + "\n"
+                + QApplication.translate(
+                    "settings.api_keys",
+                    "Please note that the API Key will be stored in plain text on your computer",
+                ),
+            )
+        )
+
         self.add_setting_widget(
             QApplication.translate("settings", "API Keys"),
             SettingsWidget("api_keys", APIKeySettings),
@@ -504,6 +523,75 @@ class SettingsWindow(QDialog):
         self.add_setting_widget(
             QApplication.translate("settings", "start.gg Reporting"),
             SettingsWidget("startgg_reporting", reportingSettings),
+        )
+
+        # Twitch predictions for the set on stream, see src/TwitchPredictions.py
+        predictionSettings = [
+            (
+                QApplication.translate(
+                    "settings.twitch_predictions", "Run Twitch predictions for the set on stream"
+                ),
+                "enabled",
+                "checkbox",
+                False,
+                None,
+                QApplication.translate(
+                    "settings.twitch_predictions",
+                    "Needs the Twitch token of Settings > API Keys, and a channel that's a Twitch affiliate or partner.",
+                ),
+            ),
+            (
+                QApplication.translate("settings.twitch_predictions", "Scoreboard"),
+                "scoreboard",
+                "spinbox",
+                1,
+                None,
+                QApplication.translate(
+                    "settings.twitch_predictions", "The number of the scoreboard of the stream"
+                ),
+            ),
+            (
+                QApplication.translate(
+                    "settings.twitch_predictions", "Start one when a set is loaded"
+                ),
+                "auto_start",
+                "checkbox",
+                True,
+            ),
+            (
+                QApplication.translate(
+                    "settings.twitch_predictions", "Resolve it with the winner when the set is over"
+                ),
+                "auto_resolve",
+                "checkbox",
+                True,
+            ),
+            (
+                QApplication.translate("settings.twitch_predictions", "Title"),
+                "title",
+                "textbox",
+                "Who wins {round}?",
+                None,
+                QApplication.translate(
+                    "settings.twitch_predictions",
+                    "{team1}, {team2} and {round} are replaced. Twitch allows 45 characters.",
+                ),
+            ),
+            (
+                QApplication.translate(
+                    "settings.twitch_predictions", "Seconds viewers have to predict"
+                ),
+                "window",
+                "spinbox",
+                180,
+                None,
+                QApplication.translate("settings.twitch_predictions", "From 30 to 1800"),
+                30,
+            ),
+        ]
+        self.add_setting_widget(
+            QApplication.translate("settings", "Twitch Predictions"),
+            SettingsWidget("twitch_predictions", predictionSettings),
         )
 
         self.resize(1000, 500)

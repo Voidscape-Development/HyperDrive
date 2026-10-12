@@ -40,6 +40,25 @@ def _CreateSession():
 
 
 _session = _CreateSession()
+
+
+def LeagueSlug(link):
+    """ "tournament/<slug>" from a league's start.gg link (any of its pages)
+    or slug."""
+    parts = [p for p in link.split("start.gg/")[-1].split("?")[0].split("/") if p]
+    if parts and parts[0] in ("tournament", "league"):
+        parts = parts[1:]
+    return f"tournament/{parts[0]}" if parts else ""
+
+
+def ImageUrl(images, imageType):
+    """URL of the first image of that type ("profile", "banner"), or ""."""
+    return next(
+        (i.get("url") for i in images or [] if i and i.get("type") == imageType and i.get("url")),
+        "",
+    )
+
+
 _sessionMethods = {requests.get: "GET", requests.post: "POST"}
 
 
@@ -203,6 +222,10 @@ class StartGGDataProvider(TournamentDataProvider):
             finalData["endAt"] = deep_get(data, "data.event.tournament.endAt", "")
             finalData["eventStartAt"] = deep_get(data, "data.event.startAt", "")
             finalData["eventEndAt"] = deep_get(data, "data.event.endAt", "")
+            # The tournament's square logo and wide banner, for layouts to brand themselves
+            images = deep_get(data, "data.event.tournament.images", []) or []
+            finalData["logo"] = ImageUrl(images, "profile")
+            finalData["banner"] = ImageUrl(images, "banner")
         except:
             logger.error(traceback.format_exc())
 
@@ -1324,6 +1347,8 @@ class StartGGDataProvider(TournamentDataProvider):
             if total_games > 0
             else "",
             "state": _set.get("state"),
+            # When it was started, if it was (for the stream queue's estimated times)
+            "started_at": _set.get("startedAt"),
             "team": {},
             "station": deep_get(_set, "station.number", -1),
             "event": seteventSlug,
@@ -2738,6 +2763,312 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return sets_
 
+    def _EventSlug(self):
+        return self.url.split("start.gg/")[1]
+
+    def GetStreamsAndStations(self, progress_callback=None, cancel_event=None):
+        """The tournament's streams and the event's stations, with the ids
+        start.gg's assignStream / assignStation take: {"streams": [{id,
+        name}], "stations": [{id, number, stream}]}."""
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "StreamsStationsQuery",
+                "variables": {"eventSlug": self._EventSlug()},
+                "query": StartGGDataProvider.StreamsStationsQuery,
+            },
+        )
+        streams = [
+            {"id": s.get("id"), "name": s.get("streamName") or ""}
+            for s in deep_get(data, "data.event.tournament.streams", []) or []
+            if s and s.get("id") is not None and s.get("enabled") is not False
+        ]
+        streamNames = {str(s["id"]): s["name"] for s in streams}
+        stations = [
+            {
+                "id": s.get("id"),
+                "number": s.get("number"),
+                "stream": streamNames.get(str(s.get("streamId")), ""),
+            }
+            for s in deep_get(data, "data.event.stations.nodes", []) or []
+            if s and s.get("id") is not None and s.get("enabled") is not False
+        ]
+        stations.sort(key=lambda s: s.get("number") or 0)
+        return {"streams": streams, "stations": stations}
+
+    def GetSetDurations(self, count=40, progress_callback=None, cancel_event=None):
+        """The event's last completed sets, for how long sets take:
+        [{id, startedAt, completedAt, totalGames, dq}]."""
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "SetDurationsQuery",
+                "variables": {"eventSlug": self._EventSlug(), "perPage": count},
+                "query": StartGGDataProvider.SetDurationsQuery,
+            },
+        )
+        return [
+            {
+                "id": s.get("id"),
+                "startedAt": s.get("startedAt"),
+                "completedAt": s.get("completedAt"),
+                "totalGames": s.get("totalGames"),
+                "dq": -1 in (s.get("entrant1Score"), s.get("entrant2Score")),
+            }
+            for s in deep_get(data, "data.event.sets.nodes", []) or []
+            if s
+        ]
+
+    def GetSchedule(self, progress_callback=None, cancel_event=None):
+        """The event's phases and phase groups with their waves and start
+        times, as EventStats.BuildSchedule takes them."""
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "ScheduleQuery",
+                "variables": {"eventSlug": self._EventSlug()},
+                "query": StartGGDataProvider.ScheduleQuery,
+            },
+        )
+        event = deep_get(data, "data.event", None)
+        if not event:
+            return None
+        return {
+            "startAt": event.get("startAt"),
+            "phases": [
+                {
+                    "id": p.get("id"),
+                    "name": p.get("name") or "",
+                    "order": p.get("phaseOrder") or 0,
+                    "state": p.get("state"),
+                    "groupCount": p.get("groupCount") or 0,
+                    "bracketType": p.get("bracketType"),
+                }
+                for p in event.get("phases") or []
+                if p
+            ],
+            "groups": [
+                {
+                    "id": g.get("id"),
+                    "identifier": g.get("displayIdentifier") or "",
+                    "startAt": g.get("startAt"),
+                    "state": g.get("state"),
+                    "phaseId": deep_get(g, "phase.id"),
+                    "wave": deep_get(g, "wave.identifier"),
+                    "waveStartAt": deep_get(g, "wave.startAt"),
+                }
+                for g in event.get("phaseGroups") or []
+                if g
+            ],
+        }
+
+    def GetLeague(self, leagueSlug=None, count=16, progress_callback=None, cancel_event=None):
+        """The league (circuit) of `leagueSlug` (a start.gg link or slug), or
+        else the event's own league, with its top `count` players by points.
+        None when there isn't one. start.gg rarely links an event to its
+        league, so the league usually has to be given."""
+        if leagueSlug:
+            leagueSlug = LeagueSlug(leagueSlug)
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "LeagueQuery",
+                "variables": {
+                    "eventSlug": None if leagueSlug else self._EventSlug(),
+                    "leagueSlug": leagueSlug,
+                    "byEvent": not leagueSlug,
+                    "perPage": count,
+                },
+                "query": StartGGDataProvider.LeagueQuery,
+            },
+        )
+        league = deep_get(data, "data.league" if leagueSlug else "data.event.league", None)
+        if not league:
+            return None
+        standings = []
+        for node in deep_get(league, "standings.nodes", []) or []:
+            if not node:
+                continue
+            player = node.get("player") or {}
+            standings.append(
+                {
+                    "placement": node.get("placement"),
+                    "points": node.get("totalPoints") or 0,
+                    "player_id": player.get("id"),
+                    "gamertag": player.get("gamerTag") or deep_get(node, "entrant.name", ""),
+                    "sponsor": player.get("prefix") or "",
+                }
+            )
+        images = league.get("images") or []
+        return {
+            "name": league.get("name") or "",
+            "slug": league.get("slug") or "",
+            "logo": ImageUrl(images, "profile"),
+            "banner": ImageUrl(images, "banner"),
+            "players": deep_get(league, "standings.pageInfo.total", len(standings)),
+            "standings": standings,
+        }
+
+    def GetEventStatsSets(self, knownIds=(), progress_callback=None, cancel_event=None):
+        """The event's completed sets, most recently completed first, as
+        EventStats takes them. Stops at the first page whose sets are all in
+        `knownIds` (completed sets don't change), so after the first pull
+        only the newest sets are fetched. Returns None if it was cancelled
+        or a page couldn't be fetched (the sets fetched before are lost
+        then, so it starts over next time rather than leaving a gap)."""
+        knownIds = {str(i) for i in knownIds or ()}
+        perPage = 20
+        page = 1
+        result = []
+        while True:
+            if cancel_event and cancel_event.is_set():
+                return None
+            data = self.QueryRequests(
+                "https://www.start.gg/api/-/gql",
+                type=requests.post,
+                jsonParams={
+                    "operationName": "EventStatsSetsQuery",
+                    "variables": {"eventSlug": self._EventSlug(), "page": page, "perPage": perPage},
+                    "query": StartGGDataProvider.EventStatsSetsQuery,
+                },
+            )
+            errors = (data or {}).get("errors") or []
+            if any("complexity" in str(e.get("message", "")) for e in errors) and perPage > 5:
+                # Teams have more players to a set: smaller pages, from the start
+                perPage //= 2
+                page = 1
+                result = []
+                continue
+            sets = deep_get(data, "data.event.sets", None)
+            if sets is None:
+                return None
+            nodes = [n for n in sets.get("nodes") or [] if n]
+            totalPages = deep_get(sets, "pageInfo.totalPages", 0) or 0
+            if progress_callback:
+                progress_callback(page, totalPages)
+            newSets = [self._ParseStatsSet(n) for n in nodes if str(n.get("id")) not in knownIds]
+            result += [s for s in newSets if s]
+            if not nodes or len(newSets) < len(nodes) or page >= totalPages:
+                return result
+            page += 1
+
+    @staticmethod
+    def _ParseStatsSet(_set):
+        slots = [s for s in _set.get("slots") or [] if s and s.get("entrant")]
+        if len(slots) < 2:
+            return None
+        entrantIds = [str(deep_get(s, "entrant.id")) for s in slots]
+
+        def Slot(entrantId):
+            entrantId = str(entrantId)
+            return entrantIds.index(entrantId) if entrantId in entrantIds else None
+
+        entrants = []
+        for slot in slots:
+            entrant = slot.get("entrant") or {}
+            entrants.append(
+                {
+                    "id": entrant.get("id"),
+                    "name": entrant.get("name") or "",
+                    "seed": entrant.get("initialSeedNum"),
+                    "players": [
+                        {
+                            "id": deep_get(p, "player.id"),
+                            "gamertag": deep_get(p, "player.gamerTag") or "",
+                            "sponsor": deep_get(p, "player.prefix") or "",
+                        }
+                        for p in entrant.get("participants") or []
+                        if p
+                    ],
+                }
+            )
+        games = []
+        for game in sorted(
+            [g for g in _set.get("games") or [] if g], key=lambda g: g.get("orderNum") or 0
+        ):
+            games.append(
+                {
+                    "winner": Slot(game.get("winnerId")),
+                    "stage_id": deep_get(game, "stage.id"),
+                    "stage_name": deep_get(game, "stage.name") or "",
+                    "selections": [
+                        {
+                            "slot": Slot(deep_get(s, "entrant.id")),
+                            "character_id": s.get("selectionValue"),
+                        }
+                        for s in game.get("selections") or []
+                        if s and s.get("selectionValue") is not None
+                    ],
+                }
+            )
+        phaseId = deep_get(_set, "phaseGroup.displayIdentifier") or ""
+        scores = [_set.get("entrant1Score"), _set.get("entrant2Score")]
+        return {
+            "id": _set.get("id"),
+            "started_at": _set.get("startedAt"),
+            "completed_at": _set.get("completedAt"),
+            "total_games": _set.get("totalGames"),
+            "round_name": StartGGDataProvider.TranslateRoundName(_set.get("fullRoundText")),
+            "phase_name": deep_get(_set, "phaseGroup.phase.name") or "",
+            # A pool's identifier, when the phase has several (start.gg says "1" otherwise)
+            "phase_id": "" if phaseId == "1" else phaseId,
+            "bracket_type": deep_get(_set, "phaseGroup.phase.bracketType"),
+            "winner": Slot(_set.get("winnerId")),
+            "scores": scores,
+            "dq": -1 in scores,
+            "entrants": entrants,
+            "games": games,
+        }
+
+    def GetEventStandings(self, count=64, progress_callback=None, cancel_event=None):
+        """The event's standings so far, with seeds: {"bracket_type",
+        "completed", "standings": [{placement, seed, final, name, players}]}."""
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "EventStandingsQuery",
+                "variables": {"eventSlug": self._EventSlug(), "perPage": count},
+                "query": StartGGDataProvider.EventStandingsQuery,
+            },
+        )
+        event = deep_get(data, "data.event", None)
+        if not event:
+            return None
+        standings = []
+        for node in deep_get(event, "standings.nodes", []) or []:
+            if not node or not node.get("entrant"):
+                continue
+            entrant = node.get("entrant")
+            standings.append(
+                {
+                    "placement": node.get("placement"),
+                    "seed": entrant.get("initialSeedNum"),
+                    "final": bool(node.get("isFinal")),
+                    "name": entrant.get("name") or "",
+                    "players": [
+                        {
+                            "id": deep_get(p, "player.id"),
+                            "gamertag": deep_get(p, "player.gamerTag") or "",
+                            "sponsor": deep_get(p, "player.prefix") or "",
+                        }
+                        for p in entrant.get("participants") or []
+                        if p
+                    ],
+                }
+            )
+        return {
+            "bracket_type": EventBracketType(
+                [p.get("bracketType") for p in event.get("phases") or [] if p]
+            ),
+            "completed": event.get("state") == "COMPLETED",
+            "standings": standings,
+        }
+
     def GetRealEventURL(self, url):
         matches = re.match(".*start.gg/admin/tournament/[^/]*/brackets/([^/]*)", url)
         if matches:
@@ -2795,3 +3126,9 @@ StartGGDataProvider.UserSetQuery = readQueryFile(sggTdpDir, "UserSet")
 StartGGDataProvider.UserMainsQuery = readQueryFile(sggTdpDir, "UserMains")
 StartGGDataProvider.UserProfileQuery = readQueryFile(sggTdpDir, "UserProfile")
 StartGGDataProvider.TournamentSlugQuery = readQueryFile(sggTdpDir, "TournamentSlug")
+StartGGDataProvider.StreamsStationsQuery = readQueryFile(sggTdpDir, "StreamsStations")
+StartGGDataProvider.SetDurationsQuery = readQueryFile(sggTdpDir, "SetDurations")
+StartGGDataProvider.ScheduleQuery = readQueryFile(sggTdpDir, "Schedule")
+StartGGDataProvider.LeagueQuery = readQueryFile(sggTdpDir, "League")
+StartGGDataProvider.EventStatsSetsQuery = readQueryFile(sggTdpDir, "EventStatsSets")
+StartGGDataProvider.EventStandingsQuery = readQueryFile(sggTdpDir, "EventStandings")

@@ -1,0 +1,265 @@
+/* The event stats pages. Colors, fonts and radii come from main.css and the
+   layout theme. */
+
+:root {
+  --es-row-bg: var(--bg-fill, var(--bg-color));
+  --es-muted: rgba(255, 255, 255, 0.6);
+  --es-good: #43a047;
+  --es-bad: #e53935;
+  --es-icon: 44px;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--text-color);
+  background: transparent;
+}
+
+body.hd-text-upper .es-container {
+  text-transform: uppercase;
+}
+
+.es-container {
+  visibility: hidden;
+  position: absolute;
+  inset: 80px 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Nothing pulled yet */
+body .es-container.es-empty {
+  display: none;
+}
+
+.es-title {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.es-summary,
+.es-subtitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--es-muted);
+}
+
+.es-subtitle {
+  font-size: 28px;
+  color: var(--text-color);
+}
+
+small {
+  font-size: 0.7em;
+  color: var(--es-muted);
+}
+
+/* ── Rows: characters and performers ───────────────────── */
+
+.es-rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px;
+}
+
+.es-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--es-row-bg);
+  border-radius: var(--border-radius);
+  font-size: 26px;
+  min-width: 0;
+}
+
+.es-rank {
+  min-width: 36px;
+  font-weight: 700;
+  color: var(--es-muted);
+  text-align: center;
+}
+
+.es-icon {
+  width: var(--es-icon);
+  height: var(--es-icon);
+  object-fit: contain;
+}
+
+.es-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.es-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.es-name {
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.es-value {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.es-bar {
+  height: 6px;
+  border-radius: var(--border-radius-pill);
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.es-bar-fill {
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: inherit;
+}
+
+.es-chip {
+  padding: 2px 10px;
+  border-radius: var(--border-radius-chip);
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.es-accent {
+  background: var(--accent-color);
+}
+
+.es-good {
+  background: var(--es-good);
+}
+
+.es-bad {
+  background: var(--es-bad);
+}
+
+.es-entrant {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.es-sponsor {
+  color: var(--es-muted);
+  margin-right: 8px;
+  font-weight: 600;
+}
+
+.es-seed {
+  min-width: 34px;
+  padding: 0 6px;
+  border-radius: var(--border-radius-chip);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.75em;
+  text-align: center;
+}
+
+/* ── Stages ────────────────────────────────────────────── */
+
+.es-stages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.es-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--es-row-bg);
+  border-radius: var(--border-radius);
+  font-size: 26px;
+}
+
+.es-stage-image {
+  height: 150px;
+  border-radius: calc(var(--border-radius) - 4px);
+  background: rgba(255, 255, 255, 0.08) center / cover no-repeat;
+}
+
+/* ── Upsets ────────────────────────────────────────────── */
+
+.es-upsets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+
+.es-upset {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  background: var(--es-row-bg);
+  border-radius: var(--border-radius);
+  font-size: 26px;
+}
+
+.es-upset-round {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  color: var(--es-muted);
+}
+
+.es-upset-round .es-chip {
+  margin-left: auto;
+  color: var(--text-color);
+}
+
+.es-upset-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.es-loser {
+  opacity: 0.6;
+}
+
+.es-score {
+  font-weight: 700;
+}
+
+/* ── Performers ────────────────────────────────────────── */
+
+.es-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.es-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.es-column .es-rows {
+  grid-template-columns: 1fr;
+}

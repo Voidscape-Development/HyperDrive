@@ -1,4 +1,4 @@
-# Layout data: bracket, stream queue, completed sets, games, team battle, socials, custom player data, layout themes and display controls
+# Layout data: bracket, stream queue, completed sets, event stats, schedule, league, games, team battle, socials, custom player data, layout themes and display controls
 
 What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
 Stream Queue widget, the completed sets, the scoreboard's Games window, the Crew/Team Battle window, the
@@ -163,6 +163,7 @@ The main channel's player list, and its phase and phase group names (as in
 | `byName` | The same sets, by stream name |
 | `lastUpdated` | When start.gg's queues were last pulled (seconds since the epoch) |
 | `currentStream` | The Twitch username set in HyperDrive |
+| `average_set_minutes` | How long the event's last sets took (the median), or `null` before it's known |
 
 Each set has start.gg's set data (`id`, `match`, `phase`, `best_of`,
 `best_of_text`, `state`, `station`, `team: {"1": {teamName, losers, seed,
@@ -174,6 +175,9 @@ player: {"1": {...}}}, "2": {...}}`), plus:
 | `source` | `startgg` (in start.gg's queue), `added` (a start.gg set added by hand) or `custom` (typed in by hand) |
 | `position` | 1 for the next set |
 | `onStream` | It's the set on the stream's scoreboard |
+| `eta` | When the set should start (seconds since the epoch), with each set ahead of it taking as long as the event's last sets did (of the same length, best of 3 or 5, once there are a few of those). In-progress sets (or the one on the stream's scoreboard) count for what's left of them. `null` while it isn't known |
+| `eta_minutes` | The same, in minutes from now: `0` for a set being played |
+| `started_at` | When start.gg says the set started, or `null` |
 
 `score.N.station_queue` (sets of the station tracked by scoreboard N) is
 unchanged.
@@ -202,6 +206,67 @@ database when the profile has no location. `characters` are the characters
 the player used in the set, in the order they first picked them
 (`{"1": {name, en_name, codename, assets}}`), empty when the provider has no
 character data for the set.
+
+## `event_stats`
+
+What the event's completed sets add up to, from the Event Stats widget
+(start.gg only), for `layout/event_stats/` (`characters.html`,
+`stages.html`, `upsets.html` and `performers.html`). Empty until it's
+updated. Lists are keyed `"1"`, `"2"`...
+
+| Key | |
+| - | - |
+| `updated` | When it was updated (seconds since the epoch) |
+| `sets`, `games`, `dqs` | Sets played (DQs left out), games reported in them, and DQs |
+| `average_set_minutes` | How long a set takes (the median), or `null` |
+| `characters` | Most played first: `{name, en_name, codename, assets, games, wins, win_rate, play_rate, sets, players}`. `win_rate` and `play_rate` are percentages, `sets` and `players` how many sets and players it was played in and by. Characters the game's assets don't have keep start.gg's name, with no `assets` |
+| `stages` | Most played first: `{name, codename, path, games, play_rate}`. `path` is the stage's image, when the game has stage images |
+| `upsets` | The biggest first: `{upset_factor, winner, loser, winner_score, loser_score, round_name, phase_name, phase_id, completed_at}`, `winner` and `loser` being `{name, seed, players: {"1": {gamertag, sponsor}}}` |
+| `overperformers`, `underperformers` | Players whose final placement is furthest above (below) their seed: `{name, seed, placement, spr, players}`, `spr` being their Seed Performance Rating |
+| `event_completed` | The event is over on start.gg |
+
+Characters and stages only count games reported with their characters and
+stages on start.gg.
+
+## `schedule`
+
+The event's phases and waves, from the Event Stats widget, for
+`layout/schedule/` (`index.html` shows the phases, `waves.html` the waves).
+Each phase and wave has `start_at` (seconds since the epoch, or `null`),
+`time` (`HH:MM`), `date` (`YYYY-MM-DD`) and `weekday`, in the computer's time
+zone, and `state`: `upcoming`, `active` or `completed`.
+
+| Key | |
+| - | - |
+| `event_start` | The event's start time |
+| `phases` | In order: `{name, state, groups, bracket_type, waves, ...time}`. `groups` is its number of pools, `waves` the identifiers of its waves |
+| `waves` | By start time: `{identifier, phases, pools, state, ...time}`. `phases` are the names of the phases it has pools in, `pools` their identifiers |
+| `next` | The first wave (or phase, without waves) that hasn't started, with `minutes` until it starts, or `null` |
+
+## `league`
+
+The standings of a start.gg league (circuit), from the Event Stats widget,
+for `layout/league_standings/`. The league is the one whose link is pasted
+in the widget, else the event's own league. Empty without one.
+
+| Key | |
+| - | - |
+| `name`, `slug` | |
+| `logo`, `banner` | The league's images (URLs), or `""` |
+| `players` | How many players the league has standings for |
+| `standings` | The first 32, by placement: `{placement, points, player_id, gamertag, sponsor}` |
+
+## `tournamentInfo.logo`, `tournamentInfo.banner`
+
+The URLs of the start.gg tournament's square logo and wide banner, `""` when
+it has none, for layouts to brand themselves with.
+
+## `twitch_prediction`
+
+The Twitch prediction of the stream's scoreboard (see the README), `{}` when
+there's none: `{id, setId, title, names: {"1", "2"}, outcomes: {"1", "2"},
+status, winner}`. `status` is `ACTIVE`, `LOCKED`, `RESOLVED` or `CANCELED`,
+`winner` the team that won once it's resolved.
 
 ## `score.N.games`
 

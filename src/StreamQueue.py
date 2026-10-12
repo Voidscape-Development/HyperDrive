@@ -8,6 +8,8 @@
 import time
 import uuid
 
+from .EventStats import EstimateStarts, SetSeconds
+
 # What to do when the set on a stream's scoreboard is over
 AFTER_SET_NOTHING = "nothing"
 AFTER_SET_LOAD_NEXT = "load_next"
@@ -318,6 +320,20 @@ class StreamQueueModel:
             return entry
         return None
 
+    def Estimates(self, name, currentSetId=None, durations=None, now=None):
+        """(eta, minutes from now) of each set of the stream's queue, in
+        order, see EventStats.EstimateStarts. The set on the stream's
+        scoreboard (`currentSetId`) is being played, even if start.gg
+        doesn't know yet."""
+        currentKey = SetKey(currentSetId) if currentSetId is not None else None
+        sets = []
+        for entry in self.Queue(name):
+            data = entry.get("set") or {}
+            if entry["key"] == currentKey and data.get("state") != STATE_COMPLETED:
+                data = dict(data, state=2)
+            sets.append(data)
+        return EstimateStarts(sets, durations, now)
+
     def StreamOfScoreboard(self, scoreboard):
         return next(
             (
@@ -351,9 +367,11 @@ class StreamQueueModel:
             model.afterSet = data["afterSet"]
         return model
 
-    def Export(self, onStream=None):
+    def Export(self, onStream=None, durations=None, now=None):
         """For the layouts. onStream: {stream name: set id on its
-        scoreboard}."""
+        scoreboard}. durations: EventStats.Durations of the event's last
+        sets, for when each set should start."""
+        now = time.time() if now is None else now
         streams = []
         for config in self.streams:
             current = (onStream or {}).get(config.name)
@@ -365,6 +383,11 @@ class StreamQueueModel:
                 data["position"] = i + 1
                 data["onStream"] = current is not None and entry["key"] == SetKey(current)
                 sets.append(data)
+            for data, (eta, minutes) in zip(
+                sets, self.Estimates(config.name, current, durations, now)
+            ):
+                data["eta"] = eta
+                data["eta_minutes"] = minutes
             streams.append(
                 {
                     "name": config.name,
@@ -373,8 +396,10 @@ class StreamQueueModel:
                     "sets": sets,
                 }
             )
+        setSeconds = SetSeconds(durations)
         return {
             "streams": streams,
             "byName": {s["name"]: s["sets"] for s in streams},
             "lastUpdated": self.lastUpdated,
+            "average_set_minutes": round(setSeconds / 60) if setSeconds else None,
         }

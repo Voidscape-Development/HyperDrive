@@ -4,6 +4,7 @@ query FutureSetQuery($id: ID!, $profile: Boolean = true) {
 		identifier
 		fullRoundText
 		totalGames
+		startedAt
 		state
 		station {
 			number

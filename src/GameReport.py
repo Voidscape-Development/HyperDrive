@@ -219,6 +219,22 @@ mutation ResetSet($setId: ID!) {
   resetSet(setId: $setId) { id state }
 }"""
 
+# Getting a set to where it'll be played, from the stream queue
+MARK_SET_CALLED = """
+mutation MarkSetCalled($setId: ID!) {
+  markSetCalled(setId: $setId) { id state }
+}"""
+
+ASSIGN_STREAM = """
+mutation AssignStream($setId: ID!, $streamId: ID!) {
+  assignStream(setId: $setId, streamId: $streamId) { id state }
+}"""
+
+ASSIGN_STATION = """
+mutation AssignStation($setId: ID!, $stationId: ID!) {
+  assignStation(setId: $setId, stationId: $stationId) { id state }
+}"""
+
 CURRENT_USER = """
 query CurrentUser {
   currentUser { id slug player { gamerTag } }

@@ -1,0 +1,21 @@
+query StreamsStationsQuery($eventSlug: String!) {
+	event(slug: $eventSlug) {
+		stations(page: 1, perPage: 500) {
+			nodes {
+				id
+				number
+				identifier
+				enabled
+				streamId
+			}
+		}
+		tournament {
+			streams {
+				id
+				streamName
+				streamSource
+				enabled
+			}
+		}
+	}
+}
