@@ -138,7 +138,7 @@ def TestSearch():
     results = Wiki.Search("stream deck")
     assert results and results[0][0].name == "stream-deck", [p.name for p, _ in results]
     # Every word has to be there, accents and case don't matter
-    assert Wiki.Search("ÉVENT STATS")[0][0].name == "event-stats"
+    assert Wiki.Search("CRÉW BATTLE")[0][0].name == "team-battle"
     assert Wiki.Search("stream xyzzyunknownword") == []
     assert Wiki.Search("   ") == []
     page, snippet = Wiki.Search("profanity")[0]

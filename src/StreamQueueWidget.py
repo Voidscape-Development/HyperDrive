@@ -11,9 +11,9 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
-from .EventStats import Durations
 from .Scheduler import Scheduler
 from .ScoreboardManager import ScoreboardManager
+from .SetDurations import Durations
 from .SettingsManager import SettingsManager
 from .StartGGReporter import (
     KIND_ASSIGN_STATION,
@@ -527,7 +527,7 @@ class StreamQueueWidget(QDockWidget):
         self.threadPool = QThreadPool()
         self.model = StreamQueueModel.FromDict(SettingsManager.Get("stream_queue", {}))
         self.tabs: dict[str, StreamQueueTab] = {}
-        # How long the event's sets take (EventStats.Durations), for when
+        # How long the event's sets take (SetDurations.Durations), for when
         # each set should start
         self.durations = {}
         self.durationsUpdated = 0

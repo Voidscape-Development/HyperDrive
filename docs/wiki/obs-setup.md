@@ -47,7 +47,6 @@ OBS runs on another computer, use HyperDrive's computer's address instead of `12
 | `stream_queue`, `stream_queue_simple` | Upcoming sets (see [Stream queue](stream-queue.md)) |
 | `completed_sets` | Sets that just finished: a ticker, a list or cards |
 | `last_sets`, `recent_sets`, `recent_sets_full`, `tournament_history` | Player stats: recent sets, head-to-head and past results |
-| `event_stats`, `schedule`, `league_standings` | Event stats, schedule and league (see [Event stats](event-stats.md)) |
 | `map`, `map_world_fighters` | Where the players come from |
 
 Each layout folder has a `_preview.png` next to every page, so you can see what it looks

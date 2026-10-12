@@ -19,7 +19,6 @@ from .Helpers.DictHelper import deep_get
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.MediaHelper import MediaHelper
-from .Helpers.VersionHelper import add_beta_label
 from .PlayerDB import PlayerDB
 from .PlayerDrag import PlayerDragBoard
 from .Scheduler import (
@@ -283,7 +282,6 @@ class ScoreboardWidget(QWidget):
         ).format(
             f"<a href='http://{self.GetIP()}:{SettingsManager.Get('general.webserver_port', 5500)}/scoreboard'>http://{self.GetIP()}:{SettingsManager.Get('general.webserver_port', 5500)}/scoreboard</a>"
         )
-        self.remoteScoreboardLabel = add_beta_label(self.remoteScoreboardLabel, "web_score")
         self.remoteScoreboardLabel = QLabel(self.remoteScoreboardLabel)
 
         self.remoteScoreboardLabel.setOpenExternalLinks(True)

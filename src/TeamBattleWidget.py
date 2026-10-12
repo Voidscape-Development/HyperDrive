@@ -12,7 +12,6 @@ from .Helpers.DirHelper import ResolvePath
 from .Helpers.LocaleHelper import LocaleHelper
 from .Helpers.MediaHelper import MediaHelper
 from .Helpers.SponsorHelper import SponsorHelper
-from .Helpers.VersionHelper import add_beta_label
 from .PlayerDrag import PlayerDragBoard
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
@@ -87,9 +86,7 @@ class TeamBattleWidget(QDockWidget):
 
         StateManager.Unset("team_battle")
 
-        self.setWindowTitle(
-            add_beta_label(QApplication.translate("app", "Crew/Team Battle"), "team_battle")
-        )
+        self.setWindowTitle(QApplication.translate("app", "Crew/Team Battle"))
         self.setFloating(True)
         self.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
         self.widget = QWidget()

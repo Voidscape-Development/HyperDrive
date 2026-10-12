@@ -101,18 +101,6 @@ class TournamentDataProvider(QObject):
     def GetSetDurations(self, count=40, progress_callback=None, cancel_event=None):
         return None
 
-    def GetSchedule(self, progress_callback=None, cancel_event=None):
-        return None
-
-    def GetLeague(self, leagueSlug=None, count=16, progress_callback=None, cancel_event=None):
-        return None
-
-    def GetEventStatsSets(self, knownIds=(), progress_callback=None, cancel_event=None):
-        return None
-
-    def GetEventStandings(self, count=64, progress_callback=None, cancel_event=None):
-        return None
-
     def EnrichPlayerData(self, playerData, blocking=True):
         # Hook for providers to lazily fill in fields when a player is
         # loaded into a slot (called from ScoreboardPlayerWidget.SetData

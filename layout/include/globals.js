@@ -533,7 +533,7 @@ function ThemeValue(section, field, fallback) {
 
 // A layout's settings with the layout theme's on top: overrides is
 // [[setting path, section, field, theme default, (value) => setting value]],
-// e.g. [["display.seed", "event_stats", "seed_display", true]]. A theme value
+// e.g. [["display.eta", "stream_queue", "eta_display", true]]. A theme value
 // only counts when it's not its default, so the default theme leaves the
 // layout's settings.json as it is. The page's own window.settings still wins.
 function ThemeSettings(settings, overrides) {

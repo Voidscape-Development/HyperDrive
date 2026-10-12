@@ -19,7 +19,6 @@ them, so you can watch them in OBS.
 | Player chips | What the boxes with a player's name show (pronouns, seed, socials, flags, avatar, the losers [L] badge) and their colors |
 | Bracket, Standings | What the bracket layouts show: avatars, characters, flags, seeds, round names, set letters |
 | Stage strike, Stream queue | Those layouts' options |
-| Event stats, Schedule, League standings | How many characters, upsets or players to show, and what's displayed |
 | Versus | Custom sponsor colors on versus screens |
 
 **Layout default** (e.g. for the font or text case) means each layout keeps its own.

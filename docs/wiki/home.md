@@ -18,7 +18,7 @@ from a fresh install to a scoreboard on stream in a few minutes.
 | Load the next set on stream automatically | [Stream queue](stream-queue.md) |
 | Report sets to start.gg from HyperDrive | [Games and reporting](games-and-reporting.md) |
 | Let players strike stages from their phone | [Stage strike](stage-strike.md) |
-| Show a bracket, a top 8 or event stats | [Bracket](bracket.md), [Player list](player-list.md), [Event stats](event-stats.md) |
+| Show a bracket or a top 8 | [Bracket](bracket.md), [Player list](player-list.md) |
 | Change the colors and fonts of every layout | [Layout themes](layout-themes.md) |
 | Run HyperDrive from a Stream Deck | [Stream Deck](stream-deck.md) |
 | Make your own layout | [Making layouts](making-layouts.md) |
