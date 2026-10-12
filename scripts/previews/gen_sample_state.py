@@ -40,7 +40,7 @@ from src.TournamentDataManager import TournamentDataManager  # noqa: E402
 from src.WebServer import WebServer  # noqa: E402
 
 sys.path.insert(0, HERE)
-import sample_event_data  # noqa: E402
+import sample_stream_queue  # noqa: E402
 
 GAME = "ssbu"
 OUT_FILE = os.path.join(HERE, "sample_state.json")
@@ -190,31 +190,6 @@ def set_completed_sets():
     StateManager.Set("completed_sets", {i: s for i, s in enumerate(sets, start=1)})
 
 
-def set_event_data():
-    """What the Event Stats widget would pull"""
-
-    def stage(codename):
-        data = next(
-            (
-                s
-                for s in (GameAssetManager.instance.stages or {}).values()
-                if s.get("codename") == codename
-            ),
-            None,
-        )
-        if not data:
-            return None
-        return {
-            "name": data.get("display_name") or data.get("name") or codename,
-            "codename": codename,
-            "path": data.get("path"),
-        }
-
-    data = sample_event_data.Build(PLAYERS, CompletedSetsHelper.Character, stage)
-    for key, value in data.items():
-        StateManager.Set(key, value)
-
-
 def set_stream_queue():
     """start.gg's stream queues, with when each set should start"""
 
@@ -224,8 +199,8 @@ def set_stream_queue():
         )
 
     widget = StreamQueueWidget.instance
-    sample_event_data.LoadStreamQueue(widget.model, PLAYERS, location)
-    widget.durations = sample_event_data.SetDurations(PLAYERS)
+    sample_stream_queue.LoadStreamQueue(widget.model, PLAYERS, location)
+    widget.durations = sample_stream_queue.SetDurations(PLAYERS)
     widget.Changed(save=False)
 
 
@@ -273,7 +248,6 @@ def main():
         set_team_battle,
         set_bracket,
         set_completed_sets,
-        set_event_data,
         set_stream_queue,
     ]
 

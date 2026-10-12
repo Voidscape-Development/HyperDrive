@@ -8,7 +8,7 @@
 import time
 import uuid
 
-from .EventStats import EstimateStarts, SetSeconds
+from .SetDurations import EstimateStarts, SetSeconds
 
 # What to do when the set on a stream's scoreboard is over
 AFTER_SET_NOTHING = "nothing"
@@ -322,7 +322,7 @@ class StreamQueueModel:
 
     def Estimates(self, name, currentSetId=None, durations=None, now=None):
         """(eta, minutes from now) of each set of the stream's queue, in
-        order, see EventStats.EstimateStarts. The set on the stream's
+        order, see SetDurations.EstimateStarts. The set on the stream's
         scoreboard (`currentSetId`) is being played, even if start.gg
         doesn't know yet."""
         currentKey = SetKey(currentSetId) if currentSetId is not None else None
@@ -369,7 +369,7 @@ class StreamQueueModel:
 
     def Export(self, onStream=None, durations=None, now=None):
         """For the layouts. onStream: {stream name: set id on its
-        scoreboard}. durations: EventStats.Durations of the event's last
+        scoreboard}. durations: SetDurations.Durations of the event's last
         sets, for when each set should start."""
         now = time.time() if now is None else now
         streams = []

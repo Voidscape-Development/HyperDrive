@@ -9,12 +9,9 @@ A stream helper for fighting game tournaments!
 HyperDrive loads sets, players and brackets from your tournament and sends them to
 HTML overlays that you add to OBS or any other streaming software as browser sources.
 
-- **Tournament data** from start.gg, plus parry.gg in beta.
+- **Tournament data** from start.gg and parry.gg.
 - **Scoreboards** for players, teams and commentators, with a stream queue, a bracket
   view and player stats such as recent sets and head-to-head.
-- **Event stats** from start.gg: the most played characters and stages, the biggest
-  upsets, the players doing better or worse than their seed, the event's schedule and its
-  league's standings, with layouts for each (see [Event Stats](#event-stats)).
 - **Crew/team battles** (Stock Pool or First To), with an in-game scoreboard, a roster
   board and a versus screen in [`layout/team_battle`](layout/team_battle).
 - **More than 40 layouts** in [`layout/`](layout): scoreboards, brackets, top 8s, versus
@@ -61,32 +58,15 @@ these from any device on the same network at `http://<HyperDrive's address>:5500
 | `/wiki` | The guide (Help > Guide in the app) |
 | `/api/docs` | The web server's endpoints |
 
-## Event Stats
-
-The Event Stats window pulls, for a start.gg event:
-
-- **What its completed sets add up to:** the most played characters (with win rates), the
-  stages, the biggest upsets and the players placing furthest above or below their seed,
-  shown by [`layout/event_stats`](layout/event_stats). The first update pulls every
-  completed set of the event, which takes a few minutes at a major; later ones only pull
-  the new sets.
-- **Its schedule:** the phases and waves with their start times, shown by
-  [`layout/schedule`](layout/schedule).
-- **A league's standings:** paste the league's start.gg link (start.gg rarely links events
-  to their league), shown by [`layout/league_standings`](layout/league_standings).
-
-Their options (how many characters, upsets or players, what's displayed) are in
-the Layout themes window, under Event stats, Schedule and League standings. The schedule
-and the league are pulled whenever an event is loaded. The tournament's logo
-and banner from start.gg are sent to the layouts too (`tournamentInfo.logo` and
-`tournamentInfo.banner`).
-
 ## Stream queue and start.gg
 
 The Stream Queue window shows when each set should start, from how long the event's
 last sets took. With a start.gg API token (Settings > API Keys, from an admin of the
 tournament), right click a set to call it, or to assign it to the stream or a station on
 start.gg.
+
+The tournament's logo and banner from start.gg are sent to the layouts too
+(`tournamentInfo.logo` and `tournamentInfo.banner`).
 
 ## Twitch predictions
 

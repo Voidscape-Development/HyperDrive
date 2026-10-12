@@ -24,7 +24,7 @@ from .Helpers import QtHelper
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
 from .Helpers.LocaleHelper import LocaleHelper
-from .Helpers.VersionHelper import PROJECT_URL, REPOSITORY, add_beta_label
+from .Helpers.VersionHelper import PROJECT_URL, REPOSITORY
 
 crashpath = Path("./logs/hyperdrive-crash.log").resolve()
 Path.mkdir(crashpath.parent, exist_ok=True)
@@ -139,7 +139,6 @@ from .AlertNotification import AlertNotification
 from .BracketWidget import BracketWidget
 from .CommentaryWidget import CommentaryWidget
 from .DisplayControls import DisplayControls, DisplayControlsWidget
-from .EventStatsWidget import EventStatsWidget
 from .GameAssetManager import GameAssetManager
 from .Helpers.CountryHelper import CountryHelper
 from .LayoutOptions.LayoutThemes import LayoutThemes
@@ -398,9 +397,7 @@ class Window(QMainWindow):
 
         teamBattle = TeamBattleWidget()
         teamBattle.setWindowIcon(ThemedIcon("assets/icons/info.svg"))
-        teamBattle.setObjectName(
-            add_beta_label(QApplication.translate("app", "Crew/Team Battle"), "team_battle")
-        )
+        teamBattle.setObjectName(QApplication.translate("app", "Crew/Team Battle"))
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, teamBattle)
         self.dockWidgets.append(teamBattle)
 
@@ -423,12 +420,6 @@ class Window(QMainWindow):
         streamQueue.setObjectName(QApplication.translate("app", "Stream Queue"))
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, streamQueue)
         self.dockWidgets.append(streamQueue)
-
-        eventStats = EventStatsWidget()
-        eventStats.setWindowIcon(ThemedIcon("assets/icons/info.svg"))
-        eventStats.setObjectName(QApplication.translate("app", "Event Stats"))
-        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, eventStats)
-        self.dockWidgets.append(eventStats)
 
         # Twitch predictions for the set on stream (off until enabled in the settings)
         TwitchPredictionsHook()
@@ -471,7 +462,6 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, playerList)
         self.tabifyDockWidget(self.scoreboard, bracket)
         self.tabifyDockWidget(self.scoreboard, streamQueue)
-        self.tabifyDockWidget(self.scoreboard, eventStats)
         self.tabifyDockWidget(self.scoreboard, displayControls)
         self.scoreboard.raise_()
 
@@ -642,11 +632,10 @@ class Window(QMainWindow):
         toggleWidgets.addAction(self.stageWidget.toggleViewAction())
         toggleWidgets.addAction(commentary.toggleViewAction())
         toggleWidgets.addAction(tournamentInfo.toggleViewAction())
-        # toggleWidgets.addAction(teamBattle.toggleViewAction())
+        toggleWidgets.addAction(teamBattle.toggleViewAction())
         toggleWidgets.addAction(playerList.toggleViewAction())
         toggleWidgets.addAction(bracket.toggleViewAction())
         toggleWidgets.addAction(streamQueue.toggleViewAction())
-        toggleWidgets.addAction(eventStats.toggleViewAction())
         toggleWidgets.addAction(displayControls.toggleViewAction())
 
         self.optionsBt.menu().addSeparator()
@@ -840,7 +829,6 @@ class Window(QMainWindow):
                 "player-list": playerList,
                 "bracket": bracket,
                 "stream-queue": streamQueue,
-                "event-stats": eventStats,
                 "display-controls": displayControls,
             }
         )

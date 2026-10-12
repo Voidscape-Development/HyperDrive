@@ -1,8 +1,8 @@
 # Tournaments
 
-HyperDrive pulls tournament data from **start.gg**, and from **parry.gg** in beta. Loading
-an event fills in the scoreboard's sets, the players and their seeds, the bracket, the
-stream queue and the event stats.
+HyperDrive pulls tournament data from **start.gg** and **parry.gg**. Loading an event
+fills in the scoreboard's sets, the players and their seeds, the bracket and the stream
+queue.
 
 ## Loading an event
 
@@ -21,8 +21,8 @@ tournament later, and ✕ unloads it.
 ### parry.gg
 
 parry.gg needs an API key: create one at parry.gg/api-keys and paste it in
-[Settings › API Keys](hyperdrive://open/settings/api-keys). Some features (event stats, the
-stream queue, reporting) are start.gg only.
+[Settings › API Keys](hyperdrive://open/settings/api-keys). Some features (the stream queue,
+reporting) are start.gg only.
 
 ## Players who registered late
 
@@ -45,7 +45,6 @@ to pull them periodically; the interval is in
 | Load the next streamed set automatically | [Stream queue](stream-queue.md) |
 | Show the bracket | [Bracket](bracket.md) |
 | Show the final standings (top 8) | [Player list](player-list.md) |
-| Show stats, the schedule and a league | [Event stats](event-stats.md) |
 | Show the tournament's name, logo and date | [Tournament info](tournament-info.md) |
 | Report results back to start.gg | [Games and reporting](games-and-reporting.md) |
 

@@ -1,5 +1,5 @@
 # Checks the stream queue model: start.gg's queues with the changes made by
-# hand on top of them.
+# hand on top of them, and when their sets should start.
 # Run from the repository root: python test/test_stream_queue.py
 import os
 import sys
@@ -10,7 +10,10 @@ package = types.ModuleType("src")
 package.__path__ = [os.path.abspath("src")]
 sys.modules["src"] = package
 
+from src.SetDurations import Durations, EstimateStarts, SetSeconds
 from src.StreamQueue import *
+
+MIN = 60
 
 
 def Set(id, state=1):
@@ -104,6 +107,65 @@ def TestSaveAndExport():
     assert [s["position"] for s in main] == [1, 2]
     assert main[0]["onStream"] and not main[1]["onStream"]
     assert exported["streams"][1]["manual"]
+
+
+def TestDurations():
+    sets = [
+        {"startedAt": 0, "completedAt": 10 * MIN, "totalGames": 3},
+        {"startedAt": 0, "completedAt": 12 * MIN, "totalGames": 3},
+        {"startedAt": 0, "completedAt": 14 * MIN, "totalGames": 3},
+        {"startedAt": 0, "completedAt": 30 * MIN, "totalGames": 5},
+        # Left out: a DQ, a set with no start, one reported hours later
+        {"startedAt": 0, "completedAt": 5 * MIN, "totalGames": 3, "dq": True},
+        {"startedAt": None, "completedAt": 5 * MIN, "totalGames": 3},
+        {"startedAt": 0, "completedAt": 10 * 60 * MIN, "totalGames": 3},
+    ]
+    durations = Durations(sets)
+    assert sorted(durations[None]) == [10 * MIN, 12 * MIN, 14 * MIN, 30 * MIN]
+    assert SetSeconds(durations, 3) == 12 * MIN
+    # Not enough best of 5s yet: every set's
+    assert SetSeconds(durations, 5) == 13 * MIN
+    assert SetSeconds(durations) == 13 * MIN
+    assert SetSeconds({}, 3) is None
+
+
+def TestEstimateStarts():
+    durations = {None: [10 * MIN] * 3, 3: [10 * MIN] * 3, 5: [20 * MIN] * 3}
+    now = 100000
+    sets = [
+        # Started 4 minutes ago: 6 minutes left
+        {"state": 2, "best_of": 3, "started_at": now - 4 * MIN},
+        {"state": 1, "best_of": 3},
+        {"state": 3, "best_of": 3},
+        {"state": 1, "best_of": 5},
+        {"state": 1, "best_of": 3},
+    ]
+    result = EstimateStarts(sets, durations, now)
+    assert result[0] == (now - 4 * MIN, 0)
+    assert result[1] == (now + 6 * MIN, 6)
+    # Finished sets have no start time and take no time
+    assert result[2] == (None, None)
+    assert result[3] == (now + 16 * MIN, 16)
+    assert result[4] == (now + 36 * MIN, 36)
+    # Without data, nothing can be told
+    assert EstimateStarts(sets[1:2], {}, now) == [(None, None)]
+
+
+def TestEta():
+    model = StreamQueueModel()
+    model.SetProviderQueues(
+        {"main": [{"id": 1, "state": 1, "best_of": 3}, {"id": 2, "state": 1, "best_of": 3}]}
+    )
+    durations = {None: [10 * MIN] * 3}
+    exported = model.Export(onStream={"main": 1}, durations=durations, now=1000)
+    main = exported["byName"]["main"]
+    # The set on the stream's scoreboard is being played
+    assert main[0]["eta_minutes"] == 0
+    assert main[0]["state"] == 1
+    assert main[1]["eta_minutes"] == 10
+    assert exported["average_set_minutes"] == 10
+    # Without durations, no times
+    assert model.Export()["byName"]["main"][1]["eta"] is None
 
 
 if __name__ == "__main__":

@@ -31,7 +31,6 @@ both at once. HyperDrive remembers where you put them.
 | [Player List](hyperdrive://open/player-list) | [Player list](player-list.md) |
 | [Bracket](hyperdrive://open/bracket) | [Bracket](bracket.md) |
 | [Stream Queue](hyperdrive://open/stream-queue) | [Stream queue](stream-queue.md) |
-| [Event Stats](hyperdrive://open/event-stats) | [Event stats](event-stats.md) |
 | [Display Controls](hyperdrive://open/display-controls) | [Display controls](display-controls.md) |
 | [Crew/Team Battle](hyperdrive://open/team-battle) | [Crew/team battle](team-battle.md) |
 

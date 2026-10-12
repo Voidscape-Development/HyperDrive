@@ -1,4 +1,4 @@
-# Layout data: bracket, stream queue, completed sets, event stats, schedule, league, games, team battle, socials, custom player data, layout themes and display controls
+# Layout data: bracket, stream queue, completed sets, games, team battle, socials, custom player data, layout themes and display controls
 
 What HyperDrive sends to the layouts (in `program_state`) for the bracket widget, the
 Stream Queue widget, the completed sets, the scoreboard's Games window, the Crew/Team Battle window, the
@@ -207,55 +207,6 @@ the player used in the set, in the order they first picked them
 (`{"1": {name, en_name, codename, assets}}`), empty when the provider has no
 character data for the set.
 
-## `event_stats`
-
-What the event's completed sets add up to, from the Event Stats widget
-(start.gg only), for `layout/event_stats/` (`characters.html`,
-`stages.html`, `upsets.html` and `performers.html`). Empty until it's
-updated. Lists are keyed `"1"`, `"2"`...
-
-| Key | |
-| - | - |
-| `updated` | When it was updated (seconds since the epoch) |
-| `sets`, `games`, `dqs` | Sets played (DQs left out), games reported in them, and DQs |
-| `average_set_minutes` | How long a set takes (the median), or `null` |
-| `characters` | Most played first: `{name, en_name, codename, assets, games, wins, win_rate, play_rate, sets, players}`. `win_rate` and `play_rate` are percentages, `sets` and `players` how many sets and players it was played in and by. Characters the game's assets don't have keep start.gg's name, with no `assets` |
-| `stages` | Most played first: `{name, codename, path, games, play_rate}`. `path` is the stage's image, when the game has stage images |
-| `upsets` | The biggest first: `{upset_factor, winner, loser, winner_score, loser_score, round_name, phase_name, phase_id, completed_at}`, `winner` and `loser` being `{name, seed, players: {"1": {gamertag, sponsor}}}` |
-| `overperformers`, `underperformers` | Players whose final placement is furthest above (below) their seed: `{name, seed, placement, spr, players}`, `spr` being their Seed Performance Rating |
-| `event_completed` | The event is over on start.gg |
-
-Characters and stages only count games reported with their characters and
-stages on start.gg.
-
-## `schedule`
-
-The event's phases and waves, from the Event Stats widget, for
-`layout/schedule/` (`index.html` shows the phases, `waves.html` the waves).
-Each phase and wave has `start_at` (seconds since the epoch, or `null`),
-`time` (`HH:MM`), `date` (`YYYY-MM-DD`) and `weekday`, in the computer's time
-zone, and `state`: `upcoming`, `active` or `completed`.
-
-| Key | |
-| - | - |
-| `event_start` | The event's start time |
-| `phases` | In order: `{name, state, groups, bracket_type, waves, ...time}`. `groups` is its number of pools, `waves` the identifiers of its waves |
-| `waves` | By start time: `{identifier, phases, pools, state, ...time}`. `phases` are the names of the phases it has pools in, `pools` their identifiers |
-| `next` | The first wave (or phase, without waves) that hasn't started, with `minutes` until it starts, or `null` |
-
-## `league`
-
-The standings of a start.gg league (circuit), from the Event Stats widget,
-for `layout/league_standings/`. The league is the one whose link is pasted
-in the widget, else the event's own league. Empty without one.
-
-| Key | |
-| - | - |
-| `name`, `slug` | |
-| `logo`, `banner` | The league's images (URLs), or `""` |
-| `players` | How many players the league has standings for |
-| `standings` | The first 32, by placement: `{placement, points, player_id, gamertag, sponsor}` |
-
 ## `tournamentInfo.logo`, `tournamentInfo.banner`
 
 The URLs of the start.gg tournament's square logo and wide banner, `""` when
@@ -461,9 +412,8 @@ own settings, for layouts whose settings the theme can change: `overrides` is
 `[[setting path, section, field, theme default, (value) => setting], ...]`.
 A theme value only counts when it isn't its field's default (so the default
 theme keeps the layout's `settings.json`), and the page's own
-`window.settings` still wins. The stream queue (`stream_queue` section), event
-stats (`event_stats`), schedule (`schedule`) and league standings (`league`)
-layouts read theirs this way.
+`window.settings` still wins. The stream queue layouts (`stream_queue` section)
+read theirs this way.
 
 ## `display`
 

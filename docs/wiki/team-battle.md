@@ -1,6 +1,6 @@
 # Crew/team battle
 
-The [Crew/Team Battle](hyperdrive://open/team-battle) tab (beta) runs crew battles:
+The [Crew/Team Battle](hyperdrive://open/team-battle) tab runs crew battles:
 two teams of players, played one matchup at a time until a team runs out.
 
 ## Modes

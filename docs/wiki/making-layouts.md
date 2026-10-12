@@ -35,7 +35,7 @@ in HyperDrive's repository. The main parts:
 | `player_list` | The [player list](player-list.md) (top 8s) |
 | `bracket` | The [bracket](bracket.md): channels, phases, sets, standings and focus |
 | `stream_queue` | The [stream queue](stream-queue.md) |
-| `completed_sets`, `event_stats`, `schedule`, `league` | [Event stats](event-stats.md) and recent results |
+| `completed_sets` | Recent results |
 | `team_battle` | The [crew battle](team-battle.md) |
 | `layout_theme` | The [layout theme](layout-themes.md) in use, with CSS custom properties |
 | `display` | What [display controls](display-controls.md) have turned off |

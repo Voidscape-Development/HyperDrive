@@ -15,7 +15,7 @@ click **Download**. See [Game assets](game-assets.md) for more.
 ## 2. Load your tournament (optional)
 
 HyperDrive works without a tournament: you can type players and scores by hand. Loading
-one from start.gg (or parry.gg, in beta) fills in players, sets, seeds and brackets for you.
+one from start.gg (or parry.gg) fills in players, sets, seeds and brackets for you.
 
 1. Click [Set tournament](hyperdrive://open/set-tournament).
 2. Paste the tournament's link, a start.gg short link or its slug, and click **OK**.
