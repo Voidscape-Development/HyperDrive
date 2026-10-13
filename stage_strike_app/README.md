@@ -1,7 +1,8 @@
 # HyperDrive web app
 
 The pages HyperDrive serves for phones and second screens. It's a React app built
-with [Vite](https://vite.dev/), using MUI, Redux Toolkit and socket.io.
+with [Vite](https://vite.dev/) and TypeScript, using [shadcn/ui](https://ui.shadcn.com/)
+(on Tailwind CSS), Redux Toolkit and socket.io.
 
 | Route | Page | Source |
 | - | - | - |
@@ -39,6 +40,26 @@ HYPERDRIVE_PORT=5600
 
 When the app calls a new endpoint, add its path to `PROXIED_PATHS`.
 
+Check the types with:
+
+```sh
+npm run typecheck
+```
+
+## Components
+
+The UI is built from [shadcn/ui](https://ui.shadcn.com/) components, which live in the
+repository in [`src/components/ui`](src/components/ui) (configured by
+[`components.json`](components.json)). Add one with:
+
+```sh
+npx shadcn@latest add <component>
+```
+
+Colors are the CSS variables in [`src/index.css`](src/index.css): shadcn's zinc theme (the
+app is always dark), plus `p1` and `p2` for the players and `pick` and `ban` for the
+strike, usable as Tailwind classes such as `bg-p1` or `text-ban`.
+
 ## Building
 
 ```sh
@@ -54,10 +75,10 @@ HyperDrive itself, or to run HyperDrive from source with them.
 
 The page text is in [`src/i18n/locales`](src/i18n/locales), one JSON file per language. To
 add a language, add its file, then add it to both `resources` and `SUPPORTED_LANGUAGES`
-in [`src/i18n/config.js`](src/i18n/config.js).
+in [`src/i18n/config.ts`](src/i18n/config.ts).
 
 The character select and scoreboard pages use the language in the `?lng=` query
 parameter, otherwise the browser's language, and fall back to English. The stage strike
 page has its own language selector, saved in the browser. With "Auto" on, it switches to
 each player's language during their strikes, based on their country (`COUNTRY_LANGUAGE`
-in [`src/StageStrikePage/index.jsx`](src/StageStrikePage/index.jsx)).
+in [`src/StageStrikePage/index.tsx`](src/StageStrikePage/index.tsx)).

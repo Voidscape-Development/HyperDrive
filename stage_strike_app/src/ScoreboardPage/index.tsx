@@ -1,24 +1,18 @@
-import "../App.css";
-import {darkTheme} from "../themes";
-import i18n from "../i18n/config";
-import {
-    Paper, Stack,
-    Tab,
-    Tabs
-} from "@mui/material";
 import React from "react";
-import {Box} from "@mui/system";
-
+import {shallowEqual, useDispatch, useSelector} from "react-redux";
+import i18n from "../i18n/config";
 import CurrentSet from "./CurrentSet";
 import UpcomingSets from "./UpcomingSets";
 import {Header} from "./Header";
-import {hdStore, ReduxState} from "../redux/store"
-import {shallowEqual, useDispatch, useSelector} from "react-redux";
+import {hdStore, type ReduxState} from "../redux/store";
 import {hdStateSlice} from "../redux/hdState";
 import websocketInit from "./websocketInit";
 import websocketConnection from "../websocketConnection";
 import {selectedScoreboardSlice} from "../redux/uiState";
-import {HDState} from "../backendDataTypes";
+import type {HDState} from "../backendDataTypes";
+import {Card, CardContent} from "@/components/ui/card";
+import {Spinner} from "@/components/ui/spinner";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 /**
  * Main page for the scoreboard. This whole contraption is powered by HyperDrive's python-side
@@ -26,7 +20,7 @@ import {HDState} from "../backendDataTypes";
  * our state piecemeal. Each update has a number so that we can tell if our updates are stale
  * or out of order and request a full state send-over.
  */
-export default function ScoreboardPage(props: any) {
+export default function ScoreboardPage() {
     const dispatch = useDispatch();
     const {loading, errored, selectedScoreboard, scoreboards} = useSelector((state: ReduxState) => ({
         loading: (
@@ -46,85 +40,54 @@ export default function ScoreboardPage(props: any) {
         websocketInit();
     }, []);
 
-    let body;
-    const connectionError = (
-        <Paper key="connection_error" elevation={2} sx={{padding: '8px'}}>
-            <div>{i18n.t("failed_to_connect")}</div>
-        </Paper>
-    );
-    const loadingEl = (
-        <Paper key="loading" elevation={2} sx={{padding: '8px'}}>
-            <div>{i18n.t("loading")}</div>
-        </Paper>
-    );
-
     const onSelectedSetChanged = () => {
         dispatch(hdStateSlice.actions.loadingNewData({}));
     };
 
-    const onSelectedGameChanged= (newGame: string) => {
+    const onSelectedGameChanged = (newGame: string) => {
         websocketConnection.instance().emit('update_game', {codename: newGame});
     };
 
-    if (errored) {
-        body = connectionError;
-    } else if (loading) {
-        body = loadingEl;
+    let body;
+    if (errored || loading) {
+        body = (
+            <Card className="m-4 py-4">
+                <CardContent className="flex items-center gap-3 text-sm">
+                    {errored ? i18n.t("failed_to_connect") : <><Spinner/>{i18n.t("loading")}</>}
+                </CardContent>
+            </Card>
+        );
     } else {
         body = (
-            // Extra margin at the bottom allows for mobile users to see the bottom of the page better.
             <>
                 <Header onSelectedGameChange={onSelectedGameChanged}/>
-                <Box
-                    paddingX={2}
-                    paddingTop={1}
-                    paddingBottom={2}
-                >
-                    <Stack gap={4} marginBottom={24}>
-                        <Box>
-                            <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
-                                <Tabs
-                                    sx={{width: '100%'}}
-                                    variant={"scrollable"}
-                                    onChange={(event, newValue) => {
-                                        hdStore.dispatch(selectedScoreboardSlice.actions.setSelectedScoreboard(newValue))
-                                    }}
-                                    value={selectedScoreboard}
-                                >
-                                    {
-                                        scoreboardKeys(scoreboards).map(sbName =>
-                                            <Tab key={sbName} value={sbName} label={i18n.t("scoreboard_n", {value: sbName})} />)
-                                    }
-                                </Tabs>
-                            </Box>
-                            <div
-                                role={"tabpanel"}
-                                id={`scoreboards-tabpanel-${selectedScoreboard}`}
-                                aria-labelledby={`scoreboards-tabpanel-${selectedScoreboard}`}
-                            >
-                                <CurrentSet scoreboardNumber={selectedScoreboard} />
-                            </div>
-                        </Box>
-                        <UpcomingSets onSelectedSetChanged={onSelectedSetChanged} scoreboardNumber={selectedScoreboard}/>
-                    </Stack>
-                </Box>
+                {/* Extra margin at the bottom allows for mobile users to see the bottom of the page better. */}
+                <div className="mx-auto mb-48 flex w-full max-w-6xl flex-col gap-8 px-4 pt-3 pb-4">
+                    <Tabs
+                        value={String(selectedScoreboard)}
+                        onValueChange={(value) =>
+                            hdStore.dispatch(selectedScoreboardSlice.actions.setSelectedScoreboard(Number(value)))}
+                    >
+                        <div className="overflow-x-auto">
+                            <TabsList>
+                                {scoreboardKeys(scoreboards).map(sbName =>
+                                    <TabsTrigger key={sbName} value={String(sbName)}>
+                                        {i18n.t("scoreboard_n", {value: sbName})}
+                                    </TabsTrigger>
+                                )}
+                            </TabsList>
+                        </div>
+                        <TabsContent value={String(selectedScoreboard)}>
+                            <CurrentSet scoreboardNumber={selectedScoreboard}/>
+                        </TabsContent>
+                    </Tabs>
+                    <UpcomingSets onSelectedSetChanged={onSelectedSetChanged} scoreboardNumber={selectedScoreboard}/>
+                </div>
             </>
         );
     }
 
-    return (
-        <Box
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100vh",
-                gap: darkTheme.spacing(2),
-            }}
-            sx={{overflow: "auto !important"}}
-        >
-            {body}
-        </Box>
-    )
+    return <div className="flex h-dvh flex-col overflow-auto bg-background text-foreground">{body}</div>;
 }
 
 const scoreboardKeys = (scoreboards: HDState['score']) => {
@@ -135,4 +98,4 @@ const scoreboardKeys = (scoreboards: HDState['score']) => {
     } else {
         return [];
     }
-}
+};

@@ -1,7 +1,15 @@
 export interface HDCountryInfo {
     code: string;
-    display_name: string;
-    en_name: string;
+    name?: string;
+    display_name?: string;
+    en_name?: string;
+}
+
+/** A state of a country, from /states */
+export interface HDStateInfo {
+    code: string;
+    name: string;
+    asset?: string;
 }
 
 export interface HDPlayerInfo {
@@ -31,7 +39,7 @@ export interface HDTeamInfo {
 }
 
 export interface HDScoreInfo {
-    best_of: number;
+    best_of: number | string;
     best_of_text: string;
     match: string;
     phase: string;
@@ -107,6 +115,7 @@ export interface HDSet {
     p1_seed?: number;
     p2_name: string;
     p2_seed?: number;
+    completed?: boolean;
     round: string;
     round_name: string;
     station?: string;
@@ -118,6 +127,7 @@ export interface HDSet {
 
 export interface HDPlayerDbEntry {
     country_code: string;
+    state_code?: string;
     custom_textbox: string;
     prefixed_tag: string;
     gamerTag: string;
