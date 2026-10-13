@@ -26,6 +26,7 @@ scoreboard's number and `T` the team (1 or 2).
 | `/twitch/prediction/...` | Twitch predictions (see [Twitch predictions](twitch-predictions.md)) |
 | `/team-battle-teamT-scoreup`, `/team-battle-teamT-next-player` | Crew battles |
 | `/program-state` | Everything HyperDrive sends to the layouts, as JSON |
+| `/layouts` | The layout pages: `{"layouts": [{"folder", "pages": [{"name", "path", "preview"}]}]}`, where `path` and `preview` (the page's `_preview.png`, or `null`) go after the server's address |
 
 ## socket.io
 
