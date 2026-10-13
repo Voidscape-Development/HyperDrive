@@ -660,7 +660,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="53"/>
+        <location filename="../CommentaryWidget.py" line="55"/>
         <location filename="../PlayerListWidget.py" line="82"/>
         <location filename="../ScoreboardWidget.py" line="170"/>
         <location filename="../BracketWidget.py" line="555"/>
@@ -891,7 +891,7 @@
         <translation>Marcador</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="21"/>
+        <location filename="../CommentaryWidget.py" line="23"/>
         <location filename="../HyperDrive.py" line="429"/>
         <source>Commentary</source>
         <translation>Comentario</translation>
@@ -1966,7 +1966,7 @@
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="101"/>
-        <location filename="../CommentaryWidget.py" line="86"/>
+        <location filename="../CommentaryWidget.py" line="88"/>
         <location filename="../DisplayOptions.py" line="30"/>
         <location filename="../ScoreboardWidget.py" line="217"/>
         <source>Additional information</source>
@@ -2042,7 +2042,7 @@
         <translation>Generar Miniatura</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="70"/>
+        <location filename="../CommentaryWidget.py" line="72"/>
         <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../PlayerDBWindow.py" line="218"/>
         <location filename="../PlayerDBWindow.py" line="311"/>
@@ -2062,7 +2062,7 @@
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="84"/>
-        <location filename="../CommentaryWidget.py" line="76"/>
+        <location filename="../CommentaryWidget.py" line="78"/>
         <location filename="../DisplayOptions.py" line="20"/>
         <location filename="../PlayerDBWindow.py" line="700"/>
         <location filename="../PlayerDBWindow.py" line="786"/>
@@ -2073,7 +2073,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="77"/>
+        <location filename="../CommentaryWidget.py" line="79"/>
         <location filename="../DisplayOptions.py" line="21"/>
         <location filename="../ScoreboardWidget.py" line="208"/>
         <source>Birthday</source>
@@ -2082,7 +2082,7 @@
     <message>
         <location filename="../TeamPlayerWidget.py" line="66"/>
         <location filename="../ScoreboardPlayerWidget.py" line="89"/>
-        <location filename="../CommentaryWidget.py" line="79"/>
+        <location filename="../CommentaryWidget.py" line="81"/>
         <location filename="../DisplayOptions.py" line="23"/>
         <location filename="../ScoreboardWidget.py" line="210"/>
         <location filename="../TeamBattleWidget.py" line="229"/>
@@ -2090,7 +2090,7 @@
         <translation>Localidad</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="72"/>
+        <location filename="../CommentaryWidget.py" line="74"/>
         <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../PlayerDBWindow.py" line="314"/>
         <location filename="../ScoreboardWidget.py" line="203"/>
@@ -2100,7 +2100,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="83"/>
+        <location filename="../CommentaryWidget.py" line="85"/>
         <location filename="../DisplayOptions.py" line="27"/>
         <location filename="../PlayerListWidget.py" line="207"/>
         <location filename="../ScoreboardWidget.py" line="214"/>
@@ -2110,7 +2110,7 @@
         <translation>Personajes</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="84"/>
+        <location filename="../CommentaryWidget.py" line="86"/>
         <location filename="../DisplayOptions.py" line="28"/>
         <location filename="../PlayerDBWindow.py" line="221"/>
         <location filename="../PlayerDBWindow.py" line="312"/>
@@ -2119,6 +2119,11 @@
         <location filename="../TeamBattleWidget.py" line="234"/>
         <source>Pronouns</source>
         <translation>Pronombres</translation>
+    </message>
+    <message>
+        <location filename="../CommentaryWidget.py" line="111"/>
+        <source>Open {0} in a browser for the commentary dashboard: the players&apos; info and stats, and what&apos;s up next.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ScoreboardWidget.py" line="264"/>
@@ -2468,7 +2473,7 @@
         <translation>Cargar set de usuario</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="46"/>
+        <location filename="../CommentaryWidget.py" line="48"/>
         <source>Number of commentators</source>
         <translation>Número de comentaristas</translation>
     </message>
