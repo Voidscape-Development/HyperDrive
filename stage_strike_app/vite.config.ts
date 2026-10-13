@@ -45,6 +45,7 @@ export default defineConfig(({ mode }) => {
     '/open-set',
     '/pull-stream',
     '/set-current-stage',
+    '/commentary-preview',
   ];
 
   const silenceECONNRESET = (proxy) => {

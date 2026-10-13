@@ -1407,6 +1407,8 @@ class StartGGDataProvider(TournamentDataProvider):
                         "online_avatar": playerData.get("avatar", ""),
                         "twitter": playerData.get("twitter", ""),
                         "socials": playerData.get("socials", {}),
+                        # For the commentary dashboard's stats of the players
+                        "id": playerData.get("id"),
                     }
 
                     teamData["player"][str(playerIndex + 1)] = playerData

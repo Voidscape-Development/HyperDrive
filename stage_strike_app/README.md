@@ -9,6 +9,8 @@ with [Vite](https://vite.dev/) and TypeScript, using [shadcn/ui](https://ui.shad
 | `/stage-strike-app` | Stage strike for the players | [`src/StageStrikePage`](src/StageStrikePage) |
 | `/character-select` | Character select for the players | [`src/CharacterSelectPage`](src/CharacterSelectPage) |
 | `/scoreboard` | Remote scoreboard | [`src/ScoreboardPage`](src/ScoreboardPage) |
+| `/bracket-focus-app` | What the bracket focus layout zooms to | [`src/BracketFocusPage`](src/BracketFocusPage) |
+| `/commentary-dashboard` | Commentary dashboard | [`src/CommentaryDashboardPage`](src/CommentaryDashboardPage) |
 
 Any other path goes to `/stage-strike-app`.
 
@@ -28,7 +30,7 @@ npm run dev
 
 1. Start HyperDrive (`uv run main.py` from the repository root).
 2. Open the pages from the Vite dev server: `http://localhost:3000/stage-strike-app`,
-   `/character-select` or `/scoreboard`.
+   `/character-select`, `/scoreboard`, `/bracket-focus-app` or `/commentary-dashboard`.
 
 The dev server reloads as you edit and forwards API, socket.io and asset requests to
 HyperDrive (see `PROXIED_PATHS` in [`vite.config.js`](vite.config.js)). If you've changed

@@ -1,3 +1,5 @@
+import socket
+
 from loguru import logger
 from qtpy.QtCore import *
 from qtpy.QtGui import *
@@ -100,6 +102,21 @@ class CommentaryWidget(QDockWidget):
 
         row.layout().addWidget(self.eyeBt)
         col.layout().addWidget(row)
+
+        dashboardUrl = (
+            f"http://{self.GetIP()}:{SettingsManager.Get('general.webserver_port', 5500)}"
+            "/commentary-dashboard"
+        )
+        dashboardLabel = QLabel(
+            QApplication.translate(
+                "app",
+                "Open {0} in a browser for the commentary dashboard: the players' info and "
+                "stats, and what's up next.",
+            ).format(f"<a href='{dashboardUrl}'>{dashboardUrl}</a>")
+        )
+        dashboardLabel.setWordWrap(True)
+        dashboardLabel.setOpenExternalLinks(True)
+        col.layout().addWidget(dashboardLabel)
 
         scrollArea = QScrollArea()
         scrollArea.setFrameShadow(QFrame.Shadow.Plain)
@@ -210,3 +227,15 @@ class CommentaryWidget(QDockWidget):
         else:
             characters = 1
         self.characterNumber.setValue(characters)
+
+    def GetIP(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(("10.255.255.255", 1))
+            IP = s.getsockname()[0]
+        except Exception:
+            IP = "127.0.0.1"
+        finally:
+            s.close()
+        return IP

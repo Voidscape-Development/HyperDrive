@@ -117,21 +117,7 @@ class StatsUtil:
                     + data.get("playerNumber")
                     + "."
                     + str(i),
-                    {
-                        "phase_id": set.get("phase_id"),
-                        "phase_name": set.get("phase_name"),
-                        "round_name": set.get("round_name"),
-                        "player_score": set.get("player1_score"),
-                        "player_seed": set.get("player1_seed"),
-                        "player_team": set.get("player1_team"),
-                        "player_name": set.get("player1_name"),
-                        "player_char": set.get("player_char", {}),
-                        "oponent_score": set.get("player2_score"),
-                        "oponent_seed": set.get("player2_seed"),
-                        "oponent_team": set.get("player2_team"),
-                        "oponent_name": set.get("player2_name"),
-                        "oponent_char": set.get("oponent_char", {}),
-                    },
+                    StatsUtil.LastSetEntry(set),
                 )
                 i += 1
 
@@ -182,30 +168,46 @@ class StatsUtil:
                     + data.get("playerNumber")
                     + "."
                     + str(i),
-                    {
-                        "placement": set.get("placement"),
-                        "event_name": set.get("event_name"),
-                        "tournament_name": set.get("tournament_name"),
-                        "tournament_picture": set.get("tournament_picture"),
-                        "entrants": set.get("entrants"),
-                        "seed": set.get("seed"),
-                        "bracket_type": set.get("bracket_type"),
-                        # Placement rounds above (positive) or below the seed
-                        "spr": SeedPerformanceRating(
-                            set.get("bracket_type"), set.get("seed"), set.get("placement")
-                        ),
-                        "event_date_month": datetime.fromtimestamp(set.get("event_date")).strftime(
-                            "%B"
-                        ),
-                        "event_date_day": datetime.fromtimestamp(set.get("event_date")).strftime(
-                            "%d"
-                        ),
-                        "event_date_year": datetime.fromtimestamp(set.get("event_date")).strftime(
-                            "%Y"
-                        ),
-                    },
+                    StatsUtil.HistorySetEntry(set),
                 )
                 i += 1
+
+    def LastSetEntry(set: dict) -> dict:
+        """A set of a player's last sets, as in score.N.last_sets"""
+        return {
+            "phase_id": set.get("phase_id"),
+            "phase_name": set.get("phase_name"),
+            "round_name": set.get("round_name"),
+            "player_score": set.get("player1_score"),
+            "player_seed": set.get("player1_seed"),
+            "player_team": set.get("player1_team"),
+            "player_name": set.get("player1_name"),
+            "player_char": set.get("player_char", {}),
+            "oponent_score": set.get("player2_score"),
+            "oponent_seed": set.get("player2_seed"),
+            "oponent_team": set.get("player2_team"),
+            "oponent_name": set.get("player2_name"),
+            "oponent_char": set.get("oponent_char", {}),
+        }
+
+    def HistorySetEntry(set: dict) -> dict:
+        """A placement of a player's past events, as in score.N.history_sets"""
+        return {
+            "placement": set.get("placement"),
+            "event_name": set.get("event_name"),
+            "tournament_name": set.get("tournament_name"),
+            "tournament_picture": set.get("tournament_picture"),
+            "entrants": set.get("entrants"),
+            "seed": set.get("seed"),
+            "bracket_type": set.get("bracket_type"),
+            # Placement rounds above (positive) or below the seed
+            "spr": SeedPerformanceRating(
+                set.get("bracket_type"), set.get("seed"), set.get("placement")
+            ),
+            "event_date_month": datetime.fromtimestamp(set.get("event_date")).strftime("%B"),
+            "event_date_day": datetime.fromtimestamp(set.get("event_date")).strftime("%d"),
+            "event_date_year": datetime.fromtimestamp(set.get("event_date")).strftime("%Y"),
+        }
 
     def GetSetUpsetFactor(self):
         if len(self.scoreboard.team1playerWidgets) == 1:

@@ -174,6 +174,23 @@ class DynamicExport:
             return
         DynamicExport._signatures[path] = signature
 
+        custom = DynamicExport._Custom(folder, files)
+
+        key = f"{path}.custom"
+        if custom:
+            if StateManager.Get(key) != custom:
+                StateManager.Set(key, custom)
+        elif StateManager.Get(key) is not None:
+            StateManager.Unset(key)
+
+    def CustomData(name: str, team: str) -> dict:
+        """A person's custom data as the layouts get it, for someone who isn't
+        on a scoreboard (e.g. a player of an upcoming set). {} when there's
+        none or custom data is off."""
+        folder = DynamicExport._MatchFolder(name or "", team or "", DynamicExport._Folders())
+        return DynamicExport._Custom(folder, DynamicExport.Files(folder)) if folder else {}
+
+    def _Custom(folder: str, files: list[os.DirEntry]) -> dict:
         custom = {}
         for entry in files:
             stem, ext = os.path.splitext(entry.name)
@@ -187,13 +204,7 @@ class DynamicExport:
             value = DynamicExport._Value(entry, ext.lower(), folder)
             if value is not None:
                 custom[key] = value
-
-        key = f"{path}.custom"
-        if custom:
-            if StateManager.Get(key) != custom:
-                StateManager.Set(key, custom)
-        elif StateManager.Get(key) is not None:
-            StateManager.Unset(key)
+        return custom
 
     def _Value(entry: os.DirEntry, ext: str, folder: str):
         if ext == ".json":

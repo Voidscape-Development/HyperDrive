@@ -860,6 +860,19 @@ class WebServer(QThread):
             ),
         )
 
+    # Gets all of the scoreboard's player stats again
+    @api.get("/scoreboard{scoreboardNumber:seg}-stats-refresh")
+    async def stats_refresh(scoreboardNumber: str):
+        return await call(WebServer.actions.stats_refresh, scoreboardNumber)
+
+    # The players of a set that isn't on a scoreboard, for the commentary
+    # dashboard: {"teams": [[player...], [player...]]}
+    @api.post("/commentary-preview")
+    async def commentary_preview(request: Request):
+        return await call(
+            WebServer.actions.commentary_preview, await WebServer.request_body(request)
+        )
+
     # Resets scores
     @api.get("/scoreboard{scoreboardNumber:seg}-reset-scores")
     async def reset_scores(scoreboardNumber: str):
@@ -1262,6 +1275,7 @@ class WebServer(QThread):
     @api.get("/stage-strike-app")
     @api.get("/character-select")
     @api.get("/bracket-focus-app")
+    @api.get("/commentary-dashboard")
     async def stage_strike_app():
         return FileResponse(
             os.path.join(os.path.abspath("."), "stage_strike_app/build/index.html"),

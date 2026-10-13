@@ -54,6 +54,7 @@ these from any device on the same network at `http://<HyperDrive's address>:5500
 | `/stage-strike-app` | Stage strike for the players |
 | `/character-select` | Character select for the players |
 | `/bracket-focus-app` | What the bracket focus layout zooms to: sets, rounds, a player's run, the set on stream or a tour of the rounds |
+| `/commentary-dashboard` | For the commentators: the players' info, notes and stats, the set's games and what's at stake, and what's up next on stream |
 | `/admin` | Player database editor |
 | `/wiki` | The guide (Help > Guide in the app) |
 | `/api/docs` | The web server's endpoints |
