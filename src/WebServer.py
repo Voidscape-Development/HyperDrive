@@ -23,6 +23,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.convertors import Convertor, register_url_convertor
 
 from .CommentaryWidget import CommentaryWidget
+from .LayoutList import ListLayouts
 from .PlayerDB import PlayerDB
 from .PlayerDBModels import GetEngine, Player
 from .ScoreboardManager import ScoreboardManager
@@ -251,6 +252,12 @@ class WebServer(QThread):
     async def program_state():
         # orjson encodes the whole state many times faster than json
         return await call(WebServer.actions.program_state)
+
+    # The layout pages and their previews, e.g. for the OBS plugin's layout
+    # source (see src/LayoutList.py)
+    @api.get("/layouts")
+    async def layouts():
+        return await run_in_threadpool(ListLayouts)
 
     @on("program-state-update")
     def ws_program_state_update(message=None):
