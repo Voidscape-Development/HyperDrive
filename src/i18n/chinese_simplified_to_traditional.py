@@ -25,7 +25,7 @@ with open("src/i18n/HyperDrive_zh-TW.ts", "w", encoding="utf-8") as traditional_
     traditional_text = traditional_text.replace('language="zh_CN"', 'language="zh_TW"')
     traditional_file.write(header + traditional_text)
 
-for path in ["src/i18n/tournament_term", "stage_strike_app/src/i18n/locales"]:
+for path in ["src/i18n/tournament_term"]:
     with open(f"{path}/zh-CN.json", encoding="utf-8") as simplified_file:
         simplified_json = json.loads(simplified_file.read())
 

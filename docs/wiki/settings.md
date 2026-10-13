@@ -23,8 +23,9 @@ and font. Also the **Default team colors** of the scoreboard.
 ## [Scoreboard](hyperdrive://open/settings/scoreboard)
 
 How the [scoreboard](scoreboard.md) follows start.gg: score control from the stage strike
-page, automatic set and score updating and its interval, keeping your characters when a set
-loads, and using your local player database for player info.
+page, whether that page asks for each game's characters, automatic set and score updating
+and its interval, keeping your characters when a set loads, and using your local player
+database for player info.
 
 ## [State Manager](hyperdrive://open/settings/state-manager)
 

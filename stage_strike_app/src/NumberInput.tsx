@@ -1,126 +1,56 @@
-import TextField from "./ScoreboardPage/TextField";
-import React from "react";
-import {Button, InputAdornment, Stack, SxProps} from "@mui/material";
-import {Grid} from "@mui/system";
+import {Minus, Plus} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {ButtonGroup} from "@/components/ui/button-group";
+import {Input} from "@/components/ui/input";
+import {cn} from "@/lib/utils";
 
 export interface NumberInputProps {
+    id?: string;
     value: number;
-    label?: string;
     min?: number;
     max?: number;
     onChange: (oldVal: number, newVal: number) => void;
-    wingWidth?: number;
-    width?: number;
-    sx?: SxProps;
+    className?: string;
 }
 
-export function NumberInput(props: NumberInputProps) {
-    const inputProps = {min: 0};
-    if (props.max) {
-        inputProps['max'] = props.max;
-    }
-
-    const wingButtonWidth = props.wingWidth ?? 32;
-    let sx = props.sx ?? {};
-    const min = props.min ?? Number.MIN_SAFE_INTEGER;
-    const max = props.max ?? Number.MAX_SAFE_INTEGER;
+/** A number with - and + buttons either side */
+export function NumberInput({id, value, min, max, onChange, className}: NumberInputProps) {
+    const lowest = min ?? Number.MIN_SAFE_INTEGER;
+    const highest = max ?? Number.MAX_SAFE_INTEGER;
 
     return (
-        <Grid container sx={{...sx, width: props.width}}>
-            <Stack direction={"row"} sx={{position: 'relative'}}>
-                <TextField
-                    type={"number"}
-                    variant="outlined"
-                    value={props.value}
-                    onChange={(e) => props.onChange(props.value, Number.parseInt(e.target.value))}
-                    label={props.label}
-                    sx={{
-                        width: props.width ? `${props.width - wingButtonWidth*2}px` : undefined,
-                        marginX: `${wingButtonWidth}px`,
-
-                        '& .MuiInputBase-root': {
-                            paddingX: 0,
-                            marginX: 0,
-                            borderRadius: 0,
-                            justifyContent: 'space-between',
-                        },
-                        '& .MuiOutlinedInput-notchedOutline': {
-                            borderLeft: 0,
-                            borderRight: 0,
-                        },
-                        '& input': {
-                            width: '50px',
-                            textAlign: "center",
-                            MozAppearance: 'textfield',
-                        },
-                        '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                            WebkitAppearance: 'none',
-                            margin: 0,
-                        }
-                    }}
-                    slotProps={{
-                        htmlInput: inputProps,
-                        input: {
-                            startAdornment:
-                                <InputAdornment
-                                    position={"start"}
-                                    sx={{
-                                        position: 'absolute',
-                                        left: `-${wingButtonWidth}px`,
-                                        maxHeight: '100%',
-                                        height: '100%',
-                                        margin: 0,
-                                        padding: 0,
-                                    }}
-                                >
-                                    <Button
-                                        variant={"outlined"}
-                                        disabled={props.value <= min}
-                                        onClick={() => props.onChange && props.onChange(props.value, Math.max(min, props.value - 1))}
-                                        sx={{
-                                            borderBottomRightRadius: 0,
-                                            borderTopRightRadius: 0,
-                                            height: '100%',
-                                            minWidth: wingButtonWidth,
-                                            width: wingButtonWidth,
-                                            padding:0,
-                                            margin:0,
-                                        }}
-                                    >
-                                        -
-                                    </Button>
-                                </InputAdornment>,
-                            endAdornment:
-                                <InputAdornment
-                                    position={"end"}
-                                    sx={{
-                                        position: 'absolute',
-                                        right: `-${wingButtonWidth}px`,
-                                        maxHeight: '100%',
-                                        height: '100%'
-                                    }}
-                                >
-                                    <Button
-                                        variant={"outlined"}
-                                        disabled={props.value >= max}
-                                        onClick={() => props.onChange && props.onChange(props.value, Math.min(max, props.value + 1))}
-                                        sx={{
-                                            borderTopLeftRadius: 0,
-                                            borderBottomLeftRadius: 0,
-                                            height: '100%',
-                                            minWidth: wingButtonWidth,
-                                            width: wingButtonWidth,
-                                            padding:0,
-                                            margin:0,
-                                        }}
-                                    >
-                                        +
-                                    </Button>
-                                </InputAdornment>
-                        }
-                    }}
-                />
-            </Stack>
-        </Grid>
-    )
+        <ButtonGroup className={className}>
+            <Button
+                variant="outline"
+                size="icon"
+                aria-label="-"
+                disabled={value <= lowest}
+                onClick={() => onChange(value, Math.max(lowest, value - 1))}
+            >
+                <Minus/>
+            </Button>
+            <Input
+                id={id}
+                type="number"
+                inputMode="numeric"
+                min={min}
+                max={max}
+                value={value}
+                onChange={(e) => onChange(value, Number.parseInt(e.target.value))}
+                className={cn(
+                    "w-16 text-center tabular-nums",
+                    "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+                )}
+            />
+            <Button
+                variant="outline"
+                size="icon"
+                aria-label="+"
+                disabled={value >= highest}
+                onClick={() => onChange(value, Math.min(highest, value + 1))}
+            >
+                <Plus/>
+            </Button>
+        </ButtonGroup>
+    );
 }

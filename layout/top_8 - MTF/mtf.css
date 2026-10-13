@@ -50,7 +50,8 @@
   --mtf-chip-radius: 8px;
 
   /* primary   = team 1 color → washes
-     secondary = team 2 color → sponsor tags, icons, header label */
+     secondary = team 2 color → sponsor tags, icons, header label
+     (the layout theme's colors instead when they're on, see below) */
   --mtf-primary: var(--p1-score-bg-color);
   --mtf-secondary: var(--p2-score-bg-color);
   --mtf-secondary-light: color-mix(in srgb, var(--mtf-secondary) 75%, #ffffff);
@@ -70,6 +71,13 @@
     color-mix(in srgb, var(--mtf-primary) var(--mtf-wash-strength), transparent),
     transparent var(--mtf-wash-length)
   );
+}
+
+/* With the layout theme's colors on, the theme's primary color drives the
+   washes and its secondary color the sponsor tags and the rest above */
+body.mtf.hd-theme-colors {
+  --mtf-primary: var(--accent-color);
+  --mtf-secondary: var(--accent-secondary-color);
 }
 
 

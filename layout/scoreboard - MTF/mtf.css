@@ -57,7 +57,8 @@
   --mtf-chip-radius: 8px;
 }
 
-/* Two layout-wide colors, shared by both players:
+/* Two layout-wide colors, shared by both players (the team colors unless the
+   layout theme's colors are on, see below):
      primary   = team 1 color → bar washes
      secondary = team 2 color → sponsor tags, chip icons, losers badge, phase */
 .mtf {
@@ -69,6 +70,13 @@
     var(--mtf-secondary-light),
     color-mix(in srgb, var(--mtf-secondary) 85%, #000000)
   );
+}
+
+/* With the layout theme's colors on, the theme's primary color drives the
+   washes and its secondary color the sponsor tags and the rest above */
+body.mtf.hd-theme-colors {
+  --mtf-primary: var(--accent-color);
+  --mtf-secondary: var(--accent-secondary-color);
 }
 
 
