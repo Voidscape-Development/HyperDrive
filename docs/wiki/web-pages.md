@@ -24,8 +24,8 @@ see [Troubleshooting](troubleshooting.md#web-pages-dont-load-on-another-device).
 
 ## Pages for one scoreboard or one team
 
-- Add `?scoreboard=2` to work on scoreboard 2 (the stage strike and character select pages
-  remember the last one picked).
+- Add `?scoreboard=2` to work on scoreboard 2. The stage strike and character select pages
+  are then locked to it; without it, they let you pick a scoreboard and remember it.
 - Add `&team=1` or `&team=2` to the stage strike page to give each team its own device.
 
 ## Changing the port

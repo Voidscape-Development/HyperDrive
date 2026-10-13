@@ -123,6 +123,8 @@ class WebServerActions(QThread):
             "score.ruleset", {}
         )
         data["game"] = StateManager.Get("game.codename")
+        # Whether the page opens the character select once a game's winner is reported
+        data["ask_characters"] = SettingsManager.Get("general.stage_strike_ask_characters", True)
 
         sb = self._get_scoreboard(n)
         data["characters_per_player"] = sb.charNumber.value()

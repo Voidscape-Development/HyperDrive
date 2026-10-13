@@ -93,7 +93,6 @@ export default function BracketFocusPage() {
     const [channel, setChannel] = useState(
         () => new URLSearchParams(window.location.search).get("channel") || "main"
     );
-    const [, forceUpdate] = useState(0);
     const refreshTimer = useRef<ReturnType<typeof setTimeout>>(null);
     // For the socket's callbacks, which outlive renders
     const channelRef = useRef(channel);
@@ -101,9 +100,6 @@ export default function BracketFocusPage() {
 
     useEffect(() => {
         document.title = `HyperDrive ${i18n.t("bracket_focus")}`;
-        const listener = () => forceUpdate((n) => n + 1);
-        i18n.on("languageChanged", listener);
-        return () => i18n.off("languageChanged", listener);
     }, []);
 
     useEffect(() => {

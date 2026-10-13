@@ -71,14 +71,7 @@ On every push to `main`, the "Build the application" workflow rebuilds it and co
 result as "Update frontend". You only need to build locally to test your changes in
 HyperDrive itself, or to run HyperDrive from source with them.
 
-## Translations
+## Text
 
-The page text is in [`src/i18n/locales`](src/i18n/locales), one JSON file per language. To
-add a language, add its file, then add it to both `resources` and `SUPPORTED_LANGUAGES`
-in [`src/i18n/config.ts`](src/i18n/config.ts).
-
-The character select and scoreboard pages use the language in the `?lng=` query
-parameter, otherwise the browser's language, and fall back to English. The stage strike
-page has its own language selector, saved in the browser. With "Auto" on, it switches to
-each player's language during their strikes, based on their country (`COUNTRY_LANGUAGE`
-in [`src/StageStrikePage/index.tsx`](src/StageStrikePage/index.tsx)).
+The app is in English. Its text is in [`src/i18n/locales/en.json`](src/i18n/locales/en.json),
+used through `i18n.t()`.

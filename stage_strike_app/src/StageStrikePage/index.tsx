@@ -1,8 +1,7 @@
-import {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {type ReactNode, useEffect, useMemo, useRef, useState} from "react";
 import "../NoSleep";
 import "./stageStrike.css";
 import i18n from "../i18n/config";
-import {languageSettings} from "./languageSettings";
 import {BASE_URL} from "../env";
 import {NoRulesetError} from "./NoRulesetError";
 import {StageCard} from "./StageCard";
@@ -29,70 +28,47 @@ import {
   type Stage,
 } from "./strikeLogic";
 import {Page} from "@/components/Page";
-import {loadUiSettings, saveUiSettings, type UiSettings} from "./uiSettings";
 
 export default function StageStrikePage() {
-  const [scoreboard, setScoreboard] = useScoreboardParam();
+  const {scoreboard, setScoreboard, locked} = useScoreboardParam();
   // With ?team=<1|2> the page is one team's: it strikes on its turn only and
   // picks only its own characters
   const team = useTeamParam();
   const target = useMemo(() => ({scoreboard, team}), [scoreboard, team]);
-  const {data, scoreboards, connected, refresh} = useStrikeData(scoreboard, setScoreboard);
+  const {data, scoreboards, connected, missing, refresh} = useStrikeData(scoreboard, locked ? null : setScoreboard);
   const characters = useCharacters(data?.game);
-  const [, forceUpdate] = useState(0);
   const [charactersOpen, setCharactersOpen] = useState(false);
-  const [uiSettings, setUiSettings] = useState(loadUiSettings);
-
-  useEffect(() => {
-    const listener = () => forceUpdate((n) => n + 1);
-    i18n.on("languageChanged", listener);
-    return () => i18n.off("languageChanged", listener);
-  }, []);
 
   const ruleset = data?.ruleset;
   const state = useMemo(() => ({...EMPTY_STATE, ...(data?.state ?? {})}), [data]);
   const bestOf = data?.best_of;
   const playerNames = [data?.p1 || i18n.t("p1"), data?.p2 || i18n.t("p2")];
-  const playerLanguages = [languageFromCountry(data?.p1_country), languageFromCountry(data?.p2_country)];
   // The strike player (0 or 1) of this page's team, -1 for both teams
   const myPlayer = team ? (data?.teams ?? []).findIndex((t) => t?.team === team) : -1;
   const teamMode = myPlayer !== -1;
   const myTurn = !teamMode || state.currPlayer === myPlayer;
   const characterSelect = state.characterSelect ?? {active: false, submitted: {}};
 
-  // Shared steps (before RPS, once the stage is picked) use the page's
-  // language, the strikes use the player whose turn it is
-  const stepLanguage = (state.selectedStage !== null || state.currPlayer === -1)
-    ? languageSettings.language
-    : playerLanguages[state.currPlayer] || languageSettings.language;
-
-  useEffect(() => {
-    if (languageSettings.usePlayerLanguage) i18n.changeLanguage(stepLanguage);
-  }, [stepLanguage]);
-
   useEffect(() => {
     document.title = `${i18n.t("title")} · ${scoreboards.find((s) => s.number === scoreboard)?.name ?? scoreboard}`;
   }, [scoreboard, scoreboards]);
 
   // Once a game's winner is reported, asks for the next game's characters,
-  // unless this page already sent them
+  // unless this page already sent them or HyperDrive's settings say not to
   const waitingForMe = characterSelect.active && (teamMode
     ? !characterSelect.submitted?.[String(team)]
     : !(characterSelect.submitted?.["1"] && characterSelect.submitted?.["2"]));
   const lastAskedGame = useRef(null);
+  const askCharacters = data?.ask_characters ?? true;
   useEffect(() => {
-    if (!uiSettings.askCharacters || !waitingForMe) return;
+    if (!askCharacters || !waitingForMe) return;
     const key = `${scoreboard}-${characterSelect.game}`;
     if (lastAskedGame.current !== key) {
       lastAskedGame.current = key;
       refresh();
       setCharactersOpen(true);
     }
-  }, [uiSettings.askCharacters, waitingForMe, characterSelect.game, scoreboard, refresh]);
-
-  const changeUiSettings = useCallback((changes: Partial<UiSettings>) => {
-    setUiSettings((prev) => saveUiSettings({...prev, ...changes}));
-  }, []);
+  }, [askCharacters, waitingForMe, characterSelect.game, scoreboard, refresh]);
 
   const openCharacters = () => {
     // Players or the character count may have changed in HyperDrive since
@@ -104,22 +80,17 @@ export default function StageStrikePage() {
     <TopBar
       scoreboard={scoreboard}
       scoreboards={scoreboards}
-      onScoreboardChange={setScoreboard}
+      onScoreboardChange={locked ? null : setScoreboard}
       teamName={teamMode ? playerNames[myPlayer] : null}
       teamPlayer={myPlayer}
       connected={connected}
-      playerLanguages={playerLanguages}
-      currPlayer={state.currPlayer}
-      selectedStage={state.selectedStage}
-      uiSettings={uiSettings}
-      onUiSettingsChange={changeUiSettings}
     />
   );
 
   if (!data) {
     return <Page>
       {topBar}
-      <NoRulesetError loading connected={connected} />
+      <NoRulesetError loading connected={connected} missingScoreboard={missing ? scoreboard : null} />
     </Page>;
   }
 
@@ -146,7 +117,7 @@ export default function StageStrikePage() {
     const showRestrictions = !isSelected || state.gentlemans;
     return <StageCard
       key={stage.codename ?? stage.en_name}
-      stageName={StageName(stage, stepLanguage)}
+      stageName={StageName(stage)}
       stageImage={`${BASE_URL}/${stage.path}`}
       isSelected={isSelected}
       onClick={() => StageClicked(target, stage)}
@@ -262,28 +233,4 @@ function StageGrid({children}: {children: ReactNode}) {
   return <div className="grid grid-cols-[repeat(auto-fill,minmax(min(45%,200px),1fr))] gap-3 sm:grid-cols-[repeat(auto-fit,minmax(200px,280px))] sm:justify-center">
     {children}
   </div>;
-}
-
-// Maps ISO 3166-1 alpha-2 country codes to the language codes used in stage locales.
-// i18next needs hyphenated codes (zh-CN); StageName converts them for stage locales.
-const COUNTRY_LANGUAGE: Record<string, string> = {
-  JP: "ja",
-  KR: "ko",
-  CN: "zh-CN",
-  TW: "zh-TW", HK: "zh-TW", MO: "zh-TW",
-  FR: "fr",    BE: "fr", CH: "fr", LU: "fr", MC: "fr",
-  ES: "es",    MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
-               VE: "es", EC: "es", BO: "es", PY: "es", UY: "es",
-               GT: "es", HN: "es", SV: "es", NI: "es", CR: "es",
-               PA: "es", DO: "es", CU: "es", PR: "es",
-  BR: "pt-BR",
-  PT: "pt-PT", AO: "pt-PT", MZ: "pt-PT", CV: "pt-PT", GW: "pt-PT", ST: "pt-PT", TL: "pt-PT",
-  IT: "it",
-  DE: "de",
-  NL: "nl",    SR: "nl",
-  RU: "ru",
-};
-
-function languageFromCountry(countryCode?: string) {
-  return COUNTRY_LANGUAGE[countryCode] ?? "en";
 }

@@ -34,17 +34,10 @@ import {Card} from "@/components/ui/card";
  * scoreboard once the other team sent theirs, like on the stage strike page.
  */
 export default function CharacterSelectPage() {
-  const [scoreboard, setScoreboard] = useScoreboardParam();
+  const {scoreboard, setScoreboard, locked} = useScoreboardParam();
   const team = useTeamParam();
-  const {data, scoreboards, connected, refresh} = useStrikeData(scoreboard, setScoreboard);
+  const {data, scoreboards, connected, missing, refresh} = useStrikeData(scoreboard, locked ? null : setScoreboard);
   const characters = useCharacters(data?.game);
-  const [, forceUpdate] = useState(0);
-
-  useEffect(() => {
-    const listener = () => forceUpdate((n) => n + 1);
-    i18n.on("languageChanged", listener);
-    return () => i18n.off("languageChanged", listener);
-  }, []);
 
   useEffect(() => {
     document.title = `${i18n.t("character_select")} · ${scoreboards.find((s) => s.number === scoreboard)?.name ?? scoreboard}`;
@@ -58,13 +51,10 @@ export default function CharacterSelectPage() {
       title={i18n.t("character_select")}
       scoreboard={scoreboard}
       scoreboards={scoreboards}
-      onScoreboardChange={setScoreboard}
+      onScoreboardChange={locked ? null : setScoreboard}
       teamName={myPlayer !== -1 ? playerNames[myPlayer] : null}
       teamPlayer={myPlayer}
       connected={connected}
-      playerLanguages={[]}
-      currPlayer={-1}
-      selectedStage={null}
     />
     {data
       ? <CharacterSelectView
@@ -74,7 +64,7 @@ export default function CharacterSelectPage() {
         characters={characters}
         refresh={refresh}
       />
-      : <NoRulesetError loading connected={connected} />
+      : <NoRulesetError loading connected={connected} missingScoreboard={missing ? scoreboard : null} />
     }
   </Page>;
 }

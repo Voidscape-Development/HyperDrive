@@ -47,6 +47,14 @@ strike on its turn, and the other team confirms a game's winner.
 The link **for character selection only** (`/character-select`) lets players pick their
 characters without striking stages.
 
+After each game, the page asks for the next game's characters. Turn this off in
+[Settings › Scoreboard](hyperdrive://open/settings/scoreboard) (*Ask for the next game's
+characters on the stage striking app after each game*); the **Characters** button still
+opens it.
+
+A link with `?scoreboard=<n>`, like the one in the Stage tab, only works on that
+scoreboard: the page doesn't offer the others.
+
 ## 3. Show it on stream
 
 Add one of these layouts in OBS (see [Adding layouts to OBS](obs-setup.md)):

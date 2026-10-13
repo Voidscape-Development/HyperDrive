@@ -52,8 +52,6 @@ export interface StrikeData {
   best_of?: number;
   p1?: string;
   p2?: string;
-  p1_country?: string;
-  p2_country?: string;
   teams?: StrikeTeam[];
   characters_per_player?: number;
   phase?: string;
@@ -61,6 +59,9 @@ export interface StrikeData {
   game?: string;
   score?: number[];
   character_lock?: {locked?: Record<string, boolean>};
+  // Whether to open the character select once a game's winner is reported
+  // (HyperDrive's Settings › Scoreboard)
+  ask_characters?: boolean;
 }
 
 function readStoredScoreboard() {
@@ -72,26 +73,24 @@ function readStoredScoreboard() {
 }
 
 /**
- * The scoreboard this page strikes for, from ?scoreboard=<n> (so a link can
- * be given to each station), else the last one picked on this device.
+ * The scoreboard this page strikes for. A link with ?scoreboard=<n> (one for
+ * each station) locks the page to that scoreboard: it can't pick another.
+ * Without one, it's the last one picked on this device.
  */
-export function useScoreboardParam(): [number, (scoreboard: number) => void] {
-  const [params, setParams] = useSearchParams();
+export function useScoreboardParam() {
+  const [params] = useSearchParams();
   const fromUrl = Number.parseInt(params.get("scoreboard") ?? "");
-  const scoreboard = fromUrl > 0 ? fromUrl : readStoredScoreboard();
+  const locked = fromUrl > 0;
+  const [picked, setPicked] = useState(readStoredScoreboard);
 
   const setScoreboard = useCallback((number: number) => {
     try {
       localStorage.setItem(SCOREBOARD_KEY, String(number));
     } catch {}
-    setParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set("scoreboard", String(number));
-      return next;
-    }, {replace: true});
-  }, [setParams]);
+    setPicked(number);
+  }, []);
 
-  return [scoreboard, setScoreboard];
+  return {scoreboard: locked ? fromUrl : picked, setScoreboard, locked};
 }
 
 /** The team (1 or 2) this page is for, from ?team=<n>, or null for both teams */
@@ -104,9 +103,13 @@ export function useTeamParam() {
 /**
  * HyperDrive's stage strike data for a scoreboard: its ruleset, strike state,
  * players and set info. HyperDrive sends it again whenever the strike changes.
+ * If the scoreboard isn't open in HyperDrive, onScoreboardMissing gets the
+ * first one there is; without it (a page locked to its scoreboard),
+ * "missing" says so.
  */
-export function useStrikeData(scoreboard: number, onScoreboardMissing?: (scoreboard: number) => void) {
+export function useStrikeData(scoreboard: number, onScoreboardMissing?: ((scoreboard: number) => void) | null) {
   const [data, setData] = useState<StrikeData | null>(null);
+  const [missing, setMissing] = useState(false);
   const [scoreboards, setScoreboards] = useState<ScoreboardOption[]>([]);
   const [connected, setConnected] = useState(false);
 
@@ -118,6 +121,7 @@ export function useStrikeData(scoreboard: number, onScoreboardMissing?: (scorebo
 
   useEffect(() => {
     setData(null);
+    setMissing(false);
 
     const onConnect = () => {
       setConnected(true);
@@ -131,8 +135,11 @@ export function useStrikeData(scoreboard: number, onScoreboardMissing?: (scorebo
     const onRuleset = (d: StrikeData) => {
       if (d?.scoreboards) {
         setScoreboards(d.scoreboards);
-        if (d.scoreboards.length > 0 && !d.scoreboards.some((s) => s.number === scoreboard)) {
-          onScoreboardMissing?.(d.scoreboards[0].number);
+        const exists = d.scoreboards.some((s) => s.number === scoreboard);
+        setMissing(!exists);
+        if (d.scoreboards.length > 0 && !exists) {
+          if (onScoreboardMissing) onScoreboardMissing(d.scoreboards[0].number);
+          else setData(null);
           return;
         }
       }
@@ -154,7 +161,7 @@ export function useStrikeData(scoreboard: number, onScoreboardMissing?: (scorebo
     };
   }, [socket, scoreboard, refresh, onScoreboardMissing]);
 
-  return {data, scoreboards, connected, refresh};
+  return {data, scoreboards, connected, missing, refresh};
 }
 
 /** The loaded game's characters, keyed by en_name */

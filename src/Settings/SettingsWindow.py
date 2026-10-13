@@ -180,6 +180,19 @@ class SettingsWindow(QDialog):
             )
         )
 
+        # Sent to the stage strike page with its data (WebServerActions.ruleset)
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.stage_strike_ask_characters",
+                    "Ask for the next game's characters on the stage striking app after each game",
+                ),
+                "stage_strike_ask_characters",
+                "checkbox",
+                True,
+            )
+        )
+
         scoreboardSettings.append(
             (
                 QApplication.translate(

@@ -9,7 +9,6 @@ export interface Stage {
   en_name?: string;
   name?: string;
   path?: string;
-  locale?: Record<string, string>;
 }
 
 export interface Ruleset {
@@ -172,12 +171,6 @@ export function GetStrikeSteps(ruleset: Ruleset, state: StrikeState, bestOf: num
   return steps;
 }
 
-export function StageName(stage: Stage, language: string) {
-  if (stage.locale && language) {
-    const langKey = language.replace("-", "_");
-    if (Object.prototype.hasOwnProperty.call(stage.locale, langKey)) return stage.locale[langKey];
-    const short = language.split(/[-_]/)[0];
-    if (Object.prototype.hasOwnProperty.call(stage.locale, short)) return stage.locale[short];
-  }
+export function StageName(stage: Stage) {
   return stage.en_name ?? stage.name ?? stage.codename;
 }

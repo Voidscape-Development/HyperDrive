@@ -48,7 +48,6 @@
     "characters_sent": "Characters sent to HyperDrive",
     "characters_failed": "Couldn't send the characters to HyperDrive",
     "no_players": "No players are loaded on this scoreboard in HyperDrive.",
-    "auto_ask_characters": "Ask for characters after each game",
     "waiting_for_ban": "Waiting for {{player}} to ban",
     "waiting_for_pick": "Waiting for {{player}} to pick a stage",
     "you": "You",
@@ -129,5 +128,7 @@
     "bracket_focus_unselect": "Unselect",
     "bracket_focus_tbd": "TBD",
     "bracket_focus_channel": "Channel",
-    "bracket_focus_phase": "Phase"
+    "bracket_focus_phase": "Phase",
+    "scoreboard_missing_title": "Scoreboard {{value}} isn't open",
+    "scoreboard_missing": "This link is for a scoreboard HyperDrive doesn't have open. Open it in HyperDrive, or use the link from its Stage tab."
 }
