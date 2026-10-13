@@ -1,3 +1,4 @@
+import {Ban, Check, Handshake, X, type LucideIcon} from "lucide-react";
 import i18n from "../i18n/config";
 import {cn} from "@/lib/utils";
 import {PLAYER_BG} from "./playerColors";
@@ -31,20 +32,21 @@ export function StageCard({
   selectedByPlayer,
   disabled,
 }: StageCardProps) {
-  let stamp: string | null = null;
+  // The marker over the picture: an icon in a round badge, ringed in its color
+  let marker: {Icon: LucideIcon; className: string} | null = null;
   let label: string | null = null;
   let labelClass = "";
 
   if (isSelected) {
-    stamp = isGentlemanEnabled ? "stage-gentlemans" : "stage-selected";
+    marker = {Icon: isGentlemanEnabled ? Handshake : Check, className: "text-pick ring-pick"};
     label = isGentlemanEnabled ? i18n.t("gentlemans") : selectedBy;
     labelClass = isGentlemanEnabled ? "bg-pick" : PLAYER_BG[selectedByPlayer];
   } else if (isStriked) {
-    stamp = "stage-striked";
+    marker = {Icon: X, className: "text-ban ring-ban"};
     label = strikedBy;
     labelClass = strikedByPlayer >= 0 ? PLAYER_BG[strikedByPlayer] : "";
   } else if (isBanned) {
-    stamp = "stage-dsr";
+    marker = {Icon: Ban, className: "text-ban ring-ban"};
     label = i18n.t("dsr");
     labelClass = "bg-ban text-white";
   }
@@ -77,14 +79,16 @@ export function StageCard({
       alt=""
       loading="lazy"
     />
-    {stamp &&
+    {marker &&
       <span
         className={cn(
-          "stamp absolute top-[46%] left-1/2 aspect-square w-[30%] -translate-x-1/2 -translate-y-1/2",
-          "bg-contain bg-center bg-no-repeat drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]",
-          stamp,
+          "ss-marker absolute top-[46%] left-1/2 flex aspect-square w-[min(28%,64px)] -translate-x-1/2 -translate-y-1/2 items-center justify-center",
+          "rounded-full bg-zinc-950/85 shadow-[0_4px_18px_rgba(0,0,0,0.6)] ring-2 backdrop-blur-sm",
+          marker.className,
         )}
-      />
+      >
+        <marker.Icon className="size-[55%]" strokeWidth={2.75} aria-hidden />
+      </span>
     }
     {label &&
       <span

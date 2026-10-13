@@ -1,23 +1,11 @@
-/* What Tailwind classes don't cover: the stage stamps and the animations */
-
-.stamp.stage-striked {
-  background-image: url(../../../assets/icons/stage_strike.svg);
-}
-.stamp.stage-dsr {
-  background-image: url(../../../assets/icons/stage_dsr.svg);
-}
-.stamp.stage-selected {
-  background-image: url(../../../assets/icons/stage_select.svg);
-}
-.stamp.stage-gentlemans {
-  background-image: url(../../../assets/icons/stage_gentlemans.svg);
-}
+/* What Tailwind classes don't cover: the animations */
 
 .ss-turn {
   animation: ss-pulse 1.8s ease-in-out infinite;
 }
 
-.stamp {
+/* The marker over a stage pops in */
+.ss-marker {
   animation: ss-stamp 200ms ease-out;
 }
 
@@ -30,7 +18,7 @@
   }
 }
 
-/* scale, not transform: Tailwind centers the stamp with translate */
+/* scale, not transform: Tailwind centers the marker with translate */
 @keyframes ss-stamp {
   from {
     scale: 1.6;
@@ -44,7 +32,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ss-turn,
-  .stamp {
+  .ss-marker {
     animation: none;
   }
 }
