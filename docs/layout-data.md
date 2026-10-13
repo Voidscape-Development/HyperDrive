@@ -179,6 +179,10 @@ player: {"1": {...}}}, "2": {...}}`), plus:
 | `eta_minutes` | The same, in minutes from now: `0` for a set being played |
 | `started_at` | When start.gg says the set started, or `null` |
 
+Its players (`team.T.player.P`) have their start.gg or parry.gg `id`, as the scoreboard's
+players do, which the commentary dashboard uses to look up their stats
+(`POST /commentary-preview` with `{"teams": [[player...], [player...]]}`).
+
 `score.N.station_queue` (sets of the station tracked by scoreboard N) is
 unchanged.
 

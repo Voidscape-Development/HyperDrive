@@ -20,6 +20,7 @@ scoreboard's number and `T` the team (1 or 2).
 | `/scoreboardN-reset-scores`, `-reset-match`, `-reset-players`, `-clear-all` | Resets part of the scoreboard |
 | `/scoreboardN-load-set?set=<id>` | Loads a set |
 | `/scoreboardN-get` | The scoreboard's data |
+| `/scoreboardN-stats-refresh` | Gets the players' stats again: head-to-head, last sets, past events and upset factor |
 | `/stream-queue/load-next?stream=<name>` | Loads a stream's next set into its scoreboard |
 | `/display/...` | Shows or hides layouts (see [Display controls](display-controls.md)) |
 | `/twitch/prediction/...` | Twitch predictions (see [Twitch predictions](twitch-predictions.md)) |

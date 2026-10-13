@@ -4,6 +4,7 @@ import "./index.css";
 import StageStrikePage from "./StageStrikePage";
 import CharacterSelectPage from "./CharacterSelectPage";
 import BracketFocusPage from "./BracketFocusPage";
+import CommentaryDashboardPage from "./CommentaryDashboardPage";
 
 import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
 import ScoreboardPage from "./ScoreboardPage";
@@ -23,6 +24,7 @@ root.render(
             <Route path="/character-select" element={<CharacterSelectPage />} />
             <Route path="/scoreboard" element={<ScoreboardPage />} />
             <Route path="/bracket-focus-app" element={<BracketFocusPage />} />
+            <Route path="/commentary-dashboard" element={<CommentaryDashboardPage />} />
             <Route path="*" element={<Navigate to={"/stage-strike-app"} replace={true} />} />
           </Routes>
         </BrowserRouter>

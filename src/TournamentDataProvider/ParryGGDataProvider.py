@@ -713,6 +713,8 @@ class ParryGGDataProvider(TournamentDataProvider):
                         "online_avatar": avatar_url,
                         "twitter": "",
                         "socials": {},
+                        # For the commentary dashboard's stats of the players
+                        "id": [user.id, user.id],
                     }
             teams[str(team_index + 1)] = team
 

@@ -8,6 +8,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .BracketWidget import BracketWidget
+from .CommentaryPreview import CommentaryPreview
 from .CommentaryWidget import CommentaryWidget
 from .GameAssetManager import GameAssetManager
 from .Helpers.CountryHelper import CountryHelper
@@ -737,6 +738,24 @@ class WebServerActions(QThread):
                 "[History Standings] Unable to find player defined. Allowed values are: 1, 2, or both"
             )
         return "OK"
+
+    @gui_thread_sync
+    def stats_refresh(self, scoreboard):
+        """Gets all of the scoreboard's player stats again: the head-to-head,
+        each player's last sets and past events, and the upset factor"""
+        signals = self._get_scoreboard(scoreboard).stats.signals
+        signals.RecentSetsSignal.emit()
+        signals.LastSetsP1Signal.emit()
+        signals.LastSetsP2Signal.emit()
+        signals.PlayerHistoryStandingsP1Signal.emit()
+        signals.PlayerHistoryStandingsP2Signal.emit()
+        signals.UpsetFactorCalculation.emit()
+        return "OK"
+
+    def commentary_preview(self, data):
+        """The players of a set that isn't on a scoreboard, for the commentary
+        dashboard: {"teams": [[player...], [player...]]}"""
+        return CommentaryPreview.Preview((data or {}).get("teams"))
 
     @gui_thread_sync
     def reset_scores(self, scoreboard):
