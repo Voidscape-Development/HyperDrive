@@ -79,8 +79,15 @@
   );
 }
 
+/* With the layout theme's colors on, the theme's primary color drives the
+   washes and its secondary color the sponsor tags and the rest above */
+body.mtf.hd-theme-colors {
+  --mtf-primary: var(--accent-color);
+  --mtf-secondary: var(--accent-secondary-color);
+}
+
 /* Player markers (struck-by chips / edges) use the layout-wide secondary
-   (team 2) color; ruleset / gentleman's markers keep their own --by-color.
+   (team 2 or theme) color; ruleset / gentleman's markers keep their own --by-color.
    Each variant reads --mtf-chip-color. */
 .mtf .by_chip,
 .mtf .ban_item,
