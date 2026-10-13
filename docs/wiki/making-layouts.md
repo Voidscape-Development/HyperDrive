@@ -64,12 +64,6 @@ Or open it through the web server, which needs no flag:
 Use the CSS custom properties of `layout_theme` instead of fixed colors, so your layout
 follows the user's [layout theme](layout-themes.md).
 
-## Layouts from older versions
-
-Layouts written before HyperDrive had several scoreboards read `data.score.…` instead of
-`data.score[1].…`. ☰ › [Migrate Layout](hyperdrive://open/migrate-layout) updates such a
-layout's JavaScript file.
-
 ## Preview images
 
 Each page's `<page>_preview.png` is rendered by a GitHub Action when a layout changes on

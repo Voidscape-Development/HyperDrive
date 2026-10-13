@@ -46,7 +46,6 @@ Closed a widget by mistake? Bring it back from ☰ › **Toggle widgets**.
 | **Seed editor** | Seeds set by hand (see [Player database](player-database.md#seeds)) |
 | **Toggle widgets** | Shows or hides each widget |
 | **Layout themes** | Colors, fonts and options shared by the layouts (see [Layout themes](layout-themes.md)) |
-| **Migrate Layout** | Updates the JavaScript of a custom layout made before HyperDrive had several scoreboards |
 | **Program Language** | HyperDrive's language (needs a restart) |
 | **Game Asset Language** | The language of character and stage names |
 | **Tournament term language** | The language of round names such as *Winners Finals* |
