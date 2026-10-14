@@ -2,6 +2,7 @@
 // flags), avatar, score and character icon, or a doubles team's name and
 // its players
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     HD.classIntro(tl);
   },

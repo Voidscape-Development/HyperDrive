@@ -243,7 +243,8 @@ var HDBracket = {
       return HD.html`<table class="standings_table elimination">
         <thead><tr><th class="st_rank">#</th><th class="st_name">Player</th></tr></thead>
         <tbody>${(bracket.results || []).map(
-          (row) => HD.html`<tr class="${top(row.order)}" data-player="${row.id}"><td class="st_rank">${row.order}</td>${name(row.id, row.name)}</tr>`,
+          (row) =>
+            HD.html`<tr class="${top(row.order)}" data-player="${row.id}"><td class="st_rank">${row.order}</td>${name(row.id, row.name)}</tr>`,
         )}</tbody></table>`;
     }
     const draws = (bracket.standings || []).some((r) => r.draws);
@@ -279,11 +280,13 @@ var HDBracket = {
       found[id] = known;
     };
     Object.values(bracket.sets || {}).forEach((set) =>
-      (set.players || []).forEach((p) => p && add(p.id, p.seed, p.name))
+      (set.players || []).forEach((p) => p && add(p.id, p.seed, p.name)),
     );
     (bracket.standings || []).forEach((row) => add(row.playerId, null, row.name));
     return Object.values(found).sort(
-      (a, b) => (a.seed == null ? Infinity : a.seed) - (b.seed == null ? Infinity : b.seed) || String(a.id).localeCompare(String(b.id))
+      (a, b) =>
+        (a.seed == null ? Infinity : a.seed) - (b.seed == null ? Infinity : b.seed) ||
+        String(a.id).localeCompare(String(b.id)),
     );
   },
 
@@ -359,9 +362,11 @@ var HDBracket = {
         (column) => HD.html`<div class="pool_round" data-round="${column.key}">
           <div class="round_name"><div class="text"></div></div>
           ${column.sets.map(
-            (id) => HD.html`<div class="pool_set" data-set="${id}">${[0, 1].map(
-              (slot) => HD.html`<div class="pool_player slot_p_${slot}"><div class="name"></div><div class="score"></div></div>`,
-            )}</div>`,
+            (id) =>
+              HD.html`<div class="pool_set" data-set="${id}">${[0, 1].map(
+                (slot) =>
+                  HD.html`<div class="pool_player slot_p_${slot}"><div class="name"></div><div class="score"></div></div>`,
+              )}</div>`,
           )}
           <div class="byes"><div class="text"></div></div>
         </div>`,
@@ -387,7 +392,9 @@ var HDBracket = {
           const team = p && p.id ? players[p.id] : null;
           HD.set(
             row.find(".name"),
-            team ? HDBracket.TeamName(team) : p && p.pending && p.source && HD.html`<span class="pending_source">${p.source}</span>`,
+            team
+              ? HDBracket.TeamName(team)
+              : p && p.pending && p.source && HD.html`<span class="pending_source">${p.source}</span>`,
           );
           HD.set(row.find(".score"), HDBracket.ScoreText(set, slot));
           row.toggleClass("won", winner === slot).toggleClass("lost", winner === 1 - slot);
@@ -422,13 +429,21 @@ var HDBracket = {
       const slot = set.players[n];
       const team = slot && slot.id ? players[slot.id] : null;
       HD.set(row.find(".score"), HDBracket.ScoreText(set, n));
-      row.toggleClass("won", winner === n).toggleClass("lost", winner === 1 - n).toggleClass("draw", winner === "draw");
+      row
+        .toggleClass("won", winner === n)
+        .toggleClass("lost", winner === 1 - n)
+        .toggleClass("draw", winner === "draw");
       row.toggleClass("pending", !!(slot && slot.pending)).toggleClass("empty", !team);
 
       const singles = team && _.size(team.player) === 1;
       const player = (singles && team.player[1]) || {};
       const asset = (path) => HD.asset(_.get(player, path));
-      HD.set(row.find(".name"), team ? HDBracket.TeamName(team) : slot && slot.pending && slot.source && HD.html`<span class="pending_source">${slot.source}</span>`);
+      HD.set(
+        row.find(".name"),
+        team
+          ? HDBracket.TeamName(team)
+          : slot && slot.pending && slot.source && HD.html`<span class="pending_source">${slot.source}</span>`,
+      );
       HD.set(row.find(".seed"), team && slot.seed ? String(slot.seed) : "");
       HD.set(row.find(".flagcountry"), HD.img(asset("country.asset"), "class='flag'"));
       HD.set(row.find(".flagstate"), HD.img(asset("state.asset"), "class='flag'"));
@@ -450,7 +465,10 @@ var HDBracket = {
   ByesText(bracket) {
     const byes = {};
     Object.entries(bracket.byes || {}).forEach(([key, list]) => {
-      byes[key] = (list || []).map((p) => p.name).filter((n) => n).join(", ");
+      byes[key] = (list || [])
+        .map((p) => p.name)
+        .filter((n) => n)
+        .join(", ");
     });
     return byes;
   },

@@ -16,6 +16,7 @@ const setRow = (set, i) => HD.html`
   </div>`;
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     tl.from(".recent_sets", { autoAlpha: 0 });
   },
@@ -41,7 +42,10 @@ HD.layout({
 
     sets.forEach((set, i) => {
       const row = `.set_${i}`;
-      HD.set(`${row} .col_1 .set_text`, HD.html`${set.online && HD.html`<div class="wifi_icon"></div>`}${set.tournament}`);
+      HD.set(
+        `${row} .col_1 .set_text`,
+        HD.html`${set.online && HD.html`<div class="wifi_icon"></div>`}${set.tournament}`,
+      );
       HD.set(`${row} .col_1 .set_subtext`, new Date(set.timestamp * 1000).toLocaleDateString("en-US", DATE));
       HD.set(`${row} .col_2 .set_text`, `${set.event} - ${set.phase_id}${set.phase_name}`);
       HD.set(`${row} .col_2 .set_subtext`, set.round);

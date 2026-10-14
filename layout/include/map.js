@@ -51,12 +51,16 @@
     $("#distance").text(`${spots.length === 2 ? "DISTANCE" : "MAX DISTANCE"}: ${distance}`);
   }
 
-  HD.layouts.map = (map, { icons = [12, 32], iconClass = "", offset = 8, tooltip = (p) => HD.html`${p.name}`, line, fly = true }) => {
+  HD.layouts.map = (
+    map,
+    { icons = [12, 32], iconClass = "", offset = 8, tooltip = (p) => HD.html`${p.name}`, line, fly = true },
+  ) => {
     let servers = [];
     let layers = [];
     const add = (layer) => (layers.push(layer.addTo(map)), layer);
 
     return {
+      subscribe: ["score"],
       settings: { country_only: false, no_hud: false },
 
       async init() {
@@ -93,7 +97,9 @@
             .bindTooltip(String(tooltip(spot.player)), {
               direction,
               className: "leaflet-tooltip-own",
-              offset: { top: [0, -distance], bottom: [0, distance], left: [-distance, 0], right: [distance, 0] }[direction],
+              offset: { top: [0, -distance], bottom: [0, distance], left: [-distance, 0], right: [distance, 0] }[
+                direction
+              ],
             })
             .openTooltip();
           // A pulsing ring where only the country (or nothing) is known

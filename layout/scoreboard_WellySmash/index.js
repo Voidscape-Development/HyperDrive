@@ -2,6 +2,7 @@
 // seed and score, the games won as bubbles between them, and the
 // commentators on index_com.html
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     tl.from(".mask", { width: 0, duration: 1, ease: "power2.inOut" }, 0).from(
       ".doubles .info",
@@ -47,14 +48,18 @@ HD.layout({
     const bubbles = document.querySelector(".score-bubbles-container");
     const middle = document.querySelector(".middle_container");
     if (bubbles && middle) {
-      while (bubbles.children.length < bestOf) bubbles.appendChild(Object.assign(document.createElement("div"), { className: "score-bubble" }));
+      while (bubbles.children.length < bestOf)
+        bubbles.appendChild(Object.assign(document.createElement("div"), { className: "score-bubble" }));
       while (bubbles.children.length > bestOf) bubbles.lastChild.remove();
       const [won1, won2] = s.teams.map((t) => t.team.score || 0);
       [...bubbles.children].forEach((bubble, i) => {
         bubble.classList.toggle("p1", i < won1);
         bubble.classList.toggle("p2", i >= bestOf - won2);
       });
-      Object.assign(middle.style, bestOf ? { justifyContent: "unset", top: "10px" } : { justifyContent: "center", top: "0" });
+      Object.assign(
+        middle.style,
+        bestOf ? { justifyContent: "unset", top: "10px" } : { justifyContent: "center", top: "0" },
+      );
     }
 
     HD.commentators(s, ".com_container", ["name", "pronoun"]);

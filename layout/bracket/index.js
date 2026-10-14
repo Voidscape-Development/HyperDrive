@@ -30,7 +30,11 @@ function animateLine(element) {
     onUpdate() {
       const progress = (this.progress() * 100) >> 0;
       const now = path.getTotalLength();
-      gsap.set(path, { "stroke-dashoffset": (now / 100) * (100 - progress), "stroke-dasharray": now, autoAlpha: progress ? 1 : 0 });
+      gsap.set(path, {
+        "stroke-dashoffset": (now / 100) * (100 - progress),
+        "stroke-dasharray": now,
+        autoAlpha: progress ? 1 : 0,
+      });
     },
   });
 }
@@ -99,11 +103,15 @@ function linesHtml(bracket, areas) {
         const a = point(from, "right");
         const b = point(to, "left");
         const mid = a[0] + (b[0] - a[0]) / 2;
-        lines.push(HD.html`<path class="line line_${setIndex[id]}" d="${path([a, [mid, a[1]], [mid, b[1]], b])}" fill="none" />`);
+        lines.push(
+          HD.html`<path class="line line_${setIndex[id]}" d="${path([a, [mid, a[1]], [mid, b[1]], b])}" fill="none" />`,
+        );
       } else if (!set.nextWin && bracket.progressionsOut > 0 && ["winners", "losers"].includes(set.side)) {
         const a = point(from, "right");
         const [x, y] = [a[0] + 45, a[1]];
-        lines.push(HD.html`<path class="line line_out_${setIndex[id]}" d="${path([a, [x, y]])} M${x - 10} ${y - 8} L${x} ${y} L${x - 10} ${y + 8}" fill="none" />`);
+        lines.push(
+          HD.html`<path class="line line_out_${setIndex[id]}" d="${path([a, [x, y]])} M${x - 10} ${y - 8} L${x} ${y} L${x - 10} ${y + 8}" fill="none" />`,
+        );
       }
     }
   }
@@ -238,12 +246,14 @@ function updateGrid(data) {
 }
 
 HD.layout({
+  subscribe: ["bracket", "score", "game", "tournamentInfo", "commentary"],
   update(s) {
     const channel = HDBracket.ChannelName(s.settings.channel);
     const forChannel = (d) => (channel ? HDBracket.ForChannel(d, channel) : d);
     let data = forChannel(s.data);
     const old = forChannel(s.old) || {};
-    if (data.bracket && !data.bracket.playersPath) data = { ...data, bracket: { ...data.bracket, playersPath: "bracket.players" } };
+    if (data.bracket && !data.bracket.playersPath)
+      data = { ...data, bracket: { ...data.bracket, playersPath: "bracket.players" } };
 
     if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides) {
       HD.render(".winners_container, .losers_container, .pool_container, .grid_container, .lines", "");

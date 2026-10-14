@@ -42,8 +42,9 @@ dev = ["ruff"]
 build = ["pyinstaller"]
 # pyside6-lrelease generates the .qm translation binaries (build_app.yml)
 locale = ["pyside6"]
-# Renders the layout previews (update_previews.yml)
-previews = ["playwright", "py7zr", "requests"]
+# Renders the layout previews and compares them (update_previews.yml,
+# check_layouts.yml)
+previews = ["pillow", "playwright", "py7zr", "requests"]
 
 [tool.uv]
 # HyperDrive is an application, not a library: don't build or install it

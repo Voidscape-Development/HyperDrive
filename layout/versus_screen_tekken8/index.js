@@ -7,18 +7,35 @@ const slide = (way) => ({
 });
 
 const unskew = (content) => content && HD.html`<div class="unskew">${content}</div>`;
-const place = (p) => p && p.asset && unskew(HD.html`<img class='flagimage' src='${HD.asset(p.asset)}' /><div class="flagname">${p.name}</div>`);
+const place = (p) =>
+  p &&
+  p.asset &&
+  unskew(HD.html`<img class='flagimage' src='${HD.asset(p.asset)}' /><div class="flagname">${p.name}</div>`);
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     const out = "power2.out";
     tl.to(".logo", { duration: 0.8, top: 160, scale: 0.4 }, 0);
     // Character names drift in, then the art slams in and drifts too
-    for (const [n, way] of [[1, -1], [2, 1]]) {
-      tl.fromTo(`.p${n}.character_name`, { x: 100 * way, autoAlpha: 0 }, { x: 60 * way, autoAlpha: 1, duration: 2, ease: out }, 0)
+    for (const [n, way] of [
+      [1, -1],
+      [2, 1],
+    ]) {
+      tl.fromTo(
+        `.p${n}.character_name`,
+        { x: 100 * way, autoAlpha: 0 },
+        { x: 60 * way, autoAlpha: 1, duration: 2, ease: out },
+        0,
+      )
         .to(`.p${n}.character_name`, { duration: 0.2, x: 20 * way, scale: 1.1, ease: out }, 2)
         .to(`.p${n}.character_name`, { duration: 2, x: 0, ease: out }, 2.2)
-        .fromTo(`.p${n}.character`, { x: 1000 * way, autoAlpha: 0 }, { x: 50 * way, autoAlpha: 1, duration: 0.2, ease: out }, 2)
+        .fromTo(
+          `.p${n}.character`,
+          { x: 1000 * way, autoAlpha: 0 },
+          { x: 50 * way, autoAlpha: 1, duration: 0.2, ease: out },
+          2,
+        )
         .to(`.p${n}.character`, { x: 0, duration: 4, ease: "power1.out" }, 2.2);
     }
     const fade = (duration) => ({ duration, opacity: 0, ease: "power2.inOut" });
@@ -61,7 +78,10 @@ HD.layout({
       // Smaller the more characters there are
       const players = s.isTeams ? t.players : [player];
       const count = players.reduce((n, p) => n + _.size(p.character), 0);
-      t.set("&.character_name", !s.settings.avatar && VS.characterNames(players, !s.isTeams && s.settings.force_variant_last));
+      t.set(
+        "&.character_name",
+        !s.settings.avatar && VS.characterNames(players, !s.isTeams && s.settings.force_variant_last),
+      );
       $(t.sel("&.character_name")).css("font-size", 500 / Math.max(count, 1));
 
       if (s.settings.avatar) {

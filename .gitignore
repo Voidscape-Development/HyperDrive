@@ -72,3 +72,6 @@ venv
 assets/countries_cache.json
 .venv/
 .ruff_cache/
+
+# Layout lint tools (lint.yml installs them in layout/)
+node_modules

@@ -7,6 +7,7 @@ const FIELDS = {
 };
 
 HD.layout({
+  subscribe: ["commentary"],
   settings: { size: "normal" },
 
   update(s) {

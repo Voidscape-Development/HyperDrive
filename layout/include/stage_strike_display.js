@@ -83,7 +83,11 @@
       const picking =
         strike.currGame > 0 ? strike.currStep >= 1 : strike.currStep >= (ruleset.strikeOrder || []).length;
       const action = picking ? "pick" : strike.currGame > 0 ? "ban" : "strike";
-      turn = { team: sides[strike.currPlayer], action, verb: { pick: "Picking", ban: "Banning", strike: "Striking" }[action] };
+      turn = {
+        team: sides[strike.currPlayer],
+        action,
+        verb: { pick: "Picking", ban: "Banning", strike: "Striking" }[action],
+      };
     }
 
     return {
@@ -108,9 +112,17 @@
   // that weren't there before
   function renderItems(container, items, fromVars) {
     const el = $(container);
-    const before = new Set(el.find("[data-key]").map((_i, e) => e.dataset.key).get());
+    const before = new Set(
+      el
+        .find("[data-key]")
+        .map((_i, e) => e.dataset.key)
+        .get(),
+    );
     HD.render(el, items);
-    const added = el.find("[data-key]").filter((_i, e) => !before.has(e.dataset.key)).get();
+    const added = el
+      .find("[data-key]")
+      .filter((_i, e) => !before.has(e.dataset.key))
+      .get();
     if (added.length) gsap.from(added, { autoAlpha: 0, duration: 0.3, ease: "power2.out", stagger: 0.06, ...fromVars });
     HD.fit(el.find(".fit"));
   }
@@ -127,6 +139,7 @@
 
   // Shared update: the state, if anything shown changed, after MTF's colors
   const variant = (render) => ({
+    subscribe: ["score", "game", "tournamentInfo", "commentary"],
     update(s) {
       if (!changed(s)) return;
       if (body("mtf")) HD.teamColors(s, ["score-bg-color"]);
@@ -241,7 +254,9 @@
             "ban",
             `ban-${stage.codename}`,
             stage,
-            team ? byChip("Banned by", team.name, team.color, true) : byChip("Banned", reason || "Ruleset", neutralColor),
+            team
+              ? byChip("Banned by", team.name, team.color, true)
+              : byChip("Banned", reason || "Ruleset", neutralColor),
           ),
         );
         // show-available: also the stages nobody struck yet, .out once a

@@ -81,7 +81,9 @@ function placeArea(columns, sets, top, result) {
     let cursor = top + HEADER_H;
     let firstY = null;
     for (const id of ids) {
-      const feeders = Object.keys(result.sets).filter((f) => area.has(f) && sets[f].nextWin && sets[f].nextWin.set == id);
+      const feeders = Object.keys(result.sets).filter(
+        (f) => area.has(f) && sets[f].nextWin && sets[f].nextWin.set == id,
+      );
       const next = sets[id].nextWin;
       const target = playIn && next ? result.sets[next.set] : null;
       let y = cursor;
@@ -199,8 +201,12 @@ function build(data) {
   placed = place(bracket);
 
   HD.render(".bf_sets", [
-    Object.entries(placed.headers).map(([key, h]) => HD.html`<div class="bf_round_name" data-round="${key}" style="${box(h)}"></div>`),
-    Object.entries(placed.byes).map(([key, b]) => HD.html`<div class="byes" data-round="${key}" style="${box(b)}"></div>`),
+    Object.entries(placed.headers).map(
+      ([key, h]) => HD.html`<div class="bf_round_name" data-round="${key}" style="${box(h)}"></div>`,
+    ),
+    Object.entries(placed.byes).map(
+      ([key, b]) => HD.html`<div class="byes" data-round="${key}" style="${box(b)}"></div>`,
+    ),
     Object.entries(placed.sets).map(([id, at]) => {
       setIndex[id] = Object.keys(setIndex).length + 1;
       return HD.html`
@@ -225,7 +231,12 @@ function build(data) {
     order.map((id) => setElement(id).get(0)),
     { autoAlpha: 0, x: -40, duration: 0.4, stagger: 0.015, clearProps: "opacity,visibility,transform" },
   );
-  gsap.from(".bf_lines path, .bf_round_name", { autoAlpha: 0, duration: 0.6, delay: 0.3, clearProps: "opacity,visibility" });
+  gsap.from(".bf_lines path, .bf_round_name", {
+    autoAlpha: 0,
+    duration: 0.6,
+    delay: 0.3,
+    clearProps: "opacity,visibility",
+  });
 }
 
 // The world's size, with the pool standings once drawn
@@ -270,7 +281,8 @@ function moveCamera(s, target, animate) {
   const vw = viewport.width();
   const vh = viewport.height();
   if (!vw || !vh || !target.w || !target.h) return;
-  const label = $(".focus_label").hasClass("shown") && !$("body").hasClass("hd-bracket-hide-focus-label") ? LABEL_ROOM : 0;
+  const label =
+    $(".focus_label").hasClass("shown") && !$("body").hasClass("hd-bracket-hide-focus-label") ? LABEL_ROOM : 0;
   const scale = Math.min((vw - PADDING * 2) / target.w, (vh - PADDING * 2 - label) / target.h, maxZoom(s));
   camera = target;
   const vars = {
@@ -304,7 +316,10 @@ function applyFocus(s, data, animate) {
   const columns = Object.values(_.get(data, "bracket.bracket.sides", {})).flat();
   $(".bf_round_name").each((_i, el) => {
     const column = columns.find((c) => c.key == el.dataset.round);
-    $(el).toggleClass("focused", rounds.has(el.dataset.round) || !!(column && column.sets.some((id) => inFocus.has(id))));
+    $(el).toggleClass(
+      "focused",
+      rounds.has(el.dataset.round) || !!(column && column.sets.some((id) => inFocus.has(id))),
+    );
   });
 
   // The player whose run it is
@@ -343,6 +358,7 @@ function updateSets(s, data) {
 }
 
 HD.layout({
+  subscribe: ["bracket", "score", "game", "tournamentInfo", "commentary"],
   init() {
     // The page (e.g. the browser source) was resized
     $(window).on("resize", () => placed && camera && moveCamera(HD.scope(), camera, false));

@@ -18,6 +18,7 @@ HD.every(3, () => {
 });
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   async update(s) {
     const { team, player } = s.settings;
     // They come in hidden: showCharacter() shows one

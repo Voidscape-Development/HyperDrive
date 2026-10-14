@@ -27,17 +27,19 @@ const VS = {
   },
 
   // Pronouns, Twitter, seed and flags
-  infoGrid: (p) => HD.html`${p.pronoun && HD.html`<div class="pronoun"><div class="pronoun_logo"></div>${p.pronoun}</div>`}${
-    p.twitter && HD.html`<div class="twitter"><div class="twitter_logo"></div>${p.twitter}</div>`
-  }${p.seed ? HD.html`<div class="seed"><div class="seed_logo"></div>Seed ${p.seed}</div>` : ""}${
-    p.country && p.country.asset && HD.html`<div class="flagcountry">${HD.ui.flag(p.country, "flagname")}</div>`
-  }${p.state && p.state.asset && HD.html`<div class="flagstate">${HD.ui.flag(p.state, "flagname")}</div>`}`,
+  infoGrid: (p) =>
+    HD.html`${p.pronoun && HD.html`<div class="pronoun"><div class="pronoun_logo"></div>${p.pronoun}</div>`}${
+      p.twitter && HD.html`<div class="twitter"><div class="twitter_logo"></div>${p.twitter}</div>`
+    }${p.seed ? HD.html`<div class="seed"><div class="seed_logo"></div>Seed ${p.seed}</div>` : ""}${
+      p.country && p.country.asset && HD.html`<div class="flagcountry">${HD.ui.flag(p.country, "flagname")}</div>`
+    }${p.state && p.state.asset && HD.html`<div class="flagstate">${HD.ui.flag(p.state, "flagname")}</div>`}`,
 
   // A side's character art, or its players' avatars (the avatar option)
   art(s, t, options) {
     const sel = t.sel("&.character");
     const mode = s.settings.avatar;
-    if (!mode) return s.characters(sel, { source: ["score", s.n, "team", t.n], scale_based_on_parent: true, ...options });
+    if (!mode)
+      return s.characters(sel, { source: ["score", s.n, "team", t.n], scale_based_on_parent: true, ...options });
     const src = (p) => (mode === "online" ? p.online_avatar : HD.asset(p.avatar)) || "./person.svg";
     const players = s.isTeams ? t.players : [t.player];
     return HD.set(sel, HD.html`<div class="player_avatar">${players.map((p) => HD.img(src(p)))}</div>`, options);
@@ -75,6 +77,8 @@ const VS = {
 // The standard versus screen. options: slide(way) (the character art's
 // in and out), stage (VS.stage's), teamName(t) (a doubles team's name)
 VS.layout = ({ slide = VS.slide, stage, teamName = (t) => HD.html`<div>${t.name}</div>` } = {}) => ({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+
   intro(tl) {
     const fade = { duration: 0.8, opacity: 0, ease: "power2.inOut" };
     tl.from(".phase.container", fade, 0)
@@ -105,7 +109,8 @@ VS.layout = ({ slide = VS.slide, stage, teamName = (t) => HD.html`<div>${t.name}
       }
       t.set(
         ".character_name",
-        !s.settings.avatar && VS.characterNames(s.isTeams ? t.players : [player], !s.isTeams && s.settings.force_variant_last),
+        !s.settings.avatar &&
+          VS.characterNames(s.isTeams ? t.players : [player], !s.isTeams && s.settings.force_variant_last),
       );
       t.set(".score", team.score);
       VS.losers(t);

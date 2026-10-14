@@ -114,9 +114,7 @@
         if (settings.use_dividers === false) {
           options.custom_center = multicharacterPositions(all.length, settings.custom_center)[index];
         }
-        const asset = settings.asset_key
-          ? HD.characterAsset(character, settings.asset_key)
-          : biggestAsset(character);
+        const asset = settings.asset_key ? HD.characterAsset(character, settings.asset_key) : biggestAsset(character);
         if (!options.custom_zoom) options.custom_zoom = recommendedZoom(asset, el.width(), el.height());
         if (settings.flip_x) div.find(".hd_character_img").css("transform", "scaleX(-1)");
         return asset.asset.endsWith(".webm")
@@ -242,13 +240,15 @@
         el.find("img.hd-img").remove();
         // The image already loaded, rather than a new one for the same src
         el.append(
-          $(img).addClass("hd-img").css({
-            position: "absolute",
-            left: `${x}px`,
-            top: `${y}px`,
-            width: `${nw * zoom}px`,
-            height: `${nh * zoom}px`,
-          }),
+          $(img)
+            .addClass("hd-img")
+            .css({
+              position: "absolute",
+              left: `${x}px`,
+              top: `${y}px`,
+              width: `${nw * zoom}px`,
+              height: `${nh * zoom}px`,
+            }),
         );
         resolve();
       };

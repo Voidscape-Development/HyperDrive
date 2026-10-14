@@ -86,7 +86,8 @@ const TB = {
   pips(player, team) {
     const icon = TB.isStock() ? TB.characterIcon(player.character) : null;
     return _.range(team.max).map(
-      (i) => HD.html`<span class="pip ${i < player.value ? "lit" : "spent"}${icon ? " icon" : ""}">${icon && HD.img(icon)}</span>`,
+      (i) =>
+        HD.html`<span class="pip ${i < player.value ? "lit" : "spent"}${icon ? " icon" : ""}">${icon && HD.img(icon)}</span>`,
     );
   },
 
@@ -162,7 +163,11 @@ const TB = {
       if (lit) {
         gsap.fromTo(pip, { scale: 2, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.45, ease: "back.out(2.5)" });
       } else {
-        gsap.fromTo(pip, { scale: 1.6, filter: "brightness(3)" }, { scale: 1, filter: "brightness(1)", duration: 0.5, ease: "power2.out" });
+        gsap.fromTo(
+          pip,
+          { scale: 1.6, filter: "brightness(3)" },
+          { scale: 1, filter: "brightness(1)", duration: 0.5, ease: "power2.out" },
+        );
       }
     });
   },
@@ -176,8 +181,16 @@ const TB = {
     if (!animate || was === dead) {
       gsap.set(x, { autoAlpha: dead ? 1 : 0, scale: 1, rotate: 0 });
     } else if (dead) {
-      gsap.fromTo(x, { autoAlpha: 0, scale: 3, rotate: -25 }, { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.3, ease: "power4.in", overwrite: true });
-      gsap.fromTo(card, { x: 0 }, { keyframes: { x: [0, -10, 9, -6, 4, 0] }, duration: 0.35, delay: 0.28, ease: "none", clearProps: "x" });
+      gsap.fromTo(
+        x,
+        { autoAlpha: 0, scale: 3, rotate: -25 },
+        { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.3, ease: "power4.in", overwrite: true },
+      );
+      gsap.fromTo(
+        card,
+        { x: 0 },
+        { keyframes: { x: [0, -10, 9, -6, 4, 0] }, duration: 0.35, delay: 0.28, ease: "none", clearProps: "x" },
+      );
     } else {
       gsap.to(x, { autoAlpha: 0, scale: 0.6, duration: 0.3, ease: "power2.in", overwrite: true });
     }

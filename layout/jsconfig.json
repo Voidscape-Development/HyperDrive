@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "checkJs": false,
+    "allowJs": true,
+    "noEmit": true,
+    "lib": ["es2020", "dom"]
+  },
+  "include": ["include/hd.d.ts", "**/*.js"],
+  "exclude": ["include/*.min.js", "include/socket.io.min.js"]
+}

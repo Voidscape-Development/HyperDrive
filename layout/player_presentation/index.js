@@ -10,7 +10,11 @@ const slide = (way) => ({
 });
 
 // Names with styled slashes between them
-const slashed = (names) => HD.join(names.map((n) => HD.html`<span>${n}</span>`), HD.html`<span class="slash">/</span>`);
+const slashed = (names) =>
+  HD.join(
+    names.map((n) => HD.html`<span>${n}</span>`),
+    HD.html`<span class="slash">/</span>`,
+  );
 
 // The rows slide in from the side the player is on
 const slideRows = (selector, player, duration) => {
@@ -43,6 +47,7 @@ const setCard = ([, set], i) => {
 };
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   settings: { player: 1, display_titles: true },
 
   intro(tl) {
@@ -69,7 +74,14 @@ HD.layout({
         t.set(".name", team.teamName && team.teamName.trim() ? team.teamName : slashed(names));
         // The players under a team name that isn't just their names
         const sameNames =
-          team.teamName && _.isEqual(team.teamName.split("/").map((n) => n.trim()).sort(), [...names].sort());
+          team.teamName &&
+          _.isEqual(
+            team.teamName
+              .split("/")
+              .map((n) => n.trim())
+              .sort(),
+            [...names].sort(),
+          );
         t.set(".real_name", team.teamName && team.teamName.trim() && !sameNames && slashed(names));
         VS.losers(t);
       } else {
@@ -89,7 +101,10 @@ HD.layout({
         ".character_name",
         !s.settings.avatar &&
           (s.isTeams
-            ? t.players.flatMap((p) => Object.values(p.character || {}).map((c) => c.name)).filter(Boolean).join(" / ")
+            ? t.players
+                .flatMap((p) => Object.values(p.character || {}).map((c) => c.name))
+                .filter(Boolean)
+                .join(" / ")
             : VS.characterNames([player], s.settings.force_variant_last)),
       );
       t.set(".score", team.score);
@@ -115,7 +130,10 @@ HD.layout({
       const card = `.results .tournament${i + 1} .tournament_container_inner`;
       HD.set(`${card} .tournament_info .tournament_name`, t.tournament_name);
       HD.set(`${card} .tournament_info .event_name`, t.event_name);
-      HD.set(`${card} .tournament_logo`, HD.html`<span class="logo" style="background-image: url('${t.tournament_picture}')"></span>`);
+      HD.set(
+        `${card} .tournament_logo`,
+        HD.html`<span class="logo" style="background-image: url('${t.tournament_picture}')"></span>`,
+      );
       HD.set(
         `${card} .placement`,
         HD.html`${t.placement}<span class="ordinal">${HD.ordinal(t.placement)}</span><span class="num_entrants">/${t.entrants}</span>`,
@@ -127,7 +145,10 @@ HD.layout({
       .slice(0, SETS)
       .reverse();
     if (
-      HD.build(".sets", sets, () => [HD.html`<div class="info title">${titles ? "Current Run" : " "}</div>`, sets.map(setCard)])
+      HD.build(".sets", sets, () => [
+        HD.html`<div class="info title">${titles ? "Current Run" : " "}</div>`,
+        sets.map(setCard),
+      ])
     ) {
       slideRows(".sets .set_container", player, 0.4);
     }

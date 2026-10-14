@@ -1,6 +1,7 @@
 // Top-left scoreboard: the tournament, then each side's name, pronouns,
 // flags, avatar, score and character (portraits on index_portraits.html)
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     const ease = "power2.inOut";
     tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease }, 0.5)

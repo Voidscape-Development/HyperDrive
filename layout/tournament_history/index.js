@@ -15,6 +15,7 @@ const tournamentCard = (_t, i) => HD.html`
   </div>`;
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   settings: { player: 1 },
 
   intro(tl) {
@@ -37,7 +38,10 @@ HD.layout({
             spr > 0 ? "positive" : spr < 0 ? "negative" : "even"
           }">SPR ${spr > 0 ? "+" : ""}${spr}</span>`,
       );
-      HD.set(`${card} .tournament_logo`, HD.html`<span class="logo" style="background-image: url('${t.tournament_picture}')"></span>`);
+      HD.set(
+        `${card} .tournament_logo`,
+        HD.html`<span class="logo" style="background-image: url('${t.tournament_picture}')"></span>`,
+      );
       HD.set(
         `${card} .placement`,
         HD.html`${t.placement}<span class="ordinal">${HD.ordinal(t.placement)}</span><span class="num_entrants">/${t.entrants}</span>`,

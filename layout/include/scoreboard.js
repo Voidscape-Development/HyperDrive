@@ -3,6 +3,8 @@
 // players. Pages load it before their script, which runs
 // HD.layout(HD.layouts.scoreboard) or builds on it.
 HD.layouts.scoreboard = {
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+
   intro(tl) {
     HD.classIntro(tl);
     // The logo snaps from slightly oversized, drawing the eye to the center

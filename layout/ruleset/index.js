@@ -10,6 +10,7 @@ const stageList = (stages) =>
   );
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   update(s) {
     const ruleset = s.data.score.ruleset;
     if (!ruleset || !s.changed("score.ruleset")) return;

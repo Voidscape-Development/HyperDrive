@@ -1,9 +1,11 @@
 // Pandastic scoreboard: each side's name with pronouns (on the outer side),
 // flags, sponsor, avatar, Twitter, score and character
-const flag = (place) => place && place.asset && HD.html`<div class='flag' style="background-image: url('${HD.asset(place.asset)}')"></div>`;
+const flag = (place) =>
+  place && place.asset && HD.html`<div class='flag' style="background-image: url('${HD.asset(place.asset)}')"></div>`;
 const background = (src) => src && HD.html`<div style="background-image: url('${src}')"></div>`;
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     const ease = "power2.inOut";
     tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease }, 0.5)

@@ -2,6 +2,7 @@
 // info and character (the second box closes in singles). The cameras pages
 // show character icons instead of art.
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     const vars = { duration: 1, ease: "power2.inOut" };
     // One-side pages bring both sides in from the right

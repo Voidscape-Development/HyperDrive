@@ -49,7 +49,9 @@ const CS = {
 
   // The title, and whether there's anything to show
   header(s, sets) {
-    $(".cs-title").text(s.settings.title).toggle(s.settings.display.title !== false);
+    $(".cs-title")
+      .text(s.settings.title)
+      .toggle(s.settings.display.title !== false);
     $(".cs-container").toggleClass("cs-empty", sets.length === 0);
   },
 
@@ -73,7 +75,9 @@ const CS = {
       .filter((c) => c.assets && Object.keys(c.assets).length > 0)
       .map((c) => {
         const asset = HD.characterAsset(c, key);
-        return asset && asset.asset && HD.html`<img class="cs-character" src="${HD.asset(asset.asset)}" title="${c.name}" />`;
+        return (
+          asset && asset.asset && HD.html`<img class="cs-character" src="${HD.asset(asset.asset)}" title="${c.name}" />`
+        );
       })
       .filter(Boolean);
     return icons.length > 0 && HD.html`<span class="cs-characters">${icons}</span>`;

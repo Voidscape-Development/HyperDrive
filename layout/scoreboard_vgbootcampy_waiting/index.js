@@ -1,6 +1,7 @@
 // VGBootcamp waiting screen: the two sides' names and score around the
 // game screen
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
       .from(".anim_container_outer", { duration: 1, width: 0, ease: "power2.inOut" }, 1)

@@ -34,14 +34,19 @@ function nextPow2(v) {
 
 // Line colors, from the layout theme when it sets them
 const lineColor = (color) =>
-  color == "gray" ? "var(--bracket-line-color, gray)" : color == "yellow" ? "var(--bracket-winner-color, yellow)" : color;
+  color == "gray"
+    ? "var(--bracket-line-color, gray)"
+    : color == "yellow"
+      ? "var(--bracket-winner-color, yellow)"
+      : color;
 
 // A line through the points
-const line = (cls, points, color, hidden = false) => HD.html`<path class="${cls}" d="M${points
-  .map((p) => p.join(" "))
-  .join(" L")}" fill="none" stroke-width="8" stroke-linecap="square" style="stroke: ${lineColor(color)};${
-  hidden ? " opacity: 0;" : ""
-}" />`;
+const line = (cls, points, color, hidden = false) =>
+  HD.html`<path class="${cls}" d="M${points
+    .map((p) => p.join(" "))
+    .join(" L")}" fill="none" stroke-width="8" stroke-linecap="square" style="stroke: ${lineColor(color)};${
+    hidden ? " opacity: 0;" : ""
+  }" />`;
 
 // A bracket line: across, then down or up to the next set
 const bracketLine = (cls, [a, b], color, hidden) => line(cls, [a, [b[0], a[1]], b], color, hidden);
@@ -113,9 +118,10 @@ function buildStructure() {
     Object.entries(winnersRounds)
       .slice(0, -2)
       .map(
-        ([key, round]) => HD.html`<div class="round round_${key}"><div class="round_name"></div>${Object.values(round.sets).map((_s, i) =>
-          spacer(`slot_${i + 1}`),
-        )}</div>`,
+        ([key, round]) =>
+          HD.html`<div class="round round_${key}"><div class="round_name"></div>${Object.values(round.sets).map(
+            (_s, i) => spacer(`slot_${i + 1}`),
+          )}</div>`,
       ),
   ]);
 
@@ -125,30 +131,34 @@ function buildStructure() {
     Object.entries(losersRounds)
       .reverse()
       .map(
-        ([key, round], r) => HD.html`<div class="round round_${key}"><div class="round_name"></div>${Object.values(round.sets).map(
-          (_s, i) =>
-            r % 2 == 1
-              ? HD.html`
+        ([key, round], r) =>
+          HD.html`<div class="round round_${key}"><div class="round_name"></div>${Object.values(round.sets).map(
+            (_s, i) =>
+              r % 2 == 1
+                ? HD.html`
                 <div class="slot_hanging slot_hanging_${i + 1} p_0 slot_p_0 player container">
                   <div class="character_container"></div>
                   <div class="name"></div>
                 </div>
                 ${spacer(`slot_sibling_${i + 1}`)}${spacer(`slot_${i + 1}`)}${spacer(`slot_sibling_${i + 1}`)}`
-              : spacer(`slot_${i + 1}`),
-        )}</div>`,
+                : spacer(`slot_${i + 1}`),
+          )}</div>`,
       ),
     // The last row has every player
     Object.values(losersRounds)
       .slice(0, 1)
       .map(
-        (round) => HD.html`<div class="round round_base_l ${!allWinners && "complete"}">${Object.values(round.sets).map((set, i) =>
-          set.playerId.map(
-            (id, p) => HD.html`${spacer(`slot_sibling_${i + 1}`)}${slotPlayer(
-              "slot_hanging",
-              i,
-              id,
-              p,
-              HD.html`
+        (round) =>
+          HD.html`<div class="round round_base_l ${!allWinners && "complete"}">${Object.values(round.sets).map(
+            (set, i) =>
+              set.playerId.map(
+                (id, p) =>
+                  HD.html`${spacer(`slot_sibling_${i + 1}`)}${slotPlayer(
+                    "slot_hanging",
+                    i,
+                    id,
+                    p,
+                    HD.html`
                 <div class="character_container"></div>
                 <div class="name"></div>
                 ${
@@ -159,9 +169,9 @@ function buildStructure() {
                   <div class="icon avatar"></div>
                   <div class="icon online_avatar"></div>`
                 }`,
-            )}`,
-          ),
-        )}</div>`,
+                  )}`,
+              ),
+          )}</div>`,
       ),
   ]);
 
@@ -174,7 +184,10 @@ function buildStructure() {
   // An icon per player on the winners side; on the losers side, one per
   // slot of a power of 2 bracket
   HD.render(".winners_icons", Object.keys(players).map(iconHtml));
-  HD.render(".losers_icons", _.range(nextPow2(_.size(players))).map((t) => iconHtml(t + 1)));
+  HD.render(
+    ".losers_icons",
+    _.range(nextPow2(_.size(players))).map((t) => iconHtml(t + 1)),
+  );
 }
 
 // The gray lines from each set to the next, and over them the yellow ones
@@ -259,7 +272,9 @@ function losersEntries(onlyWinnersFeeds) {
   }
   for (const [key, round] of Object.entries(bracket)) {
     if (onlyWinnersFeeds ? parseInt(key) < 0 : parseInt(key) < 0 && parseInt(key) != gfReset - 1) continue;
-    Object.values(round.sets).forEach((set) => set.nextLose && entries.push([set.nextLose[0], set.nextLose[1], set.loseSlot]));
+    Object.values(round.sets).forEach(
+      (set) => set.nextLose && entries.push([set.nextLose[0], set.nextLose[1], set.loseSlot]),
+    );
   }
   return entries;
 }
@@ -285,7 +300,8 @@ function buildIconTimelines() {
       Object.values(round.sets).forEach((set, i) =>
         set.playerId.forEach((id, slot) => {
           const here =
-            (key == "1" && id == teamId) || (prev && prev.nextWin && prev.nextWin[0] == parseInt(key) && prev.nextWin[1] == i && slot == prev.winSlot);
+            (key == "1" && id == teamId) ||
+            (prev && prev.nextWin && prev.nextWin[0] == parseInt(key) && prev.nextWin[1] == i && slot == prev.winSlot);
           if (!here) return;
           prev = set;
           const winLine = (cls, part) => animateLine($(`.lines.win .winners_container.${cls}.${part}`));
@@ -311,7 +327,9 @@ function buildIconTimelines() {
           path.addLabel(`round_${key}`, "<+=0.4");
           // Then, if they won
           path.add(
-            key == "1" ? winLine(`line_base_r_${key}.s_${i + 1}.p_${slot}`, "win") : winLine(`line_r_${key}.s_${2 * i + 1 + slot}`, "win"),
+            key == "1"
+              ? winLine(`line_base_r_${key}.s_${i + 1}.p_${slot}`, "win")
+              : winLine(`line_r_${key}.s_${2 * i + 1 + slot}`, "win"),
             ">",
           );
           path.to(icon, { x, y: target.offset().top, duration: 0.4 }, "<");
@@ -349,7 +367,11 @@ function buildIconTimelines() {
         set.playerId.forEach((_id, slot) => {
           const entry = entries[t];
           const here =
-            (prev && prev.nextWin && prev.nextWin[0] == parseInt(key) && prev.nextWin[1] == i && slot == prev.winSlot) ||
+            (prev &&
+              prev.nextWin &&
+              prev.nextWin[0] == parseInt(key) &&
+              prev.nextWin[1] == i &&
+              slot == prev.winSlot) ||
             (entry && parseInt(key) == entry[0] && i == entry[1] && slot == entry[2] && !found);
           if (!here) return;
           prev = set;
@@ -403,7 +425,13 @@ function teamName(team, sponsor) {
     const player = list[0];
     return HD.html`<span><span class="sponsor">${sponsor && player && player.team}</span> ${player ? player.name : "---"}</span>`;
   }
-  return team.name || HD.join(list.filter((p) => p && p.name).map((p) => p.name), HD.html`<div>/</div>`);
+  return (
+    team.name ||
+    HD.join(
+      list.filter((p) => p && p.name).map((p) => p.name),
+      HD.html`<div>/</div>`,
+    )
+  );
 }
 
 // The players in their slots
@@ -426,7 +454,16 @@ function updatePlayers(s) {
 
         // A bye, or a slot still waiting for its player
         if (!team) {
-          for (const f of [".name", ".flagcountry", ".flagstate", ".character_container", ".sponsor_icon", ".avatar", ".online_avatar", ".twitter"]) {
+          for (const f of [
+            ".name",
+            ".flagcountry",
+            ".flagstate",
+            ".character_container",
+            ".sponsor_icon",
+            ".avatar",
+            ".online_avatar",
+            ".twitter",
+          ]) {
             HD.set(field(f), "");
           }
           return;
@@ -451,7 +488,10 @@ function updatePlayers(s) {
 // An icon's picture: the character's icon, or the online avatar
 function iconImage(s, element, teamId, player) {
   if (s.settings.online_picture) {
-    HD.set(element.find(".icon_image"), player && player.online_avatar && HD.img(player.online_avatar, "class='floating_online_avatar'"));
+    HD.set(
+      element.find(".icon_image"),
+      player && player.online_avatar && HD.img(player.online_avatar, "class='floating_online_avatar'"),
+    );
     return;
   }
   s.characters(element.find(".icon_image"), {
@@ -467,7 +507,9 @@ function iconImage(s, element, teamId, player) {
 // Did the team lose this set?
 const lostSet = (set, teamId, orTied) =>
   set.completed &&
-  [0, 1].some((n) => set.playerId[n] == teamId && (orTied ? set.score[n] <= set.score[1 - n] : set.score[n] < set.score[1 - n]));
+  [0, 1].some(
+    (n) => set.playerId[n] == teamId && (orTied ? set.score[n] <= set.score[1 - n] : set.score[n] < set.score[1 - n]),
+  );
 
 // The icons: names, pictures, and their paths played to how far each
 // player got
@@ -495,7 +537,9 @@ function updateIcons(s) {
     }
     if (lost) loseW[t].play();
     else loseW[t].reverse();
-    iconsW[t].tweenTo(lastRound >= 1 ? `round_${lastRound}` : "start", { delay: firstUpdate && lastRound >= 1 ? 0.6 : 0 });
+    iconsW[t].tweenTo(lastRound >= 1 ? `round_${lastRound}` : "start", {
+      delay: firstUpdate && lastRound >= 1 ? 0.6 : 0,
+    });
   });
 
   // Losers: players get the icon of the slot they entered losers through
@@ -563,6 +607,7 @@ function resize() {
 }
 
 HD.layout({
+  subscribe: ["bracket", "score", "game", "tournamentInfo", "commentary"],
   update(s) {
     if (!s.changed("bracket")) return;
     const data = s.data;
@@ -600,7 +645,13 @@ HD.layout({
 
     // Losers round names as initials: "Losers Round 1" -> "LR1"
     for (const [key, round] of Object.entries(bracket)) {
-      const name = parseInt(key) < 0 ? round.name.split(/ |-/).map((n) => n[0]).join("") : round.name;
+      const name =
+        parseInt(key) < 0
+          ? round.name
+              .split(/ |-/)
+              .map((n) => n[0])
+              .join("")
+          : round.name;
       HD.set(`.round_${parseInt(key)} .round_name`, name);
     }
     updatePlayers(s);
@@ -609,7 +660,11 @@ HD.layout({
     s.set(".header .title", data.tournamentInfo.tournamentName);
     s.set(
       ".info_content",
-      info([data.bracket.phase, data.bracket.phaseGroup, data.tournamentInfo.numEntrants && `${data.tournamentInfo.numEntrants} Players`]),
+      info([
+        data.bracket.phase,
+        data.bracket.phaseGroup,
+        data.tournamentInfo.numEntrants && `${data.tournamentInfo.numEntrants} Players`,
+      ]),
     );
     firstUpdate = false;
   },

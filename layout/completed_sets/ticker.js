@@ -2,6 +2,7 @@
 let scroll = null;
 
 HD.layout({
+  subscribe: ["completed_sets", "score", "game", "tournamentInfo", "commentary"],
   settings: CS.SETTINGS,
 
   intro(tl) {

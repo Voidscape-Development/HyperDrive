@@ -13,6 +13,7 @@ const rotate = (s) => {
 const turns = HD.turns(10, rotate);
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     const vars = { duration: 0.65, ease: "power2.Out" };
     const inner = 255; // .inner_container's width

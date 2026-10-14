@@ -48,7 +48,10 @@
           const palette = new ColorThief().getPalette(img, 5);
           if (!palette || palette.length === 0) return;
           const [c1, c2] = colors.map((i) => palette[i] || palette[palette.length - 1]);
-          $(target).css("background", `linear-gradient(135deg, rgba(${c1}, ${alphas[0]}) 0%, rgba(${c2}, ${alphas[1]}) 100%)`);
+          $(target).css(
+            "background",
+            `linear-gradient(135deg, rgba(${c1}, ${alphas[0]}) 0%, rgba(${c2}, ${alphas[1]}) 100%)`,
+          );
         } catch (e) {
           console.log("No colors from the character art:", e);
         }
@@ -71,6 +74,8 @@
 
   // placements: what each slot shows, by its order
   HD.layouts.top8 = (placements) => ({
+    subscribe: ["player_list", "score", "game", "tournamentInfo", "commentary"],
+
     intro(tl) {
       tl.from(".container", { duration: 1, width: 0, ease: "power2.inOut" }, 0);
       if (mtf()) tl.from(".mtf_header", { duration: 0.6, autoAlpha: 0, y: -20, ease: "power2.out" }, 0);
@@ -109,7 +114,11 @@
         if (!mtf()) {
           // Teams: lighter, from the art's less dominant colors
           art.then(() =>
-            colorBackdrop($(`${card} .character_container`), isTeams ? [2, 3] : [0, 1], isTeams ? [0.6, 0.3] : [0.85, 0.6]),
+            colorBackdrop(
+              $(`${card} .character_container`),
+              isTeams ? [2, 3] : [0, 1],
+              isTeams ? [0.6, 0.3] : [0.85, 0.6],
+            ),
           );
         }
 
@@ -139,7 +148,11 @@
           instant,
         );
         HD.set(`${card} .twitter`, HD.ui.chip("twitter", player.twitter), instant);
-        HD.set(`${card} .record-chip`, player.wins != null && player.losses != null ? `${player.wins}W - ${player.losses}L` : "", instant);
+        HD.set(
+          `${card} .record-chip`,
+          player.wins != null && player.losses != null ? `${player.wins}W - ${player.losses}L` : "",
+          instant,
+        );
       }
     },
   });

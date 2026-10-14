@@ -6,6 +6,8 @@
 const multicamBoards = (data) => Object.keys(data.score || {}).filter((k) => /^\d+$/.test(k));
 
 HD.layouts.multicam = {
+  subscribe: ["score", "tournamentInfo"],
+
   update(s) {
     const boards = multicamBoards(s.data);
     const container = $(".multicam_container");
@@ -14,7 +16,8 @@ HD.layouts.multicam = {
       HD.render(
         container,
         boards.map(
-          (n) => HD.html`<div class="wrap"><iframe src="./ssbultimate.html?scoreboardNumber=${n}&mini=true"></iframe></div>`,
+          (n) =>
+            HD.html`<div class="wrap"><iframe src="./ssbultimate.html?scoreboardNumber=${n}&mini=true"></iframe></div>`,
         ),
       );
       // Each scoreboard restyled for the grid

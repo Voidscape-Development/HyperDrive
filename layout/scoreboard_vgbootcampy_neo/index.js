@@ -16,7 +16,9 @@ const winnersSide = {
   set: (key) => {
     try {
       localStorage.setItem("hd-neo-winners-side", key);
-    } catch (e) {}
+    } catch (e) {
+      // Private window or blocked storage: not remembered
+    }
   },
 };
 
@@ -39,7 +41,10 @@ const rotate = (s) => {
     const shown = !s.isTeams && (player.twitter || player.pronoun);
     $(t.sel("&.twitter_container")).toggleClass("hidden", !shown).toggleClass("unhidden", !!shown);
     if (shown) {
-      t.set(".twitter", turns.pick([HD.ui.chip("twitter", player.twitter, "@"), String(player.pronoun || "").toUpperCase()]));
+      t.set(
+        ".twitter",
+        turns.pick([HD.ui.chip("twitter", player.twitter, "@"), String(player.pronoun || "").toUpperCase()]),
+      );
     }
   }
   const text = turns.pick([s.score.match, s.score.best_of && s.score.best_of_text]);
@@ -49,6 +54,7 @@ const rotate = (s) => {
 const turns = HD.turns(9, rotate);
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
       .from(".anim_container_outer", { duration: 1, width: 168, ease: "power2.inOut" }, 1)
@@ -81,7 +87,9 @@ HD.layout({
 
       t.set(
         "&.container .name",
-        s.isTeams ? HD.text([t.name, tags[i]]) : HD.html`<span class="sponsor">${sponsor}</span>${player.name} ${tags[i]}`,
+        s.isTeams
+          ? HD.text([t.name, tags[i]])
+          : HD.html`<span class="sponsor">${sponsor}</span>${player.name} ${tags[i]}`,
       );
       t.set(".score", team.score);
       // This layout has its own copy of the country flags, as .png

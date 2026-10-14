@@ -2,6 +2,7 @@
 // (seed, Twitter, pronouns, flags), avatar, score and character art
 // (mirrored on the right), or a doubles team's name and its players
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     HD.classIntro(tl);
   },
@@ -14,14 +15,20 @@ HD.layout({
       // Doubles show the team's name, its players' names under it
       const solo = s.isTeams ? {} : player;
 
-      t.set("&.container .name", s.isTeams ? t.name : HD.html`<span class="sponsor">${player.team}</span>${player.name}`);
+      t.set(
+        "&.container .name",
+        s.isTeams ? t.name : HD.html`<span class="sponsor">${player.team}</span>${player.name}`,
+      );
       t.set("&.losers_container", team.losers && HD.html`<div class='losers container'>L</div>`);
       t.set(".flagcountry", HD.ui.flag(solo.country));
       t.set(".flagstate", HD.ui.flag(solo.state));
       t.set("&.container .sponsor_icon", background(HD.asset(solo.sponsor_logo)));
       t.set("&.container .avatar", background(HD.asset(solo.avatar)));
       t.set("&.container .online_avatar", background(solo.online_avatar));
-      t.set(".twitter", s.isTeams ? t.name !== HD.playerNames(team) && HD.playerNames(team) : HD.ui.chip("twitter", player.twitter));
+      t.set(
+        ".twitter",
+        s.isTeams ? t.name !== HD.playerNames(team) && HD.playerNames(team) : HD.ui.chip("twitter", player.twitter),
+      );
       t.set(".pronoun", HD.ui.chip("pronoun", solo.pronoun));
       t.set(".seed", HD.ui.chip("seed", solo.seed, "Seed "));
       t.set("&.container .score", team.score);

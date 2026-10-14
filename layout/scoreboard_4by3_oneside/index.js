@@ -1,14 +1,23 @@
 // One-sided 4:3 scoreboard (parry.gg style): both sides in one column,
 // each with its name, chips, location and character art behind
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     HD.classIntro(tl);
     const ease = "power2.out";
     const out = (i) => (i === 0 ? -1 : 1); // p1 from the left, p2 the right
     tl.from(".p1.container", { duration: 0.8, x: -150, autoAlpha: 0, ease }, 0)
       .from(".p2.container", { duration: 0.8, x: 150, autoAlpha: 0, ease }, 0)
-      .from([".p1 .character_bg", ".p2 .character_bg"], { duration: 0.8, x: (i) => out(i) * 200, autoAlpha: 0, ease }, 0.2)
-      .from([".p1 .top-row", ".p2 .top-row"], { delay: 0.1, duration: 0.5, x: (i) => out(i) * 50, autoAlpha: 0, ease }, 0.2)
+      .from(
+        [".p1 .character_bg", ".p2 .character_bg"],
+        { duration: 0.8, x: (i) => out(i) * 200, autoAlpha: 0, ease },
+        0.2,
+      )
+      .from(
+        [".p1 .top-row", ".p2 .top-row"],
+        { delay: 0.1, duration: 0.5, x: (i) => out(i) * 50, autoAlpha: 0, ease },
+        0.2,
+      )
       .from([".p1 .name", ".p2 .name"], { delay: 0.3, duration: 0.5, x: (i) => out(i) * 50, autoAlpha: 0, ease }, 0.2)
       .from(".info_container", { duration: 0.8, x: -50, autoAlpha: 0, ease }, 0)
       .from(".parrygg_logo", { duration: 0.6, scale: 0, rotation: -90, autoAlpha: 0, ease: "back.out(1.5)" }, 0.3)
@@ -43,7 +52,15 @@ HD.layout({
           : HD.ui.name(player, team),
       );
       // A doubles team with a name lists its players under it
-      t.set(".team_members", s.isTeams && team.teamName && HD.join(names.map((n) => HD.html`<span>${n}</span>`), slash));
+      t.set(
+        ".team_members",
+        s.isTeams &&
+          team.teamName &&
+          HD.join(
+            names.map((n) => HD.html`<span>${n}</span>`),
+            slash,
+          ),
+      );
       t.set(".seed", HD.ui.chip("seed", seed, "Seed "));
       t.set(".twitter", HD.ui.chip("twitter", solo.twitter));
       t.set(".pronoun", HD.ui.chip("pronoun", solo.pronoun));

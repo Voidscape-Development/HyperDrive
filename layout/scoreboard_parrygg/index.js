@@ -2,14 +2,23 @@
 // it, and the tournament (with its short link, when there's room), match
 // and best of
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     HD.classIntro(tl);
     const ease = "power2.out";
     const out = (i) => (i === 0 ? -1 : 1); // p1 from the left, p2 the right
     tl.from(".p1.container", { duration: 0.8, x: -150, autoAlpha: 0, ease }, 0)
       .from(".p2.container", { duration: 0.8, x: 150, autoAlpha: 0, ease }, 0)
-      .from([".p1 .character_bg", ".p2 .character_bg"], { duration: 0.8, x: (i) => out(i) * 200, autoAlpha: 0, ease }, 0.2)
-      .from([".p1 .top-row", ".p2 .top-row"], { delay: 0.1, duration: 1, x: (i) => out(i) * 100, autoAlpha: 0, ease }, 0.2)
+      .from(
+        [".p1 .character_bg", ".p2 .character_bg"],
+        { duration: 0.8, x: (i) => out(i) * 200, autoAlpha: 0, ease },
+        0.2,
+      )
+      .from(
+        [".p1 .top-row", ".p2 .top-row"],
+        { delay: 0.1, duration: 1, x: (i) => out(i) * 100, autoAlpha: 0, ease },
+        0.2,
+      )
       .from([".p1 .name", ".p2 .name"], { delay: 0.3, duration: 0.8, x: (i) => out(i) * 200, autoAlpha: 0, ease }, 0.2)
       .from(".info_container", { duration: 0.8, x: -50, autoAlpha: 0, ease }, 0)
       .from(".parrygg_logo", { duration: 0.6, scale: 0, rotation: -90, autoAlpha: 0, ease: "back.out(1.5)" }, 0.3)

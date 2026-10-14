@@ -8,6 +8,10 @@ Usage, from anywhere, after download_assets.py:
 With folders (e.g. layout/scoreboard), renders the pages in them. With --all,
 every layout's pages. Needs Playwright with Chromium (or a Chromium at
 $CHROMIUM_PATH).
+
+For comparing renders (compare_previews.py): --out DIR puts the images in
+DIR/<folder>/<page>.png instead, --state FILE uses another program state, and
+--strict fails when a page has errors or doesn't start.
 """
 
 import argparse
@@ -48,7 +52,7 @@ def layout_folders():
     return [os.path.dirname(f) for f in folders]
 
 
-def pages_of(folder):
+def pages_of(folder, out_dir=None):
     pages = []
     for page in sorted(glob.glob(os.path.join(folder, "*.html"))):
         key = os.path.relpath(page, ROOT).replace(os.sep, "/")
@@ -61,7 +65,11 @@ def pages_of(folder):
                 "key": key,
                 "path": page,
                 "query": options.get("query", ""),
-                "output": os.path.join(folder, options.get("output", f"{name}_preview.png")),
+                "output": (
+                    os.path.join(out_dir, os.path.basename(folder), f"{name}.png")
+                    if out_dir
+                    else os.path.join(folder, options.get("output", f"{name}_preview.png"))
+                ),
                 "wait": options.get("wait", CONFIG.get("wait", 3000)),
             }
         )
@@ -98,11 +106,12 @@ async def render(browser, page_info, semaphore):
             await page.evaluate("document.fonts.ready")
             # Let the animations play
             await page.wait_for_timeout(page_info["wait"])
+            os.makedirs(os.path.dirname(page_info["output"]), exist_ok=True)
             await page.screenshot(path=page_info["output"], omit_background=True)
             print(f"Rendered {os.path.relpath(page_info['output'], ROOT)}")
             for error in errors:
                 warn(page_info["key"], error)
-            return True
+            return not errors
         except Exception as e:
             warn(page_info["key"], f"failed: {e}")
             return False
@@ -122,13 +131,19 @@ async def render_all(pages):
             results = await asyncio.gather(*[render(browser, page, semaphore) for page in pages])
         finally:
             await browser.close()
-    print(f"Rendered {sum(results)} of {len(results)} pages")
+    print(f"Rendered {sum(results)} of {len(results)} pages without errors")
+    return all(results)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("folders", nargs="*", help="Layout folders to render")
     parser.add_argument("--all", action="store_true", help="Render every layout")
+    parser.add_argument("--out", help="Folder to render into, instead of the previews")
+    parser.add_argument(
+        "--state", default=os.path.join(HERE, "sample_state.json"), help="Program state"
+    )
+    parser.add_argument("--strict", action="store_true", help="Fail on page errors")
     args = parser.parse_args()
 
     if args.all:
@@ -142,7 +157,8 @@ def main():
                 continue
             folders.append(folder)
 
-    pages = [page for folder in folders for page in pages_of(folder)]
+    out_dir = os.path.abspath(args.out) if args.out else None
+    pages = [page for folder in folders for page in pages_of(folder, out_dir)]
     if not pages:
         print("No pages to render")
         return 0
@@ -154,7 +170,7 @@ def main():
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
     if had_state:
         shutil.copy(STATE_FILE, backup)
-    with open(os.path.join(HERE, "sample_state.json"), encoding="utf-8") as f:
+    with open(args.state, encoding="utf-8") as f:
         state = json.load(f)
     # Layouts only take data newer than what they have
     state["timestamp"] = time.time()
@@ -162,14 +178,14 @@ def main():
         json.dump(state, f)
 
     try:
-        asyncio.run(render_all(pages))
+        ok = asyncio.run(render_all(pages))
     finally:
         if had_state:
             shutil.move(backup, STATE_FILE)
         else:
             os.remove(STATE_FILE)
 
-    return 0
+    return 1 if args.strict and not ok else 0
 
 
 if __name__ == "__main__":

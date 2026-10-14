@@ -28,15 +28,13 @@
     return HD.escape(value);
   }
 
-  HD.html = (strings, ...values) =>
-    new Html(strings.reduce((out, s, i) => out + render(values[i - 1]) + s));
+  HD.html = (strings, ...values) => new Html(strings.reduce((out, s, i) => out + render(values[i - 1]) + s));
 
   // Trusted markup, e.g. from a file the tournament wrote
   HD.raw = (html) => new Html(html == null ? "" : String(html));
 
   // Several pieces with a separator between the non-empty ones
-  HD.join = (items, separator = "") =>
-    new Html(items.map(render).filter(Boolean).join(render(separator)));
+  HD.join = (items, separator = "") => new Html(items.map(render).filter(Boolean).join(render(separator)));
 
   // -------------------------------------------------------------------
   // HD.set(target, content, options): shows content in the target(s), in
@@ -177,8 +175,7 @@
 
   // The non-empty values (not null, "" or false), joined:
   // HD.text([phase, bestOf], " - ")
-  HD.text = (parts, separator = " ") =>
-    parts.filter((p) => p != null && p !== "" && p !== false).join(separator);
+  HD.text = (parts, separator = " ") => parts.filter((p) => p != null && p !== "" && p !== false).join(separator);
 
   // A number's ordinal suffix: 1 -> "st", 12 -> "th", 22 -> "nd"
   const SUFFIXES = ["th", "st", "nd", "rd"];
@@ -191,8 +188,7 @@
   HD.stage = (data, score) => {
     const strike = (score && score.stage_strike) || {};
     return (
-      strike.selectedStageData ||
-      (strike.selectedStage ? _.get(data, ["game", "stages", strike.selectedStage]) : null)
+      strike.selectedStageData || (strike.selectedStage ? _.get(data, ["game", "stages", strike.selectedStage]) : null)
     );
   };
 
@@ -230,8 +226,7 @@
       }`,
 
     // The sponsor's logo as a background (styled as .sponsor-logo)
-    sponsorLogo: (path) =>
-      HD.html`<div class='sponsor-logo' style="background-image: url('${HD.asset(path)}')"></div>`,
+    sponsorLogo: (path) => HD.html`<div class='sponsor-logo' style="background-image: url('${HD.asset(path)}')"></div>`,
 
     // A character's skin: its icon and name
     variant(variant) {

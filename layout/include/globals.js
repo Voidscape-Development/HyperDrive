@@ -56,8 +56,7 @@ HD.layouts = {};
   // setting.
 
   // "true", "false" and numbers as such; the rest as typed
-  const parseParam = (v) =>
-    v === "true" ? true : v === "false" ? false : v !== "" && isFinite(v) ? Number(v) : v;
+  const parseParam = (v) => (v === "true" ? true : v === "false" ? false : v !== "" && isFinite(v) ? Number(v) : v);
 
   const pageOptions = {};
   for (const [k, v] of new URLSearchParams(location.search)) pageOptions[k] = parseParam(v);
@@ -101,8 +100,7 @@ HD.layouts = {};
     return out;
   }
 
-  const resolveSettings = (data) =>
-    _.merge({}, def.settings, fileSettings, themeSettings(data), pageOptions);
+  const resolveSettings = (data) => _.merge({}, def.settings, fileSettings, themeSettings(data), pageOptions);
 
   async function loadSettings() {
     const load = (url) =>
@@ -252,8 +250,15 @@ HD.layouts = {};
     }
   }
 
+  // def.subscribe: the top-level keys the layout reads. The server only
+  // sends those; the file and the dev harness are cut down the same way, so
+  // a key missing from the list shows everywhere.
+  const RUNTIME_KEYS = ["layout_theme", "display", "timestamp"];
+  const stateKeys = () => def && def.subscribe && [...new Set([...def.subscribe, ...RUNTIME_KEYS])];
+
   function receive(state) {
-    current = state;
+    const keys = stateKeys();
+    current = keys ? _.pick(state, keys) : state;
     console.log(state);
     schedule();
   }
@@ -516,8 +521,7 @@ HD.layouts = {};
   }
 
   // A theme value, e.g. HD.theme("bracket", "seed_display", true)
-  HD.theme = (section, field, fallback) =>
-    _.get(current, ["layout_theme", "values", section, field], fallback);
+  HD.theme = (section, field, fallback) => _.get(current, ["layout_theme", "values", section, field], fallback);
 
   // Colors from the tournament logo, with "automatic_theme" in settings.json
   function logoColors() {
@@ -570,6 +574,7 @@ HD.layouts = {};
       timeout: 500,
       reconnectionDelay: 500,
       reconnectionDelayMax: 1500,
+      auth: stateKeys() ? { state_keys: stateKeys() } : undefined,
     });
     let deltaIndex = -1;
     let resyncing = false; // A full state was requested and hasn't come
@@ -606,7 +611,8 @@ HD.layouts = {};
         return;
       }
       deltaIndex = index;
-      receive(applyDeltas(current, message.delta));
+      // Empty when nothing the layout subscribed to changed
+      if (message.delta.length > 0) receive(applyDeltas(current, message.delta));
     });
   }
 
@@ -649,7 +655,8 @@ HD.layouts = {};
 
   let booted = false;
 
-  // def: { settings, theme, intro(tl, s), outro(s), start(s), update(s) }
+  // def: { settings, theme, subscribe, init(settings), intro(tl, s),
+  // outro(s), start(s), update(s) }
   HD.layout = async (layout) => {
     if (def) throw new Error("HD.layout() called twice");
     def = layout;

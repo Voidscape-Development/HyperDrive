@@ -13,6 +13,7 @@ const rulesetBans = (ruleset, strike) => {
 };
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   update(s) {
     if (!s.scoreChanged((score) => [score.stage_strike, score.team])) return;
 

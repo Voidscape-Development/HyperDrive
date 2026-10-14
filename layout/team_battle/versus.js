@@ -32,6 +32,7 @@ function sizeCards(teams) {
 }
 
 HD.layout({
+  subscribe: ["team_battle", "score", "game", "tournamentInfo", "commentary"],
   init() {
     HD.render(
       "#versus",
@@ -84,7 +85,13 @@ HD.layout({
       const el = (sel) => document.querySelector(`.vs_team.t${team.t} ${sel}`);
       TB.updateHeader(
         team,
-        { name: el(".vs_name"), logo: el(".vs_logo"), big: el(".vs_big_value"), bigLabel: el(".vs_big_label"), score: el(".vs_score_value") },
+        {
+          name: el(".vs_name"),
+          logo: el(".vs_logo"),
+          big: el(".vs_big_value"),
+          bigLabel: el(".vs_big_label"),
+          score: el(".vs_score_value"),
+        },
         !s.first,
       );
       $(`.vs_roster.t${team.t} .vs_card`).each((i, card) => {

@@ -1,6 +1,7 @@
 // Welly's Rivals of Aether scoreboard: each side's name, flags,
 // Twitter, seed, score and character, and the match info
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     tl.from(".mask", { width: 0, duration: 1, ease: "power2.inOut" }, 0).from(
       ".doubles .info",

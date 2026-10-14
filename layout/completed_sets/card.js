@@ -20,14 +20,18 @@ const showSet = (s, animate) => {
 const next = (s) => {
   clearTimeout(timer);
   if (sets.length < 2) return;
-  timer = setTimeout(() => {
-    index = (index + 1) % sets.length;
-    showSet(s, true);
-    next(s);
-  }, Math.max(Number(s.settings.card_interval) || 6, 1) * 1000);
+  timer = setTimeout(
+    () => {
+      index = (index + 1) % sets.length;
+      showSet(s, true);
+      next(s);
+    },
+    Math.max(Number(s.settings.card_interval) || 6, 1) * 1000,
+  );
 };
 
 HD.layout({
+  subscribe: ["completed_sets", "score", "game", "tournamentInfo", "commentary"],
   settings: CS.SETTINGS,
 
   intro(tl) {

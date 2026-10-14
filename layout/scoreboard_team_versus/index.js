@@ -36,6 +36,7 @@ const stageRow = ([game, stage]) => HD.html`
   </div>`;
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     const ease = "power2.out";
     const cards = (side) => [...document.querySelectorAll(`.${side} .player.container`)];
@@ -46,7 +47,10 @@ HD.layout({
     const playersEnd = 0.2 + (Math.max(t1.length, t2.length, 1) - 1) * stagger + 0.7;
 
     tl.from("#header", { duration: 0.4, autoAlpha: 0, ease }, 0);
-    for (const [side, way] of [["t1", -1], ["t2", 1]]) {
+    for (const [side, way] of [
+      ["t1", -1],
+      ["t2", 1],
+    ]) {
       tl.from(`.${side}.score_side .team_logo`, { duration: 0.5, x: 40 * way, autoAlpha: 0, ease }, 0.1)
         .from(`.${side}.score_side .team_identity`, { duration: 0.5, x: 30 * way, autoAlpha: 0, ease }, 0.15)
         .from(`.${side}.score_side .score`, { duration: 0.6, scale: 1.4, autoAlpha: 0, ease: "back.out(1.4)" }, 0.2);
@@ -94,7 +98,9 @@ HD.layout({
       HD.set(`${side} .score`, team.score || 0);
       HD.set(`${side} .score_team_name`, team.teamName);
       $(`${side} .losers_badge`).toggleClass("visible", !!team.losers);
-      $(`${side} .team_logo`).attr("src", HD.asset(team.logo)).css("display", team.logo ? "" : "none");
+      $(`${side} .team_logo`)
+        .attr("src", HD.asset(team.logo))
+        .css("display", team.logo ? "" : "none");
 
       const players = Object.entries(team.player || {})
         .filter(([, p]) => p && p.name)
@@ -107,10 +113,17 @@ HD.layout({
         .each((i, el) => {
           const [key, player] = players[i];
           const card = $(el);
-          const location = player.country && player.country.code && HD.text([player.country.code, player.state && player.state.code], "/");
-          const chip = (icon, text) => text ? HD.html`<div class="chip"><span class="${icon}"></span>${text}</div>` : "";
+          const location =
+            player.country &&
+            player.country.code &&
+            HD.text([player.country.code, player.state && player.state.code], "/");
+          const chip = (icon, text) =>
+            text ? HD.html`<div class="chip"><span class="${icon}"></span>${text}</div>` : "";
 
-          HD.set(card.find(".team_name"), HD.html`${player.team && HD.html`<span class="sponsor">${player.team}</span>`}${player.name}`);
+          HD.set(
+            card.find(".team_name"),
+            HD.html`${player.team && HD.html`<span class="sponsor">${player.team}</span>`}${player.name}`,
+          );
           // One row, so fitting scales the chips together
           HD.set(
             card.find(".player_chips"),
@@ -122,7 +135,10 @@ HD.layout({
           HD.set(card.find(".sponsor_icon"), HD.img(HD.asset(player.sponsor_logo)));
           // The local avatar over the online one
           const avatar = HD.asset(player.avatar) || player.online_avatar;
-          card.find(".player_avatar").attr("src", avatar || "").css("display", avatar ? "" : "none");
+          card
+            .find(".player_avatar")
+            .attr("src", avatar || "")
+            .css("display", avatar ? "" : "none");
 
           const character = Object.values(player.character || {})[0] || {};
           slots.forEach(([setting, icon, label], j) => {
@@ -135,7 +151,9 @@ HD.layout({
             });
             HD.set(
               card.find(".char_slot").eq(j).find(`.${label}`),
-              j === 0 ? character.display_name : _.get(character, ["assets", assetKey(setting), "metadata", "0", "value"]),
+              j === 0
+                ? character.display_name
+                : _.get(character, ["assets", assetKey(setting), "metadata", "0", "value"]),
             );
           });
         });

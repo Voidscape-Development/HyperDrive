@@ -92,6 +92,9 @@
   };
 
   HD.layouts.streamQueue = {
+    // streamQueue: older HyperDrive versions' name for stream_queue
+    subscribe: ["stream_queue", "streamQueue", "score", "game", "tournamentInfo", "commentary"],
+
     settings: {
       stream: "",
       default_stream: "",
@@ -138,7 +141,9 @@
       const built = HD.build(".stream_queue_content", [queues, c], () => {
         let n = 0; // Sets are numbered across the streams
         return queues.map(([name, sets]) => [
-          name && showNames && HD.html`<div class="message"><img class="twitch_logo" src="./twitch.svg"></img>/${name}</div>`,
+          name &&
+            showNames &&
+            HD.html`<div class="message"><img class="twitch_logo" src="./twitch.svg"></img>/${name}</div>`,
           sets.map((set) => setRow(c, set, n++)),
         ]);
       });

@@ -1,6 +1,7 @@
 // Artistic scoreboard: each side's name and pronouns, flags, avatar, score
 // and character art sliding toward the middle (mirrored on the right)
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     const ease = "power2.inOut";
     tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease }, 0.5)
@@ -11,9 +12,7 @@ HD.layout({
   update(s) {
     const background = (src) => src && HD.html`<div style="background-image: url('${src}')"></div>`;
     const flag = (place) =>
-      place &&
-      place.asset &&
-      HD.html`<div class='flag_container'>${HD.ui.flag(place, "flagname")}</div>`;
+      place && place.asset && HD.html`<div class='flag_container'>${HD.ui.flag(place, "flagname")}</div>`;
 
     for (const t of s.teams) {
       const { team, player } = t;

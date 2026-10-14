@@ -1,9 +1,11 @@
 // The player list: a block per slot with its name and its players (name,
 // Twitter, flags, sponsor, avatar, character)
-const flag = (place) => place && place.asset && HD.html`<div class='flag' style="background-image: url('${HD.asset(place.asset)}')"></div>`;
+const flag = (place) =>
+  place && place.asset && HD.html`<div class='flag' style="background-image: url('${HD.asset(place.asset)}')"></div>`;
 const background = (src) => src && HD.html`<div style="background-image: url('${src}')"></div>`;
 
 HD.layout({
+  subscribe: ["player_list", "score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     tl.from(".container", { duration: 1, width: 0, ease: "power2.inOut" }, 0);
   },
@@ -40,7 +42,11 @@ HD.layout({
         Object.values(slot.player).forEach((player, p) => {
           if (!player) return;
           const sel = `.slot${i + 1} .p${p + 1}.container`;
-          HD.set(`${sel} .name`, HD.html`<span><span class="sponsor">${player.team}</span> ${player.name}</span>`, instant);
+          HD.set(
+            `${sel} .name`,
+            HD.html`<span><span class="sponsor">${player.team}</span> ${player.name}</span>`,
+            instant,
+          );
           HD.set(`${sel} .flagcountry`, flag(player.country), instant);
           HD.set(`${sel} .flagstate`, flag(player.state), instant);
           HD.set(`${sel} .sponsor_icon`, background(HD.asset(player.sponsor_logo)), instant);

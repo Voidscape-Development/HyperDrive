@@ -21,6 +21,7 @@ const colorGameBoxes = (s) => {
 };
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     HD.classIntro(tl);
   },
@@ -39,11 +40,17 @@ HD.layout({
           ? HD.text([s.isTeams ? t.name : player.name, losers])
           : HD.html`<span class="sponsor">${player.team}</span>${player.name} ${losers}`,
       );
-      t.set("&.container .sponsor_icon", solo.sponsor_logo && HD.html`<div style="background-image: url('${HD.asset(solo.sponsor_logo)}')"></div>`);
+      t.set(
+        "&.container .sponsor_icon",
+        solo.sponsor_logo && HD.html`<div style="background-image: url('${HD.asset(solo.sponsor_logo)}')"></div>`,
+      );
       t.set(".flagcountry", solo.country && HD.img(HD.asset(solo.country.asset), "class='flag'"));
       t.set(".seed", solo.seed ? `SEED ${solo.seed}` : "");
       t.set(".pronoun", solo.pronoun);
-      t.set(".flagstate", solo.state && solo.state.name && HD.html`<div class="location_logo symbol"></div>${solo.state.name}`);
+      t.set(
+        ".flagstate",
+        solo.state && solo.state.name && HD.html`<div class="location_logo symbol"></div>${solo.state.name}`,
+      );
       t.set(".twitter", solo.twitter && HD.html`<div class="twitter_logo symbol"></div>${solo.twitter}`);
       t.set(".score", team.score);
 
@@ -79,15 +86,33 @@ HD.layout({
 
     // A box per game of the best of, rebuilt when it changes
     const bestOf = s.score.best_of || 0;
-    $(".score_boxes").first().toggleClass("unhidden", bestOf > 0);
+    $(".score_boxes")
+      .first()
+      .toggleClass("unhidden", bestOf > 0);
     if (s.scoreChanged("best_of")) {
       const games = _.range(1, bestOf + 1);
       const row = (box) => HD.html`${games.map(box)}`;
       const after = () => colorGameBoxes(s);
-      HD.set(".word.score_boxes", row((i) => HD.html`<div class="game${i} box">GAME ${i}</div>`), { after });
-      HD.set(".red.score_boxes", row((i) => HD.html`<div class="game${i} box p1_won hidden"></div>`), { after });
-      HD.set(".blue.score_boxes", row((i) => HD.html`<div class="game${i} box p2_won hidden"></div>`), { after });
-      HD.set(".dark.score_boxes", row((i) => HD.html`<div class="game${i} box neither_won"></div>`), { after });
+      HD.set(
+        ".word.score_boxes",
+        row((i) => HD.html`<div class="game${i} box">GAME ${i}</div>`),
+        { after },
+      );
+      HD.set(
+        ".red.score_boxes",
+        row((i) => HD.html`<div class="game${i} box p1_won hidden"></div>`),
+        { after },
+      );
+      HD.set(
+        ".blue.score_boxes",
+        row((i) => HD.html`<div class="game${i} box p2_won hidden"></div>`),
+        { after },
+      );
+      HD.set(
+        ".dark.score_boxes",
+        row((i) => HD.html`<div class="game${i} box neither_won"></div>`),
+        { after },
+      );
     }
     colorGameBoxes(s);
   },

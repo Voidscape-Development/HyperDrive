@@ -18,6 +18,7 @@ const setCard = (set, i, player) => {
 };
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   settings: { player: 1 },
 
   intro(tl) {

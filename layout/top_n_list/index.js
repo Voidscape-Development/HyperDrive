@@ -28,6 +28,7 @@ const slotRow = ([key, slot], i, ranks) => HD.html`
   )}</div>`;
 
 HD.layout({
+  subscribe: ["player_list", "score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     $(".slot").each((i, el) => tl.from(el, { x: -100, autoAlpha: 0, duration: 0.4 }, 0.5 + 0.3 * i));
   },
@@ -36,21 +37,35 @@ HD.layout({
     if (!s.changed("player_list")) return;
     const slots = Object.entries(_.get(s.data, "player_list.slot") || {});
     const ranks = placements(slots.length);
-    HD.render(".players_container", slots.map((slot, i) => slotRow(slot, i, ranks)));
+    HD.render(
+      ".players_container",
+      slots.map((slot, i) => slotRow(slot, i, ranks)),
+    );
 
     const instant = { duration: 0 };
     slots.forEach(([key, slot], i) => {
       Object.values(slot.player).forEach((player, p) => {
         if (!player) return;
         const sel = `.slot${i + 1} .p${p + 1}.container`;
-        HD.set(`${sel} .name`, HD.html`<span><span class="sponsor">${player.team}</span> ${player.name}</span>`, instant);
+        HD.set(
+          `${sel} .name`,
+          HD.html`<span><span class="sponsor">${player.team}</span> ${player.name}</span>`,
+          instant,
+        );
         HD.set(`${sel} .flagcountry`, HD.ui.flag(player.country, "flagname"), instant);
         HD.set(`${sel} .flagstate`, HD.ui.flag(player.state, "flagname"), instant);
         HD.set(`${sel} .sponsor_icon`, HD.img(HD.asset(player.sponsor_logo)), instant);
         HD.set(`${sel} .avatar`, HD.img(HD.asset(player.avatar)), instant);
-        HD.set(`${sel} .online_avatar`, player.online_avatar ? HD.img(player.online_avatar) : HD.html`<div></div>`, instant);
+        HD.set(
+          `${sel} .online_avatar`,
+          player.online_avatar ? HD.img(player.online_avatar) : HD.html`<div></div>`,
+          instant,
+        );
         HD.set(`${sel} .twitter`, HD.ui.chip("twitter", player.twitter), instant);
-        s.characters(`${sel} .character_container`, { source: ["player_list", "slot", key], scale_based_on_parent: true });
+        s.characters(`${sel} .character_container`, {
+          source: ["player_list", "slot", key],
+          scale_based_on_parent: true,
+        });
       });
     });
 

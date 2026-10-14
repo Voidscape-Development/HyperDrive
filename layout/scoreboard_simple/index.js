@@ -1,6 +1,7 @@
 // Simple scoreboard: a bar per player (two per team in doubles, under the
 // team names) and the match info
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     const ease = "power2.inOut";
     tl.from(".container", { duration: 1, opacity: 0, x: -40, ease }, 0)
@@ -21,7 +22,9 @@ HD.layout({
     }
 
     const flag = (place) =>
-      place && place.asset && HD.html`<div class='flagname'>${place.code}</div><img class='flag' src='${HD.asset(place.asset)}' />`;
+      place &&
+      place.asset &&
+      HD.html`<div class='flagname'>${place.code}</div><img class='flag' src='${HD.asset(place.asset)}' />`;
 
     for (const { n, team, name } of s.teams) {
       HD.set(`.info.doubles.t${n} .team_name`, name + (team.losers ? " [L]" : ""));

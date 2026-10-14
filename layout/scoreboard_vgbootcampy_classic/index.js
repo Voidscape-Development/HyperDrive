@@ -15,6 +15,7 @@ const rotate = (s) => {
 const turns = HD.turns(9, rotate);
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
       .from(".anim_container_outer", { duration: 1, width: 0, ease: "power2.inOut" }, 1)

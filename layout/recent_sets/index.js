@@ -15,6 +15,7 @@ const setRow = (set, i) => HD.html`
   </div>`;
 
 HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
   intro(tl) {
     tl.from(".recent_sets", { autoAlpha: 0 });
   },

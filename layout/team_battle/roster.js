@@ -52,6 +52,7 @@ function updateCard(card, p, team, animate) {
 }
 
 HD.layout({
+  subscribe: ["team_battle", "score", "game", "tournamentInfo", "commentary"],
   init() {
     HD.render(
       "#roster",
@@ -95,7 +96,8 @@ HD.layout({
     // Cards again when a team's size changes
     let rebuilt = false;
     for (const team of teams) {
-      if (HD.build(`.rs_team.t${team.t} .rs_list`, team.players.length, () => team.players.map(playerCard))) rebuilt = true;
+      if (HD.build(`.rs_team.t${team.t} .rs_list`, team.players.length, () => team.players.map(playerCard)))
+        rebuilt = true;
     }
     if (rebuilt) sizeCards(teams);
     const animate = !s.first && !rebuilt;
@@ -108,7 +110,13 @@ HD.layout({
       const el = (sel) => document.querySelector(`.rs_team.t${team.t} ${sel}`);
       TB.updateHeader(
         team,
-        { name: el(".rs_name"), logo: el(".rs_logo"), big: el(".rs_big_value"), bigLabel: el(".rs_big_label"), score: document.querySelector(`.rs_score_value.t${team.t}`) },
+        {
+          name: el(".rs_name"),
+          logo: el(".rs_logo"),
+          big: el(".rs_big_value"),
+          bigLabel: el(".rs_big_label"),
+          score: document.querySelector(`.rs_score_value.t${team.t}`),
+        },
         !s.first,
       );
       $(`.rs_team.t${team.t} .rs_card`).each((i, card) => {

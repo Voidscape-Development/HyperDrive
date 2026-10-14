@@ -34,7 +34,8 @@ function updateRoster(t, team, animate) {
     team.players.map(() => HD.html`<div class="mini"><img class="fades_when_dead" /><div class="x_mark"></div></div>`),
   );
   // Smaller icons for big teams
-  if (rebuilt) roster.style.setProperty("--mini-size", `${Math.max(14, Math.min(28, 260 / Math.max(team.players.length, 1)))}px`);
+  if (rebuilt)
+    roster.style.setProperty("--mini-size", `${Math.max(14, Math.min(28, 260 / Math.max(team.players.length, 1)))}px`);
 
   roster.querySelectorAll(".mini").forEach((mini, i) => {
     const p = team.players[i];
@@ -71,6 +72,7 @@ function updateActive(t, team, animate) {
 }
 
 HD.layout({
+  subscribe: ["team_battle", "score", "game", "tournamentInfo", "commentary"],
   init() {
     HD.render(
       "#scoreboard",
@@ -105,7 +107,13 @@ HD.layout({
       const el = (sel) => document.querySelector(`.sb_team.t${team.t} ${sel}`);
       TB.updateHeader(
         team,
-        { name: el(".sb_name"), logo: el(".sb_logo"), big: el(".sb_big_value"), bigLabel: el(".sb_big_label"), score: el(".sb_score_value") },
+        {
+          name: el(".sb_name"),
+          logo: el(".sb_logo"),
+          big: el(".sb_big_value"),
+          bigLabel: el(".sb_big_label"),
+          score: el(".sb_score_value"),
+        },
         animate,
       );
       updateRoster(team.t, team, animate);
