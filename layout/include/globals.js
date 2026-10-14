@@ -188,27 +188,45 @@ async function HDDisplayHide() {
   });
 }
 
+// Makes newData the current program state and dispatches "hd_update"
+function DispatchUpdate(newData) {
+  oldData = data;
+  data = newData;
+
+  let event = new CustomEvent("hd_update");
+  event.data = data;
+  event.oldData = oldData;
+
+  console.log(data);
+  document.dispatchEvent(event);
+}
+
+// Whether a program_state.json request is in flight
+var hd_fetching = false;
+
 // Gets current program state,
 // Dispatch "hd_update" event if data has changed
 // This function is called in a high frequency
 async function UpdateData() {
+  // The poll interval is shorter than a slow request: overlapping ones could
+  // resolve out of order and put an older state back
+  if (hd_fetching) return;
+  hd_fetching = true;
   try {
-    oldData = data;
-    data = await getData();
-
-    if (data.timestamp <= oldData.timestamp) {
-      return;
-    }
-
-    let event = new CustomEvent("hd_update");
-    event.data = data;
-    event.oldData = oldData;
-
-    console.log(data);
-    document.dispatchEvent(event);
+    const newData = await getData();
+    if (newData.timestamp <= data.timestamp) return;
+    DispatchUpdate(newData);
   } catch (e) {
     console.log(e);
+  } finally {
+    hd_fetching = false;
   }
+}
+
+// Polls program_state.json (file:// layouts, or the websocket gave up)
+var hd_polling = null;
+function StartPolling() {
+  if (hd_polling === null) hd_polling = setInterval(UpdateData, 64);
 }
 
 // Gets current program state using SocketIO,
@@ -262,37 +280,35 @@ async function UpdateData_SocketIO() {
     socket.io.on("reconnect_failed", () => {
       // reconnect_failed, if max retries are reached,
       // will fall back to file loading program_state.json
-      setInterval(async () => {
-        await UpdateData();
-      }, 64);
+      StartPolling();
     });
 
     socket.on("error", (err) => {
       console.log(err);
     });
 
-    socket.on("program_state", (message) => {
-      oldData = data;
-      data = message["state"];
+    // A full state was requested and hasn't arrived yet
+    let resyncing = false;
 
+    socket.on("program_state", (message) => {
+      resyncing = false;
       // Fine to reset the max applied index here, since we know that we've
       // received a complete valid state for a point in time.
       maxAppliedDeltaIdx = message["delta_index"];
-
-      let event = new CustomEvent("hd_update");
-      event.data = data;
-      event.oldData = oldData;
-
-      console.log(data);
-      document.dispatchEvent(event);
+      DispatchUpdate(message["state"]);
     });
 
     socket.on("program_state_update", (message) => {
+      // Deltas until the full state arrives build on the state that failed
+      if (resyncing) return;
       try {
         console.log("Handling state delta: ", message);
         HandleHDStateUpdateMessage(message);
       } catch (e) {
+        console.log(e);
         // We failed to handle the program state, so request a new update.
+        // The server sends it to every layout: ask once.
+        resyncing = true;
         socket.emit("program_state", {});
       }
     });
@@ -325,26 +341,31 @@ async function LoadEverything() {
       scoreboardNumber
   */
   for (let [k, v] of urlParams.entries()) {
+    // A param named like a function (?Update=...) would break the layout
+    if (typeof window[k] === "function") continue;
     window[k] = v;
   }
 
-  for (let i = 0; i < scripts.length; i += 1) {
-    const script = scripts[i];
-    const src = libPath + script;
-    try {
-      await new Promise((resolve, reject) => {
+  // Downloaded in parallel; async = false still runs them in this order
+  await Promise.all(
+    scripts.map((script) => {
+      const src = libPath + script;
+      return new Promise((resolve, reject) => {
         const scriptElement = document.createElement("script");
         scriptElement.src = src;
-        scriptElement.onload = resolve;
-        scriptElement.onerror = reject;
+        scriptElement.async = false;
+        scriptElement.onload = () => {
+          console.log(`Loaded script: ${src}`);
+          resolve();
+        };
+        scriptElement.onerror = (error) => {
+          console.error(`Error loading script: ${src}`, error);
+          reject(error);
+        };
         document.head.appendChild(scriptElement);
       });
-      console.log(`Loaded script: ${src}`);
-    } catch (error) {
-      console.error(`Error loading script: ${src}`, error);
-      throw error;
-    }
-  }
+    }),
+  );
 
   console.log("== Loading complete ==");
 
@@ -359,42 +380,41 @@ async function InitAll() {
     GetLogoColors();
   }
 
+  await new Promise((resolve) => $(resolve));
+
+  console.log("== Init complete ==");
+  // After LoadEverything().then(), so layouts can listen to it there
+  setTimeout(() => document.dispatchEvent(new CustomEvent("hd_init")));
+
+  // Before any data comes in: a first update dispatched without a listener
+  // would be lost, and polling only dispatches again once the state changes
+  document.addEventListener("hd_update", UpdateWrapper);
+  gsap.globalTimeline.timeScale(0);
+
+  // Set up listener to regrab data and rerun intro animations on OBS scene switch
+  initOnBrowserActive(
+    () => {
+      // hide function - nothing right now
+      console.log("Hidden");
+    },
+    () => {
+      UpdateData().then(() => {
+        // Turned off in Display Controls: stays hidden
+        if (hd_display.shown) HDRunStart();
+      });
+    },
+  );
+
+  // Both deliver their first state asynchronously, after the layout's
+  // LoadEverything().then() has set Start() and Update()
   if (
     window.location.protocol === "file:" ||
     window.location.host === "absolute"
   ) {
-    setInterval(async () => {
-      await UpdateData();
-    }, 64);
+    StartPolling();
   } else {
-    // Call program_state.json load just in case it takes
-    // a bit to start the websocket
     await UpdateData_SocketIO();
   }
-
-  // await UpdateData();
-
-  $(document).ready(() => {
-    console.log("== Init complete ==");
-    document.dispatchEvent(new CustomEvent("hd_init"));
-
-    document.addEventListener("hd_update", UpdateWrapper);
-    gsap.globalTimeline.timeScale(0);
-
-    // Set up listener to regrab data and rerun intro animations on OBS scene switch
-    initOnBrowserActive(
-      () => {
-        // hide function - nothing right now
-        console.log("Hidden");
-      },
-      () => {
-        UpdateData().then(() => {
-          // Turned off in Display Controls: stays hidden
-          if (hd_display.shown) HDRunStart();
-        });
-      },
-    );
-  });
 }
 
 // Font stack a theme font is put in front of (same as main.css's --font)
@@ -437,9 +457,11 @@ const HD_THEME_CLASSES = [
 function ApplyLayoutTheme(data, oldData) {
   const theme = _.get(data, "layout_theme");
   if (!theme || !theme.values) return;
+  const oldTheme = _.get(oldData, "layout_theme");
   if (
     document.getElementById("hd-layout-theme") &&
-    JSON.stringify(theme) == JSON.stringify(_.get(oldData, "layout_theme"))
+    // Deltas keep unchanged parts of the state: same object, no stringify
+    (theme === oldTheme || JSON.stringify(theme) == JSON.stringify(oldTheme))
   )
     return;
 
@@ -574,29 +596,19 @@ function getData() {
 // Loads settings.json from /layout/ and /layout/<folder>/
 // /layout/<folder>/settings.json (local) has priority over /layout/settings.json (global)
 async function LoadSettings() {
-  let global_settings = {};
-  try {
-    global_settings = await $.ajax({
-      dataType: "json",
-      url: "../settings.json",
-      cache: false,
-    });
-  } catch (e) {
-    console.log("Could not load global settings.json");
-    console.log(e);
-  }
-
-  let file_settings = {};
-  try {
-    file_settings = await $.ajax({
-      dataType: "json",
-      url: "./settings.json",
-      cache: false,
-    });
-  } catch (e) {
-    console.log("Could not load local settings.json");
-    console.log(e);
-  }
+  const load = async (url, name) => {
+    try {
+      return await $.ajax({ dataType: "json", url: url, cache: false });
+    } catch (e) {
+      console.log(`Could not load ${name} settings.json`);
+      console.log(e);
+      return {};
+    }
+  };
+  const [global_settings, file_settings] = await Promise.all([
+    load("../settings.json", "global"),
+    load("./settings.json", "local"),
+  ]);
 
   // What the page itself sets, before window.settings becomes all of them
   hd_page_settings = _.cloneDeep(window.settings || {});
@@ -626,38 +638,35 @@ function FitText(target) {
     if (target.css("width") == null) return;
 
     let textElement = target.find(".text");
+    const text = textElement[0];
     RegisterFit(target);
+    if (!text) return;
 
     if (textElement.text().trim().toLowerCase() == "undefined") {
       textElement.html("");
     }
 
-    textElement.css("transform", "");
-    textElement.css("font-size", "");
+    textElement.css({ transform: "", "font-size": "" });
+
+    const targetWidth = target.width();
+    if (text.scrollWidth <= targetWidth) return;
 
     if (target.hasClass("font-scale-fit")) {
-      const originalFontSize = parseFloat(
-        window.getComputedStyle(textElement[0]).fontSize
+      // Each step is a layout: jump to the size that fits if the width
+      // scales with it, then step down for what doesn't (padding, etc.)
+      let fontSize = parseFloat(window.getComputedStyle(text).fontSize);
+      fontSize = Math.max(
+        1,
+        Math.floor(((fontSize * targetWidth) / text.scrollWidth) * 10) / 10,
       );
+      textElement.css("font-size", fontSize + "px");
 
-      let fontSize = originalFontSize;
-
-      const targetWidth = target.width();
-
-      while (
-        textElement[0].scrollWidth > targetWidth &&
-        fontSize > 1
-      ) {
-        fontSize -= 0.1;
+      while (text.scrollWidth > targetWidth && fontSize > 1) {
+        fontSize = Math.max(1, fontSize - 0.1);
         textElement.css("font-size", fontSize + "px");
       }
     } else {
-      let scaleX = 1;
-
-      if (textElement[0].scrollWidth * scaleX > target.width()) {
-        scaleX = target.width() / textElement[0].scrollWidth;
-        textElement.css("transform", "scaleX(" + scaleX + ")");
-      }
+      textElement.css("transform", "scaleX(" + targetWidth / text.scrollWidth + ")");
     }
   });
 }
@@ -687,9 +696,7 @@ async function SetInnerHtml(element, html, settings = {}) {
     ...settings.anim_out,
   };
 
-  if (html == null || html === undefined) html = "";
-
-  html = String(html);
+  html = html == null ? "" : String(html);
 
   let firstRun = element.find(".text").length === 0;
 
@@ -703,14 +710,12 @@ async function SetInnerHtml(element, html, settings = {}) {
   // Wait for font to load before calculating sizes
   await document.fonts.ready;
 
-  // Normalize HTML by parsing through DOM to ensure consistent formatting
-  const normalizeHtml = (str) => {
-    const temp = document.createElement('div');
-    temp.innerHTML = String(str);
-    return temp.innerHTML;
-  };
-  const currentText = normalizeHtml(element.find(".text").html());
-  const newText = normalizeHtml(html);
+  // Normalize the new HTML by parsing it like the DOM did the current one,
+  // which already comes out serialized
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
+  const currentText = element.find(".text").html();
+  const newText = temp.innerHTML;
 
   if (force === true || currentText !== newText) {
     const updateElement = (element, html, firstRun) => {
@@ -790,8 +795,8 @@ function GenerateMulticharacterPositions(
       }
       j = pendulum;
     }
-    angle = angle_rad + degrees_to_radians(360 / character_number) * j;
-    pos = [
+    const angle = angle_rad + degrees_to_radians(360 / character_number) * j;
+    const pos = [
       center[0] + Math.cos(angle) * radius,
       center[1] + Math.sin(angle) * radius,
     ];
@@ -806,8 +811,7 @@ function GenerateMulticharacterPositions(
 // Detect div size changes for character images
 var imageResizeObserver = new ResizeObserver((entries) => {
   for (const entry of entries) {
-    console.log("Resized");
-    CenterImageDo(entry.target);
+    CenterImageDo($(entry.target));
   }
 });
 
@@ -830,9 +834,7 @@ async function CenterImage(element, assetData, options = {}) {
       scale_fill_y: false,
     });
 
-    if (!assetData) {
-      reject();
-    }
+    if (!assetData) return;
 
     options.asset_data = assetData;
 
@@ -870,15 +872,15 @@ async function CenterVideo(element, assetData, options = {}) {
         position: "absolute",
       });
 
-      video.muted = true;
-      video.autoplay = true;
+      // Autoplay needs the property, not only the attribute
+      video[0].muted = true;
 
       video.appendTo($(element)).unwrap();
 
-      video.on("loadedmetadata", async () => {
-        $(video)[0].muted = true;
-        await $(video)[0].play();
-        resolve();
+      // Resolves even if the video can't load or play, so callers go on
+      video.on("error", () => resolve());
+      video.on("loadedmetadata", () => {
+        video[0].play().catch(console.log).finally(resolve);
       });
 
       video[0].load();
@@ -906,189 +908,182 @@ async function CenterImageDo(element) {
       customElement = element.parent().parent();
     }
 
+    // $(element).data() is live: keep what this call was for
+    const requestedAsset = assetData;
+
     if (typeof assetData == "string") {
       assetData = JSON.parse(assetData);
     }
     if (!assetData) return;
 
-    let image = 'url("../../' + assetData.asset + '")';
+    function loadImage() {
+      return new Promise((resolve) => {
+        const img = new Image();
+        // A missing file would otherwise leave CenterImage() pending forever
+        img.onerror = () => resolve();
+        img.onload = () => {
+          // Another asset was set while this one loaded
+          if ($(element).data("asset_data") !== requestedAsset) return resolve();
 
-    if (image != undefined && image.includes("url(")) {
-      function loadImage() {
-        return new Promise((resolve) => {
-          const img = new Image();
-          img.src = "../../" + assetData.asset;
-          img.onload = async () => {
-            let eyesight = assetData.eyesight;
+          let eyesight = assetData.eyesight;
 
-            if (!eyesight) {
-              eyesight = {
-                x: img.naturalWidth / 2,
-                y: img.naturalHeight / 2,
-              };
-            }
+          if (!eyesight) {
+            eyesight = {
+              x: img.naturalWidth / 2,
+              y: img.naturalHeight / 2,
+            };
+          }
 
-            if (!customElement) customElement = element;
+          if (!customElement) customElement = element;
 
-            let containerWidth = 0;
-            let containerHeight = 0;
+          const containerWidth = $(customElement).innerWidth();
+          const containerHeight = $(customElement).innerHeight();
 
-            if (!customElement) {
-              // customElement = $(element).get(0);
-              let referenceElement = element.parent();
-              containerWidth = $(referenceElement).innerWidth();
-              containerHeight = $(referenceElement).innerHeight();
+          let proportional_zoom = 1;
+          if (assetData.average_size) {
+            proportional_zoom = 0;
+            proportional_zoom = Math.max(
+              proportional_zoom,
+              (containerWidth / assetData.average_size.x) * 1.2,
+            );
+            proportional_zoom = Math.max(
+              proportional_zoom,
+              (containerHeight / assetData.average_size.y) * 1.2,
+            );
+          }
+
+          // For cropped assets, zoom to fill
+          // Calculate max zoom
+          const zoom_x = containerWidth / img.naturalWidth;
+          const zoom_y = containerHeight / img.naturalHeight;
+
+          let minZoom = 1;
+
+          let rescalingFactor = 1;
+
+          if (assetData.rescaling_factor)
+            rescalingFactor = assetData.rescaling_factor;
+
+          let uncropped_edge = assetData.uncropped_edge;
+
+          if (
+            !uncropped_edge ||
+            uncropped_edge == "undefined" ||
+            uncropped_edge.length == 0
+          ) {
+            if (zoom_x > zoom_y) {
+              minZoom = zoom_x * rescalingFactor;
             } else {
-              containerWidth = $(customElement).innerWidth();
-              containerHeight = $(customElement).innerHeight();
+              minZoom = zoom_y * rescalingFactor;
             }
-
-            let proportional_zoom = 1;
-            if (assetData.average_size) {
-              proportional_zoom = 0;
-              proportional_zoom = Math.max(
-                proportional_zoom,
-                ($(customElement).innerWidth() / assetData.average_size.x) *
-                  1.2,
-              );
-              proportional_zoom = Math.max(
-                proportional_zoom,
-                ($(customElement).innerHeight() / assetData.average_size.y) *
-                  1.2,
-              );
-            }
-
-            // For cropped assets, zoom to fill
-            // Calculate max zoom
-            zoom_x = $(customElement).innerWidth() / img.naturalWidth;
-            zoom_y = $(customElement).innerHeight() / img.naturalHeight;
-
-            let minZoom = 1;
-
-            let rescalingFactor = 1;
-
-            if (assetData.rescaling_factor)
-              rescalingFactor = assetData.rescaling_factor;
-
-            let uncropped_edge = assetData.uncropped_edge;
-
+          } else {
             if (
-              !uncropped_edge ||
-              uncropped_edge == "undefined" ||
-              uncropped_edge.length == 0
+              uncropped_edge.includes("u") &&
+              uncropped_edge.includes("d") &&
+              uncropped_edge.includes("l") &&
+              uncropped_edge.includes("r")
             ) {
-              if (zoom_x > zoom_y) {
-                minZoom = zoom_x * rescalingFactor;
-              } else {
-                minZoom = zoom_y * rescalingFactor;
-              }
+              minZoom = customZoom * proportional_zoom * rescalingFactor;
+            } else if (
+              !uncropped_edge.includes("l") &&
+              !uncropped_edge.includes("r")
+            ) {
+              minZoom = zoom_x * rescalingFactor;
+            } else if (
+              !uncropped_edge.includes("u") &&
+              !uncropped_edge.includes("d")
+            ) {
+              minZoom = zoom_y * rescalingFactor;
             } else {
-              if (
-                uncropped_edge.includes("u") &&
-                uncropped_edge.includes("d") &&
-                uncropped_edge.includes("l") &&
-                uncropped_edge.includes("r")
-              ) {
-                minZoom = customZoom * proportional_zoom * rescalingFactor;
-              } else if (
-                !uncropped_edge.includes("l") &&
-                !uncropped_edge.includes("r")
-              ) {
-                minZoom = zoom_x * rescalingFactor;
-              } else if (
-                !uncropped_edge.includes("u") &&
-                !uncropped_edge.includes("d")
-              ) {
-                minZoom = zoom_y * rescalingFactor;
-              } else {
-                minZoom = customZoom * proportional_zoom * rescalingFactor;
-              }
+              minZoom = customZoom * proportional_zoom * rescalingFactor;
             }
+          }
 
-            if (scale_fill_x && !scale_fill_y) {
-              minZoom = zoom_x;
-            } else if (scale_fill_y && !scale_fill_x) {
-              minZoom = zoom_y;
-            } else if (scale_fill_x && scale_fill_y) {
-              minZoom = Math.max(zoom_x, zoom_y);
-            }
+          if (scale_fill_x && !scale_fill_y) {
+            minZoom = zoom_x;
+          } else if (scale_fill_y && !scale_fill_x) {
+            minZoom = zoom_y;
+          } else if (scale_fill_x && scale_fill_y) {
+            minZoom = Math.max(zoom_x, zoom_y);
+          }
 
-            zoom = Math.max(minZoom, customZoom * minZoom);
+          const zoom = Math.max(minZoom, customZoom * minZoom);
 
-            // Centering
-            let xx = 0;
-            let yy = 0;
+          // Centering
+          let xx = 0;
+          let yy = 0;
 
-            if (!customCenter) {
-              xx = -eyesight.x * zoom + $(element).innerWidth() / 2;
-            } else {
-              xx =
-                -eyesight.x * zoom + $(element).innerWidth() * customCenter[0];
-            }
+          if (!customCenter) {
+            xx = -eyesight.x * zoom + $(element).innerWidth() / 2;
+          } else {
+            xx =
+              -eyesight.x * zoom + $(element).innerWidth() * customCenter[0];
+          }
 
-            let maxMoveX = $(element).innerWidth() - img.naturalWidth * zoom;
+          let maxMoveX = $(element).innerWidth() - img.naturalWidth * zoom;
 
-            if (!uncropped_edge || !uncropped_edge.includes("l")) {
-              if (xx > 0) xx = 0;
-            } else {
-              if (xx > containerWidth * 0.1) xx = containerWidth * 0.1;
-            }
-            if (!uncropped_edge || !uncropped_edge.includes("r")) {
-              if (xx < maxMoveX) xx = maxMoveX;
-            } else {
-              if (xx < maxMoveX - containerWidth * 0.1)
-                xx = maxMoveX - containerWidth * 0.1;
-            }
+          if (!uncropped_edge || !uncropped_edge.includes("l")) {
+            if (xx > 0) xx = 0;
+          } else {
+            if (xx > containerWidth * 0.1) xx = containerWidth * 0.1;
+          }
+          if (!uncropped_edge || !uncropped_edge.includes("r")) {
+            if (xx < maxMoveX) xx = maxMoveX;
+          } else {
+            if (xx < maxMoveX - containerWidth * 0.1)
+              xx = maxMoveX - containerWidth * 0.1;
+          }
 
-            if (!customCenter) {
-              yy = -eyesight.y * zoom + $(element).innerHeight() / 2;
-            } else {
-              yy =
-                -eyesight.y * zoom + $(element).innerHeight() * customCenter[1];
-            }
+          if (!customCenter) {
+            yy = -eyesight.y * zoom + $(element).innerHeight() / 2;
+          } else {
+            yy =
+              -eyesight.y * zoom + $(element).innerHeight() * customCenter[1];
+          }
 
-            let maxMoveY = $(element).innerHeight() - img.naturalHeight * zoom;
+          let maxMoveY = $(element).innerHeight() - img.naturalHeight * zoom;
 
-            if (!uncropped_edge || !uncropped_edge.includes("u")) {
-              if (yy > 0) yy = 0;
-            } else {
-              if (yy > containerHeight * 0.1) yy = containerHeight * 0.1;
-            }
-            if (!uncropped_edge || !uncropped_edge.includes("d")) {
-              if (yy < maxMoveY) yy = maxMoveY;
-            } else {
-              if (yy < maxMoveY - containerHeight * 0.1)
-                yy = maxMoveY - containerHeight * 0.1;
-            }
+          if (!uncropped_edge || !uncropped_edge.includes("u")) {
+            if (yy > 0) yy = 0;
+          } else {
+            if (yy > containerHeight * 0.1) yy = containerHeight * 0.1;
+          }
+          if (!uncropped_edge || !uncropped_edge.includes("d")) {
+            if (yy < maxMoveY) yy = maxMoveY;
+          } else {
+            if (yy < maxMoveY - containerHeight * 0.1)
+              yy = maxMoveY - containerHeight * 0.1;
+          }
 
-            if (data.use_dividers === false) {
-              $(element).parent().css("position", "absolute");
-            }
+          if (data.use_dividers === false) {
+            $(element).parent().css("position", "absolute");
+          }
 
-            if (data.z_index) {
-              $(element).parent().css("z-index", data.z_index);
-            } else {
-              $(element).parent().css("z-index", 0);
-            }
+          if (data.z_index) {
+            $(element).parent().css("z-index", data.z_index);
+          } else {
+            $(element).parent().css("z-index", 0);
+          }
 
-            $(element).css({ position: "relative" });
-            $(element).find("img.hd-img").remove();
-            const $img = $("<img>").addClass("hd-img").css({
-              position: "absolute",
-              left: `${xx}px`,
-              top: `${yy}px`,
-              width: `${img.naturalWidth * zoom}px`,
-              height: `${img.naturalHeight * zoom}px`,
-            }).attr("src", "../../" + assetData.asset);
-            $(element).append($img);
+          $(element).css({ position: "relative" });
+          $(element).find("img.hd-img").remove();
+          // The image already loaded, rather than a new one for the same src
+          const $img = $(img).addClass("hd-img").css({
+            position: "absolute",
+            left: `${xx}px`,
+            top: `${yy}px`,
+            width: `${img.naturalWidth * zoom}px`,
+            height: `${img.naturalHeight * zoom}px`,
+          });
+          $(element).append($img);
 
-            resolve();
-          };
-        });
-      }
-
-      await loadImage();
+          resolve();
+        };
+        img.src = "../../" + assetData.asset;
+      });
     }
+
+    await loadImage();
   } catch (e) {
     console.log(e);
   }
@@ -1151,31 +1146,36 @@ function HandleHDStateUpdateMessage(message) {
 
   if (deltaIdx < maxAppliedDeltaIdx) {
     throw Error(
-      `Received out of order delta ${deltaIdx} (applied: ${maxAppliedDeltaIdx}`,
+      `Received out of order delta ${deltaIdx} (applied: ${maxAppliedDeltaIdx})`,
+    );
+  }
+  // The server numbers deltas one by one: a gap means one was missed and the
+  // state would silently stay wrong
+  if (maxAppliedDeltaIdx >= 0 && deltaIdx > maxAppliedDeltaIdx + 1) {
+    throw Error(
+      `Missed deltas before ${deltaIdx} (applied: ${maxAppliedDeltaIdx})`,
     );
   }
 
-  let event = new CustomEvent("hd_update");
-  // Ancient jutsu to deep-clone an object. We will be modifying
-  event.oldData = JSON.parse(JSON.stringify(data));
-
-  applyDeltas(data, deltas);
-  event.data = data;
-  maxAppliedDeltaIdx = Math.max(deltaIdx, maxAppliedDeltaIdx);
-  console.log(data);
-
-  // it's fine if this doesn't fire because we threw an exception earlier, because
+  // it's fine if this doesn't fire because we threw an exception, because
   // that means state wasn't applied and we've requested new program state.
-  document.dispatchEvent(event);
+  DispatchUpdate(applyDeltas(data, deltas));
+  maxAppliedDeltaIdx = deltaIdx;
+}
+
+function HDHasOwn(obj, key) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
 /**
- * Takes a single delta operation, and modifies the data object.
+ * Takes a single delta operation and applies it to data, copying the objects
+ * along its path that aren't in copied yet (and adding the copies to it).
  *
  * @param {Object} data
  * @param {Delta} delta
+ * @param {Set<Object>} copied
  */
-function applyDelta(data, delta) {
+function applyDelta(data, delta, copied) {
   const pathPieces = delta.path;
   /** @type {DeltaOpType} */ const deltaOp = delta.action;
   const newValue = delta.value;
@@ -1183,15 +1183,21 @@ function applyDelta(data, delta) {
 
   let currentData = data;
   for (let i = 0; i < pathPieces.length - 1; i += 1) {
-    if (!currentData.hasOwnProperty(pathPieces[i])) {
-      currentData[pathPieces[i]] = {};
+    const key = pathPieces[i];
+    let next = currentData[key];
+    if (!HDHasOwn(currentData, key)) {
+      next = {};
+      copied.add(next);
+    } else if (next !== null && typeof next === "object" && !copied.has(next)) {
+      next = Array.isArray(next) ? next.slice() : { ...next };
+      copied.add(next);
     }
-
-    currentData = currentData[pathPieces[i]];
+    currentData[key] = next;
+    currentData = next;
   }
 
   if (deltaOp === "dictionary_item_removed") {
-    if (currentData.hasOwnProperty(lastPiece)) {
+    if (HDHasOwn(currentData, lastPiece)) {
       delete currentData[lastPiece];
     } else {
       console.warn(`Couldn't find data to delete for path: ${pathPieces}`);
@@ -1202,15 +1208,21 @@ function applyDelta(data, delta) {
 }
 
 /**
+ * Returns data with the deltas applied, leaving data as it was: only the
+ * objects on the changed paths are copied, the rest is shared with it.
+ * Much cheaper than deep-cloning the whole state for oldData each time.
+ *
  * @param {Object} data
  * @param {Delta[]} deltas python deep-diff delta object.
  */
 function applyDeltas(data, deltas) {
+  const result = { ...data };
+  const copied = new Set([result]);
   for (let delta of deltas) {
-    applyDelta(data, delta);
+    applyDelta(result, delta, copied);
   }
 
-  return data;
+  return result;
 }
 
 // taken from https://github.com/Readek/RoA-Stream-Tool/blob/master/Stream%20Tool/Resources/Scripts/Utils/On%20Transition%20Event.mjs
@@ -1253,6 +1265,7 @@ function isBrowserActive() {
   if (window.obsstudio) {
     return true; // theres no way to get active state without the event listener :(
   } else {
-    return document.visibilityState;
+    // visibilityState is a string: "hidden" would be truthy too
+    return document.visibilityState === "visible";
   }
 }
