@@ -1,0 +1,536 @@
+/* ═══════════════════════════════════════════════════════════
+   HALLOWEEN — halloween.css
+   Loaded after index.css; every rule is scoped to body.halloween
+   so the shared scoreboard styles are untouched. Pages keep their
+   game class (sf6, tekken8, thin…) so the player bars and chips
+   keep each game's original, HUD-clearing geometry; this file
+   restyles them as gothic iron-framed bars and moves the info to a
+   tournament plaque + floating match / phase caption.
+   Palette is fixed (ignores HyperDrive team / theme colors) by design.
+   Sections:
+     1. Font / tokens
+     2. Per-game tokens (bar height, plaque + caption spots)
+     3. Undo the per-game skews (bars, text, chips)
+     4. Player bar (pointed gothic ends)
+     5. Score: candlelit crimson box
+     6. Name / sponsor / icons
+     7. Chips and flags
+     8. Tournament plaque
+     9. Match / phase caption
+    10. Corner placements (SSBU, NASB2, Pokkén, GBVSR, ARMS)
+    11. SSBU character art
+    12. Animations
+    13. Multicam
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Font / tokens ────────────────────────────────────── */
+
+@font-face {
+  font-family: "PirataOne";
+  src: url("../fonts/PirataOne/PirataOne-Regular.ttf") format("truetype");
+}
+
+.halloween {
+  --hw-void: #0b0709;
+  --hw-char: #161013;
+  --hw-stone: #251b20;
+  --hw-crimson: #8e1020;
+  --hw-blood: #4a0610;
+  --hw-ember: #ff9a3c;
+  --hw-flame: #ffd27a;
+  --hw-bone: #efe6d2;
+  --hw-parchment: #d8c7a8;
+  --hw-brass: #c9a25e;
+  --hw-brass-dark: #6e5128;
+  --hw-font-title: "PirataOne", var(--font);
+
+  /* Icon masks (seed / twitter / pronoun) and .container text read these */
+  --text-color: var(--hw-bone);
+
+  --hw-frame: linear-gradient(180deg, var(--hw-brass) 0%, var(--hw-brass-dark) 50%, #a7803f 100%);
+  --hw-fill: linear-gradient(180deg, #261b21 0%, var(--hw-char) 55%, var(--hw-void) 100%);
+  --hw-text-shadow: 0 1px 0 #000, 0 0 6px rgba(0, 0, 0, 0.85);
+  /* Text with no panel behind it (caption over gameplay) */
+  --hw-float-shadow:
+    0 2px 0 #000,
+    0 0 3px rgba(0, 0, 0, 0.95),
+    0 0 12px rgba(0, 0, 0, 0.9),
+    0 0 18px rgba(255, 120, 30, 0.35);
+}
+
+
+/* ── 2. Per-game tokens ──────────────────────────────────── */
+/* --hw-bar-h mirrors each game's bar height in index.css (sizes the
+   pointed ends, score box and sponsor logo). Plaque spots reuse
+   where the original layout put its top info / logo, so they clear
+   each game's timer. */
+
+.halloween {
+  --hw-bar-h: 64px;
+  --hw-plaque-top: 140px;
+  --hw-plaque-w: 320px;
+  --hw-plaque-h: 38px;
+  --hw-caption-bottom: 2px;
+}
+
+.halloween.fgc        { --hw-plaque-top: 0px; --hw-plaque-w: 280px; }
+.halloween.fgc.thin   { --hw-bar-h: 48px; --hw-plaque-w: 290px; }
+.halloween.strive     { --hw-plaque-w: 360px; }
+.halloween.uni2       { --hw-plaque-w: 330px; --hw-caption-bottom: 130px; }
+.halloween.fgc.thin.dbfz { --hw-bar-h: 47px; --hw-plaque-top: 125px; --hw-plaque-w: 340px; }
+.halloween.arms       { --hw-plaque-top: 150px; --hw-plaque-w: 340px; }
+.halloween.skullgirls { --hw-plaque-w: 320px; }
+.halloween.pbrave     { --hw-bar-h: 65px; --hw-plaque-w: 300px; --hw-plaque-h: 32px; }
+.halloween.tekken8    { --hw-bar-h: 38px; --hw-plaque-w: 420px; }
+.halloween.sf6        { --hw-bar-h: 48px; --hw-plaque-w: 400px; }
+.halloween.tokon      { --hw-bar-h: 56px; --hw-plaque-w: 420px; }
+.halloween.mk1        { --hw-bar-h: 48px; --hw-plaque-top: 160px; --hw-plaque-w: 340px; }
+.halloween.pokken     { --hw-bar-h: 48px; }
+
+
+/* ── 3. Undo the per-game skews ──────────────────────────── */
+/* SF6 / Tekken 8 / Tokon skew their bars and chips and counter-skew the
+   contents. Halloween bars are upright. Selectors match index.css's
+   specificity (doubled .halloween where needed) so this file wins by order. */
+
+.halloween .player.container { transform: none; }
+
+.halloween .p1.player.container > div:not(.score),
+.halloween .p2.player.container > div:not(.score),
+.halloween .p1 .name_twitter,
+.halloween .p2 .name_twitter,
+.halloween .p1 .score > .text,
+.halloween .p2 .score > .text {
+  transform: none;
+}
+
+.halloween.halloween .p1.chips,
+.halloween.halloween .p2.chips,
+.halloween.halloween .p1 .chip,
+.halloween.halloween .p2 .chip,
+.halloween.halloween .p1 .seed.chip .text,
+.halloween.halloween .p2 .seed.chip .text {
+  transform: none;
+}
+
+.halloween.halloween .p1 .seed.chip,
+.halloween.halloween .p2 .seed.chip {
+  transform: none;
+  background: none;
+}
+
+/* SF6 online's seed tab hung off the screen edge under the skew */
+.halloween.sf6.online .p1 .seed { left: 8px; }
+.halloween.sf6.online .p2 .seed { right: 8px; }
+
+
+/* ── 4. Player bar ───────────────────────────────────────── */
+
+.halloween .player.container {
+  --hw-tip: calc(var(--hw-bar-h) * 0.38);
+  overflow: visible;
+  isolation: isolate;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0 calc(var(--hw-tip) + 2px);
+  box-shadow: none;
+}
+
+/* Brass frame (::before) and dark fill (::after) share the pointed shape,
+   so the frame reads as a ~2px outline. */
+.halloween .player.container::before,
+.halloween .player.container::after,
+.halloween .hw_plaque::before,
+.halloween .hw_plaque::after {
+  content: "";
+  position: absolute;
+  z-index: -1000;
+  clip-path: polygon(
+    0 50%,
+    var(--hw-tip) 0,
+    calc(100% - var(--hw-tip)) 0,
+    100% 50%,
+    calc(100% - var(--hw-tip)) 100%,
+    var(--hw-tip) 100%
+  );
+}
+
+.halloween .player.container::before,
+.halloween .hw_plaque::before {
+  inset: 0;
+  background: var(--hw-frame);
+}
+
+.halloween .player.container::after,
+.halloween .hw_plaque::after {
+  inset: 2px 3px;
+  background: var(--hw-fill);
+}
+
+/* Crimson warmth toward the score end */
+.halloween .p1.player.container::after {
+  background:
+    linear-gradient(90deg, transparent 45%, rgba(142, 16, 32, 0.45) 100%),
+    var(--hw-fill);
+}
+
+.halloween .p2.player.container::after {
+  background:
+    linear-gradient(270deg, transparent 45%, rgba(142, 16, 32, 0.45) 100%),
+    var(--hw-fill);
+}
+
+
+/* ── 5. Score: candlelit crimson box ─────────────────────── */
+
+.halloween .player.container {
+  --hw-score-h: calc(var(--hw-bar-h) - 10px);
+}
+
+.halloween .p1 .score,
+.halloween .p2 .score {
+  position: relative;
+  align-self: center;
+  width: calc(var(--hw-score-h) * 1.15);
+  height: var(--hw-score-h);
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 4px 4px 3px 3px;
+  border: 1px solid rgba(201, 162, 94, 0.55);
+  /* Wax drips over the top edge, then the wax body */
+  background:
+    radial-gradient(ellipse 3px 7px at 24% 0, #c21e2e 96%, transparent 100%),
+    radial-gradient(ellipse 2.5px 10px at 70% 0, #c21e2e 96%, transparent 100%),
+    radial-gradient(ellipse 2px 5px at 86% 0, #c21e2e 96%, transparent 100%),
+    radial-gradient(ellipse at 50% 12%, #c41f2e 0%, var(--hw-crimson) 50%, var(--hw-blood) 100%);
+  color: var(--hw-bone);
+  font-family: var(--hw-font-title);
+  font-weight: 400;
+  /* Pirata One's numerals are short for their size */
+  font-size: calc(var(--hw-score-h) * 1.1);
+  line-height: 1;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.7);
+  animation: hw-glow 4.2s infinite;
+}
+
+.halloween .p2 .score { animation-delay: -1.9s; }
+
+.halloween .score > .text {
+  position: relative;
+  height: 100%;
+  /* Tall ascenders center the digit high; nudge it to the optical center.
+     top, not transform: HyperDrive's text fitting owns transform. */
+  top: calc(var(--hw-score-h) * 0.07);
+}
+
+.halloween .p1 .losers,
+.halloween .p2 .losers {
+  background: var(--hw-crimson);
+  color: var(--hw-bone);
+  box-shadow: 0 0 0 1px var(--hw-brass);
+}
+
+
+/* ── 6. Name / sponsor / icons ───────────────────────────── */
+
+.halloween .player.container .name {
+  color: var(--hw-bone);
+  text-shadow: var(--hw-text-shadow);
+}
+
+/* SSBU centers its names; align them to the bars' outer ends instead */
+.halloween.ssbu .p1 .name .text { justify-content: flex-start; }
+.halloween.ssbu .p2 .name .text { justify-content: flex-end; }
+
+.halloween .sponsor {
+  color: var(--hw-ember);
+}
+
+.halloween .p1 .icon,
+.halloween .p2 .icon,
+.halloween .p1 .hd_character,
+.halloween .p2 .hd_character {
+  background-color: var(--hw-stone);
+  box-shadow: 0 0 0 1px rgba(201, 162, 94, 0.7);
+}
+
+/* Faded sponsor logo behind the name, sized to stay inside the bar */
+.halloween .player.container .sponsor_icon {
+  top: 4px;
+  opacity: 0.35;
+}
+
+.halloween .sponsor_icon > div > div,
+.halloween .sponsor_icon .text {
+  width: calc(var(--hw-bar-h) - 8px);
+  height: calc(var(--hw-bar-h) - 8px);
+}
+
+
+/* ── 7. Chips and flags ──────────────────────────────────── */
+
+.halloween .chip {
+  border-radius: 3px;
+}
+
+.halloween .chip .text:not(.text_empty) {
+  box-sizing: border-box;
+  border-radius: 3px;
+  border: 1px solid rgba(201, 162, 94, 0.55);
+  background: linear-gradient(180deg, #221820 0%, var(--hw-void) 100%);
+  color: var(--hw-bone);
+  text-shadow: 0 1px 0 #000;
+}
+
+.halloween .flag {
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(239, 230, 210, 0.6);
+}
+
+
+/* ── 8. Tournament plaque ────────────────────────────────── */
+
+.halloween .hw_plaque {
+  --hw-tip: 18px;
+  position: absolute;
+  top: var(--hw-plaque-top);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: var(--hw-plaque-w);
+  height: var(--hw-plaque-h);
+  padding: 0 calc(var(--hw-tip) + 6px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+  animation: hw-plaque-glow 5.5s infinite;
+}
+
+.halloween .hw_plaque .tournament_name {
+  width: 100%;
+  height: 100%;
+  font-family: var(--hw-font-title);
+  font-weight: 400;
+  font-size: calc(var(--hw-plaque-h) * 0.68);
+  letter-spacing: 0.5px;
+  color: var(--hw-flame);
+  text-shadow: 0 1px 0 #000, 0 0 8px rgba(255, 140, 40, 0.45);
+}
+
+.halloween .hw_plaque:has(> .text_empty) { display: none; }
+
+
+/* ── 9. Match / phase caption ────────────────────────────── */
+/* Transparent: floats over gameplay like Station Square's */
+
+.halloween .hw_caption {
+  position: absolute;
+  bottom: var(--hw-caption-bottom);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 760px;
+  height: 84px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.halloween .hw_caption .match {
+  width: 100%;
+  height: 48px;
+  font-family: var(--hw-font-title);
+  font-weight: 400;
+  font-size: 42px;
+  letter-spacing: 1px;
+  color: var(--hw-bone);
+  text-shadow: var(--hw-float-shadow);
+}
+
+.halloween .hw_caption .phase {
+  width: 100%;
+  height: 28px;
+  font-size: 21px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--hw-parchment);
+  text-shadow: var(--hw-float-shadow);
+}
+
+.halloween .hw_caption > .text_empty { display: none; }
+
+
+/* ── 10. Corner placements ───────────────────────────────── */
+/* Platform fighters and Pokkén have HUD along the bottom, so the
+   plaque goes top-left with the caption just under it. */
+
+.halloween.ssbu .hw_plaque,
+.halloween.nasb2 .hw_plaque,
+.halloween.pokken .hw_plaque,
+.halloween.gbvsr .hw_plaque {
+  right: auto;
+  margin: 0;
+}
+
+.halloween.ssbu .hw_caption,
+.halloween.nasb2 .hw_caption,
+.halloween.pokken .hw_caption,
+.halloween.arms .hw_caption {
+  bottom: auto;
+  right: auto;
+  margin: 0;
+  height: 64px;
+  justify-content: flex-start;
+}
+
+.halloween.ssbu .hw_caption .match,
+.halloween.nasb2 .hw_caption .match,
+.halloween.pokken .hw_caption .match,
+.halloween.arms .hw_caption .match {
+  height: 36px;
+  font-size: 32px;
+}
+
+.halloween.ssbu .hw_caption .phase,
+.halloween.nasb2 .hw_caption .phase,
+.halloween.pokken .hw_caption .phase,
+.halloween.arms .hw_caption .phase {
+  height: 24px;
+  font-size: 17px;
+  letter-spacing: 2px;
+}
+
+/* SSBU: in the original info header's spot, left of P1 */
+.halloween.ssbu .hw_plaque   { top: 14px; left: 16px; width: 356px; }
+.halloween.ssbu .hw_caption  { top: 58px; left: 16px; width: 356px; }
+
+/* NASB2: left of P1 (bars start at 350px) */
+.halloween.nasb2 .hw_plaque  { top: 40px; left: 24px; width: 310px; }
+.halloween.nasb2 .hw_caption { top: 84px; left: 24px; width: 310px; }
+
+/* Pokkén: top-left, where the original put match / phase */
+.halloween.pokken .hw_plaque  { top: 10px; left: 10px; width: 320px; }
+.halloween.pokken .hw_caption { top: 54px; left: 10px; width: 320px; }
+
+/* GBVSR: the timer owns the top center, so the plaque takes the original
+   bottom-left info spot; the caption stays bottom center */
+.halloween.gbvsr .hw_plaque { top: auto; bottom: 24px; left: 16px; width: 300px; }
+
+/* ARMS: caption in the original bottom-right info spot, right-aligned */
+.halloween.arms .hw_caption {
+  top: auto;
+  bottom: 20px;
+  left: auto;
+  right: 24px;
+  width: 420px;
+  justify-content: flex-end;
+}
+
+.halloween.arms .hw_caption .text { justify-content: flex-end; }
+
+
+/* ── 11. SSBU character art ─────────────────────────────── */
+/* Full character portrait (index.js, asset "full") behind the name, ending
+   just short of the score box: grayscale, then multiplied by red so shadows
+   stay black and highlights turn red (a black-to-red duotone). Soft edges on
+   both sides: a long fade toward the name, a short one by the score box. */
+
+.halloween .hw_art {
+  /* Distance from the bar's inner end to just past the score box */
+  --hw-art-inset: calc(var(--hw-tip) + 2px + var(--hw-score-h) * 1.15 + 8px);
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  /* main.css gives .hd_character_container (added by CharacterDisplay)
+     height: 100%, which would override top / bottom and push the art over
+     the frame's bottom edge */
+  height: auto;
+  width: 38%;
+  z-index: -998;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.halloween .p1 .hw_art {
+  right: var(--hw-art-inset);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 55%, #000 85%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 55%, #000 85%, transparent 100%);
+}
+
+.halloween .p2 .hw_art {
+  left: var(--hw-art-inset);
+  -webkit-mask-image: linear-gradient(270deg, transparent 0%, #000 55%, #000 85%, transparent 100%);
+  mask-image: linear-gradient(270deg, transparent 0%, #000 55%, #000 85%, transparent 100%);
+}
+
+/* Undo the icon styling index.css / section 6 give .hd_character */
+.halloween .p1 .hw_art .hd_character,
+.halloween .p2 .hw_art .hd_character {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.halloween .hw_art .hd_character_img {
+  filter: grayscale(1) contrast(1.15) brightness(0.95);
+}
+
+/* The red half of the duotone */
+.halloween .hw_art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: #ff1e2e;
+  mix-blend-mode: multiply;
+}
+
+
+/* ── 12. Animations ──────────────────────────────────────── */
+
+/* Candlelight on the score box: mostly steady with irregular dips */
+@keyframes hw-glow {
+  0%, 100% { box-shadow: 0 0 9px 1px rgba(255, 140, 40, 0.45), inset 0 -6px 9px rgba(0, 0, 0, 0.45); }
+  7%       { box-shadow: 0 0 6px 0 rgba(255, 140, 40, 0.28), inset 0 -6px 9px rgba(0, 0, 0, 0.5); }
+  9%       { box-shadow: 0 0 11px 2px rgba(255, 150, 50, 0.55), inset 0 -6px 9px rgba(0, 0, 0, 0.4); }
+  31%      { box-shadow: 0 0 8px 1px rgba(255, 140, 40, 0.4), inset 0 -6px 9px rgba(0, 0, 0, 0.45); }
+  52%      { box-shadow: 0 0 12px 2px rgba(255, 155, 55, 0.6), inset 0 -6px 9px rgba(0, 0, 0, 0.4); }
+  54%      { box-shadow: 0 0 7px 0 rgba(255, 140, 40, 0.32), inset 0 -6px 9px rgba(0, 0, 0, 0.5); }
+  73%      { box-shadow: 0 0 10px 1px rgba(255, 145, 45, 0.5), inset 0 -6px 9px rgba(0, 0, 0, 0.42); }
+}
+
+@keyframes hw-plaque-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 130, 40, 0.3)); }
+  12%      { filter: drop-shadow(0 0 2px rgba(255, 130, 40, 0.15)); }
+  14%      { filter: drop-shadow(0 0 6px rgba(255, 140, 50, 0.4)); }
+  60%      { filter: drop-shadow(0 0 5px rgba(255, 130, 40, 0.35)); }
+}
+
+
+/* ── 13. Multicam ────────────────────────────────────────── */
+/* multicam.html shares this file for the title bar only */
+
+.halloween.hw-multicam {
+  --bg-color: var(--hw-char);
+}
+
+.halloween.hw-multicam .title .container {
+  border-bottom: 2px solid var(--hw-brass);
+  background: var(--hw-fill);
+}
+
+.halloween.hw-multicam .title .tournament_name {
+  font-family: var(--hw-font-title);
+  font-weight: 400;
+  color: var(--hw-flame);
+  text-shadow: 0 0 10px rgba(255, 140, 40, 0.4);
+}
+
+.halloween.hw-multicam .title .event_name {
+  color: var(--hw-parchment);
+}
