@@ -482,6 +482,30 @@
   mix-blend-mode: multiply;
 }
 
+/* Darkens the art behind the score box so the box stands out: solid across
+   the box (pointed end + box width), fading out toward the face */
+.halloween .hw_art::before {
+  --hw-art-dark: calc(var(--hw-tip) + var(--hw-score-h) * 1.15 + 6px);
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 101;
+}
+
+.halloween .p1 .hw_art::before {
+  background: linear-gradient(270deg,
+    rgba(11, 7, 9, 0.85) 0,
+    rgba(11, 7, 9, 0.85) var(--hw-art-dark),
+    transparent calc(var(--hw-art-dark) + 50px));
+}
+
+.halloween .p2 .hw_art::before {
+  background: linear-gradient(90deg,
+    rgba(11, 7, 9, 0.85) 0,
+    rgba(11, 7, 9, 0.85) var(--hw-art-dark),
+    transparent calc(var(--hw-art-dark) + 50px));
+}
+
 
 /* ── 12. Animations ──────────────────────────────────────── */
 
