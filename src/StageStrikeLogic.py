@@ -44,7 +44,7 @@ class StageStrikeLogic:
         # Each scoreboard strikes on its own
         self.scoreboardNumber = int(scoreboardNumber)
         self.ruleset = None
-        self.history: list(StageStrikeState) = [StageStrikeState()]
+        self.history: list[StageStrikeState] = [StageStrikeState()]
         self.historyIndex = 0
         self.signals = StageStrikeStateSignals()
         # Characters picked for the next game, applied to the scoreboard
@@ -94,58 +94,50 @@ class StageStrikeLogic:
 
     def Undo(self):
         self.pendingWinner = None
-        self.historyIndex -= 1
-        if self.historyIndex < 0:
-            self.historyIndex = 0
+        self.historyIndex = max(self.historyIndex - 1, 0)
         self.ExportState()
 
     def Redo(self):
         self.pendingWinner = None
-        self.historyIndex += 1
-        if self.historyIndex > len(self.history) - 1:
-            self.historyIndex = len(self.history) - 1
+        self.historyIndex = min(self.historyIndex + 1, len(self.history) - 1)
         self.ExportState()
 
     def ExportState(self):
+        state = self.CurrentState()
         # Undoing the game result also undoes asking for characters
-        if (
-            self.characterSelect is not None
-            and self.characterSelect["game"] > self.CurrentState().currGame
-        ):
+        if self.characterSelect is not None and self.characterSelect["game"] > state.currGame:
             self.characterSelect = None
-        if not self.CurrentState().selectedStage:
+        if not state.selectedStage:
             self.pendingWinner = None
-        nextState = (
-            self.history[self.historyIndex + 1]
-            if self.historyIndex < len(self.history) - 1
-            else None
-        )
+        canRedo = self.historyIndex < len(self.history) - 1
+        nextState = self.history[self.historyIndex + 1] if canRedo else None
 
-        codename = self.CurrentState().selectedStage
-        stage_data = StateManager.Get(f"game.stages.{codename}") if codename else None
+        codename = state.selectedStage
 
         StateManager.Set(
             f"score.{self.scoreboardNumber}.stage_strike",
             {
-                "currGame": self.CurrentState().currGame,
-                "currPlayer": self.CurrentState().currPlayer,
-                "currStep": self.CurrentState().currStep,
-                "strikedStages": self.CurrentState().strikedStages,
-                "strikedBy": self.CurrentState().strikedBy,
-                "stagesWon": self.CurrentState().stagesWon,
-                "stagesPicked": self.CurrentState().stagesPicked,
+                "currGame": state.currGame,
+                "currPlayer": state.currPlayer,
+                "currStep": state.currStep,
+                "strikedStages": state.strikedStages,
+                "strikedBy": state.strikedBy,
+                "stagesWon": state.stagesWon,
+                "stagesPicked": state.stagesPicked,
                 "selectedStage": codename,
-                "selectedStageData": stage_data,
-                "lastWinner": self.CurrentState().lastWinner,
-                "gentlemans": self.CurrentState().gentlemans,
+                "selectedStageData": StateManager.Get(f"game.stages.{codename}")
+                if codename
+                else None,
+                "lastWinner": state.lastWinner,
+                "gentlemans": state.gentlemans,
                 "characterSelect": self.GetCharacterSelectState(),
                 "characterLock": self.CharacterLockState(self.CurrentScore()),
                 "pendingWinner": self.pendingWinner,
                 # Teams whose pages may undo / redo, None for HyperDrive or both teams
-                "lastActor": getattr(self.CurrentState(), "actor", None),
-                "nextActor": getattr(nextState, "actor", None) if nextState else None,
+                "lastActor": getattr(state, "actor", None),
+                "nextActor": getattr(nextState, "actor", None),
                 "canUndo": self.historyIndex > 0,
-                "canRedo": self.historyIndex < len(self.history) - 1,
+                "canRedo": canRedo,
             },
         )
         self.signals.state_updated.emit()
@@ -196,50 +188,31 @@ class StageStrikeLogic:
         self.AddHistory(newState)
 
     def IsStageStriked(self, stage, previously=False):
-        for i in range(len(self.CurrentState().strikedStages)):
-            if i == len(self.CurrentState().strikedStages) - 1 and previously:
-                continue
-            round = self.CurrentState().strikedStages[i]
-            if stage in round:
-                return True
-        return False
+        # previously: only in the steps before the current one
+        rounds = self.CurrentState().strikedStages
+        return any(stage in r for r in (rounds[:-1] if previously else rounds))
 
     def GetBannedStages(self):
-        banList = []
-
+        state = self.CurrentState()
         if self.ruleset.useDSR:
-            banList = self.CurrentState().stagesPicked
-        elif self.ruleset.useMDSR and self.CurrentState().lastWinner != -1:
-            banList = self.CurrentState().stagesWon[(self.CurrentState().lastWinner + 1) % 2]
-
-        return banList
+            return state.stagesPicked
+        if self.ruleset.useMDSR and state.lastWinner != -1:
+            return state.stagesWon[(state.lastWinner + 1) % 2]
+        return []
 
     def IsStageBanned(self, stage):
-        banList = self.GetBannedStages()
-
-        found = next((i for i, e in enumerate(banList) if e == stage), None)
-        if found != None:
-            return True
-        return False
+        return stage in self.GetBannedStages()
 
     def GetStrikeNumber(self):
-        # For game 1, follow strike order (1, 2, 1...)
-        if self.CurrentState().currGame == 0:
+        state = self.CurrentState()
+        # For game 1, follow strike order (1, 2, 1...), 0 once its strikes are done
+        if state.currGame == 0:
             strikeOrder = self.ruleset.strikeOrder or []
-            if self.CurrentState().currStep >= len(strikeOrder):
-                # Game 1's strikes are done
-                return 0
-            return strikeOrder[self.CurrentState().currStep]
-        # For other games
-        else:
-            # Fixed ban count
-            if self.ruleset.banCount != 0:
-                return self.ruleset.banCount
-            # Ban by max games
-            elif self.ruleset.banByMaxGames and str(self.GetBestOf()) in self.ruleset.banByMaxGames:
-                return self.ruleset.banByMaxGames[str(self.GetBestOf())]
-            else:
-                return 0
+            return strikeOrder[state.currStep] if state.currStep < len(strikeOrder) else 0
+        # Other games: a fixed ban count, or bans by max games
+        if self.ruleset.banCount != 0:
+            return self.ruleset.banCount
+        return (self.ruleset.banByMaxGames or {}).get(str(self.GetBestOf()), 0)
 
     def GetBestOf(self):
         # The set's best of comes from its scoreboard
@@ -361,13 +334,10 @@ class StageStrikeLogic:
         logger.info(f"Setting gentlemans to {value}")
         newState = self.CurrentState().Clone()
 
+        self.initNewState(newState)
         newState.gentlemans = value
-
         newState.currPlayer = newState.lastWinner
         newState.currStep = 0
-        newState.strikedStages = [[]]
-        newState.strikedBy = [[], []]
-        newState.selectedStage = None
 
         self.AddHistory(newState)
 
@@ -487,7 +457,7 @@ class StageStrikeLogic:
 
         if team is None and self.characterSelect is None:
             # One device for both teams, outside of a character select
-            return {int(t): picks[t] for t in picks.keys()}
+            return {int(t): p for t, p in picks.items()}
 
         if self.characterSelect is None:
             # A team picking first (e.g. a blind pick for game 1) starts one

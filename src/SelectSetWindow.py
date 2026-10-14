@@ -94,34 +94,36 @@ class SelectSetWindow(QDialog):
         else:
             self.labelStatus.setText(f"Fetching sets...({data['progress']}/{data['totalPages']})")
 
-        horizontal_labels = ["Stream", "Station", "Wave", "Title", "Player 1", "Player 2"]
-        horizontal_labels[0] = QApplication.translate("app", "Stream")
-        horizontal_labels[1] = QApplication.translate("app", "Station")
-        horizontal_labels[2] = QApplication.translate("app", "Phase")
-        horizontal_labels[3] = QApplication.translate("app", "Match")
-        horizontal_labels[4] = QApplication.translate("app", "Player {0}").format(1)
-        horizontal_labels[5] = QApplication.translate("app", "Player {0}").format(2)
-        self.model.setHorizontalHeaderLabels(horizontal_labels)
+        self.model.setHorizontalHeaderLabels(
+            [
+                QApplication.translate("app", "Stream"),
+                QApplication.translate("app", "Station"),
+                QApplication.translate("app", "Phase"),
+                QApplication.translate("app", "Match"),
+                QApplication.translate("app", "Player {0}").format(1),
+                QApplication.translate("app", "Player {0}").format(2),
+            ]
+        )
 
         sets = data["sets"]
 
         if sets is not None:
             for s in sets:
+                if self.showCompletePairs.isChecked() and "" in (
+                    s.get("p1_name"),
+                    s.get("p2_name"),
+                ):
+                    continue
+
                 dataItem = QStandardItem(str(s.get("id")))
                 dataItem.setData(s, Qt.ItemDataRole.UserRole)
-
-                if self.showCompletePairs.isChecked():
-                    if s.get("p1_name") == "" or s.get("p2_name") == "":
-                        continue
                 player_names = [s.get("p1_name"), s.get("p2_name")]
 
                 try:
                     # For doubles, use team name + entrants names
                     if len(s.get("entrants", [[]])[0]) > 1:
                         for t, team in enumerate(s.get("entrants")):
-                            pnames = []
-                            for p, player in enumerate(s.get("entrants")[t]):
-                                pnames.append(player.get("gamerTag"))
+                            pnames = [player.get("gamerTag") for player in team]
                             player_names[t] += (
                                 " "
                                 + QApplication.translate("punctuation", "(")
@@ -134,9 +136,7 @@ class SelectSetWindow(QDialog):
                 self.model.appendRow(
                     [
                         QStandardItem(s.get("stream", "")),
-                        QStandardItem(
-                            str(s.get("station", "")) if s.get("station", "") != None else ""
-                        ),
+                        QStandardItem("" if s.get("station") is None else str(s["station"])),
                         QStandardItem(s.get("tournament_phase", "")),
                         QStandardItem(s["round_name"]),
                         QStandardItem(player_names[0]),
@@ -155,10 +155,8 @@ class SelectSetWindow(QDialog):
         self.resize(self.width(), self.height())
 
     def LoadSelectedSet(self):
-        row = 0
-
-        if len(self.startggSetSelectionItemList.selectionModel().selectedRows()) > 0:
-            row = self.startggSetSelectionItemList.selectionModel().selectedRows()[0].row()
+        rows = self.startggSetSelectionItemList.selectionModel().selectedRows()
+        row = rows[0].row() if rows else 0
         setId = (
             self.startggSetSelectionItemList.model().index(row, 6).data(Qt.ItemDataRole.UserRole)
         )

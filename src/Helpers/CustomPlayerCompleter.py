@@ -15,11 +15,9 @@ class CompleterProxyModel(QSortFilterProxyModel):
         data = self.sourceModel().data(index0, Qt.ItemDataRole.UserRole)
 
         if data:
-            for k in self._SEARCH_KEYS:
-                v = data.get(k)
-                if isinstance(v, str) and prefix in v.lower():
-                    return True
-            return False
+            return any(
+                isinstance(v, str) and prefix in v.lower() for v in map(data.get, self._SEARCH_KEYS)
+            )
 
         display = self.sourceModel().data(index0)
         return isinstance(display, str) and prefix in display.lower()

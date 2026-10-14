@@ -71,12 +71,14 @@ class SelectStationWindow(QDialog):
     def SetStations(self, stations):
         logger.info("Got stations" + str(len(stations)))
         model = QStandardItemModel()
-        horizontal_labels = ["Type", "Id", "Stream", "Identifier"]
-        horizontal_labels[0] = QApplication.translate("app", "Type")
-        horizontal_labels[1] = QApplication.translate("app", "Id")
-        horizontal_labels[2] = QApplication.translate("app", "Stream")
-        horizontal_labels[3] = QApplication.translate("app", "Identifier")
-        model.setHorizontalHeaderLabels(horizontal_labels)
+        model.setHorizontalHeaderLabels(
+            [
+                QApplication.translate("app", "Type"),
+                QApplication.translate("app", "Id"),
+                QApplication.translate("app", "Stream"),
+                QApplication.translate("app", "Identifier"),
+            ]
+        )
 
         if stations is not None:
             for s in stations:
@@ -100,10 +102,8 @@ class SelectStationWindow(QDialog):
         self.resize(self.width(), self.height())
 
     def LoadSelectedSet(self):
-        row = 0
-
-        if len(self.startggSetSelectionItemList.selectionModel().selectedRows()) > 0:
-            row = self.startggSetSelectionItemList.selectionModel().selectedRows()[0].row()
+        rows = self.startggSetSelectionItemList.selectionModel().selectedRows()
+        row = rows[0].row() if rows else 0
 
         station = (
             self.startggSetSelectionItemList.model().index(row, 0).data(Qt.ItemDataRole.UserRole)

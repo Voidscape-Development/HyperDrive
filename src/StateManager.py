@@ -563,209 +563,134 @@ class StateManager:
             StateManager.SaveState()
 
     def Set(key: str, value):
-        # import inspect
-        # func = inspect.currentframe().f_back.f_code
-        # fname = os.path.split(func.co_filename)[1]
-        # logger.debug(f"{func.co_name}({fname}:{func.co_firstlineno}) Setting {key} to {value}")
         with StateManager.lock:
             deep_set(StateManager.state, key, value)
-            StateManager.changedPaths.append(tuple(key.split(".")))
-
-            if StateManager.saveBlocked == 0:
-                StateManager.RequestSave()
-            else:
-                StateManager.CheckSaveBlockWatchdog()
+            StateManager._Changed(key)
 
     def Unset(key: str):
-        # import inspect
-        # func = inspect.currentframe().f_back.f_code
-        # fname = os.path.split(func.co_filename)[1]
-        # logger.debug(f"{func.co_name}({fname}:{func.co_firstlineno}) Deleting {key}")
-
         with StateManager.lock:
             deep_unset(StateManager.state, key)
-            StateManager.changedPaths.append(tuple(key.split(".")))
+            StateManager._Changed(key)
 
-            if StateManager.saveBlocked == 0:
-                StateManager.RequestSave()
-            else:
-                StateManager.CheckSaveBlockWatchdog()
+    def _Changed(key: str):
+        """Records a change to key and saves it (or checks for a leaked block)"""
+        StateManager.changedPaths.append(tuple(key.split(".")))
+        if StateManager.saveBlocked == 0:
+            StateManager.RequestSave()
+        else:
+            StateManager.CheckSaveBlockWatchdog()
 
     def Get(key: str, default=None):
         return deep_get(StateManager.state, key, default)
 
     def ExportText(oldState, diff):
-        # logger.info("ExportState")
-        # logger.info(diff)
-
-        mergedDiffs = list(diff.get("values_changed", {}).items())
-        mergedDiffs.extend(list(diff.get("type_changes", {}).items()))
-
-        # logger.info(mergedDiffs)
-
-        for changeKey, change in mergedDiffs:
-            if any(changeKey.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
+        changes = [*diff.get("values_changed", {}).items(), *diff.get("type_changes", {}).items()]
+        for key, change in changes:
+            if StateManager._Excluded(key):
                 continue
-
-            # Remove "root[" from start and separate keys
-            filename = "/".join(
-                changeKey[5:].replace("'", "").replace("]", "").replace("/", "_").split("[")
-            )
-
-            # logger.info(filename)
-
             if change.get("new_type") == type(None):
-                StateManager.RemoveFilesDict(filename, extract(oldState, changeKey))
+                StateManager.RemoveFilesDict(StateManager._FilePath(key), extract(oldState, key))
             else:
-                StateManager.CreateFilesDict(filename, change.get("new_value"))
+                StateManager.CreateFilesDict(StateManager._FilePath(key), change.get("new_value"))
 
-        removedKeys = diff.get("dictionary_item_removed", {})
+        for key in diff.get("dictionary_item_removed", {}):
+            if not StateManager._Excluded(key):
+                StateManager.RemoveFilesDict(StateManager._FilePath(key), extract(oldState, key))
 
-        for key in removedKeys:
-            if any(key.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
+        for key in diff.get("dictionary_item_added", {}):
+            if StateManager._Excluded(key):
                 continue
-
-            item = extract(oldState, key)
-
-            # Remove "root[" from start and separate keys
-            filename = "/".join(
-                key[5:].replace("'", "").replace("]", "").replace("/", "_").split("[")
-            )
-
-            # logger.info("Removed:", filename, item)
-
-            StateManager.RemoveFilesDict(filename, item)
-
-        addedKeys = diff.get("dictionary_item_added", {})
-
-        for key in addedKeys:
-            if any(key.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
-                continue
-
             try:
                 item = extract(StateManager.state, key)
-
-                # Remove "root[" from start and separate keys
-                path = "/".join(
-                    key[5:].replace("'", "").replace("]", "").replace("/", "_").split("[")
-                )
-
-                # logger.info("Added:", path, item)
-                # logger.info("Added:", path, item)
-
-                StateManager.CreateFilesDict(path, item)
-            except Exception as e:
+                StateManager.CreateFilesDict(StateManager._FilePath(key), item)
+            except Exception:
                 logger.error(traceback.format_exc())
 
+    def _Excluded(stateKey: str):
+        return stateKey.startswith(StateManager.EXPORT_EXCLUDED_PREFIXES)
+
+    def _FilePath(stateKey: str):
+        """root['a']['b/c'] -> a/b_c"""
+        return "/".join(stateKey[5:].replace("'", "").replace("]", "").replace("/", "_").split("["))
+
+    def _StateKey(path: str):
+        """a/b -> root['a']['b']"""
+        return "root" + "".join(f"['{p}']" for p in path.split("/") if p)
+
+    def _RemoveFile(path: str):
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
+        except Exception:
+            logger.error(traceback.format_exc())
+
     def CreateFilesDict(path, di):
-        parts = [p for p in path.split("/") if p]
-        state_key = "root" + "".join(f"['{p}']" for p in parts)
-        if any(state_key.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
+        if StateManager._Excluded(StateManager._StateKey(path)):
             return
 
-        pathdirs = "/".join(path.split("/")[0:-1])
-
-        if not os.path.isdir("./out/" + pathdirs):
-            os.makedirs("./out/" + pathdirs)
+        os.makedirs(os.path.dirname(f"./out/{path}"), exist_ok=True)
 
         if type(di) == dict:
             for k, i in di.items():
                 StateManager.CreateFilesDict(path + "/" + str(k).replace("/", "_"), i)
-        else:
-            # logger.info("try to add: ", path)
-            if type(di) == str and di.startswith("./"):
-                if os.path.exists(f"./out/{path}" + "." + di.rsplit(".", 1)[-1]):
-                    try:
-                        os.remove(f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
-                    except Exception as e:
-                        logger.error(traceback.format_exc())
-                if os.path.exists(di):
-                    try:
-                        shutil.copyfile(
-                            os.path.abspath(di), f"./out/{path}" + "." + di.rsplit(".", 1)[-1]
-                        )
-                    except Exception as e:
-                        logger.error(traceback.format_exc())
-            elif (
-                type(di) == str
-                and di.startswith("http")
-                and (di.endswith(".png") or di.endswith(".jpg"))
-            ):
-                try:
-                    if os.path.exists(f"./out/{path}" + "." + di.rsplit(".", 1)[-1]):
-                        try:
-                            os.remove(f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
-                        except Exception as e:
-                            logger.error(traceback.format_exc())
-
-                    def downloadImage(url, dlpath):
-                        try:
-                            r = requests.get(url, stream=True, timeout=15)
-                            if r.status_code == 200:
-                                with open(dlpath, "wb") as f:
-                                    r.raw.decode_content = True
-                                    shutil.copyfileobj(r.raw, f)
-                                    f.flush()
-                            if url.endswith(".jpg"):
-                                original = Image.open(dlpath)
-                                original.save(dlpath.rsplit(".", 1)[0] + ".png", format="png")
-                                os.remove(dlpath)
-                        except Exception as e:
-                            logger.error(traceback.format_exc())
-
-                    # Not waited on: the save runs on the caller's thread
-                    # (usually the GUI), which must not hang on the network.
-                    t = threading.Thread(
-                        target=downloadImage,
-                        args=[di, f"./out/{path}" + "." + di.rsplit(".", 1)[-1]],
-                        daemon=True,
-                    )
-                    t.start()
-                except Exception as e:
-                    logger.error(traceback.format_exc())
-            else:
-                with open(f"./out/{path}.txt", "w", encoding="utf-8") as file:
-                    file.write(str(di))
-
-    def RemoveFilesDict(path, di):
-        parts = [p for p in path.split("/") if p]
-        state_key = "root" + "".join(f"['{p}']" for p in parts)
-        if any(state_key.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
             return
 
-        pathdirs = "/".join(path.split("/")[0:-1])
+        isStr = type(di) == str
+        isLocal = isStr and di.startswith("./")
+        if not isLocal and not (isStr and di.startswith("http") and di.endswith((".png", ".jpg"))):
+            with open(f"./out/{path}.txt", "w", encoding="utf-8") as file:
+                file.write(str(di))
+            return
+
+        # A file or an image to download, exported with its extension
+        dest = f"./out/{path}.{di.rsplit('.', 1)[-1]}"
+        StateManager._RemoveFile(dest)
+        try:
+            if isLocal:
+                if os.path.exists(di):
+                    shutil.copyfile(os.path.abspath(di), dest)
+            else:
+                # Not waited on: the save runs on the caller's thread
+                # (usually the GUI), which must not hang on the network.
+                threading.Thread(target=_DownloadImage, args=(di, dest), daemon=True).start()
+        except Exception:
+            logger.error(traceback.format_exc())
+
+    def RemoveFilesDict(path, di):
+        if StateManager._Excluded(StateManager._StateKey(path)):
+            return
 
         if type(di) == dict:
             for k, i in di.items():
                 StateManager.RemoveFilesDict(path + "/" + str(k).replace("/", "_"), i)
+        elif type(di) == str and di.startswith(("./", "http")):
+            StateManager._RemoveFile(f"./out/{path}.{di.rsplit('.', 1)[-1]}")
         else:
-            if type(di) == str and (di.startswith("./") or di.startswith("http")):
-                try:
-                    removeFile = f"./out/{path}" + "." + di.rsplit(".", 1)[-1]
-                    # logger.info("try to remove: ", removeFile)
-                    if os.path.exists(removeFile):
-                        os.remove(removeFile)
-                except:
-                    logger.error(traceback.format_exc())
-            else:
-                try:
-                    removeFile = f"./out/{path}.txt"
-                    # logger.info("try to remove: ", removeFile)
-                    if os.path.exists(removeFile):
-                        os.remove(removeFile)
-                except:
-                    logger.error(traceback.format_exc())
+            StateManager._RemoveFile(f"./out/{path}.txt")
 
         try:
-            # logger.info("Remove path", f"./out/{path}")
             if os.path.exists(f"./out/{path}"):
                 shutil.rmtree(f"./out/{path}")
-        except:
+        except Exception:
             logger.error(traceback.format_exc())
 
 
-if not os.path.exists("./out"):
-    os.makedirs("./out/")
+def _DownloadImage(url, dlpath):
+    try:
+        r = requests.get(url, stream=True, timeout=15)
+        if r.status_code == 200:
+            with open(dlpath, "wb") as f:
+                r.raw.decode_content = True
+                shutil.copyfileobj(r.raw, f)
+        if url.endswith(".jpg"):
+            Image.open(dlpath).save(dlpath.rsplit(".", 1)[0] + ".png", format="png")
+            os.remove(dlpath)
+    except Exception:
+        logger.error(traceback.format_exc())
+
+
+os.makedirs("./out", exist_ok=True)
 
 if not os.path.isfile("./out/program_state.json"):
     StateManager.SaveState()

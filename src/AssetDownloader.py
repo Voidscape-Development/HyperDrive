@@ -56,12 +56,8 @@ class AssetDownloader(QObject):
                                 .get("version", "")
                             )
 
-                            version = str(assets[game_code]["assets"][asset_code].get("version"))
-
-                            if currVersion != version and currVersion != "":
-                                if game_code not in updates:
-                                    updates[game_code] = []
-                                updates[game_code].append(assets[game_code]["assets"][asset_code])
+                            if currVersion not in ("", str(asset.get("version"))):
+                                updates.setdefault(game_code, []).append(asset)
 
                     AssetDownloader.instance.signals.AssetUpdates.emit(updates)
                 except:
