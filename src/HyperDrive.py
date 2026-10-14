@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import atexit
+import contextlib
 import faulthandler
-import json
 import os
 import shutil
 import sys
@@ -24,7 +24,7 @@ from .Helpers import QtHelper
 from .Helpers.DirHelper import ResolvePath
 from .Helpers.DynamicExport import DynamicExport
 from .Helpers.LocaleHelper import LocaleHelper
-from .Helpers.VersionHelper import PROJECT_URL, REPOSITORY
+from .Helpers.VersionHelper import PROJECT_URL, REPOSITORY, get_program_version, get_versions
 
 crashpath = Path("./logs/hyperdrive-crash.log").resolve()
 Path.mkdir(crashpath.parent, exist_ok=True)
@@ -338,13 +338,10 @@ class Window(QMainWindow):
 
         self.setWindowIcon(QIcon("assets/icons/icon.png"))
 
-        if not os.path.exists("out/"):
-            os.mkdir("out/")
+        os.makedirs("out", exist_ok=True)
+        os.makedirs("./user_data/games", exist_ok=True)
 
-        if not os.path.exists("./user_data/games"):
-            os.makedirs("./user_data/games")
-
-        if os.path.exists("./HyperDrive_old.exe"):
+        with contextlib.suppress(FileNotFoundError):
             os.remove("./HyperDrive_old.exe")
 
         self.font_small = QFont("./assets/font/RobotoCondensed.ttf", pointSize=8)
@@ -360,15 +357,8 @@ class Window(QMainWindow):
         RemoveObsoleteFiles()
         CountryHelper.LoadCountries()
 
-        try:
-            version = json.load(open(ResolvePath("./assets/versions.json"), encoding="utf-8")).get(
-                "program", "?"
-            )
-        except Exception as e:
-            version = "?"
-
         self.setGeometry(300, 300, 800, 100)
-        self.setWindowTitle("HyperDrive v" + version)
+        self.setWindowTitle("HyperDrive v" + get_program_version())
 
         self.setDockOptions(QMainWindow.DockOption.AllowTabbedDocks)
 
@@ -1217,12 +1207,7 @@ class Window(QMainWindow):
         self.ShowUpdateCheck(release, True)
 
     def ShowUpdateCheck(self, release, silent):
-        versions = None
-
-        try:
-            versions = json.load(open(ResolvePath("./assets/versions.json"), encoding="utf-8"))
-        except Exception as e:
-            logger.error("Local version file not found")
+        versions = get_versions()
 
         if versions and release:
             myVersion = versions.get("program", "0.0")

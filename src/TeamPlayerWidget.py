@@ -1,4 +1,3 @@
-import os
 import threading
 import traceback
 
@@ -8,16 +7,16 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
-from .CharacterPicker import CharacterCombo, MainsOf, SkinCombo, VariantCombo
+from .CharacterPicker import CharacterCombo, SkinCombo, VariantCombo
 from .GameAssetManager import GameAssetManager
 from .Helpers import SocialsHelper
 from .Helpers.BadWordFilter import BadWordFilter
 from .Helpers.CountryHelper import CountryHelper
 from .Helpers.CustomPlayerCompleter import CustomPlayerCompleter
 from .Helpers.DirHelper import ResolvePath
-from .Helpers.DynamicExport import DynamicExport
 from .Helpers.PronounHelper import PronounHelper
 from .PlayerDB import PlayerDB
+from .PlayerWidgetMixin import PlayerWidgetMixin
 from .SocialsWidget import SetPlatformIcon, SocialsButton
 from .StateManager import StateManager
 from .TeamBattleModeEnum import TeamBattleModeEnum
@@ -32,7 +31,7 @@ class TeamPlayerWidgetSignals(QObject):
     toggleDeathTrigger = Signal(bool)
 
 
-class TeamPlayerWidget(QGroupBox):
+class TeamPlayerWidget(PlayerWidgetMixin, QGroupBox):
     countries = None
     countryModel = None
     characterModel = None
@@ -352,16 +351,6 @@ class TeamPlayerWidget(QGroupBox):
             StateManager.Set(f"{self.path}.mergedName", merged)
             StateManager.Set(f"{self.path}.mergedOnlyName", nameOnlyMerged)
 
-    def ExportPlayerImages(self, onlineAvatar=None):
-        with self.dataLock:
-            team = self.findChild(QLineEdit, "team").text()
-            name = self.findChild(QLineEdit, "name").text()
-
-            StateManager.Set(f"{self.path}.online_avatar", onlineAvatar)
-
-            # Local avatar, sponsor logos and custom data, kept up to date
-            DynamicExport.ExportPlayerMedia(name, team, self.path)
-
     def ExportPlayerCity(self, city=""):
         with self.dataLock:
             if StateManager.Get(f"{self.path}.city") != city:
@@ -569,44 +558,6 @@ class TeamPlayerWidget(QGroupBox):
 
         self.CharactersChanged(includeMains=True)
 
-    def SwapCharacters(self, index1: int, index2: int):
-        with StateManager.SaveBlock():
-            self.DoSwapCharacters(index1, index2)
-
-    def DoSwapCharacters(self, index1: int, index2: int):
-        if index2 > len(self.character_elements) - 1:
-            index2 = 0
-
-        char1 = self.character_elements[index1]
-        char2 = self.character_elements[index2]
-
-        # Save index1 settings
-        tmp = [char1[1].currentText(), char1[2].currentIndex()]
-
-        # Set index1 to index2
-        # Character
-        found = char1[1].findText(char2[1].currentText())
-        if found != -1:
-            char1[1].setCurrentIndex(found)
-        else:
-            char1[1].setCurrentText(char2[1].currentText())
-
-        # Color
-        char1[2].setCurrentIndex(char2[2].currentIndex())
-
-        # Set index2 to temp (index1)
-        # Character
-        found = char2[1].findText(tmp[0])
-        if found != -1:
-            char2[1].setCurrentIndex(found)
-        else:
-            char2[1].setCurrentText(tmp[0])
-
-        # Color
-        char2[2].setCurrentIndex(tmp[1])
-
-        self.CharactersChanged()
-
     def LoadCountries(self):
         try:
             if CountryHelper.countryModel == None:
@@ -641,58 +592,6 @@ class TeamPlayerWidget(QGroupBox):
         except Exception as e:
             logger.error(traceback.format_exc())
             exit()
-
-    def LoadStates(self, index):
-        country: QComboBox = self.findChild(QComboBox, "country")
-
-        countryData = None
-        if country.currentData(Qt.ItemDataRole.UserRole) != None:
-            countryData = CountryHelper.countries.get(
-                country.currentData(Qt.ItemDataRole.UserRole).get("code"), {}
-            )
-
-        stateModel = QStandardItemModel()
-
-        noState = QStandardItem()
-        noState.setData({}, Qt.ItemDataRole.UserRole)
-        stateModel.appendRow(noState)
-
-        states = countryData.get("states")
-
-        if states is not None:
-            for i, state_code in enumerate(states.keys()):
-                item = QStandardItem()
-                # Windows has some weird thing with files named CON.png. In case a state code is CON,
-                # we try to load _CON.png instead
-                path = f"./assets/state_flag/{countryData.get('code')}/{'_CON' if state_code == 'CON' else state_code}.png"
-
-                if not os.path.exists(path):
-                    path = None
-
-                states[state_code].update({"asset": path})
-                item.setIcon(QIcon(path))
-                item.setData(states[state_code], Qt.ItemDataRole.UserRole)
-                item.setData(
-                    f"{states[state_code]['name']} ({state_code})", Qt.ItemDataRole.EditRole
-                )
-                stateModel.appendRow(item)
-
-        state: QComboBox = self.findChild(QComboBox, "state")
-        state.setModel(stateModel)
-        state.setCurrentIndex(0)
-
-    def SavedMains(self):
-        """The mains saved in the player DB for the player in this widget,
-        shown first in the character grid."""
-        return MainsOf(PlayerDB.GetPlayer(self.GetCurrentPlayerTag()))
-
-    def LoadSkinOptions(self, element, target):
-        characterData = element.currentData()
-
-        if characterData:
-            target.setModel(GameAssetManager.instance.skinModels.get(characterData.get("en_name")))
-        else:
-            target.setModel(QStandardItemModel())
 
     def ReloadCharacters(self):
         if len(GameAssetManager.instance.variants) <= 0:
@@ -887,11 +786,6 @@ class TeamPlayerWidget(QGroupBox):
         finally:
             StateManager.ReleaseSaving()
             self.dataLock.release()
-
-    def GetCurrentPlayerTag(self):
-        gamerTag = self.findChild(QWidget, "name").text()
-        prefix = self.findChild(QWidget, "team").text()
-        return prefix + " " + gamerTag if prefix else gamerTag
 
     def Clear(self, no_mains=False, keep_battle_values=False):
         with StateManager.SaveBlock():

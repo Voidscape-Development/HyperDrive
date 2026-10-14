@@ -1,12 +1,10 @@
-import json
-
 from qtpy import uic
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .Helpers.DirHelper import ResolvePath
-from .Helpers.VersionHelper import PROJECT_URL
+from .Helpers.VersionHelper import PROJECT_URL, get_program_version
 
 
 class AboutWidget(QDialog):
@@ -14,14 +12,7 @@ class AboutWidget(QDialog):
         super().__init__(*args)
         uic.loadUi(ResolvePath("src/layout/About.ui"), self)
 
-        try:
-            version = json.load(open(ResolvePath("assets/versions.json"), encoding="utf-8")).get(
-                "program", "?"
-            )
-        except Exception as e:
-            version = "?"
-
-        self.findChild(QLabel, "title").setText(f"HyperDrive v{version}")
+        self.findChild(QLabel, "title").setText(f"HyperDrive v{get_program_version()}")
 
         try:
             icon = QPixmap("./assets/icons/icon.png").scaledToWidth(128)

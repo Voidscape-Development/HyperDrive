@@ -1,9 +1,6 @@
 import json
 
 from loguru import logger
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtWidgets import *
 
 from .DirHelper import ResolvePath
 
@@ -17,11 +14,19 @@ REPOSITORY = None
 PROJECT_URL = "https://github.com/Voidscape-Development/HyperDrive"
 
 
-def get_supported_providers():
+def get_versions() -> dict:
+    """assets/versions.json, or {} if it can't be read"""
     try:
-        versions = json.load(open(ResolvePath("./assets/versions.json"), encoding="utf-8"))
-    except Exception as e:
+        with open(ResolvePath("./assets/versions.json"), encoding="utf-8") as file:
+            return json.load(file)
+    except Exception:
         logger.error("Local version file not found")
-        versions = {}
+        return {}
 
-    return versions.get("supported_providers", [])
+
+def get_program_version(default="?") -> str:
+    return get_versions().get("program", default)
+
+
+def get_supported_providers():
+    return get_versions().get("supported_providers", [])

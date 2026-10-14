@@ -71,6 +71,14 @@ def Localized(locales, keys, default):
     return default
 
 
+def PilToIcon(img) -> QIcon:
+    img = img.convert("RGBA")
+    # QImage doesn't copy data: it must outlive the QPixmap conversion
+    data = img.tobytes("raw", "RGBA")
+    qimg = QImage(data, img.width, img.height, QImage.Format.Format_RGBA8888)
+    return QIcon(QPixmap.fromImage(qimg))
+
+
 class GameAssetManagerSignals(QObject):
     onLoad = Signal()
     onLoadAssets = Signal()
@@ -498,13 +506,7 @@ class GameAssetManager(QObject):
                                 pass
                             self.skins[c][number] = True
 
-                            if c not in packSkinMask:
-                                packSkinMask[c] = {}
-
-                            if assetsKey not in packSkinMask[c]:
-                                packSkinMask[c][assetsKey] = set()
-
-                            packSkinMask[c][assetsKey].add(number)
+                            packSkinMask.setdefault(c, {}).setdefault(assetsKey, set()).add(number)
 
                     logger.info("Character " + c + " has " + str(len(self.skins[c])) + " skins")
 
@@ -725,26 +727,12 @@ class GameAssetManager(QObject):
         try:
             if stage.get("path") and os.path.exists(stage.get("path")):
                 img = Image.open(stage.get("path"))
-
-                resizeMultiplier = 1
-
-                if img.width > img.height:
-                    resizeMultiplier = 64 / img.width
-                else:
-                    resizeMultiplier = 64 / img.height
-
+                resizeMultiplier = 64 / max(img.width, img.height)
                 img = img.resize(
                     (int(img.width * resizeMultiplier), int(img.height * resizeMultiplier)),
                     Image.BILINEAR,
                 )
-
-                img = img.convert("RGBA")
-                data = img.tobytes("raw", "RGBA")
-                qimg = QImage(data, img.size[0], img.size[1], QImage.Format.Format_RGBA8888)
-                pix = QPixmap.fromImage(qimg)
-                icon = QIcon(pix)
-
-                return [items, icon]
+                return [items, PilToIcon(img)]
         except Exception as e:
             img = QPixmap("./assets/icons/cancel.svg").scaled(32, 32)
             icon = QIcon(img)
@@ -1050,19 +1038,15 @@ class GameAssetManager(QObject):
         try:
             icons = []
 
-            for i in range(len(allAssetData)):
-                assetData = allAssetData[i]
-
+            for assetData in allAssetData:
                 # Set to use first asset as a fallback
-                key = GameAssetManager.instance.biggestCompletePack
-                asset = None
-
-                if assetData["assets"].get(key):
-                    asset = assetData["assets"][key]
-                elif assetData["assets"].get("full"):
-                    asset = assetData["assets"]["full"]
-                elif assetData["assets"].get("base_files/icon"):
-                    asset = assetData["assets"]["base_files/icon"]
+                assets = assetData["assets"]
+                asset = (
+                    assets.get(GameAssetManager.instance.biggestCompletePack)
+                    or assets.get("full")
+                    or assets.get("base_files/icon")
+                    or None
+                )
 
                 if asset:
                     # pix = QPixmap(asset["asset"])
@@ -1079,15 +1063,12 @@ class GameAssetManager(QObject):
 
                 proportional_zoom = 1
 
-                if asset.get("average_size"):
-                    proportional_zoom = 0
+                averageSize = asset.get("average_size")
+                if averageSize:
                     proportional_zoom = max(
-                        proportional_zoom,
-                        (targetW / asset.get("average_size", {}).get("x", 0)) * 1.2,
-                    )
-                    proportional_zoom = max(
-                        proportional_zoom,
-                        (targetH / asset.get("average_size", {}).get("y", 0)) * 1.2,
+                        0,
+                        targetW / averageSize.get("x", 0) * 1.2,
+                        targetH / averageSize.get("y", 0) * 1.2,
                     )
 
                 # For cropped assets, zoom to fill
@@ -1095,27 +1076,15 @@ class GameAssetManager(QObject):
                 zoom_x = targetW / originalW
                 zoom_y = targetH / originalH
 
-                minZoom = 1
-                rescalingFactor = 1
+                rescalingFactor = asset.get("rescaling_factor") or 1
                 customZoom = 1
 
-                if asset.get("rescaling_factor"):
-                    rescalingFactor = asset.get("rescaling_factor")
+                uncropped_edge = asset.get("uncropped_edge") or []
 
-                uncropped_edge = asset.get("uncropped_edge", [])
-
-                if not uncropped_edge or len(uncropped_edge) == 0:
-                    if zoom_x > zoom_y:
-                        minZoom = zoom_x
-                    else:
-                        minZoom = zoom_y
+                if not uncropped_edge:
+                    minZoom = max(zoom_x, zoom_y)
                 else:
-                    if (
-                        "u" in uncropped_edge
-                        and "d" in uncropped_edge
-                        and "l" in uncropped_edge
-                        and "r" in uncropped_edge
-                    ):
+                    if all(edge in uncropped_edge for edge in "udlr"):
                         if "icon" in asset.get("type", []):
                             customZoom = 0.5  # Add zoom for icons to fit
                         else:
@@ -1130,51 +1099,26 @@ class GameAssetManager(QObject):
 
                 zoom = max(minZoom, customZoom * minZoom)
 
-                # Centering
-                xx = 0
-                yy = 0
-
-                eyesight = asset.get("eyesight")
-
-                if not eyesight:
-                    eyesight = {"x": originalW / 2, "y": originalH / 2}
+                # Centering on the eyesight, without showing past a cropped edge
+                eyesight = asset.get("eyesight") or {"x": originalW / 2, "y": originalH / 2}
 
                 xx = -eyesight["x"] * zoom + targetW / 2
-
-                maxMoveX = targetW - originalW * zoom
-
-                if not uncropped_edge or "l" not in uncropped_edge:
-                    if xx > 0:
-                        xx = 0
-
-                if not uncropped_edge or "r" not in uncropped_edge:
-                    if xx < maxMoveX:
-                        xx = maxMoveX
+                if "l" not in uncropped_edge:
+                    xx = min(xx, 0)
+                if "r" not in uncropped_edge:
+                    xx = max(xx, targetW - originalW * zoom)
 
                 yy = -eyesight["y"] * zoom + targetH / 2
-
-                maxMoveY = targetH - originalH * zoom
-
-                if not uncropped_edge or "u" not in uncropped_edge:
-                    if yy > 0:
-                        yy = 0
-
-                if not uncropped_edge or "d" not in uncropped_edge:
-                    if yy < maxMoveY:
-                        yy = maxMoveY
+                if "u" not in uncropped_edge:
+                    yy = min(yy, 0)
+                if "d" not in uncropped_edge:
+                    yy = max(yy, targetH - originalH * zoom)
 
                 img = img.resize((int(originalW * zoom), int(originalH * zoom)), Image.BILINEAR)
                 img = img.crop((int(-xx), int(-yy), int(-xx + 128), int(-yy + 96)))
+                icons.append(PilToIcon(img))
 
-                img = img.convert("RGBA")
-                data = img.tobytes("raw", "RGBA")
-                qimg = QImage(data, img.size[0], img.size[1], QImage.Format.Format_RGBA8888)
-                pix = QPixmap.fromImage(qimg)
-                icon = QIcon(pix)
-
-                icons.append(icon)
-
-            return [(allItem[i], icons[i]) for i in range(len(allItem))]
+            return list(zip(allItem, icons))
         except Exception as e:
             logger.error(traceback.format_exc())
             return None
@@ -1450,8 +1394,7 @@ class GameAssetManager(QObject):
         return character
 
 
-if not os.path.exists("./user_data/games"):
-    os.makedirs("./user_data/games")
+os.makedirs("./user_data/games", exist_ok=True)
 
 if GameAssetManager.instance == None:
     GameAssetManager.instance = GameAssetManager()

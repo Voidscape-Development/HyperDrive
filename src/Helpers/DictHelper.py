@@ -11,23 +11,22 @@ def deep_get(dictionary, keys, default=None):
     )
 
 
+def _parent(dictionary, keys):
+    """The dict holding the last key of keys (created if missing), and that key"""
+    *path, last = keys.split(".")
+    for key in path:
+        dictionary = dictionary.setdefault(key, {})
+    return dictionary, last
+
+
 def deep_set(dictionary, keys, value):
-    d = dictionary
-    for key in keys.split(".")[:-1]:
-        if key not in d:
-            d[key] = {}
-        d = d[key]
-    d[keys.split(".")[-1]] = value
+    d, key = _parent(dictionary, keys)
+    d[key] = value
 
 
 def deep_unset(dictionary, keys):
-    d = dictionary
-    for key in keys.split(".")[:-1]:
-        if key not in d:
-            d[key] = {}
-        d = d[key]
-    if keys.split(".")[-1] in d:
-        del d[keys.split(".")[-1]]
+    d, key = _parent(dictionary, keys)
+    d.pop(key, None)
 
 
 def deep_clone(dictionary):

@@ -26,7 +26,7 @@ class TeamBattleModeEnum(Enum):
     # Also works across the language barrier thanks to using the translations for values :D
     # Ex. "Stock Pool (Smash)" will match to STOCK_POOL
     def MatchToMode(battleMode: str):
-        for mode in TeamBattleModeEnum:
-            if mode.translated() == battleMode:
-                return mode
-        return TeamBattleModeEnum.STOCK_POOL
+        return next(
+            (mode for mode in TeamBattleModeEnum if mode.translated() == battleMode),
+            TeamBattleModeEnum.STOCK_POOL,
+        )
