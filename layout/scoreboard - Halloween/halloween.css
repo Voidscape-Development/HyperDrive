@@ -12,7 +12,7 @@
      2. Per-game tokens (bar height, plaque + caption spots)
      3. Undo the per-game skews (bars, text, chips)
      4. Player bar (pointed gothic ends)
-     5. Score: candlelit crimson box + candle
+     5. Score: candlelit crimson box
      6. Name / sponsor / icons
      7. Chips and flags
      8. Tournament plaque
@@ -62,7 +62,7 @@
 
 /* ── 2. Per-game tokens ──────────────────────────────────── */
 /* --hw-bar-h mirrors each game's bar height in index.css (sizes the
-   pointed ends, score box, candle and sponsor logo). Plaque spots reuse
+   pointed ends, score box and sponsor logo). Plaque spots reuse
    where the original layout put its top info / logo, so they clear
    each game's timer. */
 
@@ -82,7 +82,7 @@
 .halloween.arms       { --hw-plaque-top: 150px; --hw-plaque-w: 340px; }
 .halloween.skullgirls { --hw-plaque-w: 320px; }
 .halloween.pbrave     { --hw-bar-h: 65px; --hw-plaque-w: 300px; --hw-plaque-h: 32px; }
-.halloween.tekken8    { --hw-bar-h: 38px; --hw-plaque-w: 420px; --hw-candle: 8px; }
+.halloween.tekken8    { --hw-bar-h: 38px; --hw-plaque-w: 420px; }
 .halloween.sf6        { --hw-bar-h: 48px; --hw-plaque-w: 400px; }
 .halloween.tokon      { --hw-bar-h: 56px; --hw-plaque-w: 420px; }
 .halloween.mk1        { --hw-bar-h: 48px; --hw-plaque-top: 160px; --hw-plaque-w: 340px; }
@@ -139,8 +139,7 @@
 }
 
 /* Brass frame (::before) and dark fill (::after) share the pointed shape,
-   so the frame reads as a ~2px outline. Pseudo-elements, not the bar
-   itself, so the candle can rise out of the score box unclipped. */
+   so the frame reads as a ~2px outline. */
 .halloween .player.container::before,
 .halloween .player.container::after,
 .halloween .hw_plaque::before,
@@ -185,23 +184,18 @@
 
 
 /* ── 5. Score: candlelit crimson box ─────────────────────── */
-/* The box sits low in the bar with a small candle standing on it; the
-   candle stays inside the bar's height so it isn't cut off on games
-   whose bars are flush with the top of the screen. */
 
 .halloween .player.container {
-  --hw-candle: calc(var(--hw-bar-h) * 0.24);
-  --hw-score-h: calc(var(--hw-bar-h) - var(--hw-candle) - 5px);
+  --hw-score-h: calc(var(--hw-bar-h) - 10px);
 }
 
 .halloween .p1 .score,
 .halloween .p2 .score {
   position: relative;
-  align-self: flex-end;
-  width: calc(var(--hw-score-h) * 1.25);
+  align-self: center;
+  width: calc(var(--hw-score-h) * 1.15);
   height: var(--hw-score-h);
-  margin: 0 0 3px 0;
-  overflow: visible;
+  margin: 0;
   box-sizing: border-box;
   border-radius: 4px 4px 3px 3px;
   border: 1px solid rgba(201, 162, 94, 0.55);
@@ -215,52 +209,21 @@
   font-family: var(--hw-font-title);
   font-weight: 400;
   /* Pirata One's numerals are short for their size */
-  font-size: calc(var(--hw-score-h) * 1.18);
+  font-size: calc(var(--hw-score-h) * 1.1);
   line-height: 1;
   text-shadow: 0 2px 2px rgba(0, 0, 0, 0.7);
   animation: hw-glow 4.2s infinite;
 }
 
+.halloween .p2 .score { animation-delay: -1.9s; }
+
 .halloween .score > .text {
   position: relative;
   height: 100%;
-  /* Tall ascenders center the digit high; drop it clear of the candle.
+  /* Tall ascenders center the digit high; nudge it to the optical center.
      top, not transform: HyperDrive's text fitting owns transform. */
-  top: calc(var(--hw-score-h) * 0.1);
+  top: calc(var(--hw-score-h) * 0.07);
 }
-
-/* Candle stub */
-.halloween .score::before,
-.halloween .score::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-}
-
-.halloween .score::before {
-  bottom: 100%;
-  left: calc(50% - 3px);
-  width: 6px;
-  height: calc(var(--hw-candle) * 0.42);
-  border-radius: 2px 2px 0 0;
-  background: linear-gradient(90deg, #b9a98c 0%, #f3ead8 45%, #cbbd9f 100%);
-}
-
-/* Flame */
-.halloween .score::after {
-  bottom: calc(100% + var(--hw-candle) * 0.42);
-  left: calc(50% - 3.5px);
-  width: 7px;
-  height: calc(var(--hw-candle) * 0.6);
-  border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%;
-  background: radial-gradient(ellipse at 50% 72%, #fffbe6 0%, var(--hw-flame) 30%, var(--hw-ember) 65%, rgba(255, 90, 20, 0) 100%);
-  box-shadow: 0 0 6px 2px rgba(255, 150, 40, 0.55);
-  transform-origin: 50% 100%;
-  animation: hw-flame 1.7s ease-in-out infinite;
-}
-
-.halloween .p2 .score::after { animation-delay: -0.8s; }
-.halloween .p2 .score        { animation-delay: -1.9s; }
 
 .halloween .p1 .losers,
 .halloween .p2 .losers {
@@ -301,21 +264,23 @@
   height: calc(var(--hw-bar-h) - 8px);
 }
 
-/* Small cobweb strung in each bar's outer corner */
+/* Small cobweb in each bar's outer corner. Anchored where the pointed end
+   meets the top edge, inside the frame, so the whole web stays within the
+   bar; behind the bar's contents (above the fill and sponsor logo). */
 .halloween .hw_web {
   position: absolute;
-  top: 0;
-  width: calc(var(--hw-bar-h) * 0.75);
-  height: calc(var(--hw-bar-h) * 0.75);
-  z-index: 2;
-  opacity: 0.55;
+  top: 2px;
+  width: calc(var(--hw-bar-h) * 0.7);
+  height: calc(var(--hw-bar-h) * 0.7);
+  z-index: -1;
+  opacity: 0.5;
   pointer-events: none;
   background-size: contain;
   background-repeat: no-repeat;
 }
 
-.halloween .p1 .hw_web { left: 2px;  background-image: var(--hw-web-left); }
-.halloween .p2 .hw_web { right: 2px; background-image: var(--hw-web-right); }
+.halloween .p1 .hw_web { left: var(--hw-tip);  background-image: var(--hw-web-left); }
+.halloween .p2 .hw_web { right: var(--hw-tip); background-image: var(--hw-web-right); }
 
 
 /* ── 7. Chips and flags ──────────────────────────────────── */
@@ -576,14 +541,6 @@
   12%      { filter: drop-shadow(0 0 2px rgba(255, 130, 40, 0.15)); }
   14%      { filter: drop-shadow(0 0 6px rgba(255, 140, 50, 0.4)); }
   60%      { filter: drop-shadow(0 0 5px rgba(255, 130, 40, 0.35)); }
-}
-
-@keyframes hw-flame {
-  0%, 100% { transform: scale(1, 1) rotate(0deg);        opacity: 1; }
-  20%      { transform: scale(0.9, 1.12) rotate(-4deg);  opacity: 0.92; }
-  40%      { transform: scale(1.06, 0.92) rotate(3deg);  opacity: 1; }
-  55%      { transform: scale(0.94, 1.06) rotate(-2deg); opacity: 0.85; }
-  75%      { transform: scale(1.03, 0.96) rotate(2deg);  opacity: 0.97; }
 }
 
 @keyframes hw-flap {
