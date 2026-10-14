@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="../include/globals.js"></script>
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="./index.css" />
+    <link rel="stylesheet" href="./halloween.css" />
+  </head>
+  <body class="halloween fgc sf6 offline">
+    <script>if (window.parent !== window) { document.addEventListener('DOMContentLoaded', () => { document.querySelectorAll('.hw_plaque, .hw_decor').forEach((e) => e.style.display = 'none'); }); }</script>
+    <div class="hw_decor fade">
+      <div class="hw_corner_web hw_left"></div>
+      <div class="hw_corner_web hw_right"></div>
+      <div class="hw_bat hw_bat_1"></div>
+      <div class="hw_bat hw_bat_2"></div>
+      <div class="hw_ghost hw_ghost_1"></div>
+      <div class="hw_ghost hw_ghost_2"></div>
+    </div>
+
+    <div class="anim_container_outer">
+      <div class="anim_container_inner">
+        <div class="hw_plaque fade_down">
+          <div class="tournament_name"></div>
+        </div>
+
+        <div class="hw_caption fade_up">
+          <div class="match"></div>
+          <div class="phase"></div>
+        </div>
+
+        <div class="p1 player container fade_right">
+          <div class="hw_web"></div>
+          <div class="icon avatar"></div>
+          <div class="icon online_avatar"></div>
+          <div class="flagcountry"></div>
+          <div class="flagstate"></div>
+          <div class="sponsor_icon"></div>
+          <div class="name_twitter">
+            <div class="name"></div>
+          </div>
+          <div class="score"></div>
+        </div>
+        <div class="p2 player container fade_left">
+          <div class="hw_web"></div>
+          <div class="icon avatar"></div>
+          <div class="icon online_avatar"></div>
+          <div class="flagcountry"></div>
+          <div class="flagstate"></div>
+          <div class="sponsor_icon"></div>
+          <div class="name_twitter">
+            <div class="name"></div>
+          </div>
+          <div class="score"></div>
+        </div>
+
+        <div class="p1 chips">
+          <div class="seed chip fade_stagger_reverse"></div>
+          <div class="twitter chip fade_stagger_reverse"></div>
+          <div class="pronoun chip fade_stagger_reverse"></div>
+        </div>
+
+        <div class="p2 chips">
+          <div class="seed chip fade_stagger_reverse"></div>
+          <div class="twitter chip fade_stagger_reverse"></div>
+          <div class="pronoun chip fade_stagger_reverse"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
