@@ -445,6 +445,10 @@
   position: absolute;
   top: 2px;
   bottom: 2px;
+  /* main.css gives .hd_character_container (added by CharacterDisplay)
+     height: 100%, which would override top / bottom and push the art over
+     the frame's bottom edge */
+  height: auto;
   width: 38%;
   z-index: -998;
   overflow: hidden;
