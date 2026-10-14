@@ -1,90 +1,31 @@
-LoadEverything().then(() => {
-  Start = async (event) => {};
+// The ruleset: its neutral and counterpick stages, and its rules (DSR,
+// strike order, bans)
+const stageList = (stages) =>
+  stages.map(
+    (stage) => HD.html`
+      <div class="stage-container">
+        <div class="stage-icon" style="background-image: url('${HD.asset(stage.path)}')"></div>
+        <div class="stage-name"><div class="text">${stage.name}</div></div>
+      </div>`,
+  );
 
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
+HD.layout({
+  update(s) {
+    const ruleset = s.data.score.ruleset;
+    if (!ruleset || !s.changed("score.ruleset")) return;
 
-    if (
-      !oldData.score ||
-      JSON.stringify(data.score.ruleset) !=
-        JSON.stringify(oldData.score.ruleset)
-    ) {
-      html = "";
-      data.score.ruleset.neutralStages.forEach((stage) => {
-        html += `
-            <div class="stage-container">
-                <div class="stage-icon" style="background-image: url('../../${stage.path}')">
-                </div>
-                <div class="stage-name">
-                    <div class="text">
-                        ${stage.name}
-                    </div>
-                </div>
-            </div>
-        `;
-      });
-      $(".neutral").html(html);
-      $(".neutral")
-        .find(".stage-name")
-        .each(function () {
-          FitText($(this));
-        });
+    HD.render(".neutral", stageList(ruleset.neutralStages));
+    HD.render(".counterpick", stageList(ruleset.counterpickStages));
+    HD.fit($(".stage-name"));
+    $(".counterpick_stages").css("display", ruleset.counterpickStages.length ? "" : "none");
 
-      html = "";
-      data.score.ruleset.counterpickStages.forEach((stage) => {
-        html += `
-            <div class="stage-container">
-                <div class="stage-icon" style="background-image: url('../../${stage.path}')">
-                </div>
-                <div class="stage-name">
-                    <div class="text">
-                        ${stage.name}
-                    </div>
-                </div>
-            </div>
-        `;
-      });
-      $(".counterpick").html(html);
-      $(".counterpick")
-        .find(".stage-name")
-        .each(function () {
-          FitText($(this));
-        });
-
-      if (Object.values(data.score.ruleset.counterpickStages).length == 0) {
-        $(".counterpick_stages").css("display", "none");
-      } else {
-        $(".counterpick_stages").css("display", "");
-      }
-
-      let rules = [];
-
-      if (data.score.ruleset.useDSR) {
-        rules.push("DSR: You cannot counterpick to any stage you previously won on during the set.");
-      }
-      if (data.score.ruleset.useMDSR) {
-        rules.push("MDSR: You cannot counterpick to the last stage you won on during the set.");
-      }
-
-      if (data.score.ruleset.strikeOrder) {
-        rules.push(
-          "First match strike order: " +
-            data.score.ruleset.strikeOrder.map((a) => "P" + a).join(", ")
-        );
-      }
-
-      if (data.score.ruleset.banCount) {
-        rules.push(
-          "After each match, winner bans " +
-            data.score.ruleset.banCount +
-            " stages"
-        );
-      }
-
-      $(".rules").html(rules.join("<br/>"));
-
-      $(".title.ruleset").html(data.score.ruleset.name);
-    }
-  };
+    const rules = [
+      ruleset.useDSR && "DSR: You cannot counterpick to any stage you previously won on during the set.",
+      ruleset.useMDSR && "MDSR: You cannot counterpick to the last stage you won on during the set.",
+      ruleset.strikeOrder ? `First match strike order: ${ruleset.strikeOrder.map((p) => `P${p}`).join(", ")}` : "",
+      ruleset.banCount ? `After each match, winner bans ${ruleset.banCount} stages` : "",
+    ];
+    HD.render(".rules", HD.join(rules, HD.html`<br/>`));
+    $(".title.ruleset").text(ruleset.name);
+  },
 });

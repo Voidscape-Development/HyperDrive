@@ -180,6 +180,13 @@
   HD.text = (parts, separator = " ") =>
     parts.filter((p) => p != null && p !== "" && p !== false).join(separator);
 
+  // A number's ordinal suffix: 1 -> "st", 12 -> "th", 22 -> "nd"
+  const SUFFIXES = ["th", "st", "nd", "rd"];
+  HD.ordinal = (n) => {
+    const v = n % 100;
+    return SUFFIXES[(v - 20) % 10] || SUFFIXES[v] || "th";
+  };
+
   // The stage picked on a scoreboard, with its data
   HD.stage = (data, score) => {
     const strike = (score && score.stage_strike) || {};

@@ -1,29 +1,21 @@
 // list.html and column.html: every set at once, under a title
-LoadEverything().then(() => {
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+const showSets = () =>
+  gsap.from(".cs-set", { y: 16, autoAlpha: 0, duration: 0.35, stagger: 0.05, ease: "power2.out" });
 
-  function ShowSets() {
-    return gsap.from(".cs-set", {
-      y: 16,
-      autoAlpha: 0,
-      duration: 0.35,
-      stagger: 0.05,
-      ease: "power2.out",
-    });
-  }
+HD.layout({
+  settings: CS.SETTINGS,
 
-  CSOnChange(async (sets, config) => {
-    $(".cs-title").html(CSEscape(config.title)).toggle(config.display.title !== false);
-    $(".cs-sets").html(sets.map((set) => CSSetHtml(set, config)).join(""));
-    $(".cs-container").toggleClass("cs-empty", sets.length == 0);
-    if (hd_display.started && hd_display.shown) ShowSets();
-  });
-
-  Start = async () => {
-    gsap
-      .timeline()
-      .fromTo(".cs-container", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 })
+  intro(tl) {
+    tl.fromTo(".cs-container", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 })
       .from(".cs-title", { x: -30, autoAlpha: 0, duration: 0.4, ease: "power2.out" }, 0)
-      .add(ShowSets(), 0.1);
-  };
+      .add(showSets(), 0.1);
+  },
+
+  update(s) {
+    if (!CS.changed(s)) return;
+    const sets = CS.sets(s);
+    CS.header(s, sets);
+    HD.render(".cs-sets", sets.map((set) => CS.set(set, s.settings)));
+    if (HD.shown()) showSets();
+  },
 });

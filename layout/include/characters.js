@@ -65,6 +65,7 @@
     const settings = HD.settings;
     return _.defaultsDeep({}, _.get(settings, [key, game], {}), _.get(settings, [key, "default"], {}));
   }
+  HD.assetSettings = (key, data = HD.state()) => assetSettings(key, data);
 
   // The characters to show from a team or a player, by player
   function charactersAt(state, source, options) {

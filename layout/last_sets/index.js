@@ -1,129 +1,55 @@
-LoadEverything().then(() => {
-  if (!window.PLAYER) {
-    window.PLAYER = 1;
-  }
+// A player's last 3 sets in the event (page option player: 1 or 2), oldest
+// first along a bracket line: each with its round, both players' names,
+// scores and characters
+const setCard = (set, i, player) => {
+  const won = set.player_score > set.oponent_score;
+  const side = (n, result) => HD.html`
+    <div class="p${n} color${(player == 1) === (n === 1) ? 1 : 2} ${result}">
+      <div class="character_icon"></div>
+      <div class="name"></div>
+      <div class="score"></div>
+    </div>`;
+  return HD.html`
+    <div class="set${i + 1} set_container">
+      <div class="info"><div class="phase"></div><div class="match"></div></div>
+      ${side(1, won ? "winner" : "loser")}
+      ${side(2, won ? "loser" : "winner")}
+    </div>`;
+};
 
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+HD.layout({
+  settings: { player: 1 },
 
-  let startingAnimation;// = gsap.timeline({ paused: true });
+  intro(tl) {
+    $(".set_container").each((i, el) => tl.from(el, { x: -100, autoAlpha: 0, duration: 0.4 }, 0.2 + 0.2 * i));
+    tl.fromTo(".bracket_line", { width: 0 }, { width: "calc(100% + 240px)", duration: 1, ease: "Power2.easeOut" }, 0);
+  },
 
-  Start = async (event) => {
-    //startingAnimation.restart();
-  };
+  update(s) {
+    const player = s.settings.player;
+    const path = ["score", s.n, "last_sets", player];
+    const sets = Object.entries(_.get(s.data, path) || {})
+      .slice(0, 3)
+      .reverse();
 
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
+    const built = HD.build(".player1_content", sets, () => [
+      sets.map(([, set], i) => setCard(set, i, player)),
+      sets.length > 0 && HD.html`<div class="bracket_line"><div class="line_arrow"></div></div>`,
+    ]);
 
-    if (
-      !oldData.score ||
-      JSON.stringify(data.score[window.scoreboardNumber].last_sets) !=
-        JSON.stringify(oldData.score[window.scoreboardNumber].last_sets)
-    ) {
-      sets_html = "";
-      Object.values(data.score[window.scoreboardNumber].last_sets[window.PLAYER])
-        .slice(0, 3)
-        .reverse()
-        .forEach((sets, s) => {
-          sets_html += `<div class="set${s + 1} set_container">
-          <div class="info">
-            <div class="phase"></div>
-            <div class="match"></div>
-          </div>
-          <div class="p1 color${window.PLAYER == 1 ? 1 : 2} ${
-            sets.player_score > sets.oponent_score ? "winner" : "loser"
-          }">
-            <div class="character_icon"></div>
-            <div class="name">
-            </div>
-            <div class="score"></div>
-          </div>
-          <div class="p2 color${window.PLAYER == 1 ? 2 : 1} ${
-            sets.player_score > sets.oponent_score ? "loser" : "winner"
-          }">
-            <div class="character_icon"></div>
-            <div class="name">
-            </div>
-            <div class="score"></div>
-          </div>
-        </div>`;
-        });
-      if (Object.values(data.score[window.scoreboardNumber].last_sets[window.PLAYER]).length > 0) {
-        sets_html +=
-          '<div class="bracket_line"><div class="line_arrow"></div></div>';
-      }
-      $(".player1_content").html(sets_html);
-      startingAnimation = gsap.timeline({paused: true});
+    sets.forEach(([key, set], i) => {
+      const card = `.player1_content .set${i + 1}`;
+      HD.set(`${card} .phase`, HD.text([set.phase_name, set.phase_id]));
+      HD.set(`${card} .match`, set.round_name);
+      HD.set(`${card} .p1 .name`, HD.html`<span class="sponsor">${set.player_team}</span>${set.player_name}`);
+      HD.set(`${card} .p1 .score`, set.player_score);
+      HD.set(`${card} .p2 .name`, HD.html`<span class="sponsor">${set.oponent_team}</span>${set.oponent_name}`);
+      HD.set(`${card} .p2 .score`, set.oponent_score);
+      s.characters(`${card} .p1 .character_icon`, { source: [...path, key, "player_char"] });
+      s.characters(`${card} .p2 .character_icon`, { source: [...path, key, "oponent_char"] });
+    });
 
-      for (const [s, [stateKey, sets]] of Object.entries(data.score[window.scoreboardNumber].last_sets[window.PLAYER])
-        .slice(0, 3)
-        .reverse()
-        .entries()) {
-        let phaseTexts = [];
-        if (sets.phase_name) phaseTexts.push(sets.phase_name);
-        if (sets.phase_id) phaseTexts.push(sets.phase_id);
-        SetInnerHtml(
-          $(`.player1_content .set${s + 1} .phase`),
-          phaseTexts.join(" ")
-        );
-        SetInnerHtml(
-          $(`.player1_content .set${s + 1} .match`),
-          sets.round_name
-        );
-        SetInnerHtml(
-          $(`.player1_content .set${s + 1} .p1 .name`),
-          `
-            <span class="sponsor">
-              ${sets.player_team ? sets.player_team : ""}
-            </span>
-            ${sets.player_name}
-          `
-        );
-        SetInnerHtml(
-          $(`.player1_content .set${s + 1} .p1 .score`),
-          sets.player_score
-        );
-        await CharacterDisplay(
-          $(`.player1_content .set${s + 1} .p1 .character_icon`),
-          {
-            source: `score.${window.scoreboardNumber}.last_sets.${window.PLAYER}.${stateKey}.player_char`,
-          },
-          event
-        );
-        SetInnerHtml(
-          $(`.player1_content .set${s + 1} .p2 .name`),
-          `
-            <span class="sponsor">
-              ${sets.oponent_team ? sets.oponent_team : ""}
-            </span>
-            ${sets.oponent_name}
-          `
-        );
-        SetInnerHtml(
-          $(`.player1_content .set${s + 1} .p2 .score`),
-          sets.oponent_score
-        );
-        await CharacterDisplay(
-          $(`.player1_content .set${s + 1} .p2 .character_icon`),
-          {
-            source: `score.${window.scoreboardNumber}.last_sets.${window.PLAYER}.${stateKey}.oponent_char`,
-          },
-          event
-        );
-        startingAnimation.from(
-          $(`.set${s + 1}`),
-          { x: -100, autoAlpha: 0, duration: 0.4 },
-          0.2 + 0.2 * s
-        );
-      }
-
-      startingAnimation.fromTo(
-        $(".bracket_line"),
-        { width: 0 },
-        { width: "calc(100% + 240px)", duration: 1, ease: "Power2.easeOut" },
-        0
-      );
-      startingAnimation.restart();
-    }
-  };
+    // New sets slide in again
+    if (built && !s.first) HD.restart();
+  },
 });

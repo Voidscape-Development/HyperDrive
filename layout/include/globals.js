@@ -303,6 +303,15 @@ HD.layouts = {};
     if (def.start) await def.start(s);
   }
 
+  // On screen (shown and not turned off in Display Controls)
+  HD.shown = () => display.started && display.shown;
+
+  // Plays the intro again, e.g. for a list that changed. Not while the
+  // layout is hidden (or before it's first shown).
+  HD.restart = () => {
+    if (display.started && display.shown) return runStart();
+  };
+
   // Resolves when a timeline has run backwards to its start
   const reverse = (timeline) =>
     new Promise((resolve) => {
