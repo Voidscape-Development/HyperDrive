@@ -1,7 +1,6 @@
 body {
   font-family: "Montserrat", sans-serif;
   font-weight: 800;
-  opacity: 0;
   overflow: hidden;
   margin: 0;
   width: 1920px;
@@ -238,12 +237,9 @@ body {
   height: 30px;
 }
 
-.p1 .twitter_logo {
-  background: white;
-}
-
-.p2 .twitter_logo {
-  background: white;
+/* Set by index.js to read on the team's color */
+.twitter_logo {
+  background: var(--twitter-logo, white);
 }
 
 .logo {
@@ -308,4 +304,9 @@ body {
 .unhidden {
   opacity: 100%;
   transition: opacity 0.5s;
+}
+
+/* The match in capitals (the theme's text case can override) */
+.match .text {
+  text-transform: uppercase;
 }

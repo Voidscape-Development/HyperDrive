@@ -3,6 +3,7 @@
 // round robin and swiss pools, the older "rounds" shape some layouts
 // were drawn around, and the bracket a focus channel shows. Load after globals.js:
 //   <script src="../include/bracket.js"></script>
+// The *Html helpers return HD.html (names escaped), for HD.set() or HD.render().
 var HDBracket = {
   POOL_TYPES: ["ROUND_ROBIN", "SWISS"],
 
@@ -112,20 +113,13 @@ var HDBracket = {
     return started ? String(score) : "";
   },
 
-  // A team's display name: its name, or its players' names
-  async TeamName(team) {
+  // A team's display name: its player (with sponsor), its name, or its
+  // players' names
+  TeamName(team) {
     if (!team) return "";
     const players = Object.values(team.player || {}).filter((p) => p && p.name);
-    if (players.length == 1) {
-      const player = players[0];
-      return `<span class="sponsor">${player.team ? player.team : ""}</span> ${player.name}`;
-    }
-    if (team.name) return team.name;
-    const names = [];
-    for (const player of players) {
-      names.push(player.name);
-    }
-    return names.join(" / ");
+    if (players.length == 1) return HD.html`<span class="sponsor">${players[0].team}</span> ${players[0].name}`;
+    return team.name || players.map((p) => p.name).join(" / ");
   },
 
   // The bracket in the shape older layouts were made for:
@@ -233,49 +227,46 @@ var HDBracket = {
   },
 
   // The pool's standings, or an elimination bracket's results, as a table
-  async StandingsHtml(data) {
+  StandingsHtml(data) {
     const bracket = _.get(data, "bracket.bracket", {});
     const players = _.get(data, "bracket.players.slot", {});
-    const highlight = ThemeValue("standings", "highlight_top", 0);
+    const highlight = HD.theme("standings", "highlight_top", 0);
     const pool = HDBracket.IsPool(bracket);
     const swiss = bracket.type == "SWISS";
-    let html = `<table class="standings_table ${pool ? "pool" : "elimination"}">`;
+    const name = (id, fallback) => {
+      const team = players[id];
+      return HD.html`<td class="st_name">${HDBracket.FlagHtml(team)}<span>${team ? HDBracket.TeamName(team) : fallback}</span></td>`;
+    };
+    const top = (place) => (highlight && place <= highlight ? "top" : "");
 
-    if (pool) {
-      html += `<thead><tr>
+    if (!pool) {
+      return HD.html`<table class="standings_table elimination">
+        <thead><tr><th class="st_rank">#</th><th class="st_name">Player</th></tr></thead>
+        <tbody>${(bracket.results || []).map(
+          (row) =>
+            HD.html`<tr class="${top(row.order)}" data-player="${row.id}"><td class="st_rank">${row.order}</td>${name(row.id, row.name)}</tr>`,
+        )}</tbody></table>`;
+    }
+    const draws = (bracket.standings || []).some((r) => r.draws);
+    return HD.html`<table class="standings_table pool">
+      <thead><tr>
         <th class="st_rank">#</th>
         <th class="st_name">Player</th>
-        <th class="st_record">W-L${(bracket.standings || []).some((r) => r.draws) ? "-D" : ""}</th>
+        <th class="st_record">W-L${draws && "-D"}</th>
         <th class="st_points">Pts</th>
         <th class="st_game_diff">+/-</th>
-        ${swiss ? `<th class="st_buchholz">Bh</th>` : ""}
-      </tr></thead><tbody>`;
-      for (const row of bracket.standings || []) {
-        const team = players[row.playerId];
-        const name = team ? await HDBracket.TeamName(team) : row.name;
-        const record = `${row.wins}-${row.losses}${row.draws ? "-" + row.draws : ""}`;
-        html += `<tr class="${highlight && row.rank <= highlight ? "top" : ""}" data-player="${row.playerId}">
+        ${swiss && HD.html`<th class="st_buchholz">Bh</th>`}
+      </tr></thead>
+      <tbody>${(bracket.standings || []).map(
+        (row) => HD.html`<tr class="${top(row.rank)}" data-player="${row.playerId}">
           <td class="st_rank">${row.rank}</td>
-          <td class="st_name">${HDBracket.FlagHtml(team)}<span>${name}</span></td>
-          <td class="st_record">${record}</td>
+          ${name(row.playerId, row.name)}
+          <td class="st_record">${row.wins}-${row.losses}${row.draws ? `-${row.draws}` : ""}</td>
           <td class="st_points">${row.points}</td>
           <td class="st_game_diff">${row.gameDiff > 0 ? "+" : ""}${row.gameDiff}</td>
-          ${swiss ? `<td class="st_buchholz">${row.buchholz}</td>` : ""}
-        </tr>`;
-      }
-    } else {
-      html += `<thead><tr><th class="st_rank">#</th><th class="st_name">Player</th></tr></thead><tbody>`;
-      for (const row of bracket.results || []) {
-        const team = players[row.id];
-        const name = team ? await HDBracket.TeamName(team) : row.name;
-        html += `<tr class="${highlight && row.order <= highlight ? "top" : ""}" data-player="${row.id}">
-          <td class="st_rank">${row.order}</td>
-          <td class="st_name">${HDBracket.FlagHtml(team)}<span>${name}</span></td>
-        </tr>`;
-      }
-    }
-
-    return html + "</tbody></table>";
+          ${swiss && HD.html`<td class="st_buchholz">${row.buchholz}</td>`}
+        </tr>`,
+      )}</tbody></table>`;
   },
 
   // A pool's players in seed order: [{id, seed, name}]
@@ -289,18 +280,20 @@ var HDBracket = {
       found[id] = known;
     };
     Object.values(bracket.sets || {}).forEach((set) =>
-      (set.players || []).forEach((p) => p && add(p.id, p.seed, p.name))
+      (set.players || []).forEach((p) => p && add(p.id, p.seed, p.name)),
     );
     (bracket.standings || []).forEach((row) => add(row.playerId, null, row.name));
     return Object.values(found).sort(
-      (a, b) => (a.seed == null ? Infinity : a.seed) - (b.seed == null ? Infinity : b.seed) || String(a.id).localeCompare(String(b.id))
+      (a, b) =>
+        (a.seed == null ? Infinity : a.seed) - (b.seed == null ? Infinity : b.seed) ||
+        String(a.id).localeCompare(String(b.id)),
     );
   },
 
   // A round robin grid: each player is a row and a column, the cell where
   // two players meet holds their set's score from the row player's side, and
   // the cells where a player meets themselves are blank
-  async GridHtml(data) {
+  GridHtml(data) {
     const bracket = _.get(data, "bracket.bracket", {});
     const players = _.get(data, "bracket.players.slot", {});
     const list = HDBracket.PoolPlayers(bracket);
@@ -314,59 +307,49 @@ var HDBracket = {
       meetings[`${b}|${a}`] = [set, 1];
     });
 
-    const names = {};
-    for (const p of list) {
-      const team = players[p.id];
-      names[p.id] = team ? await HDBracket.TeamName(team) : _.escape(p.name);
-    }
+    const name = (p) => (players[p.id] ? HDBracket.TeamName(players[p.id]) : p.name);
+    // The cell where row meets col
+    const cell = (row, col) => {
+      if (row.id == col.id) return HD.html`<td class="rr_cell rr_self"></td>`;
+      const meeting = meetings[`${row.id}|${col.id}`];
+      if (!meeting) return HD.html`<td class="rr_cell rr_none"></td>`;
+      const [set, slot] = meeting;
+      const mine = HDBracket.ScoreText(set, slot);
+      const theirs = HDBracket.ScoreText(set, 1 - slot);
+      const winner = HDBracket.Winner(set);
+      const result = winner === "draw" ? "draw" : winner === slot ? "won" : winner === 1 - slot ? "lost" : "";
+      const played = mine !== "" || theirs !== "";
+      return HD.html`<td class="rr_cell rr_set ${result} ${set.completed ? "completed" : ""}" data-set="${set.id}">${
+        played && HD.html`${mine || 0}<span class="rr_dash">-</span>${theirs || 0}`
+      }</td>`;
+    };
 
-    let html = `<table class="rr_grid" style="--rr-count: ${list.length}"><thead><tr><th class="rr_corner"></th>`;
-    for (const p of list) {
-      html += `<th class="rr_col_name" data-player="${_.escape(p.id)}"><span>${names[p.id]}</span></th>`;
-    }
-    html += `</tr></thead><tbody>`;
-    for (const row of list) {
-      html += `<tr data-player="${_.escape(row.id)}"><th class="rr_row_name">${HDBracket.FlagHtml(players[row.id])}<span>${names[row.id]}</span></th>`;
-      for (const col of list) {
-        if (row.id == col.id) {
-          html += `<td class="rr_cell rr_self"></td>`;
-          continue;
-        }
-        const meeting = meetings[`${row.id}|${col.id}`];
-        if (!meeting) {
-          html += `<td class="rr_cell rr_none"></td>`;
-          continue;
-        }
-        const [set, slot] = meeting;
-        const mine = HDBracket.ScoreText(set, slot);
-        const theirs = HDBracket.ScoreText(set, 1 - slot);
-        const winner = HDBracket.Winner(set);
-        const result = winner === "draw" ? "draw" : winner === slot ? "won" : winner === 1 - slot ? "lost" : "";
-        const score = mine !== "" || theirs !== "" ? `${mine || 0}<span class="rr_dash">-</span>${theirs || 0}` : "";
-        html += `<td class="rr_cell rr_set ${result} ${set.completed ? "completed" : ""}" data-set="${_.escape(set.id)}">${score}</td>`;
-      }
-      html += `</tr>`;
-    }
-    return html + `</tbody></table>`;
+    return HD.html`<table class="rr_grid" style="--rr-count: ${list.length}">
+      <thead><tr><th class="rr_corner"></th>${list.map(
+        (p) => HD.html`<th class="rr_col_name" data-player="${p.id}"><span>${name(p)}</span></th>`,
+      )}</tr></thead>
+      <tbody>${list.map(
+        (row) =>
+          HD.html`<tr data-player="${row.id}"><th class="rr_row_name">${HDBracket.FlagHtml(players[row.id])}<span>${name(row)}</span></th>${list.map(
+            (col) => cell(row, col),
+          )}</tr>`,
+      )}</tbody></table>`;
   },
 
+  // A singles player's country and state flags
   FlagHtml(team) {
     const player = team ? Object.values(team.player || {})[0] : null;
     if (!player || Object.keys(team.player || {}).length != 1) return "";
-    let html = "";
-    if (_.get(player, "country.asset")) {
-      html += `<img class="flag flagcountry" src="../../${player.country.asset.toLowerCase()}" />`;
-    }
-    if (_.get(player, "state.asset")) {
-      html += `<img class="flag flagstate" src="../../${player.state.asset}" />`;
-    }
-    return html;
+    return HD.html`${HD.img(HD.asset(_.get(player, "country.asset")), "class='flag flagcountry'")}${HD.img(
+      HD.asset(_.get(player, "state.asset")),
+      "class='flag flagstate'",
+    )}`;
   },
 
   // Draws a round robin / swiss pool's rounds in container: a column per
   // round, each set its two players and scores. For layouts without a pool
   // view of their own; rebuilt only when the pool's shape changes.
-  async RenderPool(container, data) {
+  RenderPool(container, data) {
     const bracket = _.get(data, "bracket.bracket", {});
     const sets = bracket.sets || {};
     const players = _.get(data, "bracket.players.slot", {});
@@ -374,32 +357,30 @@ var HDBracket = {
     const byes = HDBracket.ByesText(bracket);
     const shape = JSON.stringify(columns.map((c) => [c.key, c.sets]));
 
-    if (container.data("shape") != shape) {
-      container.data("shape", shape);
-      let html = "";
-      columns.forEach((column, c) => {
-        html += `<div class="pool_round" data-round="${_.escape(column.key)}">`;
-        html += `<div class="round_name"><div class="text"></div></div>`;
-        column.sets.forEach((id, s) => {
-          html += `<div class="pool_set" data-set="${_.escape(id)}">`;
-          [0, 1].forEach((slot) => {
-            html += `<div class="pool_player slot_p_${slot}"><div class="name"></div><div class="score"></div></div>`;
-          });
-          html += `</div>`;
-        });
-        html += `<div class="byes"><div class="text"></div></div></div>`;
-      });
-      container.html(html);
-      gsap.from(container.find(".pool_set"), { autoAlpha: 0, x: -30, stagger: 0.02, duration: 0.3 });
-    }
+    const built = HD.build(container, shape, () =>
+      columns.map(
+        (column) => HD.html`<div class="pool_round" data-round="${column.key}">
+          <div class="round_name"><div class="text"></div></div>
+          ${column.sets.map(
+            (id) =>
+              HD.html`<div class="pool_set" data-set="${id}">${[0, 1].map(
+                (slot) =>
+                  HD.html`<div class="pool_player slot_p_${slot}"><div class="name"></div><div class="score"></div></div>`,
+              )}</div>`,
+          )}
+          <div class="byes"><div class="text"></div></div>
+        </div>`,
+      ),
+    );
+    if (built) gsap.from(container.find(".pool_set"), { autoAlpha: 0, x: -30, stagger: 0.02, duration: 0.3 });
 
     const biggest = Math.max(1, ...columns.map((c) => c.sets.length));
     container.css("--pool-set-height", Math.max(28, Math.min(64, (container.height() - 60) / biggest - 8)) + "px");
 
     for (const column of columns) {
       const round = container.find(`.pool_round[data-round="${CSS.escape(column.key)}"]`);
-      SetInnerHtml(round.find(".round_name"), column.name);
-      SetInnerHtml(round.find(".byes"), byes[column.key] ? `Bye: ${byes[column.key]}` : "");
+      HD.set(round.find(".round_name"), column.name);
+      HD.set(round.find(".byes"), byes[column.key] ? `Bye: ${byes[column.key]}` : "");
       for (const id of column.sets) {
         const set = sets[id];
         const element = round.find(`.pool_set[data-set="${CSS.escape(id)}"]`);
@@ -409,11 +390,13 @@ var HDBracket = {
           const p = set.players[slot];
           const row = element.find(`.slot_p_${slot}`);
           const team = p && p.id ? players[p.id] : null;
-          SetInnerHtml(
+          HD.set(
             row.find(".name"),
-            team ? await HDBracket.TeamName(team) : p && p.pending && p.source ? `<span class="pending_source">${_.escape(p.source)}</span>` : ""
+            team
+              ? HDBracket.TeamName(team)
+              : p && p.pending && p.source && HD.html`<span class="pending_source">${p.source}</span>`,
           );
-          SetInnerHtml(row.find(".score"), HDBracket.ScoreText(set, slot));
+          HD.set(row.find(".score"), HDBracket.ScoreText(set, slot));
           row.toggleClass("won", winner === slot).toggleClass("lost", winner === 1 - slot);
           row.addClass("player");
         }
@@ -421,11 +404,71 @@ var HDBracket = {
     }
   },
 
+  // A set's player slot (0 or 1), for UpdateSet() to fill
+  PlayerSlotHtml: (slot) => HD.html`
+    <div class="slot_p_${slot} player container" data-slot="${slot}">
+      <div class="icon avatar"></div>
+      <div class="icon online_avatar"></div>
+      <div class="seed"></div>
+      <div class="name_twitter"><div class="name"></div></div>
+      <div class="sponsor_icon"></div>
+      <div class="flags"><div class="flagcountry"></div><div class="flagstate"></div></div>
+      <div class="character_container"></div>
+      <div class="score"></div>
+    </div>`,
+
+  // Fills a set's element (made with PlayerSlotHtml()): its identifier, and
+  // each slot's player (or where they come from), score and result
+  UpdateSet(s, element, set, data) {
+    const players = _.get(data, "bracket.players.slot", {});
+    const winner = HDBracket.Winner(set);
+    HD.set(element.find(".set_identifier"), set.identifier);
+
+    [0, 1].forEach((n) => {
+      const row = element.find(`.slot_p_${n}`);
+      const slot = set.players[n];
+      const team = slot && slot.id ? players[slot.id] : null;
+      HD.set(row.find(".score"), HDBracket.ScoreText(set, n));
+      row
+        .toggleClass("won", winner === n)
+        .toggleClass("lost", winner === 1 - n)
+        .toggleClass("draw", winner === "draw");
+      row.toggleClass("pending", !!(slot && slot.pending)).toggleClass("empty", !team);
+
+      const singles = team && _.size(team.player) === 1;
+      const player = (singles && team.player[1]) || {};
+      const asset = (path) => HD.asset(_.get(player, path));
+      HD.set(
+        row.find(".name"),
+        team
+          ? HDBracket.TeamName(team)
+          : slot && slot.pending && slot.source && HD.html`<span class="pending_source">${slot.source}</span>`,
+      );
+      HD.set(row.find(".seed"), team && slot.seed ? String(slot.seed) : "");
+      HD.set(row.find(".flagcountry"), HD.img(asset("country.asset"), "class='flag'"));
+      HD.set(row.find(".flagstate"), HD.img(asset("state.asset"), "class='flag'"));
+      HD.set(row.find(".sponsor_icon"), HD.img(asset("sponsor_logo"), "class='sponsor_icon'"));
+      HD.set(row.find(".avatar"), HD.img(asset("avatar"), "class='avatar'"));
+      HD.set(row.find(".online_avatar"), HD.img(player.online_avatar, "class='online_avatar'"));
+      if (!team) {
+        HD.set(row.find(".character_container"), "");
+        return;
+      }
+      s.characters(row.find(".character_container"), {
+        source: `${data.bracket.playersPath || "bracket.players"}.slot.${slot.id}`,
+        slice_character: singles ? undefined : [0, 1],
+      });
+    });
+  },
+
   // Who sits out each pool round: {"pool:1": "A, B"}
   ByesText(bracket) {
     const byes = {};
     Object.entries(bracket.byes || {}).forEach(([key, list]) => {
-      byes[key] = (list || []).map((p) => p.name).filter((n) => n).join(", ");
+      byes[key] = (list || [])
+        .map((p) => p.name)
+        .filter((n) => n)
+        .join(", ");
     });
     return byes;
   },

@@ -131,6 +131,37 @@ sio = socketio.AsyncServer(
 # The socket.io client of the socket event being handled in this thread
 _client = threading.local()
 
+# Clients that asked for part of the program state, when connecting with
+# auth {"state_keys": [top-level keys]}: sid -> those keys. They're in a room
+# per set of keys, so each filtered message is encoded once. The rest get the
+# whole state.
+_subscriptions: dict[str, frozenset] = {}
+
+
+def state_keys(auth):
+    """The top-level keys a client subscribes to, or None for all."""
+    keys = auth.get("state_keys") if isinstance(auth, dict) else None
+    if not isinstance(keys, list) or not keys or len(keys) > 64:
+        return None
+    return frozenset(str(k) for k in keys)
+
+
+def keys_room(keys):
+    return "state:" + ",".join(sorted(keys))
+
+
+def filter_state(message, keys):
+    """A program_state message with only the keys."""
+    state = message["state"]
+    return {**message, "state": {k: state[k] for k in keys if k in state}}
+
+
+def filter_update(message, keys):
+    """A program_state_update message with the deltas under the keys. It's
+    sent even when none are, so delta numbers stay one by one."""
+    delta = [d for d in message["delta"] if str(d["path"][0]) in keys]
+    return {**message, "delta": delta}
+
 
 def on(event):
     """Registers a socket event handler. Handlers run in a worker thread,
@@ -259,6 +290,26 @@ class WebServer(QThread):
     async def layouts():
         return await run_in_threadpool(ListLayouts)
 
+    def ws_emit_state(event, message, filter):
+        """Sends a state message: whole to the clients that subscribed to
+        nothing, and filter(message, keys) to each set of keys subscribed to.
+        In a socket event handler it answers that client alone."""
+        loop = WebServer.loop
+        if loop is None or loop.is_closed():
+            return None
+        sid = getattr(_client, "sid", None)
+
+        async def send():
+            if sid is not None:
+                keys = _subscriptions.get(sid)
+                await sio.emit(event, message if keys is None else filter(message, keys), to=sid)
+                return
+            await sio.emit(event, message, skip_sid=list(_subscriptions))
+            for keys in set(_subscriptions.values()):
+                await sio.emit(event, filter(message, keys), room=keys_room(keys))
+
+        return asyncio.run_coroutine_threadsafe(send(), loop)
+
     @on("program-state-update")
     def ws_program_state_update(message=None):
         # Manual trigger to push full state to all clients
@@ -266,7 +317,7 @@ class WebServer(QThread):
 
     def on_program_state_update(changes):
         if len(changes) > 0:
-            future = WebServer.ws_emit("program_state_update", changes)
+            future = WebServer.ws_emit_state("program_state_update", changes, filter_update)
             if future is not None:
                 future.add_done_callback(WebServer._check_state_update_sent)
 
@@ -281,13 +332,23 @@ class WebServer(QThread):
 
     @sio.on("connect")
     async def ws_connect(sid, environ, auth=None):
+        # Subscribed first, so updates meanwhile are filtered too
+        keys = state_keys(auth)
+        if keys is not None:
+            _subscriptions[sid] = keys
+            await sio.enter_room(sid, keys_room(keys))
+        message = await run_in_threadpool(WebServer.actions.program_state)
         await sio.emit(
-            "program_state", await run_in_threadpool(WebServer.actions.program_state), to=sid
+            "program_state", message if keys is None else filter_state(message, keys), to=sid
         )
+
+    @sio.on("disconnect")
+    async def ws_disconnect(sid, *args):
+        _subscriptions.pop(sid, None)
 
     @on("program_state")
     def ws_program_state(message=None):
-        WebServer.ws_emit("program_state", WebServer.actions.program_state())
+        WebServer.ws_emit_state("program_state", WebServer.actions.program_state(), filter_state)
 
     # Stage striking is per scoreboard. HTTP requests pick it with
     # ?scoreboard=<n> or a "scoreboardNumber" field in their JSON body, and

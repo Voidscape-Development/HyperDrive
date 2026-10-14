@@ -1,805 +1,122 @@
-LoadEverything().then(() => {
+// VGBootcamp neo scoreboard: each side's name with its bracket side, flag,
+// sponsor and score on the team's color (with text colors that read on
+// it). A player's Twitter and pronouns, and the match and best of, take
+// turns every 9 seconds.
 
-  let p1Twitter = "";
-  let p2Twitter = "";
-  let p1Pronoun = "";
-  let p2Pronoun = "";
-  let newP1Twitter = "";
-  let newP2Twitter = "";
-  let newP1Pronoun = "";
-  let newP2Pronoun = "";
-  let savedBestOf = 0;
-  let savedMatch = "";
-  let firstTime = true;
-  let intervalID = "";
-  let player1 = "";
-  let player2 = "";
-  let team1Name = "";
-  let team2Name = "";
-  let team1Losers = false;
-  let team2Losers = false;
-
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .from([".logo"], { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
-    .from(
-      [".anim_container_outer"],
-      {
-        duration: 1,
-        width: "168px",
-        ease: "power2.inOut",
-      },
-      1
-    )
-    .from(
-      [".p1.twitter_container"],
-      {
-        duration: 0.75,
-        x: "-373px",
-        ease: "power4.Out",
-      },
-      "<25%"
-    )
-    .from(
-      [".p2.twitter_container"],
-      {
-        duration: 0.75,
-        x: "373px",
-        ease: "power4.Out",
-      },
-      "<"
-    )
-    .from(
-      ".tournament_container",
-      {
-        duration: 0.75,
-        x: "-326px",
-        ease: "power4.Out",
-      },
-      "<"
-    )
-    .from(
-      ".tournament_logo",
-      { opacity: 0, duration: 0.5, ease: "power4.Out" },
-      "<"
-    );
-
-  Start = async () => {
-    startingAnimation.restart();
-    intervalID = setInterval(UpdateTwitterMatch, 9000);
-    setInterval(TwitterPronounChecker, 100);
-    setInterval(matchChecker, 100);
-  };
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    for (const [t, team] of [
-      data.score[window.scoreboardNumber].team["1"],
-      data.score[window.scoreboardNumber].team["2"],
-    ].entries()) {
-      for (const [p, player] of [team.player["1"]].entries()) {
-        if (player) {
-
-          if (Object.keys(team.player).length == 1) {
-            DisplayName(t, team, player)
-          } else {
-            // Get team name presentation using player_presentation strategy
-            let teamName = team.teamName;
-        if (!teamName || teamName == "") {
-          let names = [];
-          for (const [p, player] of Object.values(team.player).entries()) {
-            if (player && player.name) {
-              names.push(player.name);
-            }
-          }
-          teamName = names.join(" / ");
-        }
-        let teamPresentation = teamName;
-            DisplayTeamName(t, team, teamPresentation);
-          }
-
-          SetInnerHtml($(`.p${t + 1} .score`), String(team.score));
-
-          SetInnerHtml(
-            $(`.p${t + 1}.container .flagcountry`),
-            player.country.asset && Object.keys(team.player).length == 1
-              ? `<img class='flag' src='${player.country.asset.toLowerCase()}' />`
-              : ""
-          );
-
-          DisplaySponsorLogo(t, player, team);
-          
-        }
-        if (team.color) {
-          document
-            .querySelector(":root")
-            .style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-        UpdateColor(t);
-      }
+// Remembers which side came from winners, for its (WL) in a grand final
+// reset. localStorage can be unavailable (some file:// setups).
+const winnersSide = {
+  get: () => {
+    try {
+      return localStorage.getItem("hd-neo-winners-side");
+    } catch (e) {
+      return null;
     }
-
-    // Only on first update
-    if (Object.keys(oldData).length == 0) {
-      UpdateMatch();
-      UpdateTwitter();
-      firstTime = false;
+  },
+  set: (key) => {
+    try {
+      localStorage.setItem("hd-neo-winners-side", key);
+    } catch (e) {
+      // Private window or blocked storage: not remembered
     }
-  };
+  },
+};
 
-  async function DisplaySponsorLogo(t, player, team) {
-    await SetInnerHtml(
-      $(`.p${t + 1} .sponsor_container`),
-      player.sponsor_logo && Object.keys(team.player).length == 1
-        ? `<div class='sponsor_logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
-        : ``
-    );
-    let element = document.querySelector(`.p${t + 1} .sponsor_container`);
-    let width = parseFloat(window.getComputedStyle(element).width);
-    let styleSheet = document.styleSheets[1];
-    if (!width) {
-      if (t == 0) {
-        styleSheet.insertRule(`.p${t+ 1} .sponsor_logo { margin-left: 0px; !important}`, styleSheet.cssRules.length);
-      }
-      if (t == 1) {
-        styleSheet.insertRule(`.p${t+ 1} .sponsor_logo { margin-right: 0px; !important}`, styleSheet.cssRules.length);
-      }
-    } else {
-      if (t == 0) {
-        styleSheet.insertRule(`.p${t+ 1} .sponsor_logo { margin-left: 12px; !important}`, styleSheet.cssRules.length);
-      }
-      if (t == 1) {
-        styleSheet.insertRule(`.p${t+ 1} .sponsor_logo { margin-right: 12px; !important}`, styleSheet.cssRules.length);
-      }
+// Text colors that read on a team color, by its brightness: [score and
+// Twitter, name, the name's background]
+const DARK = "rgb(18, 18, 18, 0.8)";
+const DARK_BG = "rgba(18, 18, 18, 0.8)";
+const contrast = (intensity) =>
+  intensity > 142
+    ? [DARK, "white", DARK_BG]
+    : intensity > 95
+      ? ["white", "white", DARK_BG]
+      : intensity <= 80
+        ? ["white", DARK, "rgba(255, 255, 255, 0.8)"]
+        : null; // In between: as they were
+
+const rotate = (s) => {
+  for (const t of s.teams) {
+    const { player } = t;
+    const shown = !s.isTeams && (player.twitter || player.pronoun);
+    $(t.sel("&.twitter_container")).toggleClass("hidden", !shown).toggleClass("unhidden", !!shown);
+    if (shown) {
+      t.set(
+        ".twitter",
+        turns.pick([HD.ui.chip("twitter", player.twitter, "@"), String(player.pronoun || "").toUpperCase()]),
+      );
     }
   }
+  const text = turns.pick([s.score.match, s.score.best_of && s.score.best_of_text]);
+  $(".tournament_container").toggleClass("hidden", !text).toggleClass("unhidden", !!text);
+  if (text) s.set(".match", text);
+};
+const turns = HD.turns(9, rotate);
 
-  async function UpdateTwitterMatch() {
-    UpdateTwitter();
-    UpdateMatch();
-  }
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+  intro(tl) {
+    tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
+      .from(".anim_container_outer", { duration: 1, width: 168, ease: "power2.inOut" }, 1)
+      .from(".p1.twitter_container", { duration: 0.75, x: -373, ease: "power4.Out" }, "<25%")
+      .from(".p2.twitter_container", { duration: 0.75, x: 373, ease: "power4.Out" }, "<")
+      .from(".tournament_container", { duration: 0.75, x: -326, ease: "power4.Out" }, "<")
+      .from(".tournament_logo", { opacity: 0, duration: 0.5, ease: "power4.Out" }, "<");
+  },
 
-  async function UpdateMatch() {
-    const tournamentContainer = document.querySelector(".tournament_container");
-
-    if (!(data.score[window.scoreboardNumber].best_of
-      || data.score[window.scoreboardNumber].match)) {
-      tournamentContainer.classList.add("hidden");
-      tournamentContainer.classList.remove("unhidden");
-    } else {
-      tournamentContainer.classList.add("unhidden");
-      tournamentContainer.classList.remove("hidden");
-
-      if (!data.score[window.scoreboardNumber].best_of
-        && data.score[window.scoreboardNumber].match) {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-      } else if (data.score[window.scoreboardNumber].best_of
-        && !data.score[window.scoreboardNumber].match) {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].best_of_text.toUpperCase());
-      } else if (savedMatch != data.score[window.scoreboardNumber].match) {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-      } else if (savedBestOf != data.score[window.scoreboardNumber].best_of) {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-      } else {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].best_of_text.toUpperCase());
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-      }
-    }
-    savedBestOf = data.score[window.scoreboardNumber].best_of;
-    savedMatch = data.score[window.scoreboardNumber].match;
-  }
-
-  async function UpdateTwitter() {
-    changeInP1 = false;
-    changeInP2 = false;
-
-    [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
-      [team.player["1"]].forEach((player, p) => {
-        if (player) {
-          if (t == 0) {
-            newP1Twitter = player.twitter;
-            newP1Pronoun = player.pronoun;
-          }
-
-          if (t == 1) {
-            newP2Twitter = player.twitter;
-            newP2Pronoun = player.pronoun;
-          }
-        }
-      });
-      if (newP1Twitter != p1Twitter || newP1Pronoun != p1Pronoun) {
-        changeInP1 = true;
-      }
-
-      if (newP2Twitter != p2Twitter || newP2Pronoun != p2Pronoun) {
-        changeInP2 = true;
-      }
-    });
-
-    [data.score[window.scoreboardNumber].team["1"]
-    , data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
-      [team.player["1"]].forEach((player, p) => {
-        if (player) {
-          const playerTwitter = document.querySelector(`.p${t + 1}.twitter_container`);
-
-          if (
-            !(player.twitter || player.pronoun) ||
-            Object.values(team.player).length != 1
-          ) {
-            playerTwitter.classList.add("hidden");
-            playerTwitter.classList.remove("unhidden");
-          } else {
-            playerTwitter.classList.add("unhidden");
-            playerTwitter.classList.remove("hidden");
-
-            if (!player.twitter && player.pronoun) {
-              SetInnerHtml(
-                $(`.p${t + 1} .twitter`),
-                player.pronoun.toUpperCase()
-              );
-            }
-
-            if (player.twitter && !player.pronoun) {
-              SetInnerHtml(
-                $(`.p${t + 1} .twitter`),
-                player.twitter
-                  ? `<span class="twitter_logo"></span>${
-                      "@" + String(player.twitter)
-                    }`
-                  : ""
-              );
-            }
-
-            if (changeInP1 || changeInP2) {
-              if (player.twitter) {
-                SetInnerHtml(
-                  $(`.p${t + 1} .twitter`),
-                  player.twitter
-                    ? `<span class="twitter_logo"></span>${
-                        "@" + String(player.twitter)
-                      }`
-                    : ""
-                );
-              }
-            } else {
-              if (player.pronoun) {
-                SetInnerHtml(
-                  $(`.p${t + 1} .twitter`),
-                  player.pronoun.toUpperCase()
-                );
-              }
-              if (player.twitter) {
-                SetInnerHtml(
-                  $(`.p${t + 1} .twitter`),
-                  player.twitter
-                    ? `<span class="twitter_logo"></span>${
-                        "@" + String(player.twitter)
-                      }`
-                    : ""
-                );
-              }
-            }
-          }
-          if (t == 0) {
-            p1Twitter = player.twitter;
-            p1Pronoun = player.pronoun;
-          }
-
-          if (t == 1) {
-            p2Twitter = player.twitter;
-            p2Pronoun = player.pronoun;
-          }
-        }
-      });
-    });
-  }
-
-  async function TwitterPronounChecker() {
-    let refreshNeeded = false;
-    [data.score[window.scoreboardNumber].team["1"]
-    , data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
-      [team.player["1"]].forEach((player, p) => {
-        if (
-          t == 0 &&
-          !(p1Twitter == player.twitter && p1Pronoun == player.pronoun)
-        ) {
-          refreshNeeded = true;
-        } else if (
-          t == 1 &&
-          !(p2Twitter == player.twitter && p2Pronoun == player.pronoun)
-        ) {
-          refreshNeeded = true;
-        }
-      });
-    });
-    if (refreshNeeded && !firstTime) {
-      UpdateTwitter();
-      resetIntervals();
-    }
-    refreshNeeded = false;
-  }
-
-  function resetIntervals() {
-    clearInterval(intervalID);
-    intervalID = setInterval(UpdateTwitterMatch, 9000);
-  }
-
-  async function matchChecker() {
-    let refreshNeeded = false;
-
-    if (
-      !(savedBestOf == data.score[window.scoreboardNumber].best_of
-        && savedMatch == data.score[window.scoreboardNumber].match)
-    ) {
-      refreshNeeded = true;
+  update(s) {
+    // Bracket sides: (L) in losers and (W) for its opponent; with both in
+    // losers (a reset), (WL) for the side that came from winners
+    const key = (t) => (s.isTeams ? t.name : `${t.player.team}|${t.player.name}`);
+    const [a, b] = s.teams;
+    let tags = ["", ""];
+    if (a.team.losers && b.team.losers) {
+      tags = [a, b].map((t) => (key(t) === winnersSide.get() ? "(WL)" : "(L)"));
+    } else if (a.team.losers || b.team.losers) {
+      tags = [a, b].map((t) => (t.team.losers ? "(L)" : "(W)"));
+      const winners = a.team.losers ? b : a;
+      if (s.isTeams ? winners.name : winners.player.name) winnersSide.set(key(winners));
     }
 
-    if (refreshNeeded && !firstTime) {
-      UpdateMatch();
-      resetIntervals();
+    for (const [i, t] of s.teams.entries()) {
+      const { team, player } = t;
+      if (!team.player || !team.player[1]) continue;
+      const solo = s.isTeams ? {} : player;
+      // Sponsors as "A B", not "A | B"
+      const sponsor = String(player.team || "").replace(/\s*[|/\\]\s*/g, " ");
+
+      t.set(
+        "&.container .name",
+        s.isTeams
+          ? HD.text([t.name, tags[i]])
+          : HD.html`<span class="sponsor">${sponsor}</span>${player.name} ${tags[i]}`,
+      );
+      t.set(".score", team.score);
+      // This layout has its own copy of the country flags, as .png
+      t.set(
+        "&.container .flagcountry",
+        solo.country && solo.country.asset && HD.img(solo.country.asset.replace(/\.svg$/, ".png"), "class='flag'"),
+      );
+      t.set(
+        ".sponsor_container",
+        solo.sponsor_logo &&
+          HD.html`<div class='sponsor_logo' style="background-image: url('${HD.asset(solo.sponsor_logo)}')"></div>`,
+      );
     }
-    refreshNeeded = false;
-  }
+    HD.teamColors(s, ["score-bg-color"]);
 
-  async function UpdateColor(t) {
-    let styleSheet = document.styleSheets[1];
-
-    var divs = document.getElementsByClassName(`p${t + 1} container`);
-
-    var div = divs[0];
-
-    var inner_container = div.querySelector(".inner_container");
-
-    var score_container = div.querySelector(".score_container");
-    var score_element = score_container.querySelector(".score");
-
-    var name_container = inner_container.querySelector(".name_container");
-    var name_element = name_container.querySelector(".name");
-
-    var twitter_element = document.querySelector(`.p${t + 1} .twitter`);
-
-    // Get the background color of the div
-    var color = window
-      .getComputedStyle(div, null)
-      .getPropertyValue("background-color");
-
-    var components = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-
-    if (components) {
-      // Extract the individual RGB components
-      var red = parseInt(components[1]);
-      var green = parseInt(components[2]);
-      var blue = parseInt(components[3]);
-
-      const intensity = red * 0.299 + green * 0.587 + blue * 0.114;
-
-      if (intensity > 142) {
-
-        // Change the text color
-        score_element.style.color = "rgb(18, 18, 18, 0.8)";
-        twitter_element.style.color = "rgb(18, 18, 18, 0.8)";
-        styleSheet.insertRule(`.p${t+ 1} .twitter_logo { background:rgba(18, 18, 18, 0.8) !important}`, styleSheet.cssRules.length);
-        name_element.style.color = "white";
-        inner_container.style.backgroundColor = "rgba(18, 18, 18, 0.8)";
-
-      } else if (intensity > 95) {
-
-        // Change the text color
-        score_element.style.color = "white";
-        twitter_element.style.color = "white";
-        styleSheet.insertRule(`.p${t+ 1} .twitter_logo { background: white!important}`, styleSheet.cssRules.length);
-        name_element.style.color = "white";
-        inner_container.style.backgroundColor = "rgba(18, 18, 18, 0.8)";
-
-      } else if (intensity <= 80) {
-
-        // Change the text color
-        score_element.style.color = "white";
-        twitter_element.style.color = "white";
-        styleSheet.insertRule(`.p${t+ 1} .twitter_logo { background: white !important}`, styleSheet.cssRules.length);
-        name_element.style.color = "rgb(18, 18, 18, 0.8)";
-        inner_container.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-      }
-    }
-  }
-
-  /**
-   * Checks to see whether the properties and their values of obj1 are the same as those of obj2
-   * Created this function with the help of ChatGPT, modified to make it recursive and fit the need of the overlay.
-   * @param obj1 Object 1 to compare
-   * @param obj2 Object 2 to compare
-   * @returns boolean of whether the properties and their values of obj1 are the same as those of obj2
-   */
-  function compareObjects(obj1, obj2) {
-    // Get the property names of obj1
-    const obj1Keys = Object.keys(obj1).sort();
-
-    // Loop through the properties of obj1
-    for (let key of obj1Keys) {
-      if (key !== "character" && key !== "mains" && key !== "id" && key !== "mergedName" && key !== "mergedOnlyName" && key != "seed" && key != "") {
-        // Check if the property exists in obj2
-        if (!obj2.hasOwnProperty(key)) {
-          return false;
-        }
-        // Check if the values of the properties are the same
-        // Check to see if there is an object inside the object
-        if (typeof obj1[key] == "object" && obj1[key] && obj2[key]) {
-          // If an inner object of obj1 is not equal to the inner object of obj2, then we return false to avoid any more comparisons
-          if (!compareObjects(obj1[key], obj2[key])) return false;
-          // If the primitive types are not equal to each other, then we return false here as well
-        } else if (obj1[key] !== obj2[key]) {
-          return false;
-        }
-      }
-    }
-    // If all properties and their values are the same, return true
-    return true;
-  }
-
-  async function DisplayName(t, team, player) {
-
-    const retrievedJsonString = localStorage.getItem("playerInWinners");
-    const playerInWinners = JSON.parse(retrievedJsonString);
-
-    if (t == 0) {
-      player1 = player
-      team1Losers = team.losers
+    for (const { n } of s.teams) {
+      const container = document.querySelector(`.p${n}.container`);
+      const rgb = getComputedStyle(container).backgroundColor.match(/\d+/g);
+      const colors = rgb && contrast(rgb[0] * 0.299 + rgb[1] * 0.587 + rgb[2] * 0.114);
+      if (!colors) continue;
+      const [text, name, nameBg] = colors;
+      $(`.p${n}.container .score, .p${n} .twitter`).css("color", text);
+      $(`.p${n}.twitter_container`).css("--twitter-logo", text);
+      $(`.p${n}.container .name`).css("color", name);
+      $(`.p${n}.container .inner_container`).css("background-color", nameBg);
     }
 
-    if (t == 1) {
-      player2 = player
-      team2Losers = team.losers
-    }
-
-    // Both names are drawn by each team's call: wait for the other team's
-    // call to store its player, or a name would be faded to the old one
-    await Promise.resolve();
-
-      // If the player and the opponent are both in losers
-    if (team1Losers && team2Losers) {
-
-      // If P1 was in winners
-      if (compareObjects(playerInWinners, player1)) {
-
-        // P1 has (WL)
-        SetInnerHtml(
-          $(`.p1.container .name`),
-          `
-            <span class="sponsor">
-              ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-            </span>
-            ${
-              player1.name ? player1.name : ""
-            }
-            ${"(WL)"}
-          `
-        );
-
-        // P2 has (L)
-        SetInnerHtml(
-          $(`.p2.container .name`),
-          `
-            <span class="sponsor">
-              ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-            </span>
-            ${
-              player2.name ? player2.name : ""
-            }
-            ${"(L)"}
-          `
-        );
-
-      // If P2 was in winners
-      } else if (compareObjects(playerInWinners, player2)) { 
-
-        // P1 has (L)
-        SetInnerHtml(
-          $(`.p1.container .name`),
-          `
-            <span class="sponsor">
-              ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-            </span>
-            ${
-              player1.name ? player1.name : ""
-            }
-            ${"(L)"}
-          `
-        );
-
-        // P2 has (WL)
-        SetInnerHtml(
-          $(`.p2.container .name`),
-          `
-            <span class="sponsor">
-              ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-            </span>
-            ${
-              player2.name ? player2.name : ""
-            }
-            ${"(WL)"}
-          `
-        );
-
-      // If neither of them were in winners (which is unlikely but possible)
-      } else {
-
-        // P1 has (L)
-        SetInnerHtml(
-          $(`.p1.container .name`),
-          `
-            <span class="sponsor">
-              ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-            </span>
-            ${
-              player1.name ? player1.name : ""
-            }
-            ${"(L)"}
-          `
-        );
-
-        // P2 has (L)
-        SetInnerHtml(
-          $(`.p2.container .name`),
-          `
-            <span class="sponsor">
-              ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-            </span>
-            ${
-              player2.name ? player2.name : ""
-            }
-            ${"(L)"}
-          `
-        );
-      }
-
-    } else if (team1Losers) { // P1 in losers, P2 in winners
-
-      // P1 has (L)
-      SetInnerHtml(
-        $('.p1.container .name'),
-        `
-          <span class="sponsor">
-            ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-          </span>
-          ${
-            player1.name ? player1.name : ""
-          }
-          ${"(L)"}
-        `
-      );
-      
-      // P2 has (W)
-      SetInnerHtml(
-        $('.p2.container .name'),
-        `
-          <span class="sponsor">
-            ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-          </span>
-          ${
-            player2.name ? player2.name : ""
-          }
-          ${"(W)"}
-        `
-      );
-
-      if (t == 1 && player2.name) {
-        const jsonString = JSON.stringify(player2);
-        localStorage.setItem("playerInWinners", jsonString);
-      }
-
-    } else if (team2Losers) {
-
-      // P1 has (W)
-      SetInnerHtml(
-        $('.p1.container .name'),
-        `
-          <span class="sponsor">
-            ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-          </span>
-          ${
-            player1.name ? player1.name : ""
-          }
-          ${"(W)"}
-        `
-      );
-      
-      // P2 to has (L)
-      SetInnerHtml(
-        $('.p2.container .name'),
-        `
-          <span class="sponsor">
-            ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-          </span>
-          ${
-            player2.name ? player2.name : ""
-          }
-          ${"(L)"}
-        `
-      );
-
-      if (t == 1 && player1.name) {
-        const jsonString = JSON.stringify(player1);
-        localStorage.setItem("playerInWinners", jsonString);
-      }
-
-    // Neither P1 nor P2 is in losers
-    } else {
-
-      SetInnerHtml(
-        $('.p1.container .name'),
-        `
-          <span class="sponsor">
-            ${player1.team ? player1.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-          </span>
-          ${
-            player1.name ? player1.name : ""
-          }
-        `
-      );
-
-      SetInnerHtml(
-        $('.p2.container .name'),
-        `
-          <span class="sponsor">
-            ${player2.team ? player2.team.replace(/\s*[\|\/\\]\s*/g, ' '): ""}
-          </span>
-          ${
-            player2.name ? player2.name : ""
-          }
-        `
-      );
-
-    }
-  }
-
-  async function DisplayTeamName(t, team, teamName) {
-
-    const teamNameInWinners = localStorage.getItem("teamNameInWinners");
-
-    if (t == 0) {
-      team1Name = teamName;
-      team1Losers = team.losers
-    }
-
-    if (t == 1) {
-      team2Name = teamName;
-      team2Losers = team.losers
-    }
-
-      // If the player and the opponent are both in losers
-    if (team1Losers && team2Losers) {
-
-      // If Team 1 was in winners
-      if (team1Name == teamNameInWinners) {
-
-        // Team 1 has (WL)
-        SetInnerHtml(
-          $(`.p1.container .name`),
-          `
-            ${team1Name}
-            ${"(WL)"}
-          `
-        );
-
-        // Team 2 has (L)
-        SetInnerHtml(
-          $(`.p2.container .name`),
-          `
-            ${team2Name}
-            ${"(L)"}
-          `
-        );
-
-      // If Team 2 was in winners
-      } else if (team2Name == teamNameInWinners) { 
-
-        // Team 1 has (L)
-        SetInnerHtml(
-          $(`.p1.container .name`),
-          `
-            ${team1Name}
-            ${"(L)"}
-          `
-        );
-
-        // Team 2 has (WL)
-        SetInnerHtml(
-          $(`.p2.container .name`),
-          `
-            ${team2Name}
-            ${"(WL)"}
-          `
-        );
-
-      // If neither of them were in winners (which is unlikely but possible)
-      } else {
-
-        // Team 1 has (L)
-        SetInnerHtml(
-          $(`.p1.container .name`),
-          `
-            ${team1Name}
-            ${"(L)"}
-          `
-        );
-
-        // Team 2 has (L)
-        SetInnerHtml(
-          $(`.p2.container .name`),
-          `
-            ${team2Name}
-            ${"(L)"}
-          `
-        );
-      }
-
-    } else if (team1Losers) { // Team 1 in losers, Team 2 in winners
-
-      // Team 1 has (L)
-      SetInnerHtml(
-        $(`.p1.container .name`),
-        `
-          ${team1Name}
-          ${"(L)"}
-        `
-      );
-
-      // Team 2 has (W)
-      SetInnerHtml(
-        $(`.p2.container .name`),
-        `
-          ${team2Name}
-          ${"(W)"}
-        `
-      );
-
-      if (t == 1 && team2Name) {
-        localStorage.setItem("teamNameInWinners", team2Name);
-      }
-
-    } else if (team2Losers) {
-
-      // Team 1 has (W)
-      SetInnerHtml(
-        $(`.p1.container .name`),
-        `
-          ${team1Name}
-          ${"(W)"}
-        `
-      );
-
-      // Team 2 has (L)
-      SetInnerHtml(
-        $(`.p2.container .name`),
-        `
-          ${team2Name}
-          ${"(L)"}
-        `
-      );
-
-      if (t == 1 && team1Name) {
-        localStorage.setItem("teamNameInWinners", team1Name);
-      }
-
-    // Neither P1 nor P2 is in losers
-    } else {
-
-      SetInnerHtml(
-        $(`.p1.container .name`),
-        `
-          ${team1Name}
-        `
-      );
-
-      SetInnerHtml(
-        $(`.p2.container .name`),
-        `
-          ${team2Name}
-        `
-      );
-
-    }
-  }
+    rotate(s);
+  },
 });

@@ -692,6 +692,7 @@ locale = [
     { name = "pyside6" },
 ]
 previews = [
+    { name = "pillow" },
     { name = "playwright" },
     { name = "py7zr" },
     { name = "requests" },
@@ -733,6 +734,7 @@ build = [{ name = "pyinstaller" }]
 dev = [{ name = "ruff" }]
 locale = [{ name = "pyside6" }]
 previews = [
+    { name = "pillow" },
     { name = "playwright" },
     { name = "py7zr" },
     { name = "requests" },

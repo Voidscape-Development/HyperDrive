@@ -2,9 +2,11 @@
 
 Here you'll find templates for animated layouts using HyperDrive's output.
 
-In `/include/` you'll find `globals.js` which contain general functions used in most template layouts. You'll also find some of the libraries used: `gsap` and `jquery`.
+In `/include/` you'll find the layout runtime (`globals.js`, `render.js`, `characters.js`), the layouts several folders share (`scoreboard.js`, `versus.js`...) and the libraries they use (`gsap`, `jquery`, `lodash`). How to write a layout: [`docs/layouts.md`](../docs/layouts.md).
 
-Testing and debugging locally with Chrome:
+The easiest way to work on a layout is the dev harness: with HyperDrive running, open `http://localhost:5500/layout/dev.html`, pick a page, and use the live state or edit a fixture and send it.
+
+Testing and debugging from files with Chrome:
 - Add the flag `--allow-file-access-from-files` when launching Chrome
     - On Windows, you can either `"C:\PathTo\chrome.exe" --allow-file-access-from-files` or open the PowerShell and type `Start-Process "chrome.exe" "--allow-file-access-from-files"`
 - Then, you can open a layout `html` file in Chrome, press F12 for developer tools

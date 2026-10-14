@@ -2,7 +2,6 @@ body {
   font-family: var(--font);
   letter-spacing: 1px;
   font-weight: bold;
-  opacity: 0;
   overflow: hidden;
   margin: 0;
   width: 1920px;
@@ -533,4 +532,8 @@ body {
 
 .t2 .losers {
   background: var(--p2-score-bg-color);
+}
+/* Names in capitals (the theme's text case can override) */
+.container .name .text {
+  text-transform: uppercase;
 }

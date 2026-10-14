@@ -1,6 +1,5 @@
 body {
   font-family: "Barlow Condensed", sans-serif;
-  opacity: 0;
   overflow: hidden;
   margin: 0;
   width: 1920px;
@@ -347,4 +346,10 @@ body.hd-theme-colors .inner_container {
 
 body.hd-theme-colors .tournament_container {
   background: linear-gradient(90deg, var(--accent-secondary-color) 0%, var(--accent-color) 100%);
+}
+
+/* Names and the match in capitals (the theme's text case can override) */
+.name .text,
+.match .text {
+  text-transform: uppercase;
 }

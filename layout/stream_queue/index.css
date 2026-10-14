@@ -1,7 +1,6 @@
 body {
     font-family: var(--font);
     font-weight: bold;
-    opacity: 0;
     overflow: hidden;
     margin: 0;
     filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12))

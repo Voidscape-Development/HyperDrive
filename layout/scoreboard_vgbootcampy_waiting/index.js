@@ -1,115 +1,24 @@
-LoadEverything().then(() => {
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+// VGBootcamp waiting screen: the two sides' names and score around the
+// game screen
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+  intro(tl) {
+    tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
+      .from(".anim_container_outer", { duration: 1, width: 0, ease: "power2.inOut" }, 1)
+      .from(".p1.twitter", { duration: 0.75, x: -373, ease: "power4.Out" }, "<25%")
+      .from(".p2.twitter", { duration: 0.75, x: 373, ease: "power4.Out" }, "<")
+      .from(".tournament_container", { duration: 0.75, x: -373, ease: "power4.Out" }, "<")
+      .from(".tournament_logo", { opacity: 0, duration: 0.5, ease: "power4.Out" }, "<");
+  },
 
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .from([".logo"], { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
-    .from(
-      [".anim_container_outer"],
-      {
-        duration: 1,
-        width: "0",
-        ease: "power2.inOut",
-      },
-      1
-    )
-    .from(
-      [".p1.twitter"],
-      {
-        duration: 0.75,
-        x: "-373px",
-        ease: "power4.Out",
-      },
-      "<25%"
-    )
-    .from(
-      [".p2.twitter"],
-      {
-        duration: 0.75,
-        x: "373px",
-        ease: "power4.Out",
-      },
-      "<"
-    )
-    // .from(
-    //   ".tournament_container",
-    //   { opacity: 0, duration: 0.5, ease: "power4.Out" },
-    //   "<80%"
-    // )
-    .from(
-      ".tournament_container",
-      {
-        duration: 0.75,
-        x: "-373px",
-        ease: "power4.Out",
-      },
-      "<"
-    )
-    .from(
-      ".tournament_logo",
-      { opacity: 0, duration: 0.5, ease: "power4.Out" },
-      "<"
-    );
-
-  Start = async () => {
-    startingAnimation.restart();
-  };
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    for (const [t, team] of [
-      data.score[window.scoreboardNumber].team["1"],
-      data.score[window.scoreboardNumber].team["2"],
-    ].entries()) {
-      for (const [p, player] of [team.player["1"]].entries()) {
-        if (player) {
-          if (Object.keys(team.player).length == 1) {
-            SetInnerHtml(
-              $(`.p${t + 1}.container .name`),
-              `
-                <span class="sponsor">
-                  ${player.team ? player.team.toUpperCase() : ""}
-                </span>
-                ${
-                  player.name ? player.name.toUpperCase() : ""
-                }
-                ${team.losers ? "(L)" : ""}
-              `
-            );
-          } else {
-            let teamName = "";
-
-            if (!team.teamName || team.teamName == "") {
-              let names = [];
-              for (const [p, player] of Object.values(team.player).entries()) {
-                if (player && player.name) {
-                  names.push(player.name);
-                }
-              }
-              teamName = names.join(" / ");
-            } else {
-              teamName = team.teamName;
-            }
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .name`),
-              `
-                ${teamName.toUpperCase()}
-                ${team.losers ? "(L)" : ""}
-              `
-            );
-          }
-
-          let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
-
-          SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
-        }
-        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
+  update(s) {
+    for (const t of s.teams) {
+      const { team, player } = t;
+      if (!team.player || !team.player[1]) continue;
+      const losers = team.losers && "(L)";
+      t.set("&.container .name", s.isTeams ? HD.text([t.name, losers]) : HD.html`${HD.ui.name(player)} ${losers}`);
+      t.set("&.score", team.score);
     }
-  };
+    HD.teamColors(s, ["score-bg-color"]);
+  },
 });

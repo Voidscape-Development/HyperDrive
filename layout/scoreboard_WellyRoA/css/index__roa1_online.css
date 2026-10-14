@@ -28,7 +28,6 @@ body {
   font-family: "BebasNeue";
   letter-spacing: 1px;
   /* font-weight: bold; */
-  opacity: 0;
   overflow: hidden;
   margin: 0;
   width: 1920px;
@@ -758,4 +757,9 @@ body {
 @keyframes scoreSlide {
   from {transform: translateX(0px)}
   to {transform: translateX(-98px)}
+}
+
+/* Names in capitals (the theme's text case can override) */
+.container .name .text {
+  text-transform: uppercase;
 }

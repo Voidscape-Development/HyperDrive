@@ -1,7 +1,6 @@
 body {
   font-family: "Figtree", "M Plus 1p", sans-serif;
   font-weight: 900;
-  opacity: 0;
   overflow: hidden;
   margin: 0;
   width: 1920px;
@@ -372,4 +371,9 @@ body {
   height: 48px;
   margin-right: 4px;
   margin-left: 4px;
+}
+
+/* Everything in capitals (the theme's text case can override) */
+.text {
+  text-transform: uppercase;
 }

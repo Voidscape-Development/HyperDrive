@@ -4,6 +4,14 @@ What HyperDrive sends to the layouts (in `program_state`) for the bracket widget
 Stream Queue widget, the completed sets, the scoreboard's Games window, the Crew/Team Battle window, the
 players' socials and custom data, and the layout theme in use.
 
+A socket.io client gets the whole state when it connects (`program_state`:
+`{state, delta_index}`), then changes (`program_state_update`:
+`{delta_index, delta}`, numbered one by one). A client that only needs some
+of it connects with `auth: {state_keys: ["score", "game"]}` and gets only
+those top-level keys, in both. Its updates keep their numbers, with an empty
+`delta` when none of its keys changed. Layouts do this with `subscribe` (see
+[layouts.md](layouts.md#subscriptions)).
+
 ## `bracket`
 
 The bracket widget's phases are a pool: phases built in it and start.gg
@@ -95,6 +103,7 @@ for `HDBracket`:
 | `StandingsHtml(data)` | A pool's standings, or an elimination bracket's results, as a table |
 | `GridHtml(data)` | A pool as a round robin grid of who played who, players in seed order |
 | `RenderPool(container, data)` | Draws a pool's rounds, for layouts without a pool view of their own |
+| `PlayerSlotHtml(slot)`, `UpdateSet(s, element, set, data)` | A set's two player rows, and filling them in (names, flags, avatars, characters) |
 | `ToRounds(bracket, players)` | The bracket in the older `rounds` shape (`{"1": {name, sets: {"0": {playerId, score, nextWin...}}}}`, losers rounds negative), with byes filled in, for layouts drawn around it |
 
 `layout/include/bracket.css` has the pool view, the standings table and the
@@ -351,17 +360,16 @@ sponsor changes. Avatars set in the app are saved as the tag alone.
 `{"1": ".../HD.png", "2": ".../GG.png"}`) when there's no logo for all of them
 together, which is then `sponsor_logo`.
 
-In layouts, `globals.js` has:
+In layouts (see [layouts.md](layouts.md)):
 
 | | |
 | - | - |
-| `CustomData(player, key, fallback = null)` | `player.custom[key]`, or `fallback` |
-| `CustomFile(player, key, fallback = null)` | The `src` of the image or video in the file named `key`, or `fallback` |
+| `HD.custom(player, key, fallback = null)` | `player.custom[key]`, or `fallback` |
+| `HD.customFile(player, key, fallback = null)` | The `src` of the image or video in the file named `key`, or `fallback` |
 
 ```js
-SetInnerHtml($(".bio"), CustomData(player, "bio", ""));
-const card = CustomFile(player, "card");
-SetInnerHtml($(".card"), card ? `<img src="${card}" />` : "");
+t.set(".bio", HD.custom(t.player, "bio", ""));
+t.set(".card", HD.img(HD.customFile(t.player, "card")));
 ```
 
 `player_presentation` shows `bio` under the player's name.
@@ -377,8 +385,8 @@ The theme picked in Layout themes:
 | `css` | The values as CSS custom properties: `{"--general-primary-color": "#d02670", ...}` |
 | `stylesheet` | The same as a `:root { ... }` stylesheet |
 
-Layouts don't need to read it: `ApplyLayoutTheme()` in `globals.js` applies
-it before each `Update()`:
+Layouts don't need to read it: the runtime (`globals.js`) applies it before
+each `update()`:
 
 - Every `css` property is set on `:root`, along with `--font` when the theme
   has a font.
@@ -409,15 +417,13 @@ it before each `Update()`:
 - The animation speed is set on GSAP's global timeline (off: 1000x).
 
 A `hd_theme` event is sent on `document` after it's applied, and
-`ThemeValue(section, field, fallback)` reads a value.
+`HD.theme(section, field, fallback)` reads a value.
 
-`ThemeSettings(settings, overrides)` puts theme values on top of a layout's
-own settings, for layouts whose settings the theme can change: `overrides` is
-`[[setting path, section, field, theme default, (value) => setting], ...]`.
+A layout whose settings the theme can change maps them in its `theme`:
+`{ "setting.path": [section, field, theme default, (value) => setting] }`.
 A theme value only counts when it isn't its field's default (so the default
-theme keeps the layout's `settings.json`), and the page's own
-`window.settings` still wins. The stream queue layouts (`stream_queue` section)
-read theirs this way.
+theme keeps the layout's `settings.json`), and page options still win. The
+stream queue layouts (`stream_queue` section) read theirs this way.
 
 ## `display`
 
@@ -430,17 +436,17 @@ README) has turned on and off:
 
 `globals.js` does the work, so layouts don't have to: a page is shown while
 its folder (the folder its page is in) is on and so is every group in its
-`?display=<group>[,<group>...]` (lowercase). When it's turned off, `Hide()`
-plays, then the page fades out; when it's turned back on, `Start()` plays
-again. One that's off when it loads stays hidden, without playing `Start()`,
-and so does one that's off when OBS shows its source.
+`?display=<group>[,<group>...]` (lowercase). When it's turned off, the
+layout's intro plays backwards (or its `outro`), then the page fades out;
+when it's turned back on, the intro plays again. One that's off when it
+loads stays hidden, without playing it, and so does one that's off when OBS
+shows its source.
 
-By default `Hide()` plays the timelines the last `Start()` played backwards
-(a layout whose `Start()` plays none just fades out). To hide it another way,
-a layout sets its own:
+To hide it another way than the intro backwards, a layout has an `outro`:
 
 ```js
-Hide = async () => {
-  await gsap.to(".container", { y: -100, autoAlpha: 0, duration: 0.4 });
-};
+HD.layout({
+  outro: () => gsap.to(".container", { y: -100, autoAlpha: 0, duration: 0.4 }),
+  // ...
+});
 ```

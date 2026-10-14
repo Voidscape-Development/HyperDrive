@@ -1,245 +1,53 @@
-LoadEverything().then(() => {
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+// Top-left scoreboard: the tournament, then each side's name, pronouns,
+// flags, avatar, score and character (portraits on index_portraits.html)
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+  intro(tl) {
+    const ease = "power2.inOut";
+    tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease }, 0.5)
+      .from(".anim_container_outer", { duration: 1, width: 0, ease }, 1)
+      .from(".base_container_outer", { duration: 1, width: 0, ease }, 1)
+      .from([".fgc .top", ".fgc .player"], { duration: 1, y: -100, ease }, 0)
+      .from(".fgc:not(.bblue) .bottom", { duration: 1, y: 100, ease }, 0)
+      .from(".fgc.bblue .bottom", { duration: 1, autoAlpha: 0, ease }, 0.2);
+  },
 
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .from([".logo"], { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
-    .from(
-      [".anim_container_outer"],
-      {
-        duration: 1,
-        width: "0",
-        ease: "power2.inOut",
-      },
-      1
-    )
-    .from(
-      [".base_container_outer"],
-      {
-        duration: 1,
-        width: 0,
-        ease: "power2.inOut",
-      },
-      1
-    )
-    .from(
-      [".fgc .top", ".fgc .player"],
-      {
-        duration: 1,
-        y: "-100px",
-        ease: "power2.inOut",
-      },
-      0
-    )
-    .from(
-      [".fgc:not(.bblue) .bottom"],
-      {
-        duration: 1,
-        y: "+100px",
-        ease: "power2.inOut",
-      },
-      0
-    )
-    .from(
-      [".fgc.bblue .bottom"],
-      {
-        duration: 1,
-        autoAlpha: 0,
-        ease: "power2.inOut",
-      },
-      0.2
-    );
+  update(s) {
+    const background = (src) => src && HD.html`<div style="background-image: url('${src}')"></div>`;
+    const flag = (place) => place && place.asset && HD.html`<img class='flag' src='${HD.asset(place.asset)}' />`;
 
-  Start = async () => {
-    startingAnimation.restart();
-  };
+    for (const t of s.teams) {
+      const { team, player } = t;
+      // Doubles show the team's name, and only the first player's Twitter
+      const solo = s.isTeams ? {} : player;
+      const losers = team.losers && HD.html`<span class='losers'>L</span>`;
 
-  var data = {};
-  var oldData = {};
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    if (Object.keys(data.score[window.scoreboardNumber].team["1"].player).length == 1) {
-      // Singles
-      for (const [t, team] of [
-        data.score[window.scoreboardNumber].team["1"],
-        data.score[window.scoreboardNumber].team["2"],
-      ].entries()) {
-        for (const [p, player] of Object.values(team.player).entries()) {
-          if (player) {
-            // Get player name presentation using player_presentation strategy
-            let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? player.name : ""}`;
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .name`),
-              `
-                ${playerPresentation}
-                <span class="pronoun">
-                  ${player.pronoun ? player.pronoun : ""}
-                </span>
-                ${team.losers ? "<span class='losers'>L</span>" : ""}
-              `
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .flagcountry`),
-              player.country.asset
-                ? `<img class='flag' src='../../${player.country.asset.toLowerCase()}' />`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .flagstate`),
-              player.state.asset
-                ? `<img class='flag' src='../../${player.state.asset}' />`
-                : ""
-            );
-
-            await CharacterDisplay(
-              $(`.p${t + 1}.container .character_container`),
-              {
-                source: `score.${window.scoreboardNumber}.team.${t + 1}`,
-                scale_based_on_parent: window.PORTRAITS ? true : false,
-              },
-              event
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .sponsor_icon`),
-              player.sponsor_logo
-                ? `<div style="background-image: url('../../${player.sponsor_logo}')"></div>`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .avatar`),
-              player.avatar
-                ? `<div style="background-image: url('../../${player.avatar}')"></div>`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .online_avatar`),
-              player.online_avatar
-                ? `<div style="background-image: url('${player.online_avatar}')"></div>`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .twitter`),
-              player.twitter
-                ? `<span class="twitter_logo"></span>${String(player.twitter)}`
-                : ""
-            );
-
-            let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
-
-            SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .sponsor-container`),
-              `<div class='sponsor-logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
-            );
-          }
-          if(team.color && !hd_settings["forceDefaultScoreColors"]) {
-            document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-          }
-        }
-      }
-    } else {
-      // Doubles
-      for (const [t, team] of [
-        data.score[window.scoreboardNumber].team["1"],
-        data.score[window.scoreboardNumber].team["2"],
-      ].entries()) {
-        // Get team name presentation using player_presentation strategy
-        let teamName = team.teamName;
-        if (!teamName || teamName == "") {
-          let names = [];
-          for (const [p, player] of Object.values(team.player).entries()) {
-            if (player && player.name) {
-              names.push(player.name);
-            }
-          }
-          teamName = names.join(" / ");
-        }
-        let teamPresentation = teamName;
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .name`),
-          `
-            ${teamPresentation}
-            ${team.losers ? "<span class='losers'>L</span>" : ""}
-          `
-        );
-
-        let player = team.player["1"];
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .flagcountry`),
-          player.country.asset ? `` : ""
-        );
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .flagstate`),
-          player.state.asset ? `` : ""
-        );
-
-        await CharacterDisplay(
-          $(`.p${t + 1}.container .character_container`),
-          {
-            source: `score.${window.scoreboardNumber}.team.${t + 1}`,
-            slice_character: [0, 1],
-            custom_element: window.PORTRAITS ? -2 : 0,
-          },
-          event
-        );
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .sponsor_icon`),
-          player.sponsor_logo ? `` : ""
-        );
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .avatar`),
-          player.avatar ? `` : ""
-        );
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .online_avatar`),
-          player.online_avatar ? `` : ""
-        );
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .twitter`),
-          player.twitter
-            ? `<span class="twitter_logo"></span>${String(player.twitter)}`
-            : ""
-        );
-
-        let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
-
-        SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .sponsor-container`),
-          `<div class='sponsor-logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
-        );
-
-        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
+      t.set(
+        "&.container .name",
+        s.isTeams
+          ? HD.html`${t.name} ${losers}`
+          : HD.html`<span class="sponsor">${player.team}</span>${player.name} <span class="pronoun">${player.pronoun}</span> ${losers}`,
+      );
+      t.set("&.container .flagcountry", flag(solo.country));
+      t.set("&.container .flagstate", flag(solo.state));
+      t.set("&.container .sponsor_icon", background(HD.asset(solo.sponsor_logo)));
+      t.set("&.container .avatar", background(HD.asset(solo.avatar)));
+      t.set("&.container .online_avatar", background(solo.online_avatar));
+      t.set("&.container .twitter", HD.ui.chip("twitter", player.twitter));
+      t.set("&.container .score", team.score);
+      t.set("&.container .sponsor-container", HD.ui.sponsorLogo(player.sponsor_logo));
+      s.characters(t.sel("&.container .character_container"), {
+        source: ["score", s.n, "team", t.n],
+        scale_based_on_parent: !s.isTeams && !!s.settings.portraits,
+        slice_character: s.isTeams ? [0, 1] : undefined,
+      });
     }
+    HD.teamColors(s, ["score-bg-color"]);
 
-    SetInnerHtml($(".tournament_name"), data.tournamentInfo.tournamentName);
-
-    SetInnerHtml($(".event_name"), data.tournamentInfo.eventName);
-
-    SetInnerHtml($(".phase"), data.score[window.scoreboardNumber].phase);
-    SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match);
-    SetInnerHtml($(".best_of"), data.score[window.scoreboardNumber].best_of_text);
-  };
+    s.set(".tournament_name", s.data.tournamentInfo.tournamentName);
+    s.set(".event_name", s.data.tournamentInfo.eventName);
+    s.set(".phase", s.score.phase);
+    s.set(".match", s.score.match);
+    s.set(".best_of", s.score.best_of_text);
+  },
 });

@@ -1,102 +1,54 @@
-LoadEverything().then(() => {
-  if (!window.PLAYER) {
-    window.PLAYER = 1;
-  }
+// A player's last tournaments (page option player: 1 or 2, up to 6): each
+// with its logo, the placement out of the entrants, the event and the
+// seed performance rating (placement rounds above or below the seed)
+const tournamentCard = (_t, i) => HD.html`
+  <div class="tournament${i + 1} tournament_container">
+    <div class="info">
+      <div class="tournament_logo"></div>
+      <div class="placement"></div>
+      <div class="tournament_info">
+        <div class="tournament_name"></div>
+        <div class="event_name"></div>
+        <div class="spr"></div>
+      </div>
+    </div>
+  </div>`;
 
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+  settings: { player: 1 },
 
-  let startingAnimation;// = gsap.timeline({ paused: true });
+  intro(tl) {
+    $(".tournament_container").each((i, el) => tl.from(el, { x: -100, autoAlpha: 0, duration: 0.3 }, 0.2 + 0.2 * i));
+  },
 
-  Start = async (event) => {
-    //startingAnimation.restart();
-  };
+  update(s) {
+    const tournaments = Object.values(_.get(s.score, ["history_sets", s.settings.player]) || {}).slice(0, 6);
+    const built = HD.build(".player1_content", tournaments, () => tournaments.map(tournamentCard));
 
-  function getNumberOrdinal(n) {
-    var s = ["th", "st", "nd", "rd"],
-      v = n % 100;
-    return s[(v - 20) % 10] || s[v] || s[0];
-  }
+    tournaments.forEach((t, i) => {
+      const card = `.player1_content .tournament${i + 1} .info`;
+      const spr = t.spr;
+      HD.set(`${card} .tournament_info .tournament_name`, t.tournament_name);
+      HD.set(`${card} .tournament_info .event_name`, t.event_name);
+      HD.set(
+        `${card} .tournament_info .spr`,
+        spr != null &&
+          HD.html`<span class="seed">Seed ${t.seed}</span><span class="spr_value ${
+            spr > 0 ? "positive" : spr < 0 ? "negative" : "even"
+          }">SPR ${spr > 0 ? "+" : ""}${spr}</span>`,
+      );
+      HD.set(
+        `${card} .tournament_logo`,
+        HD.html`<span class="logo" style="background-image: url('${t.tournament_picture}')"></span>`,
+      );
+      HD.set(
+        `${card} .placement`,
+        HD.html`${t.placement}<span class="ordinal">${HD.ordinal(t.placement)}</span><span class="num_entrants">/${t.entrants}</span>`,
+      );
+    });
 
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    if (
-      !oldData.score ||
-      JSON.stringify(data.score[window.scoreboardNumber].history_sets) !=
-        JSON.stringify(oldData.score[window.scoreboardNumber].history_sets)
-    ) {
-      tournament_html = "";
-      Object.values(data.score[window.scoreboardNumber].history_sets[window.PLAYER])
-        .slice(0, 6)
-        .forEach(async(sets, s) => {
-          tournament_html += `
-          <div class="tournament${s + 1} tournament_container">
-            <div class="info">
-              <div class="tournament_logo"></div>
-              <div class="placement"></div>
-              <div class="tournament_info">
-                <div class="tournament_name"></div>
-                <div class="event_name"></div>
-                <div class="spr"></div>
-              </div>
-            </div>
-          </div>`;
-        });
-      $(".player1_content").html(tournament_html);
-
-      for (const [s, tournament] of Object.values(
-        data.score[window.scoreboardNumber].history_sets[window.PLAYER]
-      )
-        .slice(0, 6)
-        .entries()) {
-        SetInnerHtml(
-          $(
-            `.player1_content .tournament${
-              s + 1
-            } .info .tournament_info .tournament_name`
-          ),
-          tournament.tournament_name
-        );
-        SetInnerHtml(
-          $(
-            `.player1_content .tournament${
-              s + 1
-            } .info .tournament_info .event_name`
-          ),
-          tournament.event_name
-        );
-        // Seed Performance Rating: placement rounds above (+) or below (-) the seed
-        const spr = tournament.spr;
-        const sprClass = spr > 0 ? "positive" : spr < 0 ? "negative" : "even";
-        SetInnerHtml(
-          $(`.player1_content .tournament${s + 1} .info .tournament_info .spr`),
-          spr === null || spr === undefined
-            ? ""
-            : `<span class="seed">Seed ${tournament.seed}</span>` +
-                `<span class="spr_value ${sprClass}">SPR ${spr > 0 ? "+" : ""}${spr}</span>`
-        );
-        SetInnerHtml(
-          $(`.player1_content .tournament${s + 1} .info .tournament_logo`),
-          `
-              <span class="logo" style="background-image: url('${tournament.tournament_picture}')"></span>
-            `
-        );
-        SetInnerHtml(
-          $(`.player1_content .tournament${s + 1} .info .placement`),
-          tournament.placement +
-            `<span class="ordinal">${getNumberOrdinal(
-              tournament.placement
-            )}</span><span class="num_entrants">/${tournament.entrants}</span>`
-        );
-        startingAnimation = gsap.timeline({paused: false})
-        startingAnimation.from(
-          $(`.tournament${s + 1}`),
-          { x: -100, autoAlpha: 0, duration: 0.3 },
-          0.2 + 0.2 * s
-        );
-        startingAnimation.restart();
-      }
-    }
-  };
+    // New tournaments slide in again
+    if (built && !s.first) HD.restart();
+  },
 });

@@ -1,222 +1,62 @@
-LoadEverything().then(() => {
-  Start = async (event) => {};
+// Stage strike: every stage in play, stamped as struck (with who struck
+// it), banned by the ruleset (DSR / MDSR) or picked. With the autohide page
+// option, it fades out 5 seconds after a stage is picked.
+let hideTimer = null;
 
-  var hideStagesTimeout = null;
-
-  function GetBannedStages(ruleset, state) {
-    let banList = [];
-
-    if (ruleset.useDSR) {
-      banList = state.stagesPicked ? state.stagesPicked : [];
-    } else if (ruleset.useMDSR && state.lastWinner !== -1) {
-      banList =
-        state.stagesWon && state.stagesWon.length > 0
-          ? state.stagesWon[(state.lastWinner + 1) % 2]
-          : [];
-    }
-
-    return banList;
+// Stages the ruleset itself bans (DSR / MDSR)
+const rulesetBans = (ruleset, strike) => {
+  if (ruleset.useDSR) return strike.stagesPicked || [];
+  if (ruleset.useMDSR && strike.lastWinner !== -1) {
+    return strike.stagesWon && strike.stagesWon.length > 0 ? strike.stagesWon[(strike.lastWinner + 1) % 2] : [];
   }
+  return [];
+};
 
-  function IsStageBanned(ruleset, state, stage) {
-    let banList = GetBannedStages(ruleset, state);
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+  update(s) {
+    if (!s.scoreChanged((score) => [score.stage_strike, score.team])) return;
 
-    console.log("banList", banList);
+    const ruleset = s.data.score.ruleset || {};
+    const strike = s.score.stage_strike || {};
+    // Team names in the widget's order (reversed when swapped)
+    const names = s.teams.map((t) => t.name || `P${t.n}`);
+    if (s.score.teamsSwapped) names.reverse();
 
-    let found = banList.findIndex((e) => e === stage);
-    if (found !== -1) {
-      return true;
+    const stages = [...(ruleset.neutralStages || []), ...(strike.currGame > 0 ? ruleset.counterpickStages || [] : [])];
+    const struck = Object.values(strike.strikedStages || {}).flat();
+    const banned = rulesetBans(ruleset, strike);
+    const strikedBy = strike.strikedBy || [[], []];
+
+    HD.render(
+      ".container",
+      stages.map((stage) => {
+        const code = stage.codename;
+        const isStruck = struck.includes(code);
+        const isBanned = banned.includes(code);
+        const picked = strike.selectedStage && strike.selectedStage === code;
+        const by = isStruck && (strikedBy[0].includes(code) ? names[0] : strikedBy[1].includes(code) ? names[1] : null);
+        const label = (text) => HD.html`<div class="banned-by-name"><div class="text">${text}</div></div>`;
+        return HD.html`
+          <div class="stage-container ${(isStruck || isBanned) && "striked"} ${picked && "selected"}">
+            <div class="stage-icon" style="background-image: url('${HD.asset(stage.path)}')">
+              ${isStruck && HD.html`<div class="stage-striked stamp"></div>`}
+              ${isBanned && HD.html`<div class="stage-dsr stamp"></div>`}
+              ${picked && HD.html`<div class="${strike.gentlemans ? "stage-selected-gentlemans" : "stage-selected"} stamp"></div>`}
+            </div>
+            <div class="stage-name"><div class="text">${stage.name}</div></div>
+            ${by && label(by)}
+            ${picked && label(strike.gentlemans ? "Gentlemans" : names[strike.currPlayer])}
+          </div>`;
+      }),
+    );
+    HD.fit($(".container").find(".stage-name, .banned-by-name"));
+
+    // Autohide: fades out once a stage is picked, back in for the next game
+    clearTimeout(hideTimer);
+    if (s.settings.autohide && strike.selectedStage && !_.get(s.old, ["score", s.n, "stage_strike", "selectedStage"])) {
+      hideTimer = setTimeout(() => gsap.to(".container", { autoAlpha: 0 }), 5000);
     }
-    return false;
-  }
-
-  function IsStageStriked(state, stage, previously = false) {
-    for (let i = 0; i < Object.values(state.strikedStages).length; i += 1) {
-      if (i === Object.values(state.strikedStages).length - 1 && previously) {
-        continue;
-      }
-      let round = Object.values(state.strikedStages)[i];
-      let found = round.findIndex((e) => e === stage);
-      if (found !== -1) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    if (
-      !oldData.score ||
-      JSON.stringify(data.score[window.scoreboardNumber].stage_strike) !=
-        JSON.stringify(oldData.score[window.scoreboardNumber].stage_strike) ||
-      JSON.stringify(oldData.score[window.scoreboardNumber].team) != JSON.stringify(data.score[window.scoreboardNumber].team)
-    ) {
-      html = "";
-
-      try {
-        let teamNames = [];
-
-        [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
-          let teamName = "";
-
-          if (!team.teamName || team.teamName == "") {
-            let names = [];
-            Object.values(team.player).forEach((player, p) => {
-              if (player) {
-                names.push(player.name);
-              }
-            });
-            teamName = names.join(" / ");
-          } else {
-            teamName = team.teamName;
-          }
-
-          if (teamName == "") {
-            teamName = "P" + (t + 1);
-          }
-
-          teamNames.push(teamName);
-        });
-
-        console.log(data.score[window.scoreboardNumber].teamsSwapped);
-
-        if (data.score[window.scoreboardNumber].teamsSwapped == true) {
-          teamNames = teamNames.reverse();
-        }
-
-        console.log(teamNames);
-
-        console.log(data.score[window.scoreboardNumber].stage_strike);
-
-        let allStages = data.score.ruleset.neutralStages;
-
-        if (data.score[window.scoreboardNumber].stage_strike.currGame > 0) {
-          allStages = allStages.concat(data.score.ruleset.counterpickStages);
-        }
-
-        console.log(allStages);
-
-        allStages.forEach((stage) => {
-          let path = stage.path;
-          html += `
-              <div class="stage-container 
-                ${
-                  IsStageStriked(data.score[window.scoreboardNumber].stage_strike, stage.codename) ||
-                  IsStageBanned(
-                    data.score.ruleset,
-                    data.score[window.scoreboardNumber].stage_strike,
-                    stage.codename
-                  )
-                    ? "striked"
-                    : ""
-                }
-                ${
-                  data.score[window.scoreboardNumber].stage_strike.selectedStage &&
-                  data.score[window.scoreboardNumber].stage_strike.selectedStage == stage.codename
-                    ? "selected"
-                    : ""
-                }
-                ">
-                  <div class="stage-icon" style="background-image: url('../../${path}')">
-                      ${
-                        IsStageStriked(data.score[window.scoreboardNumber].stage_strike, stage.codename)
-                          ? `<div class="stage-striked stamp"></div>`
-                          : ""
-                      }
-                      ${
-                        IsStageBanned(
-                          data.score.ruleset,
-                          data.score[window.scoreboardNumber].stage_strike,
-                          stage.codename
-                        )
-                          ? `<div class="stage-dsr stamp"></div>`
-                          : ""
-                      }
-                      ${
-                        data.score[window.scoreboardNumber].stage_strike.selectedStage &&
-                        data.score[window.scoreboardNumber].stage_strike.selectedStage == stage.codename
-                          ? data.score[window.scoreboardNumber].stage_strike.gentlemans
-                            ? `<div class="stage-selected-gentlemans stamp"></div>`
-                            : `<div class="stage-selected stamp"></div>`
-                          : ""
-                      }
-                  </div>
-                  <div class="stage-name">
-                      <div class="text">
-                          ${stage.name}
-                      </div>
-                  </div>
-                  ${
-                    IsStageStriked(data.score[window.scoreboardNumber].stage_strike, stage.codename) &&
-                    (data.score[window.scoreboardNumber].stage_strike.strikedBy[0].includes(
-                      stage.codename
-                    ) ||
-                      data.score[window.scoreboardNumber].stage_strike.strikedBy[1].includes(
-                        stage.codename
-                      ))
-                      ? `<div class="banned-by-name">
-                        <div class="text">
-                          ${
-                            data.score[window.scoreboardNumber].stage_strike.strikedBy[0].includes(
-                              stage.codename
-                            )
-                              ? teamNames[0]
-                              : teamNames[1]
-                          }
-                        </div>
-                      </div>`
-                      : ""
-                  }
-                  ${
-                    data.score[window.scoreboardNumber].stage_strike.selectedStage &&
-                    data.score[window.scoreboardNumber].stage_strike.selectedStage == stage.codename
-                      ? `<div class="banned-by-name">
-                        <div class="text">
-                          ${
-                            data.score[window.scoreboardNumber].stage_strike.gentlemans
-                              ? "Gentlemans"
-                              : teamNames[data.score[window.scoreboardNumber].stage_strike.currPlayer]
-                          }
-                        </div>
-                      </div>`
-                      : ""
-                  }
-              </div>
-          `;
-        });
-
-        // Hide stage strike logic
-        if (hideStagesTimeout != null) {
-          clearTimeout(hideStagesTimeout);
-        }
-
-        if (
-          window.AUTOHIDE &&
-          !_.get(oldData, `score.${window.scoreboardNumber}.stage_strike.selectedStage`) &&
-          _.get(data, `score.${window.scoreboardNumber}.stage_strike.selectedStage`)
-        ) {
-          hideStagesTimeout = setTimeout(() => {
-            gsap.to(".container", { autoAlpha: "0" });
-          }, 5000);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-      $(".container").html(html);
-
-      // Fade stage strike back in
-      if (!_.get(data, `score.${window.scoreboardNumber}.stage_strike.selectedStage`)) {
-        gsap.to(".container", { autoAlpha: "1", overwrite: true });
-      }
-
-      $(".container")
-        .find(".stage-name, .banned-by-name")
-        .each(function () {
-          FitText($(this));
-        });
-    }
-  };
+    if (!strike.selectedStage) gsap.to(".container", { autoAlpha: 1, overwrite: true });
+  },
 });

@@ -1,0 +1,300 @@
+<!doctype html>
+<!--
+  Layout dev harness: http://localhost:5500/layout/dev.html (HyperDrive's
+  web server). Shows a layout at 1920x1080, scaled to fit, with the program
+  state it gets: HyperDrive's live state, or a fixture to edit and send.
+  Sent states take over from HyperDrive's (see "dev harness" in globals.js).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Layout Dev Harness</title>
+    <style>
+      :root {
+        --bg: #f4f4f5;
+        --panel: #ffffff;
+        --text: #18181b;
+        --muted: #71717a;
+        --line: #d4d4d8;
+        --accent: #2563eb;
+        --stage: repeating-conic-gradient(#e4e4e7 0 25%, #fafafa 0 50%) 0 0 / 24px 24px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #09090b;
+          --panel: #18181b;
+          --text: #f4f4f5;
+          --muted: #a1a1aa;
+          --line: #3f3f46;
+          --accent: #60a5fa;
+          --stage: repeating-conic-gradient(#202024 0 25%, #27272a 0 50%) 0 0 / 24px 24px;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.4 system-ui,
+          sans-serif;
+      }
+      aside {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 16px;
+        background: var(--panel);
+        border-right: 1px solid var(--line);
+        min-height: 0;
+      }
+      label {
+        display: grid;
+        gap: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      select,
+      input,
+      textarea,
+      button {
+        font: inherit;
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 6px 8px;
+      }
+      textarea {
+        flex: 1;
+        min-height: 120px;
+        resize: none;
+        font:
+          12px/1.4 ui-monospace,
+          monospace;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+      }
+      .row > * {
+        flex: 1;
+      }
+      button {
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      #status {
+        color: var(--muted);
+        font-size: 12px;
+        min-height: 1.4em;
+      }
+      main {
+        position: relative;
+        overflow: hidden;
+        background: var(--stage);
+      }
+      iframe {
+        position: absolute;
+        width: 1920px;
+        height: 1080px;
+        border: 0;
+        transform-origin: 0 0;
+      }
+      @media (max-width: 800px) {
+        body {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 56vw;
+          height: auto;
+        }
+        textarea {
+          min-height: 240px;
+        }
+        main {
+          height: 56vw;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <label
+        >Layout
+        <select id="page"></select
+      ></label>
+      <label>Query (page options) <input id="query" placeholder="scoreboardNumber=2" /></label>
+      <label
+        >State
+        <select id="fixture">
+          <option value="live">HyperDrive's live state</option>
+          <option value="../scripts/previews/sample_state.json">Sample (singles)</option>
+          <option value="file">From a file…</option>
+        </select>
+      </label>
+      <input id="file" type="file" accept=".json" hidden />
+      <textarea id="state" spellcheck="false" placeholder="Program state JSON"></textarea>
+      <div class="row">
+        <button id="send" class="primary" title="Ctrl+Enter">Send state</button>
+        <button id="reload">Reload layout</button>
+      </div>
+      <div class="row">
+        <button id="toggle" title="As Display Controls would">Hide</button>
+        <button id="doubles" title="Two players a team, from the singles players">Make doubles</button>
+      </div>
+      <div id="status"></div>
+    </aside>
+    <main><iframe id="frame" title="Layout"></iframe></main>
+
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id);
+      const frame = $("frame");
+      const status = (text) => ($("status").textContent = text);
+      const remember = (key, value) => {
+        try {
+          localStorage.setItem(`hd_dev_${key}`, value);
+        } catch (e) {}
+      };
+      const recall = (key) => {
+        try {
+          return localStorage.getItem(`hd_dev_${key}`);
+        } catch (e) {
+          return null;
+        }
+      };
+
+      // Scale the 1920x1080 layout to fit, centered
+      function fit() {
+        const main = frame.parentElement;
+        const scale = Math.min(main.clientWidth / 1920, main.clientHeight / 1080);
+        frame.style.transform = `scale(${scale})`;
+        frame.style.left = `${(main.clientWidth - 1920 * scale) / 2}px`;
+        frame.style.top = `${(main.clientHeight - 1080 * scale) / 2}px`;
+      }
+      new ResizeObserver(fit).observe(frame.parentElement);
+
+      const live = () => $("fixture").value === "live";
+
+      function parsed() {
+        try {
+          return JSON.parse($("state").value);
+        } catch (e) {
+          status(`Invalid JSON: ${e.message}`);
+          return null;
+        }
+      }
+
+      function send() {
+        if (live()) return;
+        const state = parsed();
+        if (!state) return;
+        state.timestamp = Date.now() / 1000;
+        frame.contentWindow.postMessage({ type: "hd_state", state }, "*");
+        status(`Sent at ${new Date().toLocaleTimeString()}`);
+      }
+
+      // Live: the layout follows HyperDrive by itself. Otherwise it gets the
+      // fixture once it has loaded.
+      function load() {
+        const page = $("page").value;
+        if (!page) return;
+        const query = $("query").value.trim();
+        remember("page", page);
+        remember("query", query);
+        $("toggle").textContent = "Hide";
+        frame.onload = () => setTimeout(send, 100);
+        frame.src = `../${page}${query ? `?${query.replace(/^\?/, "")}` : ""}`;
+      }
+
+      async function loadFixture() {
+        const value = $("fixture").value;
+        remember("fixture", value);
+        $("send").disabled = $("doubles").disabled = $("toggle").disabled = live();
+        if (value === "file") return $("file").click();
+        const url = live() ? "/program-state" : value;
+        try {
+          const state = await (await fetch(url, { cache: "no-store" })).json();
+          $("state").value = JSON.stringify(state, null, 2);
+          status(live() ? "Showing HyperDrive's state (read only)" : `Loaded ${url}`);
+        } catch (e) {
+          status(`Couldn't load ${url}: ${e.message}`);
+        }
+        load();
+      }
+
+      $("file").onchange = async () => {
+        const file = $("file").files[0];
+        if (!file) return;
+        $("state").value = await file.text();
+        status(`Loaded ${file.name}`);
+        load();
+      };
+
+      // Display Controls' hide/show for this layout's folder
+      $("toggle").onclick = () => {
+        const state = parsed();
+        if (!state) return;
+        const folder = $("page").value.split("/").slice(-2)[0];
+        const hidden = $("toggle").textContent === "Hide";
+        state.display = { ...state.display, folders: { ...(state.display || {}).folders, [folder]: !hidden } };
+        $("state").value = JSON.stringify(state, null, 2);
+        $("toggle").textContent = hidden ? "Show" : "Hide";
+        send();
+      };
+
+      // Each scoreboard team gets its player twice, as a second player
+      $("doubles").onclick = () => {
+        const state = parsed();
+        if (!state) return;
+        for (const score of Object.values(state.score || {})) {
+          for (const team of Object.values(score.team || {})) {
+            const first = team.player && team.player[1];
+            if (first) team.player[2] = { ...first, name: `${first.name} II` };
+          }
+        }
+        $("state").value = JSON.stringify(state, null, 2);
+        send();
+      };
+
+      $("send").onclick = send;
+      $("reload").onclick = load;
+      $("page").onchange = load;
+      $("query").onchange = load;
+      $("fixture").onchange = loadFixture;
+      $("state").onkeydown = (e) => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send();
+      };
+
+      // Every layout page, from the web server
+      (async () => {
+        try {
+          const { layouts } = await (await fetch("/layouts")).json();
+          for (const { folder, pages } of layouts) {
+            const group = document.createElement("optgroup");
+            group.label = folder;
+            for (const page of pages) group.append(new Option(page.name, page.path));
+            $("page").append(group);
+          }
+        } catch (e) {
+          status("Open this from HyperDrive's web server (http://localhost:5500/layout/dev.html)");
+          return;
+        }
+        $("page").value = recall("page") || $("page").value;
+        $("query").value = recall("query") || "";
+        $("fixture").value = recall("fixture") === "file" ? "live" : recall("fixture") || "live";
+        fit();
+        loadFixture();
+      })();
+    </script>
+  </body>
+</html>

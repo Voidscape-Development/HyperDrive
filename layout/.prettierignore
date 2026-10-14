@@ -1,0 +1,9 @@
+# Only the layouts' scripts and the dev harness are formatted
+*
+!*/
+!*.js
+!dev.html
+*.min.js
+*/leaflet/
+proj*.js
+!eslint.config.mjs

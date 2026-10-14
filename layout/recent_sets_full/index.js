@@ -1,149 +1,57 @@
-LoadEverything().then(() => {
-  
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .from($(".recent_sets"), { autoAlpha: 0 });
+// The two players (names over the list) and their last sets against each
+// other (up to 5): the score, their characters, the tournament and date,
+// the event, phase and round
+const DATE = { month: "short", day: "2-digit", year: "numeric" };
 
-  var playersRecentSets = null;
-  var players = [];
+const setRow = (set, i) => HD.html`
+  <div class="set_container set_${i}">
+    <div class="${set.winner == 0 ? "set_winner" : "set_loser"}">${set.score[0]}</div>
+    <div class="p1_char"></div>
+    <div class="set_info">
+      <div class="set_col col_1"><div class="set_text"></div><div class="set_subtext"></div></div>
+      <div class="set_col col_2"><div class="set_text"></div><div class="set_subtext"></div></div>
+    </div>
+    <div class="p2_char"></div>
+    <div class="${set.winner == 1 ? "set_winner" : "set_loser"}">${set.score[1]}</div>
+  </div>`;
 
-  Start = async (event) => {
-    startingAnimation.restart();
-  };
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+  intro(tl) {
+    tl.from(".recent_sets", { autoAlpha: 0 });
+  },
 
-  var data = {};
-  var oldData = {};
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    // Set team colors if available
-    const teams = Object.values(data.score[window.scoreboardNumber].team);
-    for (const [t, team] of teams.entries()) {
-      if (team.color && !hd_settings["forceDefaultScoreColors"]) {
-        document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-      }
+  update(s) {
+    HD.teamColors(s, ["score-bg-color"]);
+    for (const { n, player } of s.teams) {
+      HD.set(`.recent_sets_players .player_${n} .sponsor`, player.team);
+      HD.set(`.recent_sets_players .player_${n} .name`, player.name);
     }
 
-    if (
-      !oldData.score ||
-      JSON.stringify(oldData.score[window.scoreboardNumber].recent_sets) !=
-        JSON.stringify(data.score[window.scoreboardNumber].recent_sets)
-    ) {
-      playersRecentSets = data.score[window.scoreboardNumber].recent_sets;
-      console.log(playersRecentSets);
+    const recent = s.score.recent_sets || {};
+    const sets = (recent.sets || []).slice(0, 5);
+    const loading = recent.state === "loading";
+    HD.build(".recent_sets_content", [loading, sets], () =>
+      loading
+        ? HD.html`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`
+        : sets.length
+          ? HD.html`<div class="recent_sets_inner">${sets.map(setRow)}</div>`
+          : "No sets found",
+    );
+    if (loading) return;
 
-      players = [];
-      recentSetsHtml = "";
-
-      if (
-        playersRecentSets == null ||
-        (playersRecentSets.state == "done" &&
-          playersRecentSets.sets.length == 0)
-      ) {
-        recentSetsHtml += `No sets found`;
-        players = [];
-        $(`.recent_sets_content`).html(recentSetsHtml);
-      } else if (playersRecentSets.state != "done") {
-        recentSetsHtml += `<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
-        players = [];
-        $(`.recent_sets_content`).html(recentSetsHtml);
-      } else {
-        if (
-          !oldData.score ||
-          JSON.stringify(oldData.score[window.scoreboardNumber].recent_sets) !=
-            JSON.stringify(data.score[window.scoreboardNumber].recent_sets)
-        ) {
-          playersRecentSets = data.score[window.scoreboardNumber].recent_sets;
-
-          console.log(playersRecentSets);
-
-          recentSetsHtml += '<div class="recent_sets_inner">';
-          playersRecentSets.sets.slice(0, 5).forEach((_set, i) => {
-            recentSetsHtml += `
-                <div class="set_container set_${i}">
-                  <div class="${_set.winner == 0 ? "set_winner" : "set_loser"}">
-                    ${_set.score[0]}
-                  </div>
-                  <div class="p1_char"></div>
-                  <div class="set_info">
-                    <div class="set_col col_1">
-                        <div class="set_text"></div>
-                        <div class="set_subtext"></div>
-                    </div>
-                    <div class="set_col col_2">
-                        <div class="set_text"></div>
-                        <div class="set_subtext"></div>
-                    </div>
-                  </div>
-                  <div class="p2_char"></div>
-                  <div class="${_set.winner == 1 ? "set_winner" : "set_loser"}">
-                    ${_set.score[1]}
-                  </div>
-                </div>
-              `;
-          });
-          recentSetsHtml += "</div>";
-        }
-
-        $(`.recent_sets_content`).html(recentSetsHtml);
-
-        playersRecentSets.sets.slice(0, 5).forEach((_set, i) => {
-          SetInnerHtml(
-            $(`.set_${i} .col_1 .set_text`),
-            (_set.online ? `<div class="wifi_icon"></div>` : "") +
-              _set.tournament
-          );
-          SetInnerHtml(
-            $(`.set_${i} .col_1 .set_subtext`),
-            new Date(_set.timestamp * 1000).toLocaleDateString("en-US", {
-              month: "short",
-              day: "2-digit",
-              year: "numeric",
-            })
-          );
-          SetInnerHtml(
-            $(`.set_${i} .col_2 .set_text`),
-            _set.event + " - " + _set.phase_id + _set.phase_name
-          );
-          SetInnerHtml($(`.set_${i} .col_2 .set_subtext`), _set.round);
-        });
-        for (const [i] of playersRecentSets.sets.slice(0, 5).entries()) {
-          await CharacterDisplay(
-            $(`.set_${i} .p1_char`),
-            {
-              source: `score.${window.scoreboardNumber}.recent_sets.sets.${i}.p1_char`,
-            },
-            event
-          );
-          await CharacterDisplay(
-            $(`.set_${i} .p2_char`),
-            {
-              source: `score.${window.scoreboardNumber}.recent_sets.sets.${i}.p2_char`,
-            },
-            event
-          );
-        }
+    sets.forEach((set, i) => {
+      const row = `.set_${i}`;
+      HD.set(
+        `${row} .col_1 .set_text`,
+        HD.html`${set.online && HD.html`<div class="wifi_icon"></div>`}${set.tournament}`,
+      );
+      HD.set(`${row} .col_1 .set_subtext`, new Date(set.timestamp * 1000).toLocaleDateString("en-US", DATE));
+      HD.set(`${row} .col_2 .set_text`, `${set.event} - ${set.phase_id}${set.phase_name}`);
+      HD.set(`${row} .col_2 .set_subtext`, set.round);
+      for (const side of ["p1_char", "p2_char"]) {
+        s.characters(`${row} .${side}`, { source: ["score", s.n, "recent_sets", "sets", i, side] });
       }
-    }
-
-    for (const [t, team] of [
-      data.score[window.scoreboardNumber].team["1"],
-      data.score[window.scoreboardNumber].team["2"],
-    ].entries()) {
-      for (const [p, player] of [team.player["1"]].entries()) {
-        if (player) {
-          SetInnerHtml(
-            $(`.recent_sets_players .player_${t + 1} .sponsor`),
-            player.team
-          );
-          SetInnerHtml(
-            $(`.recent_sets_players .player_${t + 1} .name`),
-            player.name
-          );
-        }
-      }
-    }
-  };
+    });
+  },
 });

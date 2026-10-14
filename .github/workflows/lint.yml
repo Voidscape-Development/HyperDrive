@@ -25,3 +25,26 @@ jobs:
 
       - name: Check formatting
         run: uv run --no-sync ruff format --check .
+
+  layouts:
+    name: Layouts (ESLint, Prettier)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: layout
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The configs are in layout/ (eslint.config.mjs, .prettierrc.json)
+      - name: Install tools
+        run: npm install --no-save --no-audit --no-fund eslint@10.1.0 @eslint/js@10 prettier@3.8.1
+
+      - name: Lint
+        run: npx eslint .
+
+      - name: Check formatting
+        run: npx prettier --check .

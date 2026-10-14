@@ -8,12 +8,9 @@
   <body>
     <div class="stream_queue_content"></div>
     <script>
-        window.settings = {
-            display_first_set: false,
-            sets_displayed : 1,
-            display_stream_name: false
-        };
-      </script>
-    <script src="./index.js"></script>
+      HD.page({ display_first_set: false, sets_displayed: 1, display: { stream_name: false } });
+    </script>
+    <script src="../include/stream_queue.js"></script>
+    <script>HD.layout(HD.layouts.streamQueue);</script>
   </body>
 </html>

@@ -1,89 +1,32 @@
-function playerPath(){
-  return `score.${window.scoreboardNumber}.team.${window.team}.player.${window.player}`
-}
+// A team's characters, or one player's (page options team and player), one
+// at a time: they crossfade every 3 seconds, with which one it is ("2/3")
+let shown = 0;
 
-LoadEverything().then(() => {
-  Start = async () => {};
+const showCharacter = (fade) => {
+  const characters = $(".hd_character").toArray();
+  if (characters.length === 0) return;
+  shown %= characters.length;
+  gsap.to(characters, { autoAlpha: (i) => (i === shown ? 1 : 0), duration: fade ? 1 : 0 });
+  $(".index_display")
+    .text(`${shown + 1}/${characters.length}`)
+    .css("opacity", characters.length < 2 ? 0 : 1);
+};
 
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
+HD.every(3, () => {
+  shown += 1;
+  showCharacter(true);
+});
 
-    let src = "";
-
-    if (window.team != undefined && window.player != undefined) {
-      src = playerPath();
-    } else {
-      src = `score.${window.scoreboardNumber}.team.${window.team}`;
-    }
-
-    CharacterDisplay(
-      $(`.container`),
-      {
-        source: src,
-        anim_out: {
-          autoAlpha: 0,
-          duration: 0
-        },
-        anim_in: {
-          autoAlpha: 0,
-          duration: 0
-        }
-      },
-      event
-    ).then(() => {
-      imgs = $.makeArray($(".hd_character"));
-
-      // Set all imgs opacity to 0
-      for (let img of imgs) {
-        $(img).css("opacity", 0);
-      }
-
-      // Show only the first character initially, using gsap to override animations
-      gsap.set(imgs, { autoAlpha: 0 });
-      gsap.set(imgs[0], { autoAlpha: 1 });
-
-      if (imgs.length < 2) {
-        $(".index_display").css({ opacity: 0 });
-      } else {
-        gsap.set($(".index_display"), { autoAlpha: 1 });
-      }
-
-      crossfade(); // Start the crossfade immediately after loading the characters
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+  async update(s) {
+    const { team, player } = s.settings;
+    // They come in hidden: showCharacter() shows one
+    await s.characters(".container", {
+      source: ["score", s.n, "team", team, ...(player != null ? ["player", player] : [])],
+      out: { autoAlpha: 0, duration: 0 },
+      in: { autoAlpha: 0, duration: 0 },
     });
-  };
-
-  let cycleIndex = 0;
-  let imgs = [];
-  let firstUpdate = true;
-
-  function crossfade() {
-    if (imgs.length > 1) {
-      gsap.to(imgs[(cycleIndex + imgs.length - 1) % imgs.length], 1, {
-        autoAlpha: 0,
-        duration: firstUpdate ? 0 : 1, // Skip fade out on the first update
-      });
-      gsap.to(imgs[cycleIndex], 1, {
-        autoAlpha: 1,
-        duration: firstUpdate ? 0 : 1, // Skip fade in on the first update
-      });
-      firstUpdate = false;
-      
-      $(".index_display").html(`${cycleIndex + 1}/${imgs.length}`);
-      cycleIndex = (cycleIndex + 1) % imgs.length;
-    } else if (imgs.length == 1) {
-      gsap.to(
-        imgs[0], 1, {
-          autoAlpha: 1,
-          duration: firstUpdate ? 0 : 1, // Skip fade in on the first update
-        });
-      firstUpdate = false;
-
-      $(".index_display").html(`1/1`);
-      cycleIndex = 0;
-    }
-
-  }
-
-  var cycle = setInterval(crossfade, 3000);
+    showCharacter(false);
+  },
 });

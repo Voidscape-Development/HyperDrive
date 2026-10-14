@@ -1,600 +1,107 @@
-function makeVariantHTML(variant){
-  let variantName = variant.display_name;
-  let variantIconPath = variant.icon_path;
-  let str = "";
-  if (variantIconPath) {
-    let y_ = 32;
-    let {x, y} = variant.image_size ?? {x: 32, y: 32};
-    x = x * (y_ / y);
+// Tekken 8 versus screen: each side's name, chips and character art
+// building up slowly to the VS, the stage and its name, and the phase and
+// best of on one line
+const slide = (way) => ({
+  out: { x: `${-way * 100}%`, stagger: 0.1 },
+  in: { x: 0, duration: 1, ease: "expo.out", autoAlpha: 1, stagger: 0.2 },
+});
 
-    str += `<img src="${"../../" + variantIconPath}" class = "variant_icon" width="${x}" height="${y_}"/>`
-  } 
-  if (variantName) str += `<span class = "variant_name">${variantName}</span>`;
+const unskew = (content) => content && HD.html`<div class="unskew">${content}</div>`;
+const place = (p) =>
+  p &&
+  p.asset &&
+  unskew(HD.html`<img class='flagimage' src='${HD.asset(p.asset)}' /><div class="flagname">${p.name}</div>`);
 
-  return str;
-}
-
-
-LoadEverything().then(() => {
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .to([".logo"], { duration: 0.8, top: 160 }, 0)
-    .to([".logo"], { duration: 0.8, scale: 0.4 }, 0)
-    .fromTo(
-      ".p1.character_name",
-      {
-        x: "-100px",
-        autoAlpha: 0,
-      },
-      {
-        x: "-60px",
-        autoAlpha: 1,
-        duration: 2,
-        ease: "power2.out"
-      },
-      0
-    )
-    .to(
-      ".p1.character_name",
-      {
-        duration: 0.2,
-        x: "-20px",
-        scale: 1.1,
-        ease: "power2.out"
-      },
-      2
-    )
-    .to(
-      ".p1.character_name",
-      {
-        duration: 2,
-        x: "0px",
-        ease: "power2.out"
-      },
-      2.2
-    )
-    .fromTo(
-      ".p2.character_name",
-      {
-        x: "100px",
-        autoAlpha: 0,
-      },
-      {
-        x: "60px",
-        autoAlpha: 1,
-        duration: 2,
-        ease: "power2.out"
-      },
-      0
-    )
-    .to(
-      ".p2.character_name",
-      {
-        duration: 0.2,
-        x: "+20px",
-        scale: 1.1,
-        ease: "power2.out"
-      },
-      2
-    )
-    .to(
-      ".p2.character_name",
-      {
-        duration: 2,
-        x: "0px",
-        ease: "power2.out"
-      },
-      2.2
-    )
-    .fromTo(
-      ".p1.character",
-      {
-        x: "-1000px",
-        autoAlpha: 0,
-      },
-      {
-        x: "-50px",
-        autoAlpha: 1,
-        duration: 0.2,
-        ease: "power2.out",
-      },
-      2
-    )
-    .to(
-      ".p1.character",
-      {
-        x: "0",
-        duration: 4,
-        ease: "power1.out"
-      },
-      2.2
-    )
-    .fromTo(
-      ".p2.character",
-      {
-        x: "+1000px",
-        autoAlpha: 0,
-      },
-      {
-        x: "+50px",
-        autoAlpha: 1,
-        duration: 0.2,
-        ease: "power2.out",
-      },
-      2
-    )
-    .to(
-      ".p2.character",
-      {
-        x: "0",
-        duration: 4,
-        ease: "power1.out"
-      },
-      2.2
-    )
-    .from(
-      [".tournament"],
-      { duration: 0.6, opacity: "0", ease: "power2.inOut" },
-      0.2
-    )
-    .from(
-      [".match"],
-      { duration: 0.6, opacity: "0", ease: "power2.inOut" },
-      0.4
-    )
-    .from(
-      [".phase_best_of"],
-      { duration: 0.6, opacity: "0", ease: "power2.inOut" },
-      0.6
-    )
-    .from(
-      [".score_container"],
-      { duration: 0.8, opacity: "0", ease: "power2.inOut" },
-      0
-    )
-    .from(
-      [".best_of.container"],
-      { duration: 0.8, opacity: "0", ease: "power2.inOut" },
-      0
-    )
-    .fromTo(
-      [".vs1"],
-      { opacity: 0, scale: 1.2 },
-      { opacity: 0.8, ease: "in", duration: 2.1 },
-      0
-    )
-    .to([".vs1"], { duration: 0.03, opacity: "1", scale: 1 }, 2.1)
-    .from([".vs2"], { duration: 0.01, opacity: "0" }, 2.13)
-    .to(
-      [".vs2"],
-      {
-        opacity: 0,
-        scale: 1.2,
-        ease: "power2.out",
-        duration: 1,
-      },
-      2.4
-    )
-
-  Start = async (event) => {
-    startingAnimation.restart();
-  };
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    let isTeams = Object.keys(data.score[window.scoreboardNumber].team["1"].player).length > 1;
-
-    if (!isTeams) {
-      const teams = Object.values(data.score[window.scoreboardNumber].team);
-      for (const [t, team] of teams.entries()) {
-        const players = Object.values(team.player);
-        for (const [p, player] of players.entries()) {
-          SetInnerHtml(
-            $(`.p${t + 1} .name`),
-            `${player.team ? `<span class="sponsor">${player.team}</span>` : ""}${player.name}${team.losers ? "<span class='losers'>L</span>" : ""}`
-          );
-
-          SetInnerHtml($(`.p${t + 1} .pronoun`), player.pronoun);
-
-          SetInnerHtml(
-            $(`.p${t + 1}.sponsor_logo`),
-            player.sponsor_logo
-              ? `<img class='sponsor-logo' src='../../${player.sponsor_logo}' />`
-              : ""
-          );
-
-          SetInnerHtml(
-            $(`.p${t + 1} .seed`),
-            player.seed ? `
-              <div class="unskew">Seed ${player.seed}</div>
-            ` : ""
-          );
-
-          SetInnerHtml($(`.p${t + 1} .real_name`), player.real_name);
-
-          SetInnerHtml(
-            $(`.p${t + 1} .twitter`),
-            `
-              ${
-                player.twitter
-                  ? `
-                  <div class="twitter_logo"></div>
-                  ${player.twitter}
-                  `
-                  : ""
-              }
-          `
-          );
-
-          SetInnerHtml(
-            $(`.p${t + 1} .country`),
-            player.country.asset
-              ? `
-                <div class="unskew">
-                  <img class='flagimage' src='../../${player.country.asset}' />
-                  <div class="flagname">${player.country.name}</div>
-                </div>
-              `
-              : ""
-          );
-
-          SetInnerHtml(
-            $(`.p${t + 1} .state`),
-            player.state.asset
-              ? `
-                <div class="unskew">
-                  <img class='flagimage' src='../../${player.state.asset}' />
-                  <div class="flagname">${player.state.name}</div>
-                </div>
-              `
-              : ""
-          );
-
-          let characterNames = [];
-          let single_variant = null;
-
-          if(!window.ONLINE_AVATAR && !window.PLAYER_AVATAR){
-            let characters = _.get(player, "character");
-            
-            let characterValues = Object.values(characters)
-            if (hd_settings.force_variant_last && characterValues.length > 1){
-              for (const c of characterValues){
-                if (c.variant){
-                  if (single_variant){
-                    single_variant == false;
-                  } else if (single_variant === null) { //fist variant
-                    single_variant = c.variant;
-                  }
-                }
-              }
-            }
-
-            for (const c of characterValues) {
-
-              let res = [];
-              if (c.name) res.push(c.name);
-
-              if (c.variant && !single_variant){ 
-                res.push(makeVariantHTML(c.variant));
-              }
-
-              characterNames.push(res.join('<div class = "variant_intercal"></div>'))
-            }
-
-          }
-
-          SetInnerHtml(
-            $(`.p${t + 1}.character_name`),
-            `
-                ${characterNames.filter(elt=>!!elt).join(" / ") + (single_variant ? makeVariantHTML(single_variant) : "")}
-            `
-          );
-
-
-          $(`.p${t + 1}.character_name`).css({"font-size": 500/characterNames.length})
-
-          let zIndexMultiplyier = 1;
-          if (t == 1) zIndexMultiplyier = -1;
-
-          if (!window.ONLINE_AVATAR && !window.PLAYER_AVATAR) {
-            await CharacterDisplay(
-              $(`.p${t + 1}.character > div`),
-              {
-                source: `score.${window.scoreboardNumber}.team.${t + 1}`,
-                scale_based_on_parent: true,
-                anim_out: {
-                  x: -zIndexMultiplyier * 100 + "%",
-                  stagger: 0.1,
-                },
-                anim_in: {
-                  x: 0,
-                  duration: 1,
-                  ease: "expo.out",
-                  autoAlpha: 1,
-                  stagger: 0.2,
-                },
-                custom_center: [0.4, 0.4]
-              },
-              event
-            );
-          } else if (window.ONLINE_AVATAR) {
-            SetInnerHtml(
-              $(`.p${t + 1}.character > div`),
-              `
-                <div class="player_avatar">
-                  <img src='${
-                    player.online_avatar ? player.online_avatar : "./person.svg"
-                  }' />
-                </div>
-              `,
-              {
-                anim_out: {
-                  x: -zIndexMultiplyier * 100 + "%",
-                  stagger: 0.1,
-                },
-                anim_in: {
-                  x: 0,
-                  duration: 1,
-                  ease: "expo.out",
-                  autoAlpha: 1,
-                  stagger: 0.2,
-                },
-              }
-            );
-          } else {
-            SetInnerHtml(
-              $(`.p${t + 1}.character > div`),
-              `
-                <div class="player_avatar">
-                  <img src='${
-                    player.avatar ? '../../'+player.avatar : "./person.svg"
-                  }' />
-                </div>
-              `,
-              {
-                anim_out: {
-                  x: -zIndexMultiplyier * 100 + "%",
-                  stagger: 0.1,
-                },
-                anim_in: {
-                  x: 0,
-                  duration: 1,
-                  ease: "expo.out",
-                  autoAlpha: 1,
-                  stagger: 0.2,
-                },
-              }
-            );
-          }
-        }
-
-        if (team.color && !hd_settings["forceDefaultScoreColors"]) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
-    } else {
-      const teams = Object.values(data.score[window.scoreboardNumber].team);
-      for (const [t, team] of teams.entries()) {
-        let teamName = team.teamName;
-
-        let names = [];
-        for (const [p, player] of Object.values(team.player).entries()) {
-          if (player && player.name) {
-            names.push(player.name);
-          }
-        }
-        let playerNames = names.join(" / ");
-
-        if (!team.teamName || team.teamName == "") {
-          teamName = playerNames;
-        }
-
-        SetInnerHtml($(`.p${t + 1} .name`), teamName);
-        if(teamName != playerNames){
-          SetInnerHtml($(`.p${t + 1} .real_name`), playerNames);
-        } else {
-          SetInnerHtml($(`.p${t + 1} .real_name`), "");
-        }
-
-        SetInnerHtml($(`.p${t + 1} .sponsor_logo`), "");
-
-        SetInnerHtml($(`.p${t + 1} .twitter`), ``);
-
-        SetInnerHtml($(`.p${t + 1} .country`), "");
-
-        SetInnerHtml($(`.p${t + 1} .state`), "");
-
-        SetInnerHtml($(`.p${t + 1} .pronoun`), "");
-
-        SetInnerHtml($(`.p${t + 1} .seed`), _.get(team, "player.1.seed") ? `<div class="unskew">Seed ${_.get(team, "player.1.seed")}</div>` : "");
-
-        let characterNames = [];
-
-        if(window.ONLINE_AVATAR || window.PLAYER_AVATAR){
-          for (const [p, player] of Object.values(team.player).entries()) {
-            if (player.name) characterNames.push(player.name);
-          }
-        } else {
-          for (const [p, player] of Object.values(team.player).entries()) {
-            let characters = _.get(player, "character");
-            for (const c of Object.values(characters)) {
-
-              let res = [];
-                if (c.name) res.push(c.name);
-
-                if (c.variant){
-                  let variantName = c.variant.display_name;
-                  let variantIconPath = c.variant.icon_path;
-                  let str = "";
-                  if (variantIconPath) {
-                    let y_ = 32;
-                    let {x, y} = c.variant.image_size ?? {x: 32, y: 32};
-                    x = x * (y_ / y);
-                    console.log("X ; Y", x, y);
-
-                    str += `<img src="${"../../" + variantIconPath}" class = "variant_icon" width="${x}" height="${y_}"/>`
-                  } 
-                  if (variantName) str += `<span class = "variant_name">${variantName}</span>`
-                  res.push(str);
-                }
-
-                characterNames.push(res.join('<div class = "variant_intercal"></div>'))
-            }
-          }
-        }
-
-        SetInnerHtml(
-          $(`.p${t + 1} .character_name`),
-          `
-              ${characterNames.filter(elt=>!!elt).join(" / ")}
-          `
-        );
-
-        $(`.p${t + 1}.character_name`).css({"font-size": 500/characterNames.length})
-
-        let zIndexMultiplyier = 1;
-        if (t == 1) zIndexMultiplyier = -1;
-
-        if (!window.ONLINE_AVATAR && !window.PLAYER_AVATAR) {
-          await CharacterDisplay(
-            $(`.p${t + 1}.character > div`),
-            {
-              source: `score.${window.scoreboardNumber}.team.${t + 1}`,
-              scale_based_on_parent: true,
-              anim_out: {
-                x: -zIndexMultiplyier * 100 + "%",
-                stagger: 0.1,
-              },
-              anim_in: {
-                x: 0,
-                duration: 1,
-                ease: "expo.out",
-                autoAlpha: 1,
-                stagger: 0.2,
-              },
-              custom_center: [0.4, 0.4]
-            },
-            event
-          );
-        } else if (window.ONLINE_AVATAR) {
-          let avatars_html = "";
-          for (const [p, player] of Object.values(team.player).entries()) {
-            if (player)
-              avatars_html += `<img src='${
-                player.online_avatar ? player.online_avatar : "./person.svg"
-              }' />`;
-          }
-          SetInnerHtml(
-            $(`.p${t + 1}.character > div`),
-            `
-              <div class="player_avatar">
-                ${avatars_html}
-              </div>
-            `,
-            {
-              anim_out: {
-                x: -zIndexMultiplyier * 100 + "%",
-                stagger: 0.1,
-              },
-              anim_in: {
-                x: 0,
-                duration: 1,
-                ease: "expo.out",
-                autoAlpha: 1,
-                stagger: 0.2,
-              },
-            }
-          );
-        } else {
-          let avatars_html = "";
-          for (const [p, player] of Object.values(team.player).entries()) {
-            if (player)
-              avatars_html += `<img src='${
-                player.avatar ? '../../'+player.avatar : "./person.svg"
-              }' />`;
-          }
-          SetInnerHtml(
-            $(`.p${t + 1}.character > div`),
-            `
-              <div class="player_avatar">
-                ${avatars_html}
-              </div>
-            `,
-            {
-              anim_out: {
-                x: -zIndexMultiplyier * 100 + "%",
-                stagger: 0.1,
-              },
-              anim_in: {
-                x: 0,
-                duration: 1,
-                ease: "expo.out",
-                autoAlpha: 1,
-                stagger: 0.2,
-              },
-            }
-          );
-        }
-
-        if (team.color && !hd_settings["forceDefaultScoreColors"]) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo", "commentary"],
+  intro(tl) {
+    const out = "power2.out";
+    tl.to(".logo", { duration: 0.8, top: 160, scale: 0.4 }, 0);
+    // Character names drift in, then the art slams in and drifts too
+    for (const [n, way] of [
+      [1, -1],
+      [2, 1],
+    ]) {
+      tl.fromTo(
+        `.p${n}.character_name`,
+        { x: 100 * way, autoAlpha: 0 },
+        { x: 60 * way, autoAlpha: 1, duration: 2, ease: out },
+        0,
+      )
+        .to(`.p${n}.character_name`, { duration: 0.2, x: 20 * way, scale: 1.1, ease: out }, 2)
+        .to(`.p${n}.character_name`, { duration: 2, x: 0, ease: out }, 2.2)
+        .fromTo(
+          `.p${n}.character`,
+          { x: 1000 * way, autoAlpha: 0 },
+          { x: 50 * way, autoAlpha: 1, duration: 0.2, ease: out },
+          2,
+        )
+        .to(`.p${n}.character`, { x: 0, duration: 4, ease: "power1.out" }, 2.2);
     }
+    const fade = (duration) => ({ duration, opacity: 0, ease: "power2.inOut" });
+    tl.from(".tournament", fade(0.6), 0.2)
+      .from(".match", fade(0.6), 0.4)
+      .from(".phase_best_of", fade(0.6), 0.6)
+      .from(".score_container", fade(0.8), 0)
+      .from(".best_of.container", fade(0.8), 0)
+      .fromTo(".vs1", { opacity: 0, scale: 1.2 }, { opacity: 0.8, ease: "in", duration: 2.1 }, 0)
+      .to(".vs1", { duration: 0.03, opacity: 1, scale: 1 }, 2.1)
+      .from(".vs2", { duration: 0.01, opacity: 0 }, 2.13)
+      .to(".vs2", { opacity: 0, scale: 1.2, ease: out, duration: 1 }, 2.4);
+  },
 
-    SetInnerHtml($(`.p1.score`), String(data.score[window.scoreboardNumber].team["1"].score));
-    SetInnerHtml($(`.p2.score`), String(data.score[window.scoreboardNumber].team["2"].score));
+  update(s) {
+    for (const t of s.teams) {
+      const { team, player } = t;
+      // Doubles show the team's name, its players' under it
+      const solo = s.isTeams ? {} : player;
+      const names = HD.playerNames(team);
 
-    SetInnerHtml($(".tournament"), data.tournamentInfo.tournamentName);
-    SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match);
-
-    let selectedStage = _.get(data, `score.${window.scoreboardNumber}.stage_strike.selectedStage`);
-    let stage = _.get(data, `score.${window.scoreboardNumber}.stage_strike.selectedStageData`)
-      || (selectedStage ? _.get(data, `game.stages.${selectedStage}`) : null);
-
-    if (
-      stage &&
-      _.get(data, `score.${window.scoreboardNumber}.stage_strike.selectedStage`) !=
-        _.get(oldData, `score.${window.scoreboardNumber}.stage_strike.selectedStage`)
-    ) {
-      gsap.fromTo(
-        $(`.stage`),
-        { scale: 2 },
-        { scale: 1.2, duration: 0.8, ease: "power2.out" }
+      t.set(
+        ".name",
+        s.isTeams
+          ? t.name
+          : HD.html`${player.team && HD.html`<span class="sponsor">${player.team}</span>`}${player.name}${
+              team.losers && HD.html`<span class='losers'>L</span>`
+            }`,
       );
+      t.set(".real_name", s.isTeams ? t.name !== names && names : player.real_name);
+      t.set(".pronoun", solo.pronoun);
+      t.set("&.sponsor_logo", HD.img(HD.asset(solo.sponsor_logo), "class='sponsor-logo'"));
+      const seed = s.isTeams ? t.players[0] && t.players[0].seed : player.seed;
+      t.set(".seed", seed ? unskew(`Seed ${seed}`) : "");
+      t.set(".twitter", solo.twitter && HD.html`<div class="twitter_logo"></div> ${solo.twitter}`);
+      t.set(".country", place(solo.country));
+      t.set(".state", place(solo.state));
+      t.set("&.score", team.score);
+
+      // Smaller the more characters there are
+      const players = s.isTeams ? t.players : [player];
+      const count = players.reduce((n, p) => n + _.size(p.character), 0);
+      t.set(
+        "&.character_name",
+        !s.settings.avatar && VS.characterNames(players, !s.isTeams && s.settings.force_variant_last),
+      );
+      $(t.sel("&.character_name")).css("font-size", 500 / Math.max(count, 1));
+
+      if (s.settings.avatar) {
+        VS.art(s, { ...t, sel: () => t.sel("&.character > div") }, slide(t.n === 1 ? 1 : -1));
+      } else {
+        s.characters(t.sel("&.character > div"), {
+          source: ["score", s.n, "team", t.n],
+          scale_based_on_parent: true,
+          custom_center: [0.4, 0.4],
+          ...slide(t.n === 1 ? 1 : -1),
+        });
+      }
     }
+    HD.teamColors(s, ["score-bg-color"]);
 
-    SetInnerHtml(
-      $(`.stage`),
-      stage
-        ? `
-        <div>
-            <div class='' style="background-image: url('../../${stage.path}');">
-            </div>
-        </div>`
-        : ""
-    );
-
-    SetInnerHtml(
-      $(`.stage_name`),
-      stage
-        ? `
-          <div class="title">
-            STAGE
-          </div>
-          <div class="name">
-            ${stage.name}
-          </div>
-        </div>`
-        : ""
-    );
-
-    SetInnerHtml(
-      $(".phase_best_of"),
-      data.score[window.scoreboardNumber].phase +
-        (data.score[window.scoreboardNumber].best_of_text ? ` | ${data.score[window.scoreboardNumber].best_of_text}` : "")
-    );
-  };
+    s.set(".tournament", s.data.tournamentInfo.tournamentName);
+    s.set(".match", s.score.match);
+    VS.stage(s, { from: 2, duration: 0.8 });
+    const stage = HD.stage(s.data, s.score);
+    s.set(".stage_name", stage && HD.html`<div class="title">STAGE</div><div class="name">${stage.name}</div>`);
+    s.set(".phase_best_of", HD.text([s.score.phase, s.score.best_of_text], " | "));
+  },
 });

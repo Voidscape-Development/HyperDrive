@@ -1,0 +1,108 @@
+name: Layout check
+
+# Renders the layouts a pull request changes, before and after, and reports
+# the pages that look different (with images, as an artifact). Fails when a
+# page throws an error or doesn't start; looking different doesn't fail it.
+
+on:
+  pull_request:
+    paths:
+      - 'layout/**'
+      - 'scripts/previews/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: layout-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Render and compare layouts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find the layouts to render
+        id: layouts
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          base=$(git merge-base "$BASE_SHA" HEAD)
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          changed=$(git diff --name-only "$base" HEAD -- layout scripts/previews \
+            | grep -v -E '(^|/)([^/]*_preview|preview_[^/]*)\.png$|\.md$' || true)
+          echo "Changed files:"
+          echo "$changed"
+          # Shared files (include/, fonts, the renderer...) affect every layout
+          if echo "$changed" | grep -q -E '^(layout/([^/]+$|(include|fonts|icons)/)|scripts/previews/)'; then
+            echo "args=--all" >> "$GITHUB_OUTPUT"
+          else
+            folders=$(echo "$changed" | grep -E '^layout/' | cut -d/ -f1-2 | sort -u | tr '\n' ' ')
+            echo "args=$folders" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@v6
+        if: steps.layouts.outputs.args != ''
+
+      - name: Install dependencies
+        if: steps.layouts.outputs.args != ''
+        run: |
+          uv sync --frozen --only-group previews
+          uv run --no-sync playwright install --with-deps chromium
+
+      - name: Cache game assets
+        if: steps.layouts.outputs.args != ''
+        uses: actions/cache@v4
+        with:
+          path: user_data/games
+          key: layout-preview-assets-${{ hashFiles('scripts/previews/config.json') }}
+
+      - name: Download game assets
+        if: steps.layouts.outputs.args != ''
+        run: |
+          if [ ! -d user_data/games ]; then
+            uv run --no-sync ./scripts/previews/download_assets.py
+          fi
+
+      - name: Render before
+        if: steps.layouts.outputs.args != ''
+        env:
+          BASE: ${{ steps.layouts.outputs.base }}
+          ARGS: ${{ steps.layouts.outputs.args }}
+        run: |
+          git worktree add ../base "$BASE"
+          mkdir -p ../base/user_data
+          ln -s "$PWD/user_data/games" ../base/user_data/games
+          # This branch's renderer and sample state, so only the layouts differ
+          cp -r scripts/previews/. ../base/scripts/previews/
+          set -f
+          # Pages the base can't render just show up as new
+          (cd ../base && uv run --project "$GITHUB_WORKSPACE" --no-sync \
+            ./scripts/previews/render_previews.py $ARGS --out "$RUNNER_TEMP/before") || true
+
+      - name: Render after
+        if: steps.layouts.outputs.args != ''
+        env:
+          ARGS: ${{ steps.layouts.outputs.args }}
+        run: |
+          set -f
+          uv run --no-sync ./scripts/previews/render_previews.py $ARGS --out "$RUNNER_TEMP/after" --strict
+
+      - name: Compare
+        if: always() && steps.layouts.outputs.args != ''
+        run: |
+          uv run --no-sync ./scripts/previews/compare_previews.py \
+            "$RUNNER_TEMP/before" "$RUNNER_TEMP/after" --diff "$RUNNER_TEMP/diff" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Before above, changed pixels in magenta, after below: see the layout-diff artifact." >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.layouts.outputs.args != ''
+        with:
+          name: layout-diff
+          path: ${{ runner.temp }}/diff
+          if-no-files-found: ignore
