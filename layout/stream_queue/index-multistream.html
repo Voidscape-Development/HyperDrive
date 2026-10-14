@@ -8,11 +8,12 @@
   <body>
     <div class="stream_queue_content"></div>
     <script>
-      window.settings = {
-        "stream": "all"
-        //option overrides here
-      };
+      HD.page({
+        stream: "all",
+        // Option overrides here
+      });
     </script>
-    <script src="./index.js"></script>
+    <script src="../include/stream_queue.js"></script>
+    <script>HD.layout(HD.layouts.streamQueue);</script>
   </body>
 </html>
