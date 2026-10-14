@@ -18,8 +18,9 @@
      8. Tournament plaque
      9. Match / phase caption
     10. Corner placements (SSBU, NASB2, Pokkén, GBVSR, ARMS)
-    11. Animations
-    12. Multicam
+    11. SSBU character art
+    12. Animations
+    13. Multicam
    ═══════════════════════════════════════════════════════════ */
 
 
@@ -428,7 +429,61 @@
 .halloween.arms .hw_caption .text { justify-content: flex-end; }
 
 
-/* ── 11. Animations ──────────────────────────────────────── */
+/* ── 11. SSBU character art ─────────────────────────────── */
+/* Full character portrait (index.js, asset "full") in the inner half of
+   each bar, behind the name and score: grayscale, then multiplied by red
+   so shadows stay black and highlights turn red (a black-to-red duotone),
+   fading out toward the name. Clipped to the bar's pointed inner end. */
+
+.halloween .hw_art {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 55%;
+  z-index: -998;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.halloween .p1 .hw_art {
+  right: 3px;
+  clip-path: polygon(0 0, calc(100% - var(--hw-tip)) 0, 100% 50%, calc(100% - var(--hw-tip)) 100%, 0 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 60%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 60%);
+}
+
+.halloween .p2 .hw_art {
+  left: 3px;
+  clip-path: polygon(var(--hw-tip) 0, 100% 0, 100% 100%, var(--hw-tip) 100%, 0 50%);
+  -webkit-mask-image: linear-gradient(270deg, transparent 0%, #000 60%);
+  mask-image: linear-gradient(270deg, transparent 0%, #000 60%);
+}
+
+/* Undo the icon styling index.css / section 6 give .hd_character */
+.halloween .p1 .hw_art .hd_character,
+.halloween .p2 .hw_art .hd_character {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.halloween .hw_art .hd_character_img {
+  filter: grayscale(1) contrast(1.15) brightness(0.95);
+}
+
+/* The red half of the duotone */
+.halloween .hw_art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: #ff1e2e;
+  mix-blend-mode: multiply;
+}
+
+
+/* ── 12. Animations ──────────────────────────────────────── */
 
 /* Candlelight on the score box: mostly steady with irregular dips */
 @keyframes hw-glow {
@@ -449,7 +504,7 @@
 }
 
 
-/* ── 12. Multicam ────────────────────────────────────────── */
+/* ── 13. Multicam ────────────────────────────────────────── */
 /* multicam.html shares this file for the title bar only */
 
 .halloween.hw-multicam {

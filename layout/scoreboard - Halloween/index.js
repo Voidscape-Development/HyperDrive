@@ -203,6 +203,24 @@ LoadEverything().then(() => {
     startingAnimation.restart();
   };
 
+  // Full character art behind the bar, on pages that have .hw_art (SSBU);
+  // halloween.css makes it a black-to-red duotone
+  const HalloweenArt = (t, event, settings = {}) =>
+    CharacterDisplay(
+      $(`.p${t + 1} .hw_art`),
+      {
+        asset_key: "full",
+        source: `score.${window.scoreboardNumber}.team.${t + 1}`,
+        // Eyes toward the art's inner end, just short of the score box
+        custom_center: t == 0 ? [0.62, 0.4] : [0.38, 0.4],
+        scale_fill_x: true,
+        scale_fill_y: true,
+        custom_zoom: 1.0,
+        ...settings,
+      },
+      event
+    );
+
   Update = async (event) => {
     let data = event.data;
     let oldData = event.oldData;
@@ -258,6 +276,8 @@ LoadEverything().then(() => {
               },
               event
             );
+
+            await HalloweenArt(t, event);
 
             SetInnerHtml(
               $(`.p${t + 1} .sponsor_icon`),
@@ -364,6 +384,8 @@ LoadEverything().then(() => {
           },
           event
         );
+
+        await HalloweenArt(t, event, { slice_character: [0, 1] });
 
         SetInnerHtml($(`.p${t + 1} .sponsor_icon`), "");
         SetInnerHtml($(`.p${t + 1} .avatar`), "");
