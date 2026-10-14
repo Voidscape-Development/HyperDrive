@@ -1,158 +1,120 @@
 // Roster board: both teams' players in two columns, with their character,
 // avatar, flag, pronouns and stocks or games won. The active players are lit
 // and eliminated ones crossed out. Cards shrink to fit any number of players.
-LoadEverything().then(() => {
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
-
-  function teamHtml(t) {
-    return `
-      <div class="rs_team t${t}">
-        <div class="rs_head">
-          <div class="rs_logo logo"></div>
-          <div class="rs_name display"></div>
-          <div class="rs_big">
-            <span class="rs_big_value display">0</span>
-            <span class="rs_big_label"></span>
-          </div>
-        </div>
-        <div class="rs_list"></div>
-      </div>`;
-  }
-
-  function cardHtml(index) {
-    return `
-      <div class="rs_card">
-        <div class="rs_card_bg"></div>
-        <div class="rs_num display">${index + 1}</div>
-        <div class="rs_render fades_when_dead"></div>
-        <div class="rs_info fades_when_dead">
-          <div class="rs_player_name"></div>
-          <div class="rs_details">
-            <div class="rs_chips chips"></div>
-            <div class="rs_pips pips"></div>
-          </div>
-        </div>
-        <img class="rs_avatar player_avatar fades_when_dead" />
-        <div class="rs_status display"></div>
-        <div class="sweep"></div>
-        <div class="x_mark"></div>
-      </div>`;
-  }
-
-  document.getElementById("roster").innerHTML = `
-    <div class="rs_header">
-      <img class="rs_tournament_logo" src="../logo.png" onerror="this.style.display='none'" />
-      <div class="rs_titles">
-        <div class="rs_tournament display"></div>
-        <div class="rs_phase"></div>
-      </div>
+const teamColumn = (t) => HD.html`
+  <div class="rs_team t${t}">
+    <div class="rs_head">
+      <div class="rs_logo logo"></div>
+      <div class="rs_name display"></div>
+      <div class="rs_big"><span class="rs_big_value display">0</span><span class="rs_big_label"></span></div>
     </div>
-    <div class="rs_body">
-      ${teamHtml(1)}
-      <div class="rs_center">
-        <div class="rs_vs display">VS</div>
-        <div class="rs_rule"></div>
-        <div class="rs_scores">
-          <span class="rs_score_value t1 display">0</span>
-          <span class="rs_score_label">Score</span>
-          <span class="rs_score_value t2 display">0</span>
+    <div class="rs_list"></div>
+  </div>`;
+
+const playerCard = (_p, i) => HD.html`
+  <div class="rs_card">
+    <div class="rs_card_bg"></div>
+    <div class="rs_num display">${i + 1}</div>
+    <div class="rs_render fades_when_dead"></div>
+    <div class="rs_info fades_when_dead">
+      <div class="rs_player_name"></div>
+      <div class="rs_details"><div class="rs_chips chips"></div><div class="rs_pips pips"></div></div>
+    </div>
+    <img class="rs_avatar player_avatar fades_when_dead" />
+    <div class="rs_status display"></div>
+    <div class="sweep"></div>
+    <div class="x_mark"></div>
+  </div>`;
+
+// Every card the same height on both sides, as big as fits
+function sizeCards(teams) {
+  const most = Math.max(teams[0].players.length, teams[1].players.length, 1);
+  const gap = most > 6 ? 8 : 14;
+  const height = Math.floor(Math.min(170, (document.querySelector(".rs_list").clientHeight - gap * (most - 1)) / most));
+  const body = document.querySelector(".rs_body");
+  body.style.setProperty("--card-h", `${height}px`);
+  body.style.setProperty("--card-gap", `${gap}px`);
+  body.classList.toggle("compact", height < 90);
+}
+
+function updateCard(card, p, team, animate) {
+  HD.set(card.querySelector(".rs_player_name"), TB.name(p));
+  TB.setHtml(card.querySelector(".rs_chips"), TB.chips(p));
+  // First To: games won count against the current opponent, so only the
+  // active player has any
+  const pips = card.querySelector(".rs_pips");
+  pips.style.display = TB.isStock() || p.active ? "" : "none";
+  TB.updatePips(pips, p, team, animate);
+  TB.setImage(card.querySelector(".rs_avatar"), TB.avatar(p.data));
+  TB.setHtml(card.querySelector(".rs_status"), p.dead ? "Out" : p.active ? "Playing" : "");
+  TB.setEliminated(card, p.dead, animate);
+  TB.setActive(card, p.active && !p.dead, animate);
+}
+
+HD.layout({
+  init() {
+    HD.render(
+      "#roster",
+      HD.html`
+        <div class="rs_header">
+          <img class="rs_tournament_logo" src="../logo.png" onerror="this.style.display='none'" />
+          <div class="rs_titles"><div class="rs_tournament display"></div><div class="rs_phase"></div></div>
         </div>
-      </div>
-      ${teamHtml(2)}
-    </div>`;
+        <div class="rs_body">
+          ${teamColumn(1)}
+          <div class="rs_center">
+            <div class="rs_vs display">VS</div>
+            <div class="rs_rule"></div>
+            <div class="rs_scores">
+              <span class="rs_score_value t1 display">0</span>
+              <span class="rs_score_label">Score</span>
+              <span class="rs_score_value t2 display">0</span>
+            </div>
+          </div>
+          ${teamColumn(2)}
+        </div>`,
+    );
+  },
 
-  let intro = null;
-  let rendered = false;
-  let builtFor = null;
+  intro(tl) {
+    const ease = "power3.out";
+    tl.from(".rs_header", { duration: 0.5, y: -60, autoAlpha: 0, ease }, 0)
+      .from(".rs_team.t1 .rs_head", { duration: 0.6, x: -300, autoAlpha: 0, ease }, 0.1)
+      .from(".rs_team.t2 .rs_head", { duration: 0.6, x: 300, autoAlpha: 0, ease }, 0.1)
+      .from(".rs_vs", { duration: 0.6, scale: 3, autoAlpha: 0, ease: "power4.in" }, 0.2)
+      .from([".rs_rule", ".rs_scores"], { duration: 0.4, y: 20, autoAlpha: 0, stagger: 0.1 }, 0.6)
+      .from(".rs_big", { duration: 0.5, scale: 0, ease: "back.out(2)" }, 0.5)
+      .from(".rs_team.t1 .rs_card", { duration: 0.5, x: -120, autoAlpha: 0, stagger: 0.07, ease }, 0.4)
+      .from(".rs_team.t2 .rs_card", { duration: 0.5, x: 120, autoAlpha: 0, stagger: 0.07, ease }, 0.4);
+  },
 
-  Start = async () => {
-    if (intro) intro.progress(1).kill();
-    intro = gsap.timeline();
-    intro.from(".rs_header", { duration: 0.5, y: -60, autoAlpha: 0, ease: "power3.out" }, 0);
-    intro.from(".rs_team.t1 .rs_head", { duration: 0.6, x: -300, autoAlpha: 0, ease: "power3.out" }, 0.1);
-    intro.from(".rs_team.t2 .rs_head", { duration: 0.6, x: 300, autoAlpha: 0, ease: "power3.out" }, 0.1);
-    intro.from(".rs_vs", { duration: 0.6, scale: 3, autoAlpha: 0, ease: "power4.in" }, 0.2);
-    intro.from([".rs_rule", ".rs_scores"], { duration: 0.4, y: 20, autoAlpha: 0, stagger: 0.1 }, 0.6);
-    intro.from(".rs_big", { duration: 0.5, scale: 0, ease: "back.out(2)" }, 0.5);
-    intro.from(".rs_team.t1 .rs_card", { duration: 0.5, x: -120, autoAlpha: 0, stagger: 0.07, ease: "power3.out" }, 0.4);
-    intro.from(".rs_team.t2 .rs_card", { duration: 0.5, x: 120, autoAlpha: 0, stagger: 0.07, ease: "power3.out" }, 0.4);
-  };
+  update(s) {
+    const teams = TB.teams(s.data);
+    TB.applyColors(teams);
 
-  // Every card is the same height on both sides, as big as fits
-  function build(teams, event) {
-    const most = Math.max(teams[0].players.length, teams[1].players.length, 1);
-    const list = document.querySelector(".rs_list");
-    const gap = most > 6 ? 8 : 14;
-    const cardH = Math.floor(Math.min(170, (list.clientHeight - gap * (most - 1)) / most));
-    document.querySelector(".rs_body").style.setProperty("--card-h", `${cardH}px`);
-    document.querySelector(".rs_body").style.setProperty("--card-gap", `${gap}px`);
-    document.querySelector(".rs_body").classList.toggle("compact", cardH < 90);
+    // Cards again when a team's size changes
+    let rebuilt = false;
+    for (const team of teams) {
+      if (HD.build(`.rs_team.t${team.t} .rs_list`, team.players.length, () => team.players.map(playerCard))) rebuilt = true;
+    }
+    if (rebuilt) sizeCards(teams);
+    const animate = !s.first && !rebuilt;
+
+    s.set(".rs_tournament", s.data.tournamentInfo.tournamentName);
+    s.set(".rs_phase", TB.phaseMatch(s.data));
+    s.set(".rs_rule", TB.ruleText(teams));
 
     for (const team of teams) {
-      const el = document.querySelector(`.rs_team.t${team.t} .rs_list`);
-      el.innerHTML = team.players.map((p, i) => cardHtml(i)).join("");
-      el.querySelectorAll(".rs_card").forEach((card, i) => {
-        TBCharacterRender(card.querySelector(".rs_render"), team.players[i], event);
+      const el = (sel) => document.querySelector(`.rs_team.t${team.t} ${sel}`);
+      TB.updateHeader(
+        team,
+        { name: el(".rs_name"), logo: el(".rs_logo"), big: el(".rs_big_value"), bigLabel: el(".rs_big_label"), score: document.querySelector(`.rs_score_value.t${team.t}`) },
+        !s.first,
+      );
+      $(`.rs_team.t${team.t} .rs_card`).each((i, card) => {
+        updateCard(card, team.players[i], team, animate);
+        TB.characterRender(s, card.querySelector(".rs_render"), team.players[i]);
       });
     }
-  }
-
-  async function updateCard(card, p, team, animate) {
-    SetInnerHtml($(card.querySelector(".rs_player_name")), await TBNameHtml(p));
-    TBSetHtml(card.querySelector(".rs_chips"), TBChipsHtml(p));
-    // First To: games won count against the current opponent, so only the
-    // active player has any
-    const pips = card.querySelector(".rs_pips");
-    pips.style.display = TBIsStock() || p.active ? "" : "none";
-    TBUpdatePips(pips, p, team, animate);
-
-    const avatar = TBAvatar(p.data);
-    const img = card.querySelector(".rs_avatar");
-    if (avatar) {
-      if (img.getAttribute("src") !== avatar) img.setAttribute("src", avatar);
-      img.style.display = "";
-    } else {
-      img.removeAttribute("src");
-      img.style.display = "none";
-    }
-
-    const status = p.dead ? "Out" : p.active ? "Playing" : "";
-    TBSetHtml(card.querySelector(".rs_status"), status);
-    TBSetEliminated(card, p.dead, animate);
-    TBSetActive(card, p.active && !p.dead, animate);
-  }
-
-  Update = async (event) => {
-    const data = event.data;
-    const teams = TBTeams(data);
-    TBApplyColors(teams);
-
-    const counts = teams.map((t) => t.players.length).join(",");
-    const rebuilt = counts !== builtFor;
-    if (rebuilt) {
-      build(teams, event);
-      builtFor = counts;
-    }
-    const animate = rendered && !rebuilt;
-
-    SetInnerHtml($(".rs_tournament"), TBEscape(_.get(data, "tournamentInfo.tournamentName", "")));
-    SetInnerHtml($(".rs_phase"), TBPhaseMatch(data));
-    SetInnerHtml($(".rs_rule"), TBRuleText(teams));
-
-    for (const team of teams) {
-      const el = document.querySelector(`.rs_team.t${team.t}`);
-      SetInnerHtml($(el.querySelector(".rs_name")), TBEscape(team.displayName));
-      TBSetHtml(el.querySelector(".rs_logo"), TBLogoHtml(team));
-      TBAnimateNumber(el.querySelector(".rs_big_value"), team.big, rendered);
-      el.querySelector(".rs_big_label").textContent = team.bigLabel;
-      TBAnimateNumber(document.querySelector(`.rs_score_value.t${team.t}`), team.score, rendered);
-
-      const cards = el.querySelectorAll(".rs_card");
-      for (const [i, p] of team.players.entries()) {
-        await updateCard(cards[i], p, team, animate);
-      }
-    }
-
-    rendered = true;
-  };
+  },
 });
