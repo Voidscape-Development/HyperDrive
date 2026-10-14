@@ -9,7 +9,9 @@ The [Commentary](hyperdrive://open/commentary) tab holds the commentators shown 
 - Each card works like a [scoreboard](scoreboard.md) player card: type a tag and pick the
   person in the popup to fill in their real name, pronouns and socials from your
   [Player database](player-database.md). **Save new player** adds a commentator to it.
-- The 👁 menu hides fields you don't use.
+- The 👁 menu hides fields you don't use, and **Compact player cards** shows only the
+  tag, sponsor and characters (each card's arrow still shows the rest). Its default is
+  set in [Settings › Default Display Options](hyperdrive://open/settings/display-options).
 
 ## Commentary dashboard
 

@@ -32,6 +32,7 @@ class CommentaryWidget(QDockWidget):
 
         topOptions = QWidget()
         topOptions.setLayout(QHBoxLayout())
+        topOptions.layout().setContentsMargins(0, 0, 0, 0)
         topOptions.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
         self.widget.layout().addWidget(topOptions)
@@ -41,10 +42,12 @@ class CommentaryWidget(QDockWidget):
 
         col = QWidget()
         col.setLayout(QVBoxLayout())
+        col.layout().setContentsMargins(0, 0, 0, 0)
         topOptions.layout().addWidget(col)
         self.commentatorNumber = QSpinBox()
         row = QWidget()
         row.setLayout(QHBoxLayout())
+        row.layout().setContentsMargins(0, 0, 0, 0)
         commsNumber = QLabel(QApplication.translate("app", "Number of commentators"))
         commsNumber.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
         row.layout().addWidget(commsNumber)
@@ -99,6 +102,16 @@ class CommentaryWidget(QDockWidget):
                     action, element[1]
                 )
             )
+
+        # Commentator cards with only the tag, sponsor and characters; each
+        # card can still show its other fields
+        menu.addSeparator()
+        self.compactAction = menu.addAction(QApplication.translate("app", "Compact player cards"))
+        self.compactAction.setCheckable(True)
+        self.compactAction.setChecked(
+            SettingsManager.Get("display_options.compact_commentators", False)
+        )
+        self.compactAction.toggled.connect(self.SetCompactPlayers)
 
         row.layout().addWidget(self.eyeBt)
         col.layout().addWidget(row)
@@ -187,6 +200,8 @@ class CommentaryWidget(QDockWidget):
                 lambda x=None, index=len(self.commentaryWidgets): self.MoveDown(index)
             )
 
+            comm.SetDetailsShown(not self.compactAction.isChecked())
+
             self.commentaryWidgets.append(comm)
             self.dragBoard.Register(comm)
             self.widgetArea.layout().addWidget(comm)
@@ -216,6 +231,10 @@ class CommentaryWidget(QDockWidget):
         for pw in self.commentaryWidgets:
             for element in elements:
                 pw.SetElementVisible(element, action.isChecked())
+
+    def SetCompactPlayers(self, compact):
+        for pw in self.commentaryWidgets:
+            pw.SetDetailsShown(not compact)
 
     def SetCharacterNumber(self, value):
         for pw in self.commentaryWidgets:

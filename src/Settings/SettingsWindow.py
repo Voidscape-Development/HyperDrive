@@ -401,6 +401,17 @@ class SettingsWindow(QDialog):
             )
         )
 
+        displaySettings.append(
+            (
+                QApplication.translate(
+                    "settings.compact_commentators", "Compact Commentator Cards"
+                ),
+                "compact_commentators",
+                "checkbox",
+                False,
+            )
+        )
+
         self.add_setting_widget(
             QApplication.translate("settings", "Default Display Options"),
             SettingsWidget("display_options", displaySettings),

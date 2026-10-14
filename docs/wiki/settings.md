@@ -35,7 +35,8 @@ it to the `out/` folder.
 ## [Default Display Options](hyperdrive://open/settings/display-options)
 
 Which fields player cards show by default (real name, socials, seed, birthday, location,
-characters, pronouns, additional information), and compact cards.
+characters, pronouns, additional information), and compact cards for players and
+commentators.
 
 ## [Character Select](hyperdrive://open/settings/character-select)
 
