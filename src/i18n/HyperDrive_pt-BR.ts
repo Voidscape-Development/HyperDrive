@@ -1486,7 +1486,7 @@ p, li { white-space: pre-wrap; }
         <translation>Baixando {0}...</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="48"/>
+        <location filename="../CommentaryWidget.py" line="51"/>
         <source>Number of commentators</source>
         <translation>Número de comentaristas</translation>
     </message>
@@ -1522,7 +1522,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="55"/>
+        <location filename="../CommentaryWidget.py" line="58"/>
         <location filename="../PlayerListWidget.py" line="82"/>
         <location filename="../ScoreboardWidget.py" line="170"/>
         <location filename="../BracketWidget.py" line="555"/>
@@ -1633,7 +1633,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="101"/>
-        <location filename="../CommentaryWidget.py" line="88"/>
+        <location filename="../CommentaryWidget.py" line="91"/>
         <location filename="../DisplayOptions.py" line="30"/>
         <location filename="../ScoreboardWidget.py" line="217"/>
         <source>Additional information</source>
@@ -2674,7 +2674,7 @@ p, li { white-space: pre-wrap; }
         <translation>Gerar Thumbnail</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="72"/>
+        <location filename="../CommentaryWidget.py" line="75"/>
         <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../PlayerDBWindow.py" line="218"/>
         <location filename="../PlayerDBWindow.py" line="311"/>
@@ -2694,7 +2694,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="84"/>
-        <location filename="../CommentaryWidget.py" line="78"/>
+        <location filename="../CommentaryWidget.py" line="81"/>
         <location filename="../DisplayOptions.py" line="20"/>
         <location filename="../PlayerDBWindow.py" line="700"/>
         <location filename="../PlayerDBWindow.py" line="786"/>
@@ -2705,7 +2705,7 @@ p, li { white-space: pre-wrap; }
         <translation>Seed</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="79"/>
+        <location filename="../CommentaryWidget.py" line="82"/>
         <location filename="../DisplayOptions.py" line="21"/>
         <location filename="../ScoreboardWidget.py" line="208"/>
         <source>Birthday</source>
@@ -2714,7 +2714,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../TeamPlayerWidget.py" line="66"/>
         <location filename="../ScoreboardPlayerWidget.py" line="89"/>
-        <location filename="../CommentaryWidget.py" line="81"/>
+        <location filename="../CommentaryWidget.py" line="84"/>
         <location filename="../DisplayOptions.py" line="23"/>
         <location filename="../ScoreboardWidget.py" line="210"/>
         <location filename="../TeamBattleWidget.py" line="229"/>
@@ -2722,7 +2722,7 @@ p, li { white-space: pre-wrap; }
         <translation>Local</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="74"/>
+        <location filename="../CommentaryWidget.py" line="77"/>
         <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../PlayerDBWindow.py" line="314"/>
         <location filename="../ScoreboardWidget.py" line="203"/>
@@ -2732,7 +2732,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="85"/>
+        <location filename="../CommentaryWidget.py" line="88"/>
         <location filename="../DisplayOptions.py" line="27"/>
         <location filename="../PlayerListWidget.py" line="207"/>
         <location filename="../ScoreboardWidget.py" line="214"/>
@@ -2742,7 +2742,7 @@ p, li { white-space: pre-wrap; }
         <translation>Personagens</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="86"/>
+        <location filename="../CommentaryWidget.py" line="89"/>
         <location filename="../DisplayOptions.py" line="28"/>
         <location filename="../PlayerDBWindow.py" line="221"/>
         <location filename="../PlayerDBWindow.py" line="312"/>
@@ -2753,11 +2753,12 @@ p, li { white-space: pre-wrap; }
         <translation>Pronomes</translation>
     </message>
     <message>
-        <location filename="../CommentaryWidget.py" line="111"/>
+        <location filename="../CommentaryWidget.py" line="124"/>
         <source>Open {0} in a browser for the commentary dashboard: the players&apos; info and stats, and what&apos;s up next.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../CommentaryWidget.py" line="109"/>
         <location filename="../ScoreboardWidget.py" line="235"/>
         <source>Compact player cards</source>
         <translation type="unfinished"></translation>
@@ -4640,7 +4641,7 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="619"/>
+        <location filename="../Settings/SettingsWindow.py" line="630"/>
         <source>Twitch Predictions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4649,22 +4650,22 @@ Drop an image here.</source>
         <translation>Teclas de atalho</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="405"/>
+        <location filename="../Settings/SettingsWindow.py" line="416"/>
         <source>Default Display Options</source>
         <translation>Opções de Exibição Padrão</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="432"/>
+        <location filename="../Settings/SettingsWindow.py" line="443"/>
         <source>Character Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="438"/>
+        <location filename="../Settings/SettingsWindow.py" line="449"/>
         <source>Match &amp; Phase Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="444"/>
+        <location filename="../Settings/SettingsWindow.py" line="455"/>
         <source>Pronouns</source>
         <translation type="unfinished">Pronomes</translation>
     </message>
@@ -4673,12 +4674,12 @@ Drop an image here.</source>
         <translation>Bluesky</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="506"/>
+        <location filename="../Settings/SettingsWindow.py" line="517"/>
         <source>API Keys</source>
         <translation>Chaves de API</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="549"/>
+        <location filename="../Settings/SettingsWindow.py" line="560"/>
         <source>start.gg Reporting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4692,39 +4693,39 @@ Drop an image here.</source>
 <context>
     <name>settings.api_keys</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="451"/>
+        <location filename="../Settings/SettingsWindow.py" line="462"/>
         <source>ParryGG</source>
         <translation>ParryGG</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="456"/>
+        <location filename="../Settings/SettingsWindow.py" line="467"/>
         <source>You can get an API Key from parry.gg/api-keys</source>
         <translation>Você pode obter uma Chave de API em parry.gg/api-keys</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="460"/>
-        <location filename="../Settings/SettingsWindow.py" line="479"/>
-        <location filename="../Settings/SettingsWindow.py" line="498"/>
+        <location filename="../Settings/SettingsWindow.py" line="471"/>
+        <location filename="../Settings/SettingsWindow.py" line="490"/>
+        <location filename="../Settings/SettingsWindow.py" line="509"/>
         <source>Please note that the API Key will be stored in plain text on your computer</source>
         <translation>Note que a Chave de API será salva no seu computador em forma de texto</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="469"/>
+        <location filename="../Settings/SettingsWindow.py" line="480"/>
         <source>start.gg (reporting sets)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="474"/>
+        <location filename="../Settings/SettingsWindow.py" line="485"/>
         <source>Needed to report sets to start.gg from the scoreboard&apos;s Games window. Create a token at start.gg &gt; Developer Settings, with an account that&apos;s an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="488"/>
+        <location filename="../Settings/SettingsWindow.py" line="499"/>
         <source>Twitch (predictions)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="493"/>
+        <location filename="../Settings/SettingsWindow.py" line="504"/>
         <source>A user access token of your channel with the channel:manage:predictions scope, e.g. from a token generator for Twitch&apos;s API. See Settings &gt; Twitch Predictions.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5010,13 +5011,21 @@ Drop an image here.</source>
 <context>
     <name>settings.character_picker</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="413"/>
+        <location filename="../Settings/SettingsWindow.py" line="424"/>
         <source>Show the player&apos;s mains in the character grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="421"/>
+        <location filename="../Settings/SettingsWindow.py" line="432"/>
         <source>Show recently picked characters in the character grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>settings.compact_commentators</name>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="406"/>
+        <source>Compact Commentator Cards</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5361,22 +5370,22 @@ Drop an image here.</source>
 <context>
     <name>settings.startgg_reporting</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="515"/>
+        <location filename="../Settings/SettingsWindow.py" line="526"/>
         <source>Send each game to start.gg as it&apos;s played (otherwise games are sent when the set is reported)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="523"/>
+        <location filename="../Settings/SettingsWindow.py" line="534"/>
         <source>Lets viewers follow the set on start.gg live. Uses one request per change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="531"/>
+        <location filename="../Settings/SettingsWindow.py" line="542"/>
         <source>Mark sets as in progress on start.gg when they&apos;re loaded on a scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="542"/>
+        <location filename="../Settings/SettingsWindow.py" line="553"/>
         <source>Ask before reporting a set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5475,52 +5484,52 @@ Drop an image here.</source>
 <context>
     <name>settings.twitch_predictions</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="557"/>
+        <location filename="../Settings/SettingsWindow.py" line="568"/>
         <source>Run Twitch predictions for the set on stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="564"/>
+        <location filename="../Settings/SettingsWindow.py" line="575"/>
         <source>Needs the Twitch token of Settings &gt; API Keys, and a channel that&apos;s a Twitch affiliate or partner.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="570"/>
+        <location filename="../Settings/SettingsWindow.py" line="581"/>
         <source>Scoreboard</source>
         <translation type="unfinished">Placar</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="575"/>
+        <location filename="../Settings/SettingsWindow.py" line="586"/>
         <source>The number of the scoreboard of the stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="580"/>
+        <location filename="../Settings/SettingsWindow.py" line="591"/>
         <source>Start one when a set is loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="588"/>
+        <location filename="../Settings/SettingsWindow.py" line="599"/>
         <source>Resolve it with the winner when the set is over</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="596"/>
+        <location filename="../Settings/SettingsWindow.py" line="607"/>
         <source>Title</source>
         <translation type="unfinished">Título</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="601"/>
+        <location filename="../Settings/SettingsWindow.py" line="612"/>
         <source>{team1}, {team2} and {round} are replaced. Twitch allows 45 characters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="607"/>
+        <location filename="../Settings/SettingsWindow.py" line="618"/>
         <source>Seconds viewers have to predict</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="614"/>
+        <location filename="../Settings/SettingsWindow.py" line="625"/>
         <source>From 30 to 1800</source>
         <translation type="unfinished"></translation>
     </message>
