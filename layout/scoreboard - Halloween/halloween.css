@@ -240,6 +240,10 @@
   text-shadow: var(--hw-text-shadow);
 }
 
+/* SSBU centers its names; align them to the bars' outer ends instead */
+.halloween.ssbu .p1 .name .text { justify-content: flex-start; }
+.halloween.ssbu .p2 .name .text { justify-content: flex-end; }
+
 .halloween .sponsor {
   color: var(--hw-ember);
 }
@@ -430,16 +434,18 @@
 
 
 /* ── 11. SSBU character art ─────────────────────────────── */
-/* Full character portrait (index.js, asset "full") in the inner half of
-   each bar, behind the name and score: grayscale, then multiplied by red
-   so shadows stay black and highlights turn red (a black-to-red duotone),
-   fading out toward the name. Clipped to the bar's pointed inner end. */
+/* Full character portrait (index.js, asset "full") behind the name, ending
+   just short of the score box: grayscale, then multiplied by red so shadows
+   stay black and highlights turn red (a black-to-red duotone). Soft edges on
+   both sides: a long fade toward the name, a short one by the score box. */
 
 .halloween .hw_art {
+  /* Distance from the bar's inner end to just past the score box */
+  --hw-art-inset: calc(var(--hw-tip) + 2px + var(--hw-score-h) * 1.15 + 8px);
   position: absolute;
   top: 2px;
   bottom: 2px;
-  width: 55%;
+  width: 48%;
   z-index: -998;
   overflow: hidden;
   isolation: isolate;
@@ -447,17 +453,15 @@
 }
 
 .halloween .p1 .hw_art {
-  right: 3px;
-  clip-path: polygon(0 0, calc(100% - var(--hw-tip)) 0, 100% 50%, calc(100% - var(--hw-tip)) 100%, 0 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 60%);
-  mask-image: linear-gradient(90deg, transparent 0%, #000 60%);
+  right: var(--hw-art-inset);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 55%, #000 85%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 55%, #000 85%, transparent 100%);
 }
 
 .halloween .p2 .hw_art {
-  left: 3px;
-  clip-path: polygon(var(--hw-tip) 0, 100% 0, 100% 100%, var(--hw-tip) 100%, 0 50%);
-  -webkit-mask-image: linear-gradient(270deg, transparent 0%, #000 60%);
-  mask-image: linear-gradient(270deg, transparent 0%, #000 60%);
+  left: var(--hw-art-inset);
+  -webkit-mask-image: linear-gradient(270deg, transparent 0%, #000 55%, #000 85%, transparent 100%);
+  mask-image: linear-gradient(270deg, transparent 0%, #000 55%, #000 85%, transparent 100%);
 }
 
 /* Undo the icon styling index.css / section 6 give .hd_character */
@@ -480,30 +484,6 @@
   z-index: 100;
   background: #ff1e2e;
   mix-blend-mode: multiply;
-}
-
-/* Darkens the art behind the score box so the box stands out: solid across
-   the box (pointed end + box width), fading out toward the face */
-.halloween .hw_art::before {
-  --hw-art-dark: calc(var(--hw-tip) + var(--hw-score-h) * 1.15 + 6px);
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 101;
-}
-
-.halloween .p1 .hw_art::before {
-  background: linear-gradient(270deg,
-    rgba(11, 7, 9, 0.85) 0,
-    rgba(11, 7, 9, 0.85) var(--hw-art-dark),
-    transparent calc(var(--hw-art-dark) + 50px));
-}
-
-.halloween .p2 .hw_art::before {
-  background: linear-gradient(90deg,
-    rgba(11, 7, 9, 0.85) 0,
-    rgba(11, 7, 9, 0.85) var(--hw-art-dark),
-    transparent calc(var(--hw-art-dark) + 50px));
 }
 
 

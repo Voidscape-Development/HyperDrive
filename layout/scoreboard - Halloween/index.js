@@ -211,8 +211,8 @@ LoadEverything().then(() => {
       {
         asset_key: "full",
         source: `score.${window.scoreboardNumber}.team.${t + 1}`,
-        // Eyes toward the art's inner end, just short of the score box
-        custom_center: t == 0 ? [0.62, 0.4] : [0.38, 0.4],
+        // Face toward the score side, inside the art's soft edges
+        custom_center: t == 0 ? [0.6, 0.4] : [0.4, 0.4],
         scale_fill_x: true,
         scale_fill_y: true,
         custom_zoom: 1.0,
