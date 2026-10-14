@@ -99,6 +99,19 @@
   // without HD.set()'s fade and .text
   HD.render = (target, content) => $(target).html(render(content));
 
+  // HD.render() only when key (anything JSON-able: the players, the
+  // stages...) changed since the last build, so the rows stay and what
+  // HD.set() puts in them can fade. content may be a function, called
+  // only then. Returns whether it built.
+  HD.build = (target, key, content) => {
+    const el = $(target);
+    const signature = JSON.stringify(key === undefined ? null : key);
+    if (el.length === 0 || el.data("hd-build") === signature) return false;
+    el.data("hd-build", signature);
+    HD.render(el, typeof content === "function" ? content() : content);
+    return true;
+  };
+
   // An image, or nothing without a src
   HD.img = (src, attrs = "") => src && HD.html`<img src="${src}" ${HD.raw(attrs)} />`;
 
@@ -162,8 +175,10 @@
   // A team's name, or its players' names without one
   HD.teamName = (team) => (team && team.teamName) || HD.playerNames(team);
 
-  // The non-empty values, joined: HD.text([phase, bestOf], " - ")
-  HD.text = (parts, separator = " ") => parts.filter((p) => p != null && p !== "").join(separator);
+  // The non-empty values (not null, "" or false), joined:
+  // HD.text([phase, bestOf], " - ")
+  HD.text = (parts, separator = " ") =>
+    parts.filter((p) => p != null && p !== "" && p !== false).join(separator);
 
   // The stage picked on a scoreboard, with its data
   HD.stage = (data, score) => {
@@ -196,15 +211,20 @@
         codeClass && HD.html` class="${codeClass}"`
       }>${place.code}</div>`,
 
-    // Icon + text chips, e.g. HD.ui.chip("twitter", handle)
-    chip: (kind, text, prefix = "") =>
-      text && HD.html`<span class="${kind}_logo"></span>${prefix}${text}`,
+    // Icon + text chips, e.g. HD.ui.chip("twitter", handle): the icon is
+    // a .twitter_logo span
+    chip: (kind, text, prefix = "", icon = `${kind}_logo`) =>
+      text ? HD.html`<span class="${icon}"></span>${prefix}${text}` : "",
 
     // Sponsor and name, and the losers badge: the scoreboards' name
     name: (player, team) =>
       HD.html`<span class="sponsor">${player.team}</span>${player.name}${
         team && team.losers && HD.html`<span class='losers'>L</span>`
       }`,
+
+    // The sponsor's logo as a background (styled as .sponsor-logo)
+    sponsorLogo: (path) =>
+      HD.html`<div class='sponsor-logo' style="background-image: url('${HD.asset(path)}')"></div>`,
 
     // A character's skin: its icon and name
     variant(variant) {
@@ -246,6 +266,38 @@
         tl.from(els, { autoAlpha: 0, duration, stagger: { each, from } }, 0);
       }
     }
+  };
+
+  // The commentators (data.commentary) in a container: a
+  // .commentator_container.commentator<i> each, with a div per field.
+  // Fields are shown as `show` has them (or the defaults below); ones
+  // without a name are hidden.
+  const COMMENTATOR_FIELDS = {
+    name: (c) =>
+      HD.html`<span class="mic_icon"></span><span class="team">${c.team && HD.html`${c.team}&nbsp;`}</span>${c.name}`,
+    pronoun: (c) => c.pronoun,
+    real_name: (c) => c.real_name,
+    twitter: (c) => HD.ui.chip("twitter", c.twitter),
+  };
+
+  HD.commentators = (s, container, fields = ["name", "pronoun", "real_name", "twitter"], show = {}) => {
+    const list = Object.values(s.data.commentary || {});
+    if (s.changed((d) => _.size(d.commentary)) || $(container).is(":empty")) {
+      HD.render(
+        container,
+        list.map(
+          (_c, i) =>
+            HD.html`<div class="commentator_container commentator${i}">${fields.map(
+              (f) => HD.html`<div class="${f}"></div>`,
+            )}</div>`,
+        ),
+      );
+    }
+    list.forEach((c, i) => {
+      const sel = `${container} .commentator${i}`;
+      $(sel).css("display", c.name ? "" : "none");
+      if (c.name) for (const f of fields) HD.set(`${sel} .${f}`, (show[f] || COMMENTATOR_FIELDS[f])(c));
+    });
   };
 
   // The team colors set on the scoreboard as the score's (and sponsor's)

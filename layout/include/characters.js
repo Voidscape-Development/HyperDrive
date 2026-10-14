@@ -144,6 +144,13 @@
     }
   };
 
+  // Character options that slide them 20px toward the middle as they fade,
+  // one after the other: way 1 for the left side, -1 for the right
+  HD.slideToMiddle = (way) => ({
+    out: { autoAlpha: 0, x: `${-20 * way}px`, stagger: way * 0.2, duration: 0.4 },
+    in: { autoAlpha: 1, x: "0px", stagger: way * 0.2, duration: 0.4 },
+  });
+
   // -------------------------------------------------------------------
   // Images zoomed and centered on the character's eyesight, done again
   // when their element is resized

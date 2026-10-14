@@ -1,273 +1,145 @@
-LoadEverything().then(() => {
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+// Team versus scoreboard: each team's identity and score, its players as
+// cards (name, chips, avatar, character icons) and the stages played down
+// the middle. settings.json's main_icon, secondary_icon and tertiary_icon
+// pick the icons; a card only has the ones with an asset_key.
 
-  function buildPlayerCard(hasSecondary, hasTertiary) {
-    const card = document.createElement("div");
-    card.className = "player container";
-    card.innerHTML = `
-      <div class="name">
-        <div class="name_row">
-          <div class="team_name"></div>
-          <div class="sponsor_icon"></div>
-        </div>
-        <div class="player_chips"></div>
-      </div>
-      <div class="char_icons">
-        <div class="char_slot main_slot">
-          <div class="char_icon_bg main_icon_bg"></div>
-          <div class="char_label char_name"></div>
-        </div>
-        ${hasSecondary ? `<div class="char_slot">
-          <div class="char_icon_bg secondary_icon_bg"></div>
-          <div class="char_label char_meta"></div>
-        </div>` : ""}
-        ${hasTertiary ? `<div class="char_slot">
-          <div class="char_icon_bg tertiary_icon_bg"></div>
-          <div class="char_label char_meta"></div>
-        </div>` : ""}
-      </div>
-      <img class="player_avatar" />
-    `;
-    return card;
-  }
+// A card's character icon slots: [setting, icon class, label class]
+const SLOTS = [
+  ["main_icon", "main_icon_bg", "char_name"],
+  ["secondary_icon", "secondary_icon_bg", "char_meta"],
+  ["tertiary_icon", "tertiary_icon_bg", "char_meta"],
+];
 
-  function buildStageRow(gameNum) {
-    const row = document.createElement("div");
-    row.className = "stage_row";
-    row.dataset.game = gameNum;
-    row.innerHTML = `
-      <div class="win_indicator t1"></div>
-      <div class="stage_content">
-        <div class="stage_icon"></div>
-        <div class="stage_name"></div>
-      </div>
-      <div class="win_indicator t2"></div>
-    `;
-    return row;
-  }
+const playerCard = (slots) => HD.html`
+  <div class="player container">
+    <div class="name">
+      <div class="name_row"><div class="team_name"></div><div class="sponsor_icon"></div></div>
+      <div class="player_chips"></div>
+    </div>
+    <div class="char_icons">
+      ${slots.map(
+        ([, icon, label], i) =>
+          HD.html`<div class="char_slot${i === 0 ? " main_slot" : ""}"><div class="char_icon_bg ${icon}"></div><div class="char_label ${label}"></div></div>`,
+      )}
+    </div>
+    <img class="player_avatar" />
+  </div>`;
 
-  let tl;
+const stageRow = ([game, stage]) => HD.html`
+  <div class="stage_row${!stage.codename && " empty"}" data-game="${game}">
+    <div class="win_indicator t1${stage.tie ? " tie" : !!stage.t1_win && " won"}">${stage.tie && "="}</div>
+    <div class="stage_content">
+      <div class="stage_icon" style="${stage.path && `background-image: url("${HD.asset(stage.path.replace(/^\.\//, ""))}")`}"></div>
+      <div class="stage_name">${stage.display_name || stage.name || stage.codename}</div>
+    </div>
+    <div class="win_indicator t2${stage.tie ? " tie" : !!stage.t2_win && " won"}">${stage.tie && "="}</div>
+  </div>`;
 
-  Start = async (event) => {
-    const t1Cards = [...document.querySelectorAll(".t1 .player.container")];
-    const t2Cards = [...document.querySelectorAll(".t2 .player.container")];
-    const stageRows = [...document.querySelectorAll(".stage_row")];
-    const maxCards = Math.max(t1Cards.length, t2Cards.length, 1);
+HD.layout({
+  intro(tl) {
+    const ease = "power2.out";
+    const cards = (side) => [...document.querySelectorAll(`.${side} .player.container`)];
+    const [t1, t2] = [cards("t1"), cards("t2")];
+    const all = [...t1, ...t2];
+    const inCards = (sel) => all.map((c) => c.querySelector(sel)).filter(Boolean);
+    const stagger = 0.1;
+    const playersEnd = 0.2 + (Math.max(t1.length, t2.length, 1) - 1) * stagger + 0.7;
 
-    const playerDur = 0.7;
-    const playerStagger = 0.1;
-    const playersEnd = 0.2 + (maxCards - 1) * playerStagger + playerDur;
-
-    if(tl == null){
-      tl = gsap.timeline();
-  
-      tl.from("#header", { duration: 0.4, autoAlpha: 0, ease: "power2.out" }, 0);
-      tl.from(".t1.score_side .team_logo", { duration: 0.5, x: -40, autoAlpha: 0, ease: "power2.out" }, 0.1);
-      tl.from(".t2.score_side .team_logo", { duration: 0.5, x: 40, autoAlpha: 0, ease: "power2.out" }, 0.1);
-      tl.from(".t1.score_side .team_identity", { duration: 0.5, x: -30, autoAlpha: 0, ease: "power2.out" }, 0.15);
-      tl.from(".t2.score_side .team_identity", { duration: 0.5, x: 30, autoAlpha: 0, ease: "power2.out" }, 0.15);
-      tl.from(".t1.score_side .score", { duration: 0.6, scale: 1.4, autoAlpha: 0, ease: "back.out(1.4)" }, 0.2);
-      tl.from(".t2.score_side .score", { duration: 0.6, scale: 1.4, autoAlpha: 0, ease: "back.out(1.4)" }, 0.2);
-  
-      if (t1Cards.length) tl.from(t1Cards, { duration: playerDur, x: -120, autoAlpha: 0, stagger: playerStagger, ease: "power2.out" }, 0.2);
-      if (t2Cards.length) tl.from(t2Cards, { duration: playerDur, x: 120, autoAlpha: 0, stagger: playerStagger, ease: "power2.out" }, 0.2);
-  
-      const t1Avatars = t1Cards.map(c => c.querySelector(".player_avatar")).filter(Boolean);
-      const t2Avatars = t2Cards.map(c => c.querySelector(".player_avatar")).filter(Boolean);
-      if (t1Avatars.length) tl.from(t1Avatars, { duration: 0.8, x: -180, autoAlpha: 0, stagger: playerStagger, ease: "power2.out" }, 0.35);
-      if (t2Avatars.length) tl.from(t2Avatars, { duration: 0.8, x: 180, autoAlpha: 0, stagger: playerStagger, ease: "power2.out" }, 0.35);
-  
-      const allNames = [...t1Cards, ...t2Cards].map(c => c.querySelector(".name")).filter(Boolean);
-      const allCharIcons = [...t1Cards, ...t2Cards].map(c => c.querySelector(".char_icons")).filter(Boolean);
-      if (allNames.length) tl.from(allNames, { duration: 0.4, autoAlpha: 0, stagger: 0.04, ease: "power2.out" }, 0.45);
-      if (allCharIcons.length) tl.from(allCharIcons, { duration: 0.4, autoAlpha: 0, stagger: 0.04, ease: "power2.out" }, 0.45);
-  
-      tl.from("#center_strip", { duration: 0.4, autoAlpha: 0, ease: "power2.out" }, playersEnd);
-  
-      const stageDelay = 0.3;
-      stageRows.forEach((row, i) => {
-        const t = playersEnd + 0.2 + i * stageDelay;
-        tl.from(row.querySelector(".stage_content"), {
-          duration: 0.35, autoAlpha: 0, y: 10, ease: "power2.out",
-        }, t);
-        const indicators = [...row.querySelectorAll(".win_indicator")];
-        if (indicators.length) {
-          tl.from(indicators, {
-            duration: 0.25, autoAlpha: 0, scale: 0.5, ease: "back.out(1.7)",
-          }, t + 0.22);
-        }
-      });
-    } else {
-      tl.kill();
-      tl.restart();
+    tl.from("#header", { duration: 0.4, autoAlpha: 0, ease }, 0);
+    for (const [side, way] of [["t1", -1], ["t2", 1]]) {
+      tl.from(`.${side}.score_side .team_logo`, { duration: 0.5, x: 40 * way, autoAlpha: 0, ease }, 0.1)
+        .from(`.${side}.score_side .team_identity`, { duration: 0.5, x: 30 * way, autoAlpha: 0, ease }, 0.15)
+        .from(`.${side}.score_side .score`, { duration: 0.6, scale: 1.4, autoAlpha: 0, ease: "back.out(1.4)" }, 0.2);
+      const sideCards = side === "t1" ? t1 : t2;
+      tl.from(sideCards, { duration: 0.7, x: 120 * way, autoAlpha: 0, stagger, ease }, 0.2).from(
+        sideCards.map((c) => c.querySelector(".player_avatar")),
+        { duration: 0.8, x: 180 * way, autoAlpha: 0, stagger, ease },
+        0.35,
+      );
     }
-  };
+    tl.from(inCards(".name"), { duration: 0.4, autoAlpha: 0, stagger: 0.04, ease }, 0.45)
+      .from(inCards(".char_icons"), { duration: 0.4, autoAlpha: 0, stagger: 0.04, ease }, 0.45)
+      .from("#center_strip", { duration: 0.4, autoAlpha: 0, ease }, playersEnd);
+    // Then the stages, one by one
+    document.querySelectorAll(".stage_row").forEach((row, i) => {
+      const at = playersEnd + 0.2 + i * 0.3;
+      tl.from(row.querySelector(".stage_content"), { duration: 0.35, autoAlpha: 0, y: 10, ease }, at).from(
+        row.querySelectorAll(".win_indicator"),
+        { duration: 0.25, autoAlpha: 0, scale: 0.5, ease: "back.out(1.7)" },
+        at + 0.22,
+      );
+    });
+  },
 
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-    const score = data.score[window.scoreboardNumber];
-    const team1 = score.team["1"];
-    const team2 = score.team["2"];
-    const teams = [team1, team2];
+  update(s) {
+    const stages = Object.entries(s.score.stages || {})
+      .filter(([, stage]) => stage)
+      .sort(([a], [b]) => a - b);
+    HD.build("#stage_list", stages, () => stages.map(stageRow));
 
-    // Rebuild stage rows
-    const stageList = document.getElementById("stage_list");
-    stageList.innerHTML = "";
-    const stages = score.stages || {};
-    for (const [gameNum, stage] of Object.entries(stages).sort(([a], [b]) => Number(a) - Number(b))) {
-      if (!stage) continue;
-      const row = buildStageRow(gameNum);
-      const iconPath = stage.path ? `../../${stage.path.replace(/^\.\//, "")}` : null;
-      row.querySelector(".stage_icon").style.backgroundImage = iconPath ? `url("${iconPath}")` : "";
-      row.querySelector(".stage_name").textContent = stage.display_name || stage.name || stage.codename || "";
-      row.classList.toggle("empty", !stage.codename);
-      const t1Win = row.querySelector(".win_indicator.t1");
-      const t2Win = row.querySelector(".win_indicator.t2");
-      t1Win.classList.toggle("won", !!stage.t1_win && !stage.tie);
-      t2Win.classList.toggle("won", !!stage.t2_win && !stage.tie);
-      t1Win.classList.toggle("tie", !!stage.tie);
-      t2Win.classList.toggle("tie", !!stage.tie);
-      t1Win.textContent = stage.tie ? "=" : "";
-      t2Win.textContent = stage.tie ? "=" : "";
-      stageList.appendChild(row);
+    s.set(".tournament_name", s.data.tournamentInfo.tournamentName);
+    s.set(".event_name", s.data.tournamentInfo.eventName);
+    s.set(".ca_phase", s.score.phase);
+    s.set(".ca_match", s.score.match);
+    s.set(".ca_best_of", s.score.best_of_text);
+
+    // The icon slots with an asset_key for this game
+    const game = _.get(s.data, "game.codename", "default");
+    const assetKey = (setting) =>
+      _.get(s.settings, [setting, game, "asset_key"]) || _.get(s.settings, [setting, "default", "asset_key"]) || "";
+    const slots = SLOTS.filter(([setting], i) => i === 0 || assetKey(setting));
+
+    for (const { n, team } of s.teams) {
+      const side = `.score_side.t${n}`;
+      HD.set(`${side} .score`, team.score || 0);
+      HD.set(`${side} .score_team_name`, team.teamName);
+      $(`${side} .losers_badge`).toggleClass("visible", !!team.losers);
+      $(`${side} .team_logo`).attr("src", HD.asset(team.logo)).css("display", team.logo ? "" : "none");
+
+      const players = Object.entries(team.player || {})
+        .filter(([, p]) => p && p.name)
+        .sort(([a], [b]) => a - b);
+      const area = `.team.t${n} .players_area`;
+      HD.build(area, [players.map(([key]) => key), slots], () => players.map(() => playerCard(slots)));
+
+      $(area)
+        .children()
+        .each((i, el) => {
+          const [key, player] = players[i];
+          const card = $(el);
+          const location = player.country && player.country.code && HD.text([player.country.code, player.state && player.state.code], "/");
+          const chip = (icon, text) => text ? HD.html`<div class="chip"><span class="${icon}"></span>${text}</div>` : "";
+
+          HD.set(card.find(".team_name"), HD.html`${player.team && HD.html`<span class="sponsor">${player.team}</span>`}${player.name}`);
+          // One row, so fitting scales the chips together
+          HD.set(
+            card.find(".player_chips"),
+            HD.html`${chip("seed_logo", player.seed ? `Seed ${player.seed}` : "")}${chip("twitter_logo", player.twitter)}${chip(
+              "pronoun_logo",
+              player.pronoun,
+            )}${chip("location_icon", location)}`,
+          );
+          HD.set(card.find(".sponsor_icon"), HD.img(HD.asset(player.sponsor_logo)));
+          // The local avatar over the online one
+          const avatar = HD.asset(player.avatar) || player.online_avatar;
+          card.find(".player_avatar").attr("src", avatar || "").css("display", avatar ? "" : "none");
+
+          const character = Object.values(player.character || {})[0] || {};
+          slots.forEach(([setting, icon, label], j) => {
+            s.characters(card.find(`.${icon}`), {
+              source: ["score", s.n, "team", n, "player", key],
+              load_settings_path: setting,
+              slice_character: [0, 1],
+              scale_fill_x: true,
+              custom_zoom: 1,
+            });
+            HD.set(
+              card.find(".char_slot").eq(j).find(`.${label}`),
+              j === 0 ? character.display_name : _.get(character, ["assets", assetKey(setting), "metadata", "0", "value"]),
+            );
+          });
+        });
     }
-
-    // Tournament info
-    const tournamentName = data.tournamentInfo?.tournamentName || "";
-    const eventName = data.tournamentInfo?.eventName || "";
-    SetInnerHtml($(".tournament_name"), tournamentName);
-    SetInnerHtml($(".event_name"), eventName);
-
-    // Center area: phase > match > best of
-    SetInnerHtml($(".ca_phase"), [score.phase].filter(Boolean).join(""));
-    SetInnerHtml($(".ca_match"), score.match || "");
-    SetInnerHtml($(".ca_best_of"), score.best_of_text || "");
-
-    // Resolve icon asset keys once — determines which char slots to show
-    const gameCodename = _.get(data, "game.codename", "default");
-    const secKey = _.get(hd_settings, `secondary_icon.${gameCodename}.asset_key`)
-                || _.get(hd_settings, `secondary_icon.default.asset_key`) || "";
-    const terKey = _.get(hd_settings, `tertiary_icon.${gameCodename}.asset_key`)
-                || _.get(hd_settings, `tertiary_icon.default.asset_key`) || "";
-
-    for (const [t, team] of teams.entries()) {
-      const side = t === 0 ? "t1" : "t2";
-      const teamEl = document.querySelector(`.team.${side}`);
-
-      if (team.color && !hd_settings["forceDefaultScoreColors"]) {
-        document.querySelector(":root").style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-      }
-
-      const scoreSideEl = document.querySelector(`.score_side.${side}`);
-      SetInnerHtml($(`.score_side.${side} .score`), String(team.score ?? 0));
-      SetInnerHtml($(`.score_side.${side} .score_team_name`), team.teamName || "");
-      scoreSideEl.querySelector(".losers_badge").classList.toggle("visible", !!team.losers);
-
-      const teamLogoEl = scoreSideEl.querySelector(".team_logo");
-      if (team.logo) {
-        teamLogoEl.src = `../../${team.logo}`;
-        teamLogoEl.style.display = "";
-      } else {
-        teamLogoEl.src = "";
-        teamLogoEl.style.display = "none";
-      }
-
-      // Rebuild player cards
-      const playersArea = teamEl.querySelector(".players_area");
-      playersArea.innerHTML = "";
-
-      const playerEntries = Object.entries(team.player || {})
-        .sort(([a], [b]) => Number(a) - Number(b));
-
-      for (const [playerKey, player] of playerEntries) {
-        if (!player || !player.name) continue;
-
-        const card = buildPlayerCard(!!secKey, !!terKey);
-        playersArea.appendChild(card);
-
-        // Name + org tag
-        const playerName = player.name;
-        const orgTag = player.team || "";
-        SetInnerHtml($(card.querySelector(".team_name")),
-          orgTag ? `<span class="sponsor">${orgTag}</span>${playerName}` : playerName,
-        );
-
-        // Chips under name — built as one HTML string so FitText scales the whole row together
-        let locationText = "";
-        if (player.country?.code) {
-          locationText = player.country.code;
-          if (player.state?.code) locationText += `/${player.state.code}`;
-        }
-        const chipsHtml = [
-          player.seed ? `<div class="chip"><span class="seed_logo"></span>Seed ${player.seed}</div>` : "",
-          player.twitter ? `<div class="chip"><span class="twitter_logo"></span>${player.twitter}</div>` : "",
-          player.pronoun ? `<div class="chip"><span class="pronoun_logo"></span>${player.pronoun}</div>` : "",
-          locationText ? `<div class="chip"><span class="location_icon"></span>${locationText}</div>` : "",
-        ].filter(Boolean).join("");
-        SetInnerHtml($(card.querySelector(".player_chips")), chipsHtml);
-
-        // Sponsor icon
-        SetInnerHtml($(card.querySelector(".sponsor_icon")),
-          player.sponsor_logo ? `<img src="../../${player.sponsor_logo}" />` : "",
-        );
-
-        // Avatar (prefer local avatar over online)
-        const avatarEl = card.querySelector(".player_avatar");
-        if (player.avatar) {
-          avatarEl.src = `../../${player.avatar}`;
-          avatarEl.style.display = "";
-        } else if (player.online_avatar) {
-          avatarEl.src = player.online_avatar;
-          avatarEl.style.display = "";
-        } else {
-          avatarEl.src = "";
-          avatarEl.style.display = "none";
-        }
-
-        // Character icon displays (secondary/tertiary only if their asset key exists)
-        const playerSource = `score.${window.scoreboardNumber}.team.${t + 1}.player.${playerKey}`;
-        await CharacterDisplay($(card.querySelector(".main_icon_bg")), {
-          source: playerSource,
-          load_settings_path: "main_icon",
-          slice_character: [0, 1],
-          scale_fill_x: true,
-          // scale_fill_y: true,
-          custom_zoom: 1.0
-        }, event);
-        if (secKey) {
-          await CharacterDisplay($(card.querySelector(".secondary_icon_bg")), {
-            source: playerSource,
-            load_settings_path: "secondary_icon",
-            slice_character: [0, 1],
-            scale_fill_x: true,
-            // scale_fill_y: true,
-            custom_zoom: 1.0
-          }, event);
-        }
-        if (terKey) {
-          await CharacterDisplay($(card.querySelector(".tertiary_icon_bg")), {
-            source: playerSource,
-            load_settings_path: "tertiary_icon",
-            slice_character: [0, 1],
-            scale_fill_x: true,
-            // scale_fill_y: true,
-            custom_zoom: 1.0
-          }, event);
-        }
-
-        // Character name + metadata labels
-        const char = Object.values(player.character || {})[0];
-        SetInnerHtml($(card.querySelector(".char_name")), char?.display_name || "");
-        if (secKey) {
-          const secMeta = card.querySelector(".secondary_icon_bg")?.closest(".char_slot")?.querySelector(".char_meta");
-          if (secMeta) SetInnerHtml($(secMeta), char?.assets?.[secKey]?.metadata?.["0"]?.value || "");
-        }
-        if (terKey) {
-          const terMeta = card.querySelector(".tertiary_icon_bg")?.closest(".char_slot")?.querySelector(".char_meta");
-          if (terMeta) SetInnerHtml($(terMeta), char?.assets?.[terKey]?.metadata?.["0"]?.value || "");
-        }
-      }
-    }
-  };
+    HD.teamColors(s, ["score-bg-color"]);
+  },
 });

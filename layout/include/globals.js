@@ -171,8 +171,9 @@ HD.layouts = {};
       settings: HD.settings,
       teams: [1, 2].map((t) => teamView(score, t)),
       changed: (path) => changed(data, old, path),
-      // Same as changed(), for a path in the scoreboard: "team.1.color"
-      scoreChanged: (path) => changed(data, old, ["score", n, ...[].concat(_.toPath(path))]),
+      // Same as changed(), in the scoreboard: "team.1.color" or a function
+      scoreChanged: (path) =>
+        changed(data, old, typeof path === "function" ? (d) => path(d.score[n]) : ["score", n, ..._.toPath(path)]),
       set: (...args) => HD.set(...args),
       // Work the first show waits for (e.g. images loading)
       wait: (promise) => (pending.push(promise), promise),
@@ -185,6 +186,10 @@ HD.layouts = {};
   }
 
   HD.scope = () => scope(applied, applied);
+
+  // Runs fn(scope) every so many seconds, for content that takes turns.
+  // Call it from init(), so it isn't started again with each show.
+  HD.every = (seconds, fn) => setInterval(() => applied !== EMPTY && fn(HD.scope()), seconds * 1000);
 
   // ---------------------------------------------------------------------
   // Updates: one at a time, with the latest state. States arriving while
@@ -242,8 +247,10 @@ HD.layouts = {};
 
   let intro = null;
 
-  function firstShow() {
-    return new Promise((resolve) =>
+  // Once the images and fonts are in, so nothing pops in during the intro
+  async function firstShow() {
+    await document.fonts.ready;
+    await new Promise((resolve) =>
       requestAnimationFrame(() =>
         $(document).waitForImages(() => {
           display.started = true;

@@ -1,162 +1,51 @@
-LoadEverything().then(() => {
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+// Simple scoreboard: a bar per player (two per team in doubles, under the
+// team names) and the match info
+HD.layout({
+  intro(tl) {
+    const ease = "power2.inOut";
+    tl.from(".container", { duration: 1, opacity: 0, x: -40, ease }, 0)
+      .from(".twitter-container", { duration: 1, opacity: 0, x: 80, ease }, 0)
+      .from(".mask", { width: 0, duration: 1, ease }, 0)
+      .from(".doubles .info", { opacity: 0, duration: 0.5, ease }, 0.8);
+  },
 
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .from(
-      [".container"],
-      { duration: 1, opacity: "0", x: "-40px", ease: "power2.inOut" },
-      0
-    )
-    .from(
-      [".twitter-container"],
-      { duration: 1, opacity: "0", x: "+80px", ease: "power2.inOut" },
-      0
-    )
-    .from(".mask", { width: 0, duration: 1, ease: "power2.inOut" }, 0)
-    .from(
-      ".doubles .info",
-      { opacity: 0, duration: 0.5, ease: "power2.inOut" },
-      0.8
-    );
-
-  Start = async () => {
-    startingAnimation.restart();
-  };
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    let isTeams = Object.keys(data.score[window.scoreboardNumber].team["1"].player).length > 1;
-
-    if (
-      oldData.score == null ||
-      Object.keys(oldData.score[window.scoreboardNumber].team["1"].player).length !=
-        Object.keys(data.score[window.scoreboardNumber].team["1"].player).length
-    ) {
-      if (Object.keys(data.score[window.scoreboardNumber].team["1"].player).length == 1) {
-        gsap
-          .timeline()
-          .fromTo(
-            ["body > .doubles"],
-            { duration: 0.2, opacity: "1", ease: "power2.inOut" },
-            { duration: 0.2, opacity: "0", ease: "power2.inOut" }
-          )
-          .fromTo(
-            ["body > .singles"],
-            { duration: 0.2, opacity: "0", ease: "power2.inOut" },
-            { duration: 0.2, opacity: "1", ease: "power2.inOut" }
-          );
-      } else {
-        gsap
-          .timeline()
-          .fromTo(
-            ["body > .singles"],
-            { duration: 0.2, opacity: "1", ease: "power2.inOut" },
-            { duration: 0.2, opacity: "0", ease: "power2.inOut" }
-          )
-          .fromTo(
-            ["body > .doubles"],
-            { duration: 0.2, opacity: "0", ease: "power2.inOut" },
-            { duration: 0.2, opacity: "1", ease: "power2.inOut" }
-          );
-      }
+  update(s) {
+    // Singles and doubles have their own bars: switch when it changes
+    if (s.scoreChanged((score) => _.size(score.team[1].player))) {
+      const [from, to] = s.isTeams ? [".singles", ".doubles"] : [".doubles", ".singles"];
+      const ease = "power2.inOut";
+      gsap
+        .timeline()
+        .fromTo(`body > ${from}`, { opacity: 1 }, { duration: 0.2, opacity: 0, ease })
+        .fromTo(`body > ${to}`, { opacity: 0 }, { duration: 0.2, opacity: 1, ease });
     }
 
-    for (const [t, team] of [
-      data.score[window.scoreboardNumber].team["1"],
-      data.score[window.scoreboardNumber].team["2"],
-    ].entries()) {
-      // Get team name presentation using player_presentation strategy
-      let teamName = team.teamName;
-      if (!teamName || teamName == "") {
-        let names = [];
-        for (const [p, player] of Object.values(team.player).entries()) {
-          if (player && player.name) {
-            names.push(player.name);
-          }
-        }
-        teamName = names.join(" / ");
-      }
-      let teamNamePresentation = teamName;
+    const flag = (place) =>
+      place && place.asset && HD.html`<div class='flagname'>${place.code}</div><img class='flag' src='${HD.asset(place.asset)}' />`;
 
-      SetInnerHtml(
-        $(`.info.doubles.t${t + 1} .team_name`),
-        `
-          ${teamNamePresentation}${team.losers ? " [L]" : ""}
-        `
-      );
+    for (const { n, team, name } of s.teams) {
+      HD.set(`.info.doubles.t${n} .team_name`, name + (team.losers ? " [L]" : ""));
+      HD.set(`.t${n} .doubles_score`, team.score);
 
-      for (const [p, player] of Object.values(team.player).entries()) {
-        if (player) {
-          // Get player name presentation using player_presentation strategy
-          let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? player.name : ""}`;
-
-          SetInnerHtml(
-            $(`.t${t + 1}.p${p + 1} .name`),
-            `
-              ${playerPresentation}
-              ${team.losers && !isTeams ? " [L]" : ""}
-            `
-          );
-
-          SetInnerHtml($(`.t${t + 1}.p${p + 1} .pronoun`), player.pronoun);
-
-          SetInnerHtml(
-            $(`.t${t + 1}.p${p + 1} .flagcountry`),
-            player.country.asset
-              ? `
-                <div class='flagname'>${player.country.code}</div>
-                <img class='flag' src='../../${player.country.asset.toLowerCase()}' />
-              `
-              : ""
-          );
-
-          SetInnerHtml(
-            $(`.t${t + 1}.p${p + 1} .flagstate`),
-            player.state.asset
-              ? `
-                <div class='flagname'>${player.state.code}</div>
-                <img class='flag' src='../../${player.state.asset}' />
-              `
-              : ""
-          );
-
-          SetInnerHtml(
-            $(`.t${t + 1}.p${p + 1} .twitter`),
-            player.twitter
-              ? `<span class="twitter_logo"></span>${String(player.twitter)}`
-              : ""
-          );
-
-          SetInnerHtml(
-            $(`.t${t + 1}.p${p + 1} .score`),
-            !isTeams ? String(team.score) : ""
-          );
-
-          SetInnerHtml($(`.t${t + 1} .doubles_score`), String(team.score));
-
-          SetInnerHtml(
-            $(`.t${t + 1}.p${p + 1} .sponsor-container`),
-            `<div class='sponsor-logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
-          );
-        }
-        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
+      Object.values(team.player).forEach((player, i) => {
+        if (!player) return;
+        const sel = `.t${n}.p${i + 1}`;
+        HD.set(
+          `${sel} .name`,
+          HD.html`<span class="sponsor">${player.team}</span>${player.name}${!s.isTeams && team.losers && " [L]"}`,
+        );
+        HD.set(`${sel} .pronoun`, player.pronoun);
+        HD.set(`${sel} .flagcountry`, flag(player.country));
+        HD.set(`${sel} .flagstate`, flag(player.state));
+        HD.set(`${sel} .twitter`, HD.ui.chip("twitter", player.twitter));
+        HD.set(`${sel} .score`, s.isTeams ? "" : team.score);
+        HD.set(`${sel} .sponsor-container`, HD.ui.sponsorLogo(player.sponsor_logo));
+      });
     }
+    HD.teamColors(s, ["score-bg-color"]);
 
-    let phaseTexts = [];
-    if (data.score[window.scoreboardNumber].phase) phaseTexts.push(data.score[window.scoreboardNumber].phase);
-    if (data.score[window.scoreboardNumber].best_of_text) phaseTexts.push(data.score[window.scoreboardNumber].best_of_text);
-
-    SetInnerHtml($(".info.material_container .phase"), phaseTexts.join(" - "));
-    SetInnerHtml(
-      $(".info.material_container .tournament_name"),
-      data.tournamentInfo.tournamentName
-    );
-    SetInnerHtml($(".info.material_container .match"), data.score[window.scoreboardNumber].match);
-  };
+    s.set(".info.material_container .phase", HD.text([s.score.phase, s.score.best_of_text], " - "));
+    s.set(".info.material_container .tournament_name", s.data.tournamentInfo.tournamentName);
+    s.set(".info.material_container .match", s.score.match);
+  },
 });

@@ -26,11 +26,7 @@ HD.layouts.scoreboard = {
       t.set(".seed", HD.ui.chip("seed", solo.seed, "Seed "));
       t.set(".twitter", s.isTeams ? team.teamName && HD.playerNames(team) : HD.ui.chip("twitter", player.twitter));
       t.set(".score", team.score);
-      t.set(
-        ".sponsor-container",
-        !s.isTeams &&
-          HD.html`<div class='sponsor-logo' style="background-image: url('${HD.asset(player.sponsor_logo)}')"></div>`,
-      );
+      t.set(".sponsor-container", !s.isTeams && HD.ui.sponsorLogo(player.sponsor_logo));
       s.characters(t.sel(".character_container"), {
         asset_key: "base_files/icon",
         source: ["score", s.n, "team", t.n],
