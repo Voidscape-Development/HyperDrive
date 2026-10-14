@@ -758,3 +758,8 @@ body {
   from {transform: translateX(0px)}
   to {transform: translateX(-98px)}
 }
+
+/* Names in capitals (the theme's text case can override) */
+.container .name .text {
+  text-transform: uppercase;
+}

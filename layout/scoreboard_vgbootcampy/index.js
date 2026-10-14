@@ -1,158 +1,43 @@
-LoadEverything().then(() => {
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+// VGBootcamp-style scoreboard: each side's name, flag, sponsor, score and
+// Twitter (singles only), and the tournament, match and phase
+HD.layout({
+  intro(tl) {
+    tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
+      .from(".anim_container_outer", { duration: 1, width: 0, ease: "power2.inOut" }, 1)
+      .from(".p1.twitter", { duration: 0.75, x: -373, ease: "power4.Out" }, "<25%")
+      .from(".p2.twitter", { duration: 0.75, x: 373, ease: "power4.Out" }, "<")
+      .from(".tournament_container", { opacity: 0, duration: 0.5, ease: "power4.Out" }, "<80%")
+      .from(".tournament_logo", { opacity: 0, duration: 0.5, ease: "power4.Out" }, "<");
+  },
 
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .from([".logo"], { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
-    .from(
-      [".anim_container_outer"],
-      {
-        duration: 1,
-        width: "0",
-        ease: "power2.inOut",
-      },
-      1
-    )
-    .from(
-      [".p1.twitter"],
-      {
-        duration: 0.75,
-        x: "-373px",
-        ease: "power4.Out",
-      },
-      "<25%"
-    )
-    .from(
-      [".p2.twitter"],
-      {
-        duration: 0.75,
-        x: "373px",
-        ease: "power4.Out",
-      },
-      "<"
-    )
-    .from(
-      ".tournament_container",
-      { opacity: 0, duration: 0.5, ease: "power4.Out" },
-      "<80%"
-    )
-    .from(
-      ".tournament_logo",
-      { opacity: 0, duration: 0.5, ease: "power4.Out" },
-      "<"
-    );
+  update(s) {
+    for (const t of s.teams) {
+      const { team, player } = t;
+      if (!team.player || !team.player[1]) continue;
+      // Doubles show the team's name, and none of the player's info
+      const solo = s.isTeams ? {} : player;
 
-  Start = async () => {
-    startingAnimation.restart();
-  };
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    for (const [t, team] of [
-      data.score[window.scoreboardNumber].team["1"],
-      data.score[window.scoreboardNumber].team["2"],
-    ].entries()) {
-      for (const [p, player] of [team.player["1"]].entries()) {
-        if (player) {
-          if (Object.keys(team.player).length == 1) {
-            // Singles: get player name presentation using player_presentation strategy
-            let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? player.name : ""}`;
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .name`),
-              `
-                ${playerPresentation.toUpperCase ? playerPresentation.toUpperCase() : playerPresentation}
-              `
-            );
-          } else {
-            // Doubles: get team name presentation using player_presentation strategy
-            let teamName = team.teamName;
-        if (!teamName || teamName == "") {
-          let names = [];
-          for (const [p, player] of Object.values(team.player).entries()) {
-            if (player && player.name) {
-              names.push(player.name);
-            }
-          }
-          teamName = names.join(" / ");
-        }
-        let teamPresentation = teamName;
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .name`),
-              `
-                ${teamPresentation.toUpperCase ? teamPresentation.toUpperCase() : teamPresentation}
-                ${team.losers ? "(L)" : ""}
-              `
-            );
-          }
-
-          SetInnerHtml(
-            $(`.p${t + 1} .losers_container`),
-            `${team.losers ? "<span class='losers'>L</span>" : ""}`
-          );
-
-          SetInnerHtml(
-            $(`.p${t + 1}.container .flagcountry`),
-            player.country.asset && Object.keys(team.player).length == 1
-              ? `<img class='flag' src='../../${player.country.asset.toLowerCase()}' />`
-              : `<div class='flag' style=''></div>`
-          );
-
-          const playerTwitter = document.querySelector(`.p${t + 1}.twitter`);
-
-          if (
-            player.twitter == undefined ||
-            String(player.twitter) == "" ||
-            Object.values(team.player).length != 1
-          ) {
-            playerTwitter.classList.add("hidden");
-            playerTwitter.classList.remove("unhidden");
-          } else {
-            playerTwitter.classList.add("unhidden");
-            playerTwitter.classList.remove("hidden");
-          }
-
-          SetInnerHtml(
-            $(`.p${t + 1}.twitter`),
-            player.twitter
-              ? `<span class="twitter_logo"></span>${
-                  "@" + String(player.twitter).toUpperCase()
-                }`
-              : ""
-          );
-
-          let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
-
-          SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
-
-          SetInnerHtml(
-            $(`.p${t + 1} .sponsor-container`),
-            player.sponsor_logo && Object.keys(team.player).length == 1
-              ? `<div class='sponsor-logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
-              : `<div class='sponsor-logo' style=''></div>`
-          );
-        }
-        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
+      t.set("&.container .name", s.isTeams ? HD.text([t.name, team.losers && "(L)"]) : HD.ui.name(player));
+      t.set(".losers_container", team.losers && HD.html`<span class='losers'>L</span>`);
+      // Empty placeholders keep the bar's spacing
+      t.set(
+        "&.container .flagcountry",
+        solo.country && solo.country.asset
+          ? HD.img(HD.asset(solo.country.asset), "class='flag'")
+          : HD.html`<div class='flag' style=''></div>`,
+      );
+      t.set(
+        ".sponsor-container",
+        solo.sponsor_logo ? HD.ui.sponsorLogo(solo.sponsor_logo) : HD.html`<div class='sponsor-logo' style=''></div>`,
+      );
+      $(t.sel("&.twitter")).toggleClass("hidden", !solo.twitter).toggleClass("unhidden", !!solo.twitter);
+      t.set("&.twitter", HD.ui.chip("twitter", player.twitter, "@"));
+      t.set("&.container .score", team.score);
     }
+    HD.teamColors(s, ["score-bg-color"]);
 
-    SetInnerHtml(
-      $(".tournament_name"),
-      data.tournamentInfo.tournamentName.toUpperCase()
-    );
-
-    SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-
-    let phaseTexts = [];
-    if (data.score[window.scoreboardNumber].phase) phaseTexts.push(data.score[window.scoreboardNumber].phase.toUpperCase());
-    if (data.score[window.scoreboardNumber].best_of_text)
-      phaseTexts.push(`${data.score[window.scoreboardNumber].best_of_text}`.toUpperCase());
-
-    SetInnerHtml($(".phase"), phaseTexts.join(" - "));
-  };
+    s.set(".tournament_name", s.data.tournamentInfo.tournamentName);
+    s.set(".match", s.score.match);
+    s.set(".phase", HD.text([s.score.phase, s.score.best_of_text], " - "));
+  },
 });

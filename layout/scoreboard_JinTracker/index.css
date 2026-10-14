@@ -121,7 +121,7 @@ body {
 }
 
 .twitter_logo {
-  background-image: url("./X_twitter_white.png");
+  background-image: url("./x_twitter_white.png");
   background-size: cover; /* Adjusts the image to cover the entire div */
   background-position: center; /* Centers the image */
   background-repeat: no-repeat; /* Prevents repeating */
@@ -567,4 +567,55 @@ body {
 
 .p2 .hd_character {
   background: var(--p2-score-bg-color);
+}
+
+/* Colors that read on each side's color: index.js sets data-contrast
+   (the team color is light, mid or dark) on its container and chips */
+.container[data-contrast="light"] .score {
+  color: rgb(24, 24, 27);
+  text-shadow: none;
+}
+.container[data-contrast="mid"] .score,
+.container[data-contrast="dark"] .score {
+  color: white;
+  text-shadow: 0em 0em 0.2em #000;
+}
+.container[data-contrast="light"] .name,
+.container[data-contrast="mid"] .name {
+  color: white;
+}
+.container[data-contrast="dark"] .name {
+  color: rgb(24, 24, 27);
+}
+.container[data-contrast="light"],
+.container[data-contrast="mid"] {
+  background-color: rgb(24, 24, 27);
+  filter: none;
+}
+.container[data-contrast="dark"] {
+  background-color: rgb(255, 255, 255);
+}
+.container[data-contrast="dark"],
+.under_chips[data-contrast="dark"] {
+  filter: drop-shadow(0 0px 2px rgba(255, 255, 255, 0.85));
+}
+.under_chips[data-contrast="light"],
+.under_chips[data-contrast="mid"] {
+  filter: none;
+}
+.chips[data-contrast="light"] .chip {
+  color: rgb(24, 24, 27);
+}
+.chips[data-contrast="mid"] .chip,
+.chips[data-contrast="dark"] .chip {
+  color: white;
+}
+.chips[data-contrast="light"] .chip .text:not(.text_empty) {
+  text-shadow: none;
+}
+.chips[data-contrast="light"] .twitter_logo {
+  background-image: url("./x_twitter_black.png");
+}
+.chips[data-contrast="light"] .location_logo {
+  background-image: url("./map_pin_black.png");
 }

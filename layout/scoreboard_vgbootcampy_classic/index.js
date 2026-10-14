@@ -1,333 +1,46 @@
-LoadEverything().then(() => {
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
-
-  let p1Twitter = "";
-  let p2Twitter = "";
-  let p1Pronoun = "";
-  let p2Pronoun = "";
-  let newP1Twitter = "";
-  let newP2Twitter = "";
-  let newP1Pronoun = "";
-  let newP2Pronoun = "";
-  let savedBestOf = 0;
-  let savedMatch = "";
-  let firstTime = true;
-
-  let intervalID = "";
-
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .from([".logo"], { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
-    .from(
-      [".anim_container_outer"],
-      {
-        duration: 1,
-        width: "0",
-        ease: "power2.inOut",
-      },
-      1
-    )
-    .from(
-      [".p1.twitter"],
-      {
-        duration: 0.75,
-        x: "-373px",
-        ease: "power4.Out",
-      },
-      "<25%"
-    )
-    .from(
-      [".p2.twitter"],
-      {
-        duration: 0.75,
-        x: "373px",
-        ease: "power4.Out",
-      },
-      "<"
-    )
-    .from(
-      ".tournament_container",
-      {
-        duration: 0.75,
-        x: "-373px",
-        ease: "power4.Out",
-      },
-      "<"
-    )
-    .from(
-      ".tournament_logo",
-      { opacity: 0, duration: 0.5, ease: "power4.Out" },
-      "<"
-    );
-
-  Start = async () => {
-    startingAnimation.restart();
-    intervalID = setInterval(UpdateTwitterMatch, 9000);
-    setInterval(TwitterPronounChecker, 100);
-    setInterval(matchChecker, 100);
-  };
-
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    for (const [t, team] of [
-      data.score[window.scoreboardNumber].team["1"],
-      data.score[window.scoreboardNumber].team["2"],
-    ].entries()) {
-      for (const [p, player] of [team.player["1"]].entries()) {
-        if (player) {
-          if (Object.keys(team.player).length == 1) {
-            // Singles: get player name presentation using player_presentation strategy
-            let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? player.name : ""}`;
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .name`),
-              `
-                ${playerPresentation.toUpperCase ? playerPresentation.toUpperCase() : playerPresentation}
-                ${team.losers ? "(L)" : ""}
-              `
-            );
-          } else {
-            // Doubles: get team name presentation using player_presentation strategy
-            let teamName = team.teamName;
-        if (!teamName || teamName == "") {
-          let names = [];
-          for (const [p, player] of Object.values(team.player).entries()) {
-            if (player && player.name) {
-              names.push(player.name);
-            }
-          }
-          teamName = names.join(" / ");
-        }
-        let teamPresentation = teamName;
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .name`),
-              `
-              <span>
-                ${teamPresentation.toUpperCase ? teamPresentation.toUpperCase() : teamPresentation}
-                ${team.losers ? "(L)" : ""}
-              </span>
-              `
-            );
-          }
-
-          SetInnerHtml(
-            $(`.p${t + 1}.container .flagcountry`),
-            player.country.asset && Object.keys(team.player).length == 1
-              ? `<img class='flag' src='../../${player.country.asset.toLowerCase()}' />`
-              : ""
-          );
-
-          SetInnerHtml(
-            $(`.p${t + 1} .sponsor-container`),
-            player.sponsor_logo && Object.keys(team.player).length == 1
-              ? `<div class='sponsor-logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
-              : ``
-          );
-
-          let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
-
-          SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
-
-          if (!TwitterPronounChecker()) {
-            SetInnerHtml($(`.p${t + 1}.twitter`), player.pronoun.toUpperCase());
-          }
-        }
-        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
-    }
-
-    // Only on first update
-    if (Object.keys(oldData).length == 0) {
-      UpdateMatch();
-      UpdateTwitter();
-      firstTime = false;
-    }
-  };
-
-  async function UpdateTwitterMatch() {
-    UpdateTwitter();
-    UpdateMatch();
+// VGBootcamp classic scoreboard: each side's name, flag, sponsor and score.
+// A player's Twitter and pronouns, and the match and best of, take turns
+// every 9 seconds.
+const rotate = (s) => {
+  for (const t of s.teams) {
+    const { player } = t;
+    const shown = !s.isTeams && (player.twitter || player.pronoun);
+    $(t.sel("&.twitter")).toggleClass("hidden", !shown).toggleClass("unhidden", !!shown);
+    t.set("&.twitter", turns.pick([HD.ui.chip("twitter", player.twitter, "@"), player.pronoun]));
   }
+  const text = turns.pick([s.score.match, s.score.best_of && s.score.best_of_text]);
+  $(".tournament_container").toggleClass("hidden", !text).toggleClass("unhidden", !!text);
+  if (text) s.set(".match", text);
+};
+const turns = HD.turns(9, rotate);
 
-  async function UpdateMatch() {
-    const tournamentContainer = document.querySelector(".tournament_container");
+HD.layout({
+  intro(tl) {
+    tl.from(".logo", { duration: 0.5, autoAlpha: 0, ease: "power2.inOut" }, 0.5)
+      .from(".anim_container_outer", { duration: 1, width: 0, ease: "power2.inOut" }, 1)
+      .from(".p1.twitter", { duration: 0.75, x: -373, ease: "power4.Out" }, "<25%")
+      .from(".p2.twitter", { duration: 0.75, x: 373, ease: "power4.Out" }, "<")
+      .from(".tournament_container", { duration: 0.75, x: -373, ease: "power4.Out" }, "<")
+      .from(".tournament_logo", { opacity: 0, duration: 0.5, ease: "power4.Out" }, "<");
+  },
 
-    if (!(data.score[window.scoreboardNumber].best_of || data.score[window.scoreboardNumber].match)) {
-      tournamentContainer.classList.add("hidden");
-      tournamentContainer.classList.remove("unhidden");
-    } else {
-      tournamentContainer.classList.add("unhidden");
-      tournamentContainer.classList.remove("hidden");
+  update(s) {
+    for (const t of s.teams) {
+      const { team, player } = t;
+      if (!team.player || !team.player[1]) continue;
+      // Doubles show the team's name, and none of the player's info
+      const solo = s.isTeams ? {} : player;
+      const losers = team.losers && "(L)";
 
-      if (!data.score[window.scoreboardNumber].best_of && data.score[window.scoreboardNumber].match) {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-      } else if (data.score[window.scoreboardNumber].best_of && !data.score[window.scoreboardNumber].match) {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].best_of_text.toUpperCase());
-      } else if (savedMatch != data.score[window.scoreboardNumber].match) {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-      } else if (savedBestOf != data.score[window.scoreboardNumber].best_of) {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-      } else {
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].best_of_text.toUpperCase());
-        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
-      }
+      t.set(
+        "&.container .name",
+        s.isTeams ? HD.html`<span>${HD.text([t.name, losers])}</span>` : HD.html`${HD.ui.name(player)} ${losers}`,
+      );
+      t.set("&.container .flagcountry", solo.country && HD.img(HD.asset(solo.country.asset), "class='flag'"));
+      t.set(".sponsor-container", solo.sponsor_logo && HD.ui.sponsorLogo(solo.sponsor_logo));
+      t.set("&.score", team.score);
     }
-    savedBestOf = data.score[window.scoreboardNumber].best_of;
-    savedMatch = data.score[window.scoreboardNumber].match;
-  }
-
-  async function UpdateTwitter() {
-    changeInP1 = false;
-    changeInP2 = false;
-
-    [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
-      [team.player["1"]].forEach((player, p) => {
-        if (player) {
-          if (t == 0) {
-            newP1Twitter = player.twitter;
-            newP1Pronoun = player.pronoun;
-          }
-
-          if (t == 1) {
-            newP2Twitter = player.twitter;
-            newP2Pronoun = player.pronoun;
-          }
-        }
-      });
-      if (newP1Twitter != p1Twitter || newP1Pronoun != p1Pronoun) {
-        changeInP1 = true;
-      }
-
-      if (newP2Twitter != p2Twitter || newP2Pronoun != p2Pronoun) {
-        changeInP2 = true;
-      }
-    });
-
-    [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
-      [team.player["1"]].forEach((player, p) => {
-        if (player) {
-          const playerTwitter = document.querySelector(`.p${t + 1}.twitter`);
-
-          if (
-            !(player.twitter || player.pronoun) ||
-            Object.values(team.player).length != 1
-          ) {
-            playerTwitter.classList.add("hidden");
-            playerTwitter.classList.remove("unhidden");
-          } else {
-            playerTwitter.classList.add("unhidden");
-            playerTwitter.classList.remove("hidden");
-
-            if (!player.twitter && player.pronoun) {
-              SetInnerHtml(
-                $(`.p${t + 1}.twitter`),
-                player.pronoun.toUpperCase()
-              );
-            }
-
-            if (player.twitter && !player.pronoun) {
-              SetInnerHtml(
-                $(`.p${t + 1}.twitter`),
-                player.twitter
-                  ? `<span class="twitter_logo"></span>${
-                      "@" + String(player.twitter).toUpperCase()
-                    }`
-                  : ""
-              );
-            }
-
-            if (changeInP1 || changeInP2) {
-              if (player.twitter) {
-                SetInnerHtml(
-                  $(`.p${t + 1}.twitter`),
-                  player.twitter
-                    ? `<span class="twitter_logo"></span>${
-                        "@" + String(player.twitter).toUpperCase()
-                      }`
-                    : ""
-                );
-              }
-            } else {
-              if (player.pronoun) {
-                SetInnerHtml(
-                  $(`.p${t + 1}.twitter`),
-                  player.pronoun.toUpperCase()
-                );
-              }
-              if (player.twitter) {
-                SetInnerHtml(
-                  $(`.p${t + 1}.twitter`),
-                  player.twitter
-                    ? `<span class="twitter_logo"></span>${
-                        "@" + String(player.twitter).toUpperCase()
-                      }`
-                    : ""
-                );
-              }
-            }
-          }
-          if (t == 0) {
-            p1Twitter = player.twitter;
-            p1Pronoun = player.pronoun;
-          }
-
-          if (t == 1) {
-            p2Twitter = player.twitter;
-            p2Pronoun = player.pronoun;
-          }
-        }
-      });
-    });
-  }
-
-  async function TwitterPronounChecker() {
-    let refreshNeeded = false;
-    [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
-      [team.player["1"]].forEach((player, p) => {
-        if (
-          t == 0 &&
-          !(p1Twitter == player.twitter && p1Pronoun == player.pronoun)
-        ) {
-          refreshNeeded = true;
-        } else if (
-          t == 1 &&
-          !(p2Twitter == player.twitter && p2Pronoun == player.pronoun)
-        ) {
-          refreshNeeded = true;
-        }
-      });
-    });
-    if (refreshNeeded && !firstTime) {
-      UpdateTwitter();
-      resetIntervals();
-    }
-    refreshNeeded = false;
-  }
-
-  function resetIntervals() {
-    clearInterval(intervalID);
-    intervalID = setInterval(UpdateTwitterMatch, 9000);
-  }
-
-  async function matchChecker() {
-    let refreshNeeded = false;
-
-    if (
-      !(savedBestOf == data.score[window.scoreboardNumber].best_of
-        && savedMatch == data.score[window.scoreboardNumber].match)
-    ) {
-      refreshNeeded = true;
-    }
-
-    if (refreshNeeded && !firstTime) {
-      UpdateMatch();
-      resetIntervals();
-    }
-    refreshNeeded = false;
-  }
+    HD.teamColors(s, ["score-bg-color"]);
+    rotate(s);
+  },
 });

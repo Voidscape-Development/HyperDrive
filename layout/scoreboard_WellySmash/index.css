@@ -533,3 +533,7 @@ body {
 .t2 .losers {
   background: var(--p2-score-bg-color);
 }
+/* Names in capitals (the theme's text case can override) */
+.container .name .text {
+  text-transform: uppercase;
+}

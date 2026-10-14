@@ -372,3 +372,8 @@ body {
   margin-right: 4px;
   margin-left: 4px;
 }
+
+/* Everything in capitals (the theme's text case can override) */
+.text {
+  text-transform: uppercase;
+}

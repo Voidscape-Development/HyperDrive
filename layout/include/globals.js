@@ -191,6 +191,23 @@ HD.layouts = {};
   // Call it from init(), so it isn't started again with each show.
   HD.every = (seconds, fn) => setInterval(() => applied !== EMPTY && fn(HD.scope()), seconds * 1000);
 
+  // Content taking turns (a player's Twitter and pronouns...): render(s)
+  // runs again every so many seconds, and turns.pick(items) gives the
+  // non-empty item whose turn it is
+  HD.turns = (seconds, render) => {
+    let turn = 0;
+    HD.every(seconds, (s) => {
+      turn += 1;
+      render(s);
+    });
+    return {
+      pick(items) {
+        const present = items.filter((item) => item != null && item !== "" && item !== false);
+        return present.length ? present[turn % present.length] : "";
+      },
+    };
+  };
+
   // ---------------------------------------------------------------------
   // Updates: one at a time, with the latest state. States arriving while
   // one runs are folded into the next run, compared against what the

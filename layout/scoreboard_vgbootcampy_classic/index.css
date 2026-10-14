@@ -329,3 +329,8 @@ body {
   opacity: 100%;
   transition: opacity 0.5s;
 }
+
+/* Everything in capitals (the theme's text case can override) */
+.text {
+  text-transform: uppercase;
+}

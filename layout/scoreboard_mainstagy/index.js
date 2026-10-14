@@ -1,26 +1,18 @@
 // Mainstage-style scoreboard: drops down, then each side slides out with its
-// name (uppercase), score and losers badge. The flag and sponsor logo, and
-// the match and best of, take turns every 10 seconds.
-let turn = 0;
-
+// name, score and losers badge. The flag and sponsor logo, and the match
+// and best of, take turns every 10 seconds.
 const rotate = (s) => {
   for (const { n, player } of s.teams) {
-    const logos = [player.sponsor_logo, player.country && player.country.asset].filter(Boolean);
-    HD.set(`.p${n}.container .flagcountry`, HD.img(HD.asset(logos[turn % logos.length]), "class='flag'"));
+    const logo = turns.pick([player.sponsor_logo, player.country && player.country.asset]);
+    HD.set(`.p${n}.container .flagcountry`, HD.img(HD.asset(logo), "class='flag'"));
   }
-  const texts = [s.score.match, s.score.best_of && s.score.best_of_text].filter(Boolean);
-  $(".tournament_container").toggleClass("hidden", texts.length === 0).toggleClass("unhidden", texts.length > 0);
-  if (texts.length) s.set(".match", texts[turn % texts.length].toUpperCase());
+  const text = turns.pick([s.score.match, s.score.best_of && s.score.best_of_text]);
+  $(".tournament_container").toggleClass("hidden", !text).toggleClass("unhidden", !!text);
+  if (text) s.set(".match", text);
 };
+const turns = HD.turns(10, rotate);
 
 HD.layout({
-  init() {
-    HD.every(10, (s) => {
-      turn += 1;
-      rotate(s);
-    });
-  },
-
   intro(tl) {
     const vars = { duration: 0.65, ease: "power2.Out" };
     const inner = 255; // .inner_container's width
@@ -39,12 +31,11 @@ HD.layout({
   },
 
   update(s) {
-    const upper = (text) => String(text || "").toUpperCase();
     for (const t of s.teams) {
       const { team, player } = t;
       if (!team.player || !team.player[1]) continue;
       $(t.sel(".losers_container")).toggleClass("unhidden", !!team.losers).toggleClass("hidden", !team.losers);
-      t.set("&.container .name", HD.html`<span class="sponsor">${upper(player.team)}</span>${upper(player.name)}`);
+      t.set("&.container .name", HD.ui.name(player));
       t.set(".losers_container", team.losers && HD.html`<span class='losers'>[L]</span>`);
       t.set(".score", team.score);
       t.set(

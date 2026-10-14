@@ -1,4 +1,4 @@
-// Welly's Rivals of Aether scoreboard: each side's name (uppercase), flags,
+// Welly's Rivals of Aether scoreboard: each side's name, flags,
 // Twitter, seed, score and character, and the match info
 HD.layout({
   intro(tl) {
@@ -15,14 +15,13 @@ HD.layout({
       const sel = `.t${n}.p1`;
       // Doubles show the team's name, and none of the player's info
       const solo = s.isTeams ? {} : player;
-      const upper = (text) => String(text || "").toUpperCase();
       const flag = (place) => place && place.asset && HD.html`<img class='flag' src='${HD.asset(place.asset)}' />`;
 
       HD.set(
         `.t${n}.container .name`,
         s.isTeams
-          ? HD.text([upper(name), team.losers && "(L)"])
-          : HD.html`<span class="sponsor">${upper(player.team)}</span>${upper(player.name)} ${team.losers && "(L)"}`,
+          ? HD.text([name, team.losers && "(L)"])
+          : HD.html`<span class="sponsor">${player.team}</span>${player.name} ${team.losers && "(L)"}`,
       );
       HD.set(`${sel} .pronoun`, solo.pronoun);
       HD.set(`${sel} .flagcountry`, flag(solo.country));

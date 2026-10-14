@@ -1,335 +1,43 @@
-LoadEverything().then(() => {
-  
-  gsap.config({ nullTargetWarn: false, trialWarn: false });
+// Rivals of Aether II scoreboard: each side's name, losers badge, chips
+// (seed, Twitter, pronouns, flags), avatar, score and character art
+// (mirrored on the right), or a doubles team's name and its players
+HD.layout({
+  intro(tl) {
+    HD.classIntro(tl);
+  },
 
-  let startingAnimation = gsap
-    .timeline({ paused: true })
-    .from(
-      [".fade"],
-      {
-        duration: 0.2,
-        autoAlpha: 0,
-        ease: "power2.out",
-      },
-      0
-    )
-    .from(
-      [".fade_down_left_stagger:not(.text_empty)"],
-      {
-        autoAlpha: 0,
-        stagger: {
-          each: 0.05,
-          from: 'start',
-          opacity: 0,
-          y: "-20px",
-        },
-        duration: 0.2,
-      },
-      0
-    )
-    .from(
-      [".fade_down_right_stagger:not(.text_empty)"],
-      {
-        autoAlpha: 0,
-        stagger: {
-          each: 0.05,
-          from: 'start',
-          opacity: 0,
-          y: "-20px",
-        },
-        duration: 0.2,
-      },
-      0
-    )
-    .from(
-      [".p1 .fade_stagger:not(.text_empty)"],
-      {
-        autoAlpha: 0,
-        stagger: {
-          each: 0.05,
-          from: 'end',
-          opacity: 0,
-        },
-        duration: 0.2,
-      },
-      0
-    )
-    .from(
-      [".p2 .fade_stagger:not(.text_empty)"],
-      {
-        autoAlpha: 0,
-        stagger: {
-          each: 0.05,
-          from: 'end',
-          opacity: 0,
-        },
-        duration: 0.2,
-      },
-      0
-    )
-    .from(
-      [".p1 .fade_stagger_reverse:not(.text_empty)"],
-      {
-        autoAlpha: 0,
-        stagger: {
-          each: 0.05,
-          from: 'start',
-          opacity: 0,
-        },
-        duration: 0.2,
-      },
-      0
-    )
-    .from(
-      [".p2 .fade_stagger_reverse:not(.text_empty)"],
-      {
-        autoAlpha: 0,
-        stagger: {
-          each: 0.05,
-          from: 'start',
-          opacity: 0,
-        },
-        duration: 0.2,
-      },
-      0
-    )
-    .from(
-      [".fade_right_stagger:not(.text_empty)"],
-      {
-        autoAlpha: 0,
-        stagger: {
-          each: 0.05,
-          from: 'end',
-          opacity: 0,
-        },
-        duration: 0.2,
-      },
-      0
-    )
-    .from(
-      [".fade_down"],
-      {
-        duration: 0.2,
-        y: "-20px",
-        ease: "power2.out",
-        autoAlpha: 0,
-      },
-      0
-    )
-    .from(
-      [".fade_right"],
-      {
-        duration: 0.2,
-        x: "-20px",
-        ease: "power2.out",
-        autoAlpha: 0,
-      },
-      0
-    )
-    .from(
-      [".fade_left"],
-      {
-        duration: 0.2,
-        x: "+20px",
-        ease: "power2.out",
-        autoAlpha: 0,
-      },
-      0
-    )
-    .from(
-      [".fade_up"],
-      {
-        duration: 0.2,
-        y: "+20px",
-        ease: "power2.out",
-        autoAlpha: 0,
-      },
-      0
-    )
+  update(s) {
+    const background = (src) => src && HD.html`<div style="background-image: url('${src}')"></div>`;
 
-  Start = async () => {
-    startingAnimation.restart();
-  };
+    for (const t of s.teams) {
+      const { team, player } = t;
+      // Doubles show the team's name, its players' names under it
+      const solo = s.isTeams ? {} : player;
 
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
-
-    let isTeams = Object.keys(data.score[window.scoreboardNumber].team["1"].player).length > 1;
-
-    if (!isTeams) {
-      for (const [t, team] of [
-        data.score[window.scoreboardNumber].team["1"],
-        data.score[window.scoreboardNumber].team["2"],
-      ].entries()) {
-        for (const [p, player] of [team.player["1"]].entries()) {
-          if (player) {
-            // Get player name presentation using player_presentation strategy
-            let playerPresentation = `<span class="sponsor">${player && player.team ? player.team : ""}</span>${player ? player.name : ""}`;
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .name`),
-              `
-                ${playerPresentation}
-              `
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.losers_container`),
-              team.losers? "<div class='losers container'>L</div>" : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1} .flagcountry`),
-              player.country.asset
-                ? `
-                  <img class='flag' src='../../${player.country.asset.toLowerCase()}' />
-                  <div>${player.country.code}</div>
-                `
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1} .flagstate`),
-              player.state.asset
-                ? `
-                  <img class='flag' src='../../${player.state.asset}' />
-                  <div>${player.state.code}</div>
-                `
-                : ""
-            );
-
-            await CharacterDisplay(
-              $(`.p${t + 1}.container .character_container`),
-              {
-                source: `score.${window.scoreboardNumber}.team.${t + 1}`,
-                flip_x: t === 1,
-              },
-              event
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .sponsor_icon`),
-              player.sponsor_logo
-                ? `<div style="background-image: url('../../${player.sponsor_logo}')"></div>`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .avatar`),
-              player.avatar
-                ? `<div style="background-image: url('../../${player.avatar}')"></div>`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .online_avatar`),
-              player.online_avatar
-                ? `<div style="background-image: url('${player.online_avatar}')"></div>`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1} .twitter`),
-              player.twitter
-                ? `<span class="twitter_logo"></span>${String(player.twitter)}`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1} .pronoun`),
-              player.pronoun ? `<span class="pronoun_logo"></span>${player.pronoun}` : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1} .seed`),
-              player.seed ? `<span class="seed_logo"></span>Seed ${player.seed}` : ""
-            );
-
-            SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
-            SetInnerHtml($(`.p${t + 1}.floating_score`), String(team.score));
-
-            SetInnerHtml(
-              $(`.p${t + 1}.container .sponsor-container`),
-              `<div class='sponsor-logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
-            );
-          }
-        }
-        if(team.color && !hd_settings["forceDefaultScoreColors"]) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
-    } else {
-      for (const [t, team] of [
-        data.score[window.scoreboardNumber].team["1"],
-        data.score[window.scoreboardNumber].team["2"],
-      ].entries()) {
-        // Get team name presentation using player_presentation strategy
-        let names = [];
-        for (const [p, player] of Object.values(team.player).entries()) {
-          if (player && player.name) {
-            names.push(player.name);
-          }
-        }
-        let playerNames = names.join(" / ");
-        let teamName = team.teamName || playerNames;
-
-        SetInnerHtml(
-          $(`.p${t + 1}.container .name`),
-          `
-            ${teamName}
-          `
-        );
-
-        SetInnerHtml(
-          $(`.p${t + 1}.losers_container`),
-          team.losers? "<div class='losers container'>L</div>" : ""
-        );
-
-        SetInnerHtml($(`.p${t + 1} .flagcountry`), "");
-
-        SetInnerHtml($(`.p${t + 1} .flagstate`), "");
-
-        await CharacterDisplay(
-          $(`.p${t + 1}.container .character_container`),
-          {
-            source: `score.${window.scoreboardNumber}.team.${t + 1}`,
-                flip_x: t === 1,
-            slice_character: [0, 1],
-          },
-          event
-        );
-
-        SetInnerHtml($(`.p${t + 1}.container .sponsor_icon`), "");
-
-        SetInnerHtml($(`.p${t + 1}.container .avatar`), "");
-
-        SetInnerHtml($(`.p${t + 1}.container .online_avatar`), "");
-
-        SetInnerHtml($(`.p${t + 1} .twitter`),
-          playerNames != teamName ? playerNames : ""
-        );
-
-        SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
-        SetInnerHtml($(`.p${t + 1}.floating_score`), String(team.score));
-
-        SetInnerHtml($(`.p${t + 1}.container .sponsor-container`), "");
-
-        if(team.color) {
-          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
-        }
-      }
+      t.set("&.container .name", s.isTeams ? t.name : HD.html`<span class="sponsor">${player.team}</span>${player.name}`);
+      t.set("&.losers_container", team.losers && HD.html`<div class='losers container'>L</div>`);
+      t.set(".flagcountry", HD.ui.flag(solo.country));
+      t.set(".flagstate", HD.ui.flag(solo.state));
+      t.set("&.container .sponsor_icon", background(HD.asset(solo.sponsor_logo)));
+      t.set("&.container .avatar", background(HD.asset(solo.avatar)));
+      t.set("&.container .online_avatar", background(solo.online_avatar));
+      t.set(".twitter", s.isTeams ? t.name !== HD.playerNames(team) && HD.playerNames(team) : HD.ui.chip("twitter", player.twitter));
+      t.set(".pronoun", HD.ui.chip("pronoun", solo.pronoun));
+      t.set(".seed", HD.ui.chip("seed", solo.seed, "Seed "));
+      t.set("&.container .score", team.score);
+      t.set("&.floating_score", team.score);
+      t.set("&.container .sponsor-container", !s.isTeams && HD.ui.sponsorLogo(player.sponsor_logo));
+      s.characters(t.sel("&.container .character_container"), {
+        source: ["score", s.n, "team", t.n],
+        flip_x: t.n === 2,
+        slice_character: s.isTeams ? [0, 1] : undefined,
+      });
     }
+    HD.teamColors(s, ["score-bg-color"]);
 
-    SetInnerHtml($(".tournament_name"), data.tournamentInfo.tournamentName);
-    SetInnerHtml($(".event_name"), data.tournamentInfo.eventName);
-
-    SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match);
-
-    let phaseTexts = [];
-    if (data.score[window.scoreboardNumber].phase) phaseTexts.push(data.score[window.scoreboardNumber].phase);
-    if (data.score[window.scoreboardNumber].best_of_text) phaseTexts.push(data.score[window.scoreboardNumber].best_of_text);
-
-    SetInnerHtml($(".phase"), phaseTexts.join(" - "));
-  };
+    s.set(".tournament_name", s.data.tournamentInfo.tournamentName);
+    s.set(".event_name", s.data.tournamentInfo.eventName);
+    s.set(".match", s.score.match);
+    s.set(".phase", HD.text([s.score.phase, s.score.best_of_text], " - "));
+  },
 });

@@ -1,4 +1,4 @@
-// Welly's Smash scoreboard: each side's name (uppercase), flags, Twitter,
+// Welly's Smash scoreboard: each side's name, flags, Twitter,
 // seed and score, the games won as bubbles between them, and the
 // commentators on index_com.html
 HD.layout({
@@ -11,7 +11,6 @@ HD.layout({
   },
 
   update(s) {
-    const upper = (text) => String(text || "").toUpperCase();
     const flag = (place) => place && place.asset && HD.html`<img class='flag' src='${HD.asset(place.asset)}' />`;
     const losers = (team) => team.losers && HD.html`<span class='losers'>L</span>`;
 
@@ -24,8 +23,8 @@ HD.layout({
       HD.set(
         `.t${n}.container .name`,
         s.isTeams
-          ? HD.html`${upper(name)} ${losers(team)}`
-          : HD.html`<span class="sponsor">${upper(player.team)}</span>${upper(player.name)} ${losers(team)}`,
+          ? HD.html`${name} ${losers(team)}`
+          : HD.html`<span class="sponsor">${player.team}</span>${player.name} ${losers(team)}`,
       );
       HD.set(`${sel} .pronoun`, solo.pronoun);
       HD.set(`${sel} .flagcountry`, flag(solo.country));

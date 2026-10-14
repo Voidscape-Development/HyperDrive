@@ -167,3 +167,8 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Names in capitals (the theme's text case can override) */
+.container .name .text {
+  text-transform: uppercase;
+}
