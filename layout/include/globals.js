@@ -1,1271 +1,647 @@
-// Global variable containing current data red from out/program_state.json
-var data = {};
+// HyperDrive layout runtime.
+//
+// A layout page loads this file in <head> and its own script at the end of
+// <body>, which describes the layout with HD.layout({...}) (see
+// docs/layouts.md). The runtime does the rest: it loads the libraries and
+// settings, follows the program state, calls update() with what changed,
+// plays the intro and hides the layout for Display Controls.
+//
+// Classic scripts on purpose: OBS and the previews open layouts from
+// file://, where ES modules don't load.
+"use strict";
 
-// Global variable containing previous data red from out/program_state.json
-// Used for comparing what changed since last update
-var oldData = {};
+const HD = (window.HD = {});
 
-// Global variable that tracks the max delta index that has been applied.
-// Used as a failsafe to prevent stale state-changes from being processed.
-var maxAppliedDeltaIdx = -1;
+// Layouts several folders share (include/scoreboard.js...)
+HD.layouts = {};
 
-// Global variable containing settings red from settings.json
-// The settings under /layout/settings.json (global) are merged with /layout/<directory>/settings.json (local),
-// where the local settings have priority over global ones
-var hd_settings = {};
-// The settings the page's window.settings sets, which win over the layout theme
-var hd_page_settings = {};
+(() => {
+  // Libraries, then the runtime's own parts that use them. Downloaded in
+  // parallel; async = false still runs them in this order.
+  const SCRIPTS = [
+    "jquery-3.7.1.min.js",
+    "gsap.min.js",
+    "lodash.min.js",
+    "jquery.waitforimages.min.js",
+    "color-thief.min.js",
+    "socket.io.min.js",
+    "render.js",
+    "characters.js",
+  ];
+  const INCLUDE = document.currentScript.src.replace(/[^/]*$/, "");
 
-// This is called once after initialization. Layouts should reimplement this function.
-var Start = async () => {
-  console.log("Start(): Implement me");
-};
+  const libraries = Promise.all(
+    SCRIPTS.map(
+      (name) =>
+        new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = INCLUDE + name;
+          script.async = false;
+          script.onload = resolve;
+          script.onerror = () => reject(new Error(`Couldn't load ${script.src}`));
+          document.head.appendChild(script);
+        }),
+    ),
+  );
 
-// Display Controls turning this layout off plays Hide(). Layouts can
-// reimplement it with their own hide animation; by default the layout's show
-// animation (what Start() played) runs backwards. Turning it back on plays
-// Start() again.
-var Hide = null;
+  // Hidden until the first state is shown and the intro starts
+  document.documentElement.classList.add("hd-loading");
+  const style = document.createElement("style");
+  style.textContent = "html.hd-loading body { opacity: 0; }";
+  document.head.appendChild(style);
 
-// This is called each time data changes. Layouts should reimplement this function.
-var Update = async (event) => {
-  console.log("Update(): Implement me");
-};
+  // ---------------------------------------------------------------------
+  // Page options: URL params (?scoreboardNumber=2&channel=TV 1) and
+  // HD.page({...}) from the page's inline script. They win over every other
+  // setting.
 
-// Animation speed from the layout theme (1 = normal)
-var hd_animation_scale = 1;
+  // "true", "false" and numbers as such; the rest as typed
+  const parseParam = (v) =>
+    v === "true" ? true : v === "false" ? false : v !== "" && isFinite(v) ? Number(v) : v;
 
-// Wrapper for the update call
-async function UpdateWrapper(event) {
-  ApplyLayoutTheme(event.data, event.oldData);
+  const pageOptions = {};
+  for (const [k, v] of new URLSearchParams(location.search)) pageOptions[k] = parseParam(v);
 
-  await Update(event);
+  // For pages sharing a layout's script: HD.page({ team: 1, player: 2 })
+  HD.page = (options) => Object.assign(pageOptions, options);
 
-  // If initialization wasn't done yet, call Start()
-  // We use gsap.globalTimeline.timeScale as 0 for animation to not play before this
-  if (gsap.globalTimeline.timeScale() == 0) {
-    gsap.globalTimeline.timeScale(hd_animation_scale);
-    window.requestAnimationFrame(() => {
-      $(document).waitForImages(() => {
-        hd_display.started = true;
-        // Turned off in Display Controls: stays hidden until turned on
-        if (!HDDisplayVisible(data)) {
-          hd_display.shown = false;
-          gsap.set("body", { autoAlpha: 0 });
-          return;
-        }
-        $("body").fadeTo(1, 1, () => {
-          console.log("Start()");
-          HDRunStart();
-        });
-      });
-    });
-  } else {
-    HDApplyDisplay(event.data);
-  }
-}
+  // ---------------------------------------------------------------------
+  // State
 
-// Display Controls (the Display Controls window, or /display/... links for a
-// Stream Deck) show and hide layouts by folder, and by group: the groups in
-// ?display=<group>[,<group>...]. A layout is shown while its folder and all
-// of its groups are on.
-var hd_display = {
-  // The layout's folder, as in layout/<folder>/<page>.html
-  folder: (() => {
-    const parts = window.location.pathname.split("/").filter(Boolean);
-    try {
-      return decodeURIComponent(parts[parts.length - 2] || "");
-    } catch (e) {
-      return parts[parts.length - 2] || "";
+  const EMPTY = Object.freeze({});
+  let def = null; // The layout, from HD.layout()
+  let current = EMPTY; // Latest state received
+  let applied = EMPTY; // State the last update() ran with
+  let fileSettings = {}; // settings.json: global under local
+  let devMode = false; // State comes from the dev harness, not HyperDrive
+
+  // Animation speed from the layout theme (1 = normal)
+  let animationScale = 1;
+
+  HD.state = () => current;
+
+  // Which scoreboard the layout shows
+  HD.scoreboardNumber = () => pageOptions.scoreboardNumber || 1;
+
+  // ---------------------------------------------------------------------
+  // Settings: the layout's defaults, under /layout/settings.json, under its
+  // folder's settings.json, under the theme's values for it, under the
+  // page's options
+
+  // def.theme maps settings to theme fields: { "display.eta":
+  // ["stream_queue", "eta_display", default, (value) => setting] }. A theme
+  // value only counts when it isn't its default, so the default theme
+  // leaves settings.json as it is.
+  function themeSettings(data) {
+    const out = {};
+    for (const [path, [section, field, fallback, convert]] of Object.entries(def.theme || {})) {
+      const value = _.get(data, ["layout_theme", "values", section, field], fallback);
+      if (!_.isEqual(value, fallback)) _.set(out, path, convert ? convert(value) : value);
     }
-  })(),
-  groups: (new URLSearchParams(window.location.search).get("display") || "")
-    .split(",")
-    .map((g) => g.trim().replace(/\s+/g, " ").toLowerCase().slice(0, 40).trim())
-    .filter(Boolean),
-  // Start() was called the first time
-  started: false,
-  // Whether it's on screen (or going to be)
-  shown: true,
-  // The timelines Start() played, run backwards to hide
-  animations: [],
-  // Changes each show or hide, so one that's interrupted stops there
-  sequence: 0,
-};
-
-function HDDisplayVisible(data) {
-  const display = data && data.display;
-  if (!display) return true;
-  if ((display.folders || {})[hd_display.folder] === false) return false;
-  return hd_display.groups.every((g) => (display.groups || {})[g] !== false);
-}
-
-// Calls Start(), keeping the timelines it played to run them backwards for
-// the hide animation
-async function HDRunStart() {
-  const before = gsap.globalTimeline.time();
-  await Start();
-  // Started (or restarted) by Start() and not done yet. Done timelines
-  // aren't in the global timeline anymore.
-  hd_display.animations = gsap.globalTimeline
-    .getChildren(false, false, true)
-    .filter(
-      (t) =>
-        !t.paused() &&
-        t.progress() < 1 &&
-        t.duration() > 0 &&
-        t.startTime() >= before &&
-        t.repeat() !== -1,
-    );
-}
-
-function HDApplyDisplay(data) {
-  if (!hd_display.started) return;
-  const visible = HDDisplayVisible(data);
-  if (visible === hd_display.shown) return;
-  if (visible) {
-    HDDisplayShow();
-  } else {
-    HDDisplayHide();
-  }
-}
-
-async function HDDisplayShow() {
-  hd_display.shown = true;
-  hd_display.sequence += 1;
-  console.log("Display: show");
-  gsap.killTweensOf("body");
-  // Back to the end, so Start() restarting them plays the whole animation
-  hd_display.animations.forEach((t) => t.progress(1));
-  if (hd_display.animations.length > 0 || Hide) {
-    gsap.set("body", { autoAlpha: 1 });
-  } else {
-    // No show animation to play: fades in
-    gsap.fromTo("body", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 });
-  }
-  await HDRunStart();
-}
-
-// Resolves when a timeline has run backwards to its start
-function HDReverse(timeline) {
-  return new Promise((resolve) => {
-    if (timeline.time() === 0) return resolve();
-    const previous = timeline.eventCallback("onReverseComplete");
-    timeline.eventCallback("onReverseComplete", function () {
-      timeline.eventCallback("onReverseComplete", previous || null);
-      if (previous) previous.apply(this, arguments);
-      resolve();
-    });
-    timeline.reverse();
-  });
-}
-
-async function HDDisplayHide() {
-  hd_display.shown = false;
-  const sequence = ++hd_display.sequence;
-  console.log("Display: hide");
-  gsap.killTweensOf("body");
-
-  const animations = hd_display.animations.filter((t) => t.time() > 0);
-  if (Hide) {
-    await Hide();
-  } else if (animations.length > 0) {
-    // At most as long as the show animation could take, in case one of
-    // them doesn't finish (killed by the layout)
-    const longest = Math.max(...animations.map((t) => t.time())) / hd_animation_scale;
-    await Promise.race([
-      Promise.all(animations.map(HDReverse)),
-      new Promise((r) => setTimeout(r, longest * 1000 + 500)),
-    ]);
+    return out;
   }
 
-  // Shown again meanwhile
-  if (sequence !== hd_display.sequence) return;
-  // Whatever wasn't part of the animation goes too
-  gsap.to("body", {
-    autoAlpha: 0,
-    duration: Hide || animations.length > 0 ? 0.15 : 0.3,
-  });
-}
+  const resolveSettings = (data) =>
+    _.merge({}, def.settings, fileSettings, themeSettings(data), pageOptions);
 
-// Makes newData the current program state and dispatches "hd_update"
-function DispatchUpdate(newData) {
-  oldData = data;
-  data = newData;
-
-  let event = new CustomEvent("hd_update");
-  event.data = data;
-  event.oldData = oldData;
-
-  console.log(data);
-  document.dispatchEvent(event);
-}
-
-// Whether a program_state.json request is in flight
-var hd_fetching = false;
-
-// Gets current program state,
-// Dispatch "hd_update" event if data has changed
-// This function is called in a high frequency
-async function UpdateData() {
-  // The poll interval is shorter than a slow request: overlapping ones could
-  // resolve out of order and put an older state back
-  if (hd_fetching) return;
-  hd_fetching = true;
-  try {
-    const newData = await getData();
-    if (newData.timestamp <= data.timestamp) return;
-    DispatchUpdate(newData);
-  } catch (e) {
-    console.log(e);
-  } finally {
-    hd_fetching = false;
+  async function loadSettings() {
+    const load = (url) =>
+      $.ajax({ dataType: "json", url, cache: false }).catch(() => {
+        console.log(`No ${url}`);
+        return {};
+      });
+    const [global, local] = await Promise.all([load("../settings.json"), load("./settings.json")]);
+    fileSettings = _.merge({}, global, local);
   }
-}
 
-// Polls program_state.json (file:// layouts, or the websocket gave up)
-var hd_polling = null;
-function StartPolling() {
-  if (hd_polling === null) hd_polling = setInterval(UpdateData, 64);
-}
+  HD.settings = {};
 
-// Gets current program state using SocketIO,
-// Dispatch "hd_update" event if data has changed
-// This function is called in a high frequency.
-// Similar to UpdateData() except for SocketIO support
-// which requires being on HTTP/HTTPS
-async function UpdateData_SocketIO() {
-  try {
-    // Connect to Socket.io. Valid: websocket, webtransport, polling
-    // Python threading with Qt is weird so put in polling method if
-    // really absolutely necessary.
-    const socket = io(
-      window.location.protocol + "//" + window.location.host + "/",
-      {
-        transports: ["websocket", "webtransport"],
-        timeout: 500,
-        reconnectionDelay: 500,
-        reconnectionDelayMax: 1500,
+  // ---------------------------------------------------------------------
+  // Change tracking. Deltas keep the parts of the state they don't change
+  // (same objects), so most checks end at ===.
+
+  // path: a lodash path ("score.1.team") or a function of the state
+  function read(state, path) {
+    if (typeof path !== "function") return _.get(state, path);
+    try {
+      return path(state);
+    } catch (e) {
+      return undefined; // A part missing from the old state
+    }
+  }
+
+  function changed(data, old, path) {
+    const a = read(data, path);
+    const b = read(old, path);
+    return a !== b && !_.isEqual(a, b);
+  }
+
+  // ---------------------------------------------------------------------
+  // What update() gets: the state, what changed, and shortcuts to the
+  // scoreboard the layout shows
+
+  function teamView(score, t) {
+    const team = _.get(score, ["team", t]) || {};
+    const sel = `.p${t}`;
+    return {
+      n: t,
+      team,
+      players: HD.players(team),
+      player: _.get(team, "player.1") || {},
+      name: HD.teamName(team),
+      // Selector under the team's .p1/.p2: "& .x" or ".x" for ".p1 .x",
+      // "&.x" for ".p1.x"
+      sel: (s = "") => (s.includes("&") ? s.replace(/&/g, sel) : `${sel} ${s}`.trim()),
+      set(s, content, options) {
+        return HD.set(this.sel(s), content, options);
       },
+    };
+  }
+
+  function scope(data, old) {
+    const n = HD.scoreboardNumber();
+    const score = _.get(data, ["score", n]) || {};
+    const pending = [];
+    const s = {
+      data,
+      old,
+      first: old === EMPTY,
+      n,
+      score,
+      settings: HD.settings,
+      teams: [1, 2].map((t) => teamView(score, t)),
+      changed: (path) => changed(data, old, path),
+      // Same as changed(), for a path in the scoreboard: "team.1.color"
+      scoreChanged: (path) => changed(data, old, ["score", n, ...[].concat(_.toPath(path))]),
+      set: (...args) => HD.set(...args),
+      // Work the first show waits for (e.g. images loading)
+      wait: (promise) => (pending.push(promise), promise),
+      pending,
+      // Character art, see characters.js
+      characters: (target, options) => s.wait(HD.characters(target, options, s)),
+    };
+    s.isTeams = s.teams[0].players.length > 1;
+    return s;
+  }
+
+  HD.scope = () => scope(applied, applied);
+
+  // ---------------------------------------------------------------------
+  // Updates: one at a time, with the latest state. States arriving while
+  // one runs are folded into the next run, compared against what the
+  // layout last showed.
+
+  let running = false;
+  let dirty = false;
+
+  async function schedule() {
+    dirty = true;
+    if (running || !def || !booted) return;
+    running = true;
+    try {
+      while (dirty) {
+        dirty = false;
+        const data = current;
+        const old = applied;
+        applied = data;
+        await runUpdate(data, old);
+      }
+    } finally {
+      running = false;
+    }
+  }
+
+  async function runUpdate(data, old) {
+    const themeChanged = applyTheme(data, old);
+    if (themeChanged || old === EMPTY) HD.settings = resolveSettings(data);
+
+    const s = scope(data, old);
+    try {
+      if (def.update) await def.update(s);
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (!display.started) {
+      await Promise.allSettled(s.pending);
+      await firstShow();
+    } else {
+      applyDisplay(data);
+    }
+  }
+
+  function receive(state) {
+    current = state;
+    console.log(state);
+    schedule();
+  }
+
+  // ---------------------------------------------------------------------
+  // Lifecycle: the layout's intro (a GSAP timeline) plays when it's shown,
+  // and runs backwards to hide it, unless it has an outro
+
+  let intro = null;
+
+  function firstShow() {
+    return new Promise((resolve) =>
+      requestAnimationFrame(() =>
+        $(document).waitForImages(() => {
+          display.started = true;
+          gsap.globalTimeline.timeScale(animationScale);
+          // Turned off in Display Controls: stays hidden until turned on
+          if (!displayVisible(applied)) {
+            display.shown = false;
+            gsap.set("body", { autoAlpha: 0 });
+          } else {
+            show();
+          }
+          resolve();
+        }),
+      ),
     );
+  }
+
+  function show() {
+    document.documentElement.classList.remove("hd-loading");
+    console.log("Start()");
+    return runStart();
+  }
+
+  async function runStart() {
+    const s = HD.scope();
+    // From the end, so a new intro animates from where things rest
+    if (intro) intro.progress(1).kill();
+    intro = null;
+    if (def.intro) {
+      intro = gsap.timeline();
+      def.intro(intro, s);
+    }
+    if (def.start) await def.start(s);
+  }
+
+  // Resolves when a timeline has run backwards to its start
+  const reverse = (timeline) =>
+    new Promise((resolve) => {
+      if (timeline.time() === 0) return resolve();
+      timeline.eventCallback("onReverseComplete", resolve);
+      timeline.reverse();
+    });
+
+  async function hide() {
+    if (def.outro) {
+      await def.outro(HD.scope());
+    } else if (intro && intro.time() > 0) {
+      // At most as long as the intro could take, in case it's killed
+      await Promise.race([
+        reverse(intro),
+        new Promise((r) => setTimeout(r, (intro.time() / animationScale) * 1000 + 500)),
+      ]);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Display Controls (the Display Controls window, or /display/... links
+  // for a Stream Deck) show and hide layouts by folder, and by group: the
+  // groups in ?display=<group>[,<group>...]. A layout is shown while its
+  // folder and all of its groups are on.
+
+  const display = {
+    folder: (() => {
+      const folder = location.pathname.split("/").filter(Boolean).slice(-2)[0] || "";
+      try {
+        return decodeURIComponent(folder);
+      } catch (e) {
+        return folder;
+      }
+    })(),
+    groups: String(pageOptions.display || "")
+      .split(",")
+      .map((g) => g.trim().replace(/\s+/g, " ").toLowerCase().slice(0, 40).trim())
+      .filter(Boolean),
+    started: false, // Shown the first time
+    shown: true, // On screen, or going to be
+    sequence: 0, // Changes each show or hide, so an interrupted one stops
+  };
+
+  function displayVisible(data) {
+    const d = data && data.display;
+    if (!d) return true;
+    if ((d.folders || {})[display.folder] === false) return false;
+    return display.groups.every((g) => (d.groups || {})[g] !== false);
+  }
+
+  async function applyDisplay(data) {
+    const visible = displayVisible(data);
+    if (!display.started || visible === display.shown) return;
+    display.shown = visible;
+    const sequence = ++display.sequence;
+    gsap.killTweensOf("body");
+    console.log(`Display: ${visible ? "show" : "hide"}`);
+
+    if (visible) {
+      gsap.set("body", { autoAlpha: 1 });
+      await show();
+      return;
+    }
+    await hide();
+    // Shown again meanwhile
+    if (sequence !== display.sequence) return;
+    // Whatever wasn't part of the animation goes too
+    gsap.to("body", { autoAlpha: 0, duration: intro || def.outro ? 0.15 : 0.3 });
+  }
+
+  // OBS showing the source again (or the tab, in a browser): fresh state,
+  // intro again
+  function onBecameActive(callback) {
+    if (window.obsstudio) {
+      window.addEventListener("obsSourceActiveChanged", (e) => e.detail.active && callback());
+    } else {
+      document.addEventListener("visibilitychange", () => !document.hidden && callback());
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Layout theme (data.layout_theme): display options as body classes,
+  // colors and fonts as main.css's custom properties, the animation speed.
+  // The properties go in a stylesheet, not on :root's style, so colors a
+  // layout sets itself (e.g. a scoreboard's team colors) still win.
+
+  // Font stack a theme font goes in front of (same as main.css's --font)
+  const FONT_FALLBACK =
+    '"SairaCondensed", "NotoSans", "NotoSansJP", "NotoSansSC", "NotoSansTC", "NotoSansKR", sans-serif';
+
+  // Body classes for the theme's display options: [class, section, field,
+  // value that adds the class]
+  const THEME_CLASSES = [
+    ["hd-hide-pronouns", "chip", "pronouns_display", false],
+    ["hd-hide-seed", "chip", "seed_display", false],
+    ["hd-hide-social", "chip", "social_media_display", false],
+    ["hd-hide-country-flag", "chip", "country_flag_display", false],
+    ["hd-hide-state-flag", "chip", "state_flag_display", false],
+    ["hd-hide-avatar", "chip", "avatar_display", false],
+    ["hd-hide-losers", "chip", "losers_display", false],
+    ["hd-no-text-outline", "general", "text_outline", false],
+    ["hd-bracket-hide-avatar", "bracket", "avatar_display", false],
+    ["hd-bracket-hide-character", "bracket", "character_display", false],
+    ["hd-bracket-hide-country-flag", "bracket", "country_flag_display", false],
+    ["hd-bracket-hide-state-flag", "bracket", "state_flag_display", false],
+    ["hd-bracket-hide-seed", "bracket", "seed_display", false],
+    ["hd-bracket-hide-round-names", "bracket", "round_names_display", false],
+    ["hd-bracket-show-identifier", "bracket", "identifier_display", true],
+    ["hd-bracket-hide-pending", "bracket", "pending_display", false],
+    ["hd-bracket-no-dim-losers", "bracket", "dim_losers", false],
+    ["hd-bracket-hide-focus-label", "bracket", "focus_label_display", false],
+    ["hd-standings-hide-game-diff", "standings", "game_diff_display", false],
+    ["hd-standings-hide-points", "standings", "points_display", false],
+    ["hd-standings-show-buchholz", "standings", "buchholz_display", true],
+    ["hd-strike-hide-names", "stage_strike", "stage_names_display", false],
+    ["hd-strike-hide-striker", "stage_strike", "striker_display", false],
+  ];
+
+  // main.css's properties, from the theme's, with "Use this theme's colors"
+  const THEME_COLORS = {
+    "--text-color": "--general-text-color",
+    "--bg-fill": "--general-background",
+    "--border-radius": "--general-border-radius",
+    "--border-radius-chip": "--general-chip-radius",
+    "--accent-color": "--general-primary-color",
+    "--accent-secondary-color": "--general-secondary-color",
+    "--p1-score-bg-color": "--teams-team1-color",
+    "--p2-score-bg-color": "--teams-team2-color",
+    "--p1-score-color": "--teams-team1-score-color",
+    "--p2-score-color": "--teams-team2-score-color",
+    "--chip-color": "--chip-text-color",
+    "--chip-bg": "--chip-background",
+    "--bracket-score-bg": "--bracket-score-background",
+    "--bracket-sponsor-bg": "--bracket-sponsor-background",
+    "--bracket-winner-color": "--bracket-winner-color",
+    "--bracket-line-color": "--bracket-lines-color",
+    "--strike-striked-color": "--stage-strike-striked-color",
+    "--strike-selected-color": "--stage-strike-selected-color",
+  };
+
+  // A theme color (#rrggbb or Qt's #aarrggbb) as CSS
+  function cssColor(color) {
+    const m = /^#([0-9a-f]{2})([0-9a-f]{6})$/i.exec(color || "");
+    if (!m) return color;
+    const rgb = m[2].match(/../g).map((h) => parseInt(h, 16));
+    return `rgba(${rgb.join(", ")}, ${Math.round((parseInt(m[1], 16) / 255) * 1000) / 1000})`;
+  }
+
+  // Returns whether the theme changed
+  function applyTheme(data, old) {
+    const theme = _.get(data, "layout_theme");
+    const oldTheme = _.get(old, "layout_theme");
+    if (!theme || !theme.values) return false;
+    if (old !== EMPTY && (theme === oldTheme || _.isEqual(theme, oldTheme))) return false;
+
+    const get = (section, field, fallback) => _.get(theme.values, [section, field], fallback);
+    const body = document.body.classList;
+    for (const [cls, section, field, when] of THEME_CLASSES) {
+      body.toggle(cls, get(section, field) === when);
+    }
+    const colors = get("general", "apply_colors", false) === true;
+    // Layouts with a palette of their own switch to the theme's under it
+    body.toggle("hd-theme-colors", colors);
+    const textCase = get("general", "text_case", "layout");
+    body.toggle("hd-text-upper", textCase === "uppercase");
+    body.toggle("hd-text-none", textCase === "none");
+
+    // Every theme value as --<section>-<field>, for layouts that want them
+    const css = theme.css || {};
+    const props = { ...css };
+    const font = get("general", "font_family", "");
+    if (font) props["--font"] = `"${String(font).replace(/["\\]/g, "")}", ${FONT_FALLBACK}`;
+    if (colors) {
+      for (const [prop, from] of Object.entries(THEME_COLORS)) props[prop] = css[from];
+      const bg = get("general", "background");
+      props["--bg-color"] = bg && bg.color ? cssColor(bg.color) : null;
+      if (get("versus", "custom_sponsor_colors", false)) {
+        props["--p1-sponsor-color"] = css["--versus-team1-sponsor-color"];
+        props["--p2-sponsor-color"] = css["--versus-team2-sponsor-color"];
+      }
+    }
+
+    let sheet = document.getElementById("hd-layout-theme");
+    if (!sheet) {
+      sheet = document.createElement("style");
+      sheet.id = "hd-layout-theme";
+      document.head.appendChild(sheet);
+    }
+    sheet.textContent = `:root {\n${Object.entries(props)
+      .filter(([, v]) => v != null && v !== "")
+      .map(([k, v]) => `  ${k}: ${v};\n`)
+      .join("")}}\n`;
+
+    const speed = Number(get("animation", "speed", 100)) || 100;
+    animationScale = get("animation", "enabled", true) === false ? 1000 : speed / 100;
+    // Stays 0 until the layout is first shown
+    if (display.started) gsap.globalTimeline.timeScale(animationScale);
+
+    document.dispatchEvent(new CustomEvent("hd_theme", { detail: theme }));
+    return true;
+  }
+
+  // A theme value, e.g. HD.theme("bracket", "seed_display", true)
+  HD.theme = (section, field, fallback) =>
+    _.get(current, ["layout_theme", "values", section, field], fallback);
+
+  // Colors from the tournament logo, with "automatic_theme" in settings.json
+  function logoColors() {
+    const img = new Image();
+    img.src = "../logo.png";
+    img.onload = () => {
+      const [bg, accent] = new ColorThief().getPalette(img, 2);
+      const contrast = (c) => ((c[0] * 299 + c[1] * 587 + c[2] * 114) / 1000 > 125 ? "0,0,0" : "255,255,255");
+      const props = {
+        "--text-color": `rgb(${contrast(bg)})`,
+        "--bg-color": `rgb(${bg})`,
+        "--p1-score-color": `rgb(${contrast(accent)})`,
+        "--p2-score-color": `rgb(${contrast(accent)})`,
+      };
+      for (const p of ["p1", "p2"]) {
+        props[`--${p}-score-bg-color`] = props[`--${p}-sponsor-color`] = `rgb(${accent})`;
+      }
+      for (const [k, v] of Object.entries(props)) document.documentElement.style.setProperty(k, v);
+    };
+  }
+
+  // ---------------------------------------------------------------------
+  // Transport: the HyperDrive web server's socket (full states, then
+  // deltas), or program_state.json polled when opened from a file
+
+  let fetching = false;
+
+  async function poll() {
+    if (fetching || devMode) return;
+    fetching = true;
+    try {
+      const state = await $.ajax({ dataType: "json", url: "../../out/program_state.json", cache: false });
+      // Overlapping or older responses never put an older state back
+      if (!(state.timestamp <= current.timestamp)) receive(state);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      fetching = false;
+    }
+  }
+
+  let polling = null;
+  const startPolling = () => {
+    if (polling === null) polling = setInterval(poll, 64);
+  };
+
+  function connectSocket() {
+    const socket = io(`${location.protocol}//${location.host}/`, {
+      transports: ["websocket", "webtransport"],
+      timeout: 500,
+      reconnectionDelay: 500,
+      reconnectionDelayMax: 1500,
+    });
+    let deltaIndex = -1;
+    let resyncing = false; // A full state was requested and hasn't come
 
     socket.on("connect", () => {
       console.log("socket.io connected");
       // So Display Controls lists this layout's groups
-      if (hd_display.groups.length > 0) {
-        socket.emit("display_register", { groups: hd_display.groups });
-      }
+      if (display.groups.length > 0) socket.emit("display_register", { groups: display.groups });
     });
-
-    socket.on("disconnect", () => {
-      // call program_state.json initially in case it's a
-      // websocket issue and not with web server being gone
-      // e.g. HyperDrive being closed
-      console.log("socket.io disconnected");
-      UpdateData();
-    });
-
-    socket.io.on("reconnect", () => {
-      console.log("socket.io reconnected");
-    });
-
-    socket.io.on("reconnect_attempt", (attempt_number) => {
-      // every 1-2 seconds, it will attempt to reconnect to
-      // the websocket. before that happens, call UpdateData
-      // in case it's an issue with the websocket and not
-      // with the web server being gone
-      UpdateData();
-    });
-
-    socket.io.on("reconnect_failed", () => {
-      // reconnect_failed, if max retries are reached,
-      // will fall back to file loading program_state.json
-      StartPolling();
-    });
-
-    socket.on("error", (err) => {
-      console.log(err);
-    });
-
-    // A full state was requested and hasn't arrived yet
-    let resyncing = false;
+    // The web server may be fine with only the socket down (or HyperDrive
+    // closed): the file meanwhile
+    socket.on("disconnect", poll);
+    socket.io.on("reconnect_attempt", poll);
+    socket.io.on("reconnect_failed", startPolling);
+    socket.on("error", console.log);
 
     socket.on("program_state", (message) => {
+      if (devMode) return;
       resyncing = false;
-      // Fine to reset the max applied index here, since we know that we've
-      // received a complete valid state for a point in time.
-      maxAppliedDeltaIdx = message["delta_index"];
-      DispatchUpdate(message["state"]);
+      deltaIndex = message.delta_index;
+      receive(message.state);
     });
 
     socket.on("program_state_update", (message) => {
-      // Deltas until the full state arrives build on the state that failed
-      if (resyncing) return;
-      try {
-        console.log("Handling state delta: ", message);
-        HandleHDStateUpdateMessage(message);
-      } catch (e) {
-        console.log(e);
-        // We failed to handle the program state, so request a new update.
-        // The server sends it to every layout: ask once.
+      if (devMode || resyncing) return;
+      const index = message.delta_index;
+      // Deltas are numbered one by one: an older one, or a gap, means the
+      // state here is off. Ask for the whole state, once: the server sends
+      // it to every layout.
+      if (index < deltaIndex || (deltaIndex >= 0 && index > deltaIndex + 1)) {
+        console.log(`Delta ${index} after ${deltaIndex}: resyncing`);
         resyncing = true;
         socket.emit("program_state", {});
-      }
-    });
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-// Load libraries sequentially (to respect dependencies)
-// Then call InitAll
-async function LoadEverything() {
-  let libPath = "../include/";
-  let scripts = [
-    "jquery-3.7.1.min.js",
-    "gsap.min.js",
-    "he.js",
-    "lodash.min.js",
-    "jquery.waitforimages.min.js",
-    "color-thief.min.js",
-    "assetUtils.js",
-    "socket.io.min.js",
-  ];
-
-  let urlParams = new URLSearchParams(window.location.search);
-  window.scoreboardNumber = 1;
-
-  /*
-    Read URL params (<url>?var=val&var2=val2...)
-    Options:
-      scoreboardNumber
-  */
-  for (let [k, v] of urlParams.entries()) {
-    // A param named like a function (?Update=...) would break the layout
-    if (typeof window[k] === "function") continue;
-    window[k] = v;
-  }
-
-  // Downloaded in parallel; async = false still runs them in this order
-  await Promise.all(
-    scripts.map((script) => {
-      const src = libPath + script;
-      return new Promise((resolve, reject) => {
-        const scriptElement = document.createElement("script");
-        scriptElement.src = src;
-        scriptElement.async = false;
-        scriptElement.onload = () => {
-          console.log(`Loaded script: ${src}`);
-          resolve();
-        };
-        scriptElement.onerror = (error) => {
-          console.error(`Error loading script: ${src}`, error);
-          reject(error);
-        };
-        document.head.appendChild(scriptElement);
-      });
-    }),
-  );
-
-  console.log("== Loading complete ==");
-
-  await InitAll();
-}
-
-// Initialize libraries
-async function InitAll() {
-  await LoadSettings();
-
-  if (hd_settings.automatic_theme) {
-    GetLogoColors();
-  }
-
-  await new Promise((resolve) => $(resolve));
-
-  console.log("== Init complete ==");
-  // After LoadEverything().then(), so layouts can listen to it there
-  setTimeout(() => document.dispatchEvent(new CustomEvent("hd_init")));
-
-  // Before any data comes in: a first update dispatched without a listener
-  // would be lost, and polling only dispatches again once the state changes
-  document.addEventListener("hd_update", UpdateWrapper);
-  gsap.globalTimeline.timeScale(0);
-
-  // Set up listener to regrab data and rerun intro animations on OBS scene switch
-  initOnBrowserActive(
-    () => {
-      // hide function - nothing right now
-      console.log("Hidden");
-    },
-    () => {
-      UpdateData().then(() => {
-        // Turned off in Display Controls: stays hidden
-        if (hd_display.shown) HDRunStart();
-      });
-    },
-  );
-
-  // Both deliver their first state asynchronously, after the layout's
-  // LoadEverything().then() has set Start() and Update()
-  if (
-    window.location.protocol === "file:" ||
-    window.location.host === "absolute"
-  ) {
-    StartPolling();
-  } else {
-    await UpdateData_SocketIO();
-  }
-}
-
-// Font stack a theme font is put in front of (same as main.css's --font)
-const HD_FONT_FALLBACK =
-  '"SairaCondensed", "NotoSans", "NotoSansJP", "NotoSansSC", "NotoSansTC", "NotoSansKR", sans-serif';
-
-// Body classes for the theme's display options: [class, section, field, value
-// that adds the class]. main.css and the layouts hide or show things by them.
-const HD_THEME_CLASSES = [
-  ["hd-hide-pronouns", "chip", "pronouns_display", false],
-  ["hd-hide-seed", "chip", "seed_display", false],
-  ["hd-hide-social", "chip", "social_media_display", false],
-  ["hd-hide-country-flag", "chip", "country_flag_display", false],
-  ["hd-hide-state-flag", "chip", "state_flag_display", false],
-  ["hd-hide-avatar", "chip", "avatar_display", false],
-  ["hd-hide-losers", "chip", "losers_display", false],
-  ["hd-no-text-outline", "general", "text_outline", false],
-  ["hd-bracket-hide-avatar", "bracket", "avatar_display", false],
-  ["hd-bracket-hide-character", "bracket", "character_display", false],
-  ["hd-bracket-hide-country-flag", "bracket", "country_flag_display", false],
-  ["hd-bracket-hide-state-flag", "bracket", "state_flag_display", false],
-  ["hd-bracket-hide-seed", "bracket", "seed_display", false],
-  ["hd-bracket-hide-round-names", "bracket", "round_names_display", false],
-  ["hd-bracket-show-identifier", "bracket", "identifier_display", true],
-  ["hd-bracket-hide-pending", "bracket", "pending_display", false],
-  ["hd-bracket-no-dim-losers", "bracket", "dim_losers", false],
-  ["hd-bracket-hide-focus-label", "bracket", "focus_label_display", false],
-  ["hd-standings-hide-game-diff", "standings", "game_diff_display", false],
-  ["hd-standings-hide-points", "standings", "points_display", false],
-  ["hd-standings-show-buchholz", "standings", "buchholz_display", true],
-  ["hd-strike-hide-names", "stage_strike", "stage_names_display", false],
-  ["hd-strike-hide-striker", "stage_strike", "striker_display", false],
-];
-
-// Applies the layout theme HyperDrive exports (data.layout_theme): display options as
-// body classes, colors and fonts as main.css's custom properties, and the
-// animation speed. Called before each Update(); does nothing if the theme
-// didn't change. The properties go in a stylesheet, not on :root's style, so
-// colors a layout sets itself (e.g. the scoreboard's team colors) still win.
-function ApplyLayoutTheme(data, oldData) {
-  const theme = _.get(data, "layout_theme");
-  if (!theme || !theme.values) return;
-  const oldTheme = _.get(oldData, "layout_theme");
-  if (
-    document.getElementById("hd-layout-theme") &&
-    // Deltas keep unchanged parts of the state: same object, no stringify
-    (theme === oldTheme || JSON.stringify(theme) == JSON.stringify(oldTheme))
-  )
-    return;
-
-  const v = theme.values;
-  const get = (section, field, fallback) => _.get(v, [section, field], fallback);
-
-  for (const [cls, section, field, when] of HD_THEME_CLASSES) {
-    document.body.classList.toggle(cls, get(section, field) === when);
-  }
-  // Layouts with a palette of their own switch to the theme's under this class
-  document.body.classList.toggle("hd-theme-colors", get("general", "apply_colors", false) === true);
-  const textCase = get("general", "text_case", "layout");
-  document.body.classList.toggle("hd-text-upper", textCase == "uppercase");
-  document.body.classList.toggle("hd-text-none", textCase == "none");
-
-  // Every theme value as --<section>-<field>, for layouts that want them
-  const props = Object.assign({}, theme.css || {});
-
-  const font = get("general", "font_family", "");
-  if (font) {
-    props["--font"] = `"${String(font).replace(/["\\]/g, "")}", ${HD_FONT_FALLBACK}`;
-  }
-
-  const css = theme.css || {};
-  if (get("general", "apply_colors", false)) {
-    const solid = (fill) => (fill && fill.color ? CssColor(fill.color) : null);
-    Object.assign(props, {
-      "--text-color": css["--general-text-color"],
-      "--bg-color": solid(get("general", "background")),
-      "--bg-fill": css["--general-background"],
-      "--border-radius": css["--general-border-radius"],
-      "--border-radius-chip": css["--general-chip-radius"],
-      "--accent-color": css["--general-primary-color"],
-      "--accent-secondary-color": css["--general-secondary-color"],
-      "--p1-score-bg-color": css["--teams-team1-color"],
-      "--p2-score-bg-color": css["--teams-team2-color"],
-      "--p1-score-color": css["--teams-team1-score-color"],
-      "--p2-score-color": css["--teams-team2-score-color"],
-      "--chip-color": css["--chip-text-color"],
-      "--chip-bg": css["--chip-background"],
-      "--bracket-score-bg": css["--bracket-score-background"],
-      "--bracket-sponsor-bg": css["--bracket-sponsor-background"],
-      "--bracket-winner-color": css["--bracket-winner-color"],
-      "--bracket-line-color": css["--bracket-lines-color"],
-      "--strike-striked-color": css["--stage-strike-striked-color"],
-      "--strike-selected-color": css["--stage-strike-selected-color"],
-    });
-    if (get("versus", "custom_sponsor_colors", false)) {
-      props["--p1-sponsor-color"] = css["--versus-team1-sponsor-color"];
-      props["--p2-sponsor-color"] = css["--versus-team2-sponsor-color"];
-    }
-  }
-
-  let style = document.getElementById("hd-layout-theme");
-  if (!style) {
-    style = document.createElement("style");
-    style.id = "hd-layout-theme";
-    document.head.appendChild(style);
-  }
-  style.textContent =
-    ":root {\n" +
-    Object.entries(props)
-      .filter(([k, value]) => value != null && value !== "")
-      .map(([k, value]) => `  ${k}: ${value};\n`)
-      .join("") +
-    "}\n";
-
-  const speed = Number(get("animation", "speed", 100)) || 100;
-  hd_animation_scale = get("animation", "enabled", true) === false ? 1000 : speed / 100;
-  // 0 means the layout hasn't started yet (see UpdateWrapper)
-  if (gsap.globalTimeline.timeScale() != 0) {
-    gsap.globalTimeline.timeScale(hd_animation_scale);
-  }
-
-  document.dispatchEvent(new CustomEvent("hd_theme", { detail: theme }));
-}
-
-// A theme color (#rrggbb or Qt's #aarrggbb) as CSS
-function CssColor(color) {
-  const m = /^#([0-9a-f]{2})([0-9a-f]{6})$/i.exec(color || "");
-  if (!m) return color;
-  const alpha = parseInt(m[1], 16) / 255;
-  const rgb = m[2].match(/../g).map((h) => parseInt(h, 16));
-  return `rgba(${rgb.join(", ")}, ${Math.round(alpha * 1000) / 1000})`;
-}
-
-// A layout theme value, e.g. ThemeValue("bracket", "seed_display", true)
-function ThemeValue(section, field, fallback) {
-  return _.get(data, ["layout_theme", "values", section, field], fallback);
-}
-
-// A layout's settings with the layout theme's on top: overrides is
-// [[setting path, section, field, theme default, (value) => setting value]],
-// e.g. [["display.eta", "stream_queue", "eta_display", true]]. A theme value
-// only counts when it's not its default, so the default theme leaves the
-// layout's settings.json as it is. The page's own window.settings still wins.
-function ThemeSettings(settings, overrides) {
-  const theme = {};
-  for (const [path, section, field, fallback, convert] of overrides) {
-    const value = ThemeValue(section, field, fallback);
-    if (!_.isEqual(value, fallback)) _.set(theme, path, convert ? convert(value) : value);
-  }
-  return _.merge({}, settings, theme, hd_page_settings);
-}
-
-// A player's or commentator's custom data, from the file named key in their
-// folder in user_data/custom_player_export/, e.g. CustomData(player, "bio").
-// Text files give their text, .json files what they hold; fallback when the
-// person has no such file. See docs/layout-data.md.
-function CustomData(player, key, fallback = null) {
-  return _.get(player, ["custom", key], fallback);
-}
-
-// The src of a custom image or video of a player, e.g.
-// CustomFile(player, "card"), or fallback when they have none
-function CustomFile(player, key, fallback = null) {
-  const path = CustomData(player, key);
-  return typeof path === "string" && path.startsWith("./user_data/")
-    ? `../../${path}`
-    : fallback;
-}
-
-// Read program_state.json
-function getData() {
-  return $.ajax({
-    dataType: "json",
-    url: "../../out/program_state.json",
-    cache: false,
-  });
-}
-
-// Loads settings.json from /layout/ and /layout/<folder>/
-// /layout/<folder>/settings.json (local) has priority over /layout/settings.json (global)
-async function LoadSettings() {
-  const load = async (url, name) => {
-    try {
-      return await $.ajax({ dataType: "json", url: url, cache: false });
-    } catch (e) {
-      console.log(`Could not load ${name} settings.json`);
-      console.log(e);
-      return {};
-    }
-  };
-  const [global_settings, file_settings] = await Promise.all([
-    load("../settings.json", "global"),
-    load("./settings.json", "local"),
-  ]);
-
-  // What the page itself sets, before window.settings becomes all of them
-  hd_page_settings = _.cloneDeep(window.settings || {});
-
-  hd_settings = _.defaultsDeep(
-    window.settings,
-    file_settings,
-    global_settings,
-  );
-}
-
-// Registers element for content fitting inside div if the div is resized
-function RegisterFit(element) {
-  if (!$(element).hasClass("hd-fit-content")) {
-    if ($(element).get(0)) {
-      $(element).addClass("hd-fit-content");
-      divResizeObserver.observe($(element).get(0));
-    }
-  }
-}
-
-// Scale content to fit div
-function FitText(target) {
-  document.fonts.ready.then(() => {
-    if (target == null) return;
-    if (target.css("font-size") == null) return;
-    if (target.css("width") == null) return;
-
-    let textElement = target.find(".text");
-    const text = textElement[0];
-    RegisterFit(target);
-    if (!text) return;
-
-    if (textElement.text().trim().toLowerCase() == "undefined") {
-      textElement.html("");
-    }
-
-    textElement.css({ transform: "", "font-size": "" });
-
-    const targetWidth = target.width();
-    if (text.scrollWidth <= targetWidth) return;
-
-    if (target.hasClass("font-scale-fit")) {
-      // Each step is a layout: jump to the size that fits if the width
-      // scales with it, then step down for what doesn't (padding, etc.)
-      let fontSize = parseFloat(window.getComputedStyle(text).fontSize);
-      fontSize = Math.max(
-        1,
-        Math.floor(((fontSize * targetWidth) / text.scrollWidth) * 10) / 10,
-      );
-      textElement.css("font-size", fontSize + "px");
-
-      while (text.scrollWidth > targetWidth && fontSize > 1) {
-        fontSize = Math.max(1, fontSize - 0.1);
-        textElement.css("font-size", fontSize + "px");
-      }
-    } else {
-      textElement.css("transform", "scaleX(" + targetWidth / text.scrollWidth + ")");
-    }
-  });
-}
-
-// Sets an element's inner HTML
-// Sequence: runs anim_out > changes content > runs anim_in
-// Uses FitText to scale div contents to fit
-async function SetInnerHtml(element, html, settings = {}) {
-  // Extract settings
-  let { force, fadeTime = 0.5, middleFunction } = settings;
-
-  if (element == null) return;
-  if (force === false) return;
-
-  // Fade out/in animations
-  let anim_in = {
-    autoAlpha: 1,
-    duration: fadeTime,
-    stagger: 0.1,
-    ...settings.anim_in,
-  };
-  let anim_out = {
-    autoAlpha: 0,
-    duration: fadeTime,
-    stagger: 0.1,
-    overwrite: true,
-    ...settings.anim_out,
-  };
-
-  html = html == null ? "" : String(html);
-
-  let firstRun = element.find(".text").length === 0;
-
-  // First run, no need for smooth fade out
-  if (firstRun) {
-    // Put any text inside the div just so the font loading is triggered
-    element.html("<div class='text' style='opacity: 0;'>&nbsp;</div>");
-    force = true;
-  }
-
-  // Wait for font to load before calculating sizes
-  await document.fonts.ready;
-
-  // Normalize the new HTML by parsing it like the DOM did the current one,
-  // which already comes out serialized
-  const temp = document.createElement("div");
-  temp.innerHTML = html;
-  const currentText = element.find(".text").html();
-  const newText = temp.innerHTML;
-
-  if (force === true || currentText !== newText) {
-    const updateElement = (element, html, firstRun) => {
-      element.find(".text").html(html);
-
-      if (html.trim().length === 0) {
-        element.find(".text").addClass("text_empty");
-        element.addClass("text_empty");
-      } else {
-        element.find(".text").removeClass("text_empty");
-        element.removeClass("text_empty");
-      }
-
-      FitText(element);
-
-      if (middleFunction) {
-        middleFunction();
-      }
-
-      if (document.hidden) {
-        gsap.killTweensOf(element.find(".text"));
-        element.find(".text").css({ opacity: 1, visibility: "inherit" });
         return;
       }
-
-      if (firstRun) {
-        gsap.set(element.find(".text"), anim_in);
-      } else {
-        anim_out.onComplete = null;
-        gsap.fromTo(element.find(".text"), anim_out, anim_in);
-      }
-    };
-
-    if (document.hidden) {
-      updateElement(element, html, firstRun);
-      return;
-    }
-
-    if (!firstRun) {
-      anim_out.onComplete = () => updateElement(element, html, firstRun);
-      await gsap.to(element.find(".text"), anim_out);
-    } else {
-      anim_out.onComplete = () => updateElement(element, html, firstRun);
-      await gsap.set(element.find(".text"), anim_out);
-    }
-  }
-}
-
-const degrees_to_radians = (deg) => (deg * Math.PI) / 180.0;
-
-// Given a number of characters, returns an array os positions (0-1) for their eyesights
-// Used for "smart" positioning of multiple characters in a container without dividers
-function GenerateMulticharacterPositions(
-  character_number,
-  center = [0.5, 0.5],
-  radius = 0.3,
-) {
-  let positions = [];
-
-  // For 1 character, just center it
-  if (character_number == 1) radius = 0;
-
-  let angle_rad = degrees_to_radians(90);
-
-  if (character_number == 2) angle_rad = degrees_to_radians(45);
-
-  let pendulum = 1;
-
-  for (let i = 0; i < character_number; i += 1) {
-    let j = i;
-    if (i > 1) {
-      if (i % 2 == 0) {
-        pendulum *= -1;
-      } else {
-        pendulum *= -1;
-        pendulum += 1;
-      }
-      j = pendulum;
-    }
-    const angle = angle_rad + degrees_to_radians(360 / character_number) * j;
-    const pos = [
-      center[0] + Math.cos(angle) * radius,
-      center[1] + Math.sin(angle) * radius,
-    ];
-    positions.push(pos);
-  }
-
-  return positions;
-}
-
-// Use a HTML canvas to resize an image
-// Only needed when downscaling images, to avoid bad image quality
-// Detect div size changes for character images
-var imageResizeObserver = new ResizeObserver((entries) => {
-  for (const entry of entries) {
-    CenterImageDo($(entry.target));
-  }
-});
-
-// Detect div size changes for text elements
-var divResizeObserver = new ResizeObserver((entries) => {
-  for (const entry of entries) {
-    FitText($(entry.target));
-  }
-});
-
-// Prepare element for character image display
-// Call function to center image
-async function CenterImage(element, assetData, options = {}) {
-  try {
-    options = _.defaultsDeep(options, {
-      custom_zoom: 1,
-      custom_center: [0.5, 0.5],
-      scale_based_on_parent: false,
-      scale_fill_x: false,
-      scale_fill_y: false,
-    });
-
-    if (!assetData) return;
-
-    options.asset_data = assetData;
-
-    $(element).data(options);
-
-    await CenterImageDo($(element)).then(() => {
-      if (!$(element).hasClass("hd-center-image")) {
-        $(element).addClass("hd-center-image");
-        imageResizeObserver.observe($(element).get(0));
-      }
-    });
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-// If the character asset is a video, this is called for setting its content
-async function CenterVideo(element, assetData, options = {}) {
-  function loadImage() {
-    return new Promise((resolve) => {
-      var video = $("<video />", {
-        src: "../../" + assetData.asset,
-        muted: true,
-        autoplay: true,
-      });
-
-      $(element).css({
-        position: "relative",
-      });
-
-      video.css({
-        height: "100%",
-        "min-width": 0,
-        "min-height": 0,
-        position: "absolute",
-      });
-
-      // Autoplay needs the property, not only the attribute
-      video[0].muted = true;
-
-      video.appendTo($(element)).unwrap();
-
-      // Resolves even if the video can't load or play, so callers go on
-      video.on("error", () => resolve());
-      video.on("loadedmetadata", () => {
-        video[0].play().catch(console.log).finally(resolve);
-      });
-
-      video[0].load();
+      deltaIndex = index;
+      receive(applyDeltas(current, message.delta));
     });
   }
 
-  await loadImage();
-}
-
-// Center character images based on settings (div data)
-async function CenterImageDo(element) {
-  try {
-    let data = $(element).data();
-
-    let assetData = data.asset_data;
-    let customZoom = data.custom_zoom;
-    let customCenter = data.custom_center;
-    let scale_based_on_parent = data.scale_based_on_parent;
-    let scale_fill_x = data.scale_fill_x;
-    let scale_fill_y = data.scale_fill_y;
-
-    let customElement = null;
-
-    if (scale_based_on_parent) {
-      customElement = element.parent().parent();
-    }
-
-    // $(element).data() is live: keep what this call was for
-    const requestedAsset = assetData;
-
-    if (typeof assetData == "string") {
-      assetData = JSON.parse(assetData);
-    }
-    if (!assetData) return;
-
-    function loadImage() {
-      return new Promise((resolve) => {
-        const img = new Image();
-        // A missing file would otherwise leave CenterImage() pending forever
-        img.onerror = () => resolve();
-        img.onload = () => {
-          // Another asset was set while this one loaded
-          if ($(element).data("asset_data") !== requestedAsset) return resolve();
-
-          let eyesight = assetData.eyesight;
-
-          if (!eyesight) {
-            eyesight = {
-              x: img.naturalWidth / 2,
-              y: img.naturalHeight / 2,
-            };
-          }
-
-          if (!customElement) customElement = element;
-
-          const containerWidth = $(customElement).innerWidth();
-          const containerHeight = $(customElement).innerHeight();
-
-          let proportional_zoom = 1;
-          if (assetData.average_size) {
-            proportional_zoom = 0;
-            proportional_zoom = Math.max(
-              proportional_zoom,
-              (containerWidth / assetData.average_size.x) * 1.2,
-            );
-            proportional_zoom = Math.max(
-              proportional_zoom,
-              (containerHeight / assetData.average_size.y) * 1.2,
-            );
-          }
-
-          // For cropped assets, zoom to fill
-          // Calculate max zoom
-          const zoom_x = containerWidth / img.naturalWidth;
-          const zoom_y = containerHeight / img.naturalHeight;
-
-          let minZoom = 1;
-
-          let rescalingFactor = 1;
-
-          if (assetData.rescaling_factor)
-            rescalingFactor = assetData.rescaling_factor;
-
-          let uncropped_edge = assetData.uncropped_edge;
-
-          if (
-            !uncropped_edge ||
-            uncropped_edge == "undefined" ||
-            uncropped_edge.length == 0
-          ) {
-            if (zoom_x > zoom_y) {
-              minZoom = zoom_x * rescalingFactor;
-            } else {
-              minZoom = zoom_y * rescalingFactor;
-            }
-          } else {
-            if (
-              uncropped_edge.includes("u") &&
-              uncropped_edge.includes("d") &&
-              uncropped_edge.includes("l") &&
-              uncropped_edge.includes("r")
-            ) {
-              minZoom = customZoom * proportional_zoom * rescalingFactor;
-            } else if (
-              !uncropped_edge.includes("l") &&
-              !uncropped_edge.includes("r")
-            ) {
-              minZoom = zoom_x * rescalingFactor;
-            } else if (
-              !uncropped_edge.includes("u") &&
-              !uncropped_edge.includes("d")
-            ) {
-              minZoom = zoom_y * rescalingFactor;
-            } else {
-              minZoom = customZoom * proportional_zoom * rescalingFactor;
-            }
-          }
-
-          if (scale_fill_x && !scale_fill_y) {
-            minZoom = zoom_x;
-          } else if (scale_fill_y && !scale_fill_x) {
-            minZoom = zoom_y;
-          } else if (scale_fill_x && scale_fill_y) {
-            minZoom = Math.max(zoom_x, zoom_y);
-          }
-
-          const zoom = Math.max(minZoom, customZoom * minZoom);
-
-          // Centering
-          let xx = 0;
-          let yy = 0;
-
-          if (!customCenter) {
-            xx = -eyesight.x * zoom + $(element).innerWidth() / 2;
-          } else {
-            xx =
-              -eyesight.x * zoom + $(element).innerWidth() * customCenter[0];
-          }
-
-          let maxMoveX = $(element).innerWidth() - img.naturalWidth * zoom;
-
-          if (!uncropped_edge || !uncropped_edge.includes("l")) {
-            if (xx > 0) xx = 0;
-          } else {
-            if (xx > containerWidth * 0.1) xx = containerWidth * 0.1;
-          }
-          if (!uncropped_edge || !uncropped_edge.includes("r")) {
-            if (xx < maxMoveX) xx = maxMoveX;
-          } else {
-            if (xx < maxMoveX - containerWidth * 0.1)
-              xx = maxMoveX - containerWidth * 0.1;
-          }
-
-          if (!customCenter) {
-            yy = -eyesight.y * zoom + $(element).innerHeight() / 2;
-          } else {
-            yy =
-              -eyesight.y * zoom + $(element).innerHeight() * customCenter[1];
-          }
-
-          let maxMoveY = $(element).innerHeight() - img.naturalHeight * zoom;
-
-          if (!uncropped_edge || !uncropped_edge.includes("u")) {
-            if (yy > 0) yy = 0;
-          } else {
-            if (yy > containerHeight * 0.1) yy = containerHeight * 0.1;
-          }
-          if (!uncropped_edge || !uncropped_edge.includes("d")) {
-            if (yy < maxMoveY) yy = maxMoveY;
-          } else {
-            if (yy < maxMoveY - containerHeight * 0.1)
-              yy = maxMoveY - containerHeight * 0.1;
-          }
-
-          if (data.use_dividers === false) {
-            $(element).parent().css("position", "absolute");
-          }
-
-          if (data.z_index) {
-            $(element).parent().css("z-index", data.z_index);
-          } else {
-            $(element).parent().css("z-index", 0);
-          }
-
-          $(element).css({ position: "relative" });
-          $(element).find("img.hd-img").remove();
-          // The image already loaded, rather than a new one for the same src
-          const $img = $(img).addClass("hd-img").css({
-            position: "absolute",
-            left: `${xx}px`,
-            top: `${yy}px`,
-            width: `${img.naturalWidth * zoom}px`,
-            height: `${img.naturalHeight * zoom}px`,
-          });
-          $(element).append($img);
-
-          resolve();
-        };
-        img.src = "../../" + assetData.asset;
-      });
-    }
-
-    await loadImage();
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-async function FindImages(folder = "") {
-  let flag = true;
-  let counter = 1;
-  const files = [];
-
-  while (flag) {
-    const filename = `${folder}/${counter}.png`;
-    try {
-      await $.get(filename);
-      files.push(filename);
-      counter += 1;
-    } catch (e) {
-      flag = false;
-    }
-  }
-
-  return files;
-}
-
-function powerOf2(v) {
-  return v && !(v & (v - 1));
-}
-
-function nextPow2(v) {
-  var p = 2;
-  while ((v >>= 1)) {
-    p <<= 1;
-  }
-  return p;
-}
-
-/**
- * Stores content to be added to the DOM with SetInnerHtml later
- */
-class ContentResolver {
-  constructor() {
-    this.list = [];
-  }
-
-  add(selector, value) {
-    this.list.push({ s: selector, v: value });
-    return "";
-  }
-
-  resolve() {
-    for (let element of this.list) {
-      SetInnerHtml($(element.s), element.v);
-    }
-  }
-}
-
-function HandleHDStateUpdateMessage(message) {
-  const deltaIdx = message["delta_index"];
-  const deltas = message["delta"];
-
-  if (deltaIdx < maxAppliedDeltaIdx) {
-    throw Error(
-      `Received out of order delta ${deltaIdx} (applied: ${maxAppliedDeltaIdx})`,
-    );
-  }
-  // The server numbers deltas one by one: a gap means one was missed and the
-  // state would silently stay wrong
-  if (maxAppliedDeltaIdx >= 0 && deltaIdx > maxAppliedDeltaIdx + 1) {
-    throw Error(
-      `Missed deltas before ${deltaIdx} (applied: ${maxAppliedDeltaIdx})`,
-    );
-  }
-
-  // it's fine if this doesn't fire because we threw an exception, because
-  // that means state wasn't applied and we've requested new program state.
-  DispatchUpdate(applyDeltas(data, deltas));
-  maxAppliedDeltaIdx = deltaIdx;
-}
-
-function HDHasOwn(obj, key) {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-}
-
-/**
- * Takes a single delta operation and applies it to data, copying the objects
- * along its path that aren't in copied yet (and adding the copies to it).
- *
- * @param {Object} data
- * @param {Delta} delta
- * @param {Set<Object>} copied
- */
-function applyDelta(data, delta, copied) {
-  const pathPieces = delta.path;
-  /** @type {DeltaOpType} */ const deltaOp = delta.action;
-  const newValue = delta.value;
-  const lastPiece = pathPieces[pathPieces.length - 1];
-
-  let currentData = data;
-  for (let i = 0; i < pathPieces.length - 1; i += 1) {
-    const key = pathPieces[i];
-    let next = currentData[key];
-    if (!HDHasOwn(currentData, key)) {
-      next = {};
-      copied.add(next);
-    } else if (next !== null && typeof next === "object" && !copied.has(next)) {
-      next = Array.isArray(next) ? next.slice() : { ...next };
-      copied.add(next);
-    }
-    currentData[key] = next;
-    currentData = next;
-  }
-
-  if (deltaOp === "dictionary_item_removed") {
-    if (HDHasOwn(currentData, lastPiece)) {
-      delete currentData[lastPiece];
-    } else {
-      console.warn(`Couldn't find data to delete for path: ${pathPieces}`);
-    }
-  } else {
-    currentData[lastPiece] = newValue;
-  }
-}
-
-/**
- * Returns data with the deltas applied, leaving data as it was: only the
- * objects on the changed paths are copied, the rest is shared with it.
- * Much cheaper than deep-cloning the whole state for oldData each time.
- *
- * @param {Object} data
- * @param {Delta[]} deltas python deep-diff delta object.
- */
-function applyDeltas(data, deltas) {
-  const result = { ...data };
-  const copied = new Set([result]);
-  for (let delta of deltas) {
-    applyDelta(result, delta, copied);
-  }
-
-  return result;
-}
-
-// taken from https://github.com/Readek/RoA-Stream-Tool/blob/master/Stream%20Tool/Resources/Scripts/Utils/On%20Transition%20Event.mjs
-
-/**
- * Starts an event listener fired every time browser becomes "active"
- * @param {() => {void}} hide - hideElements() function
- * @param {() => {void}} show - showElements() function
- */
-function initOnBrowserActive(hide, show) {
-  // if browser is on OBS
-  if (window.obsstudio) {
-    // every time the browser source becomes active
-    window.addEventListener("obsSourceActiveChanged", (event) => {
-      if (event.detail.active) {
-        // when its show time
-        show();
-      } else {
-        // when browser goes to the backstage
-        hide();
+  // The state with the deltas applied, leaving the state as it was: only
+  // the objects on the changed paths are copied, the rest is shared
+  function applyDeltas(state, deltas) {
+    const root = { ...state };
+    const copied = new Set([root]);
+    const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+    for (const { path, action, value } of deltas) {
+      let node = root;
+      for (const key of path.slice(0, -1)) {
+        let next = node[key];
+        if (!own(node, key) || next === null || typeof next !== "object") {
+          next = {};
+        } else if (!copied.has(next)) {
+          next = Array.isArray(next) ? next.slice() : { ...next };
+        }
+        copied.add(next);
+        node[key] = next;
+        node = next;
       }
-    });
-  } else {
-    // this is here for regular browsers for better developer experiece
-    // this will trigger every time the browser goes out of view (or back to view)
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        // if lights go out
-        hide();
-      } else {
-        // when the user comes back
-        show();
-      }
-    });
+      const last = path[path.length - 1];
+      if (action === "dictionary_item_removed") delete node[last];
+      else node[last] = value;
+    }
+    return root;
   }
-}
+  HD.applyDeltas = applyDeltas;
 
-/** Determines if the browser view is currently active/visible */
-function isBrowserActive() {
-  if (window.obsstudio) {
-    return true; // theres no way to get active state without the event listener :(
-  } else {
-    // visibilityState is a string: "hidden" would be truthy too
-    return document.visibilityState === "visible";
-  }
-}
+  // The dev harness (layout/dev.html) sends states to the layout it shows
+  window.addEventListener("message", (e) => {
+    if (e.source !== window.parent || !e.data || e.data.type !== "hd_state") return;
+    devMode = true;
+    receive(e.data.state);
+  });
+
+  // ---------------------------------------------------------------------
+  // Boot
+
+  let booted = false;
+
+  // def: { settings, theme, intro(tl, s), outro(s), start(s), update(s) }
+  HD.layout = async (layout) => {
+    if (def) throw new Error("HD.layout() called twice");
+    def = layout;
+
+    await libraries;
+    await new Promise((resolve) => $(resolve));
+    gsap.config({ nullTargetWarn: false, trialWarn: false });
+    // Frozen until the first show, so nothing plays before the intro
+    gsap.globalTimeline.timeScale(0);
+    await loadSettings();
+    HD.settings = resolveSettings(current);
+    if (HD.settings.automatic_theme) logoColors();
+    if (def.init) await def.init(HD.settings);
+
+    booted = true;
+    console.log("== Init complete ==");
+
+    onBecameActive(async () => {
+      await poll();
+      // Turned off in Display Controls: stays hidden
+      if (display.started && display.shown) runStart();
+    });
+
+    if (location.protocol === "file:" || location.host === "absolute") startPolling();
+    else connectSocket();
+    if (current !== EMPTY) schedule();
+  };
+})();
