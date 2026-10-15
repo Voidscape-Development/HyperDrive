@@ -122,17 +122,24 @@ class Worker(QRunnable):
         except Exception as e:
             logger.error(traceback.format_exc())
             exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
+            self._Emit("error", (exctype, value, traceback.format_exc()))
         else:
             # Return the result of the processing
-            self.signals.result.emit(self.result)
+            self._Emit("result", self.result)
         finally:
-            if self.signals.finished:
-                self.signals.finished.emit()  # Done
+            self._Emit("finished")  # Done
 
             # self.completed is guaranteed to not cause a race condition self.result if checked first.
             self.completed = True
             self.done_event.set()
+
+    def _Emit(self, name, *args):
+        try:
+            getattr(self.signals, name).emit(*args)
+        except RuntimeError:
+            # The application quit while this ran and deleted the signals:
+            # nobody is listening, and raising here would abort the process
+            pass
 
     def cancel(self):
         """
