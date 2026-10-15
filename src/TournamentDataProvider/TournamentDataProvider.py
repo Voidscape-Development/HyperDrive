@@ -74,6 +74,9 @@ class TournamentDataProvider(QObject):
         self.tournamentData = {}
         self.threadpool = threadpool
         self.videogame = None
+        # The game GetTournamentData found, for the manager to load (None
+        # when it found none)
+        self.videogameFound = None
         self.dataManager = dataManager
 
     # =====================================================

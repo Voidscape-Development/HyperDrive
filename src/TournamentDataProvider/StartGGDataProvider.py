@@ -260,7 +260,7 @@ class StartGGDataProvider(TournamentDataProvider):
             videogame = deep_get(data, "data.event.videogame.id", None)
             if videogame:
                 self.videogame = videogame
-                self.dataManager.signals.game_changed.emit(videogame)
+                self.videogameFound = videogame
 
             finalData["tournamentName"] = deep_get(data, "data.event.tournament.name", "")
             finalData["eventName"] = deep_get(data, "data.event.name", "")

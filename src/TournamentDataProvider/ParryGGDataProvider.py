@@ -798,7 +798,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             videogame = event_data.game.slug
             if videogame:
                 self.videogame = videogame
-                self.dataManager.signals.game_changed.emit(videogame)
+                self.videogameFound = videogame
 
         except Exception as e:
             logger.error(f"Error extracting tournament data: {e}")

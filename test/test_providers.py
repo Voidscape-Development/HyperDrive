@@ -120,8 +120,13 @@ class FakeProvider(TournamentDataProvider):
         self.url = url.replace("/short/", "/event/")
         return self.url
 
+    # The game GetTournamentData finds, None for none
+    game = None
+
     def GetTournamentData(self, progress_callback=None, cancel_event=None):
-        return {}
+        if FakeProvider.game:
+            self.videogame = self.videogameFound = FakeProvider.game
+        return {"tournamentName": "T"}
 
     def GetTournamentPhases(self, progress_callback=None, cancel_event=None):
         return []
@@ -221,8 +226,42 @@ def TestGameFromProvider():
         Providers.PROVIDERS[:] = [StartGGDataProvider, ParryGGDataProvider]
 
 
+def TestGameChanged():
+    """The manager says the event's game changed, before its data"""
+    Providers.PROVIDERS[:] = [FakeNoKey, FakeWithKey]
+    manager = TournamentDataManager.instance
+    events = []
+
+    def onGame(game):
+        events.append(("game", game))
+
+    def onData(data):
+        events.append(("data", data.get("tournamentName")))
+
+    manager.signals.game_changed.connect(onGame)
+    manager.signals.tournament_data_updated.connect(onData)
+    try:
+        for game, expected in [(1386, [("game", 1386), ("data", "T")]), (None, [("data", "T")])]:
+            FakeProvider.game = game
+            LoadEvent("here", "https://nokey.gg/e", {})
+            events.clear()
+            manager.GetTournamentData()
+            assert events == expected, (game, events)
+    finally:
+        FakeProvider.game = None
+        manager.signals.game_changed.disconnect(onGame)
+        manager.signals.tournament_data_updated.disconnect(onData)
+        Providers.PROVIDERS[:] = [StartGGDataProvider, ParryGGDataProvider]
+
+
 if __name__ == "__main__":
-    for test in [TestProviderClassFor, TestDeclarations, TestLoadingAnEvent, TestGameFromProvider]:
+    for test in [
+        TestProviderClassFor,
+        TestDeclarations,
+        TestLoadingAnEvent,
+        TestGameFromProvider,
+        TestGameChanged,
+    ]:
         test()
         print(f"{test.__name__}: OK")
     print("All provider checks passed")

@@ -225,13 +225,23 @@ class TournamentDataManager(QObject):
             SettingsManager.Set("twitch_username", input_dialog.textValue())
 
     def GetTournamentData(self, initialLoading=False):
-        worker = Worker(self.provider.GetTournamentData)
-        worker.signals.result.connect(
-            lambda tournamentData: [
-                tournamentData.update({"initial_load": initialLoading}),
-                TournamentDataManager.instance.signals.tournament_data_updated.emit(tournamentData),
-            ]
-        )
+        provider = self.provider
+
+        def fetch(progress_callback=None, cancel_event=None):
+            provider.videogameFound = None
+            data = provider.GetTournamentData()
+            return data, provider.videogameFound
+
+        def loaded(result):
+            tournamentData, videogame = result
+            # The event's game first, as the layouts' game comes with it
+            if videogame:
+                self.signals.game_changed.emit(videogame)
+            tournamentData.update({"initial_load": initialLoading})
+            TournamentDataManager.instance.signals.tournament_data_updated.emit(tournamentData)
+
+        worker = Worker(fetch)
+        worker.signals.result.connect(loaded)
         self.threadPool.start(worker)
 
     def RepullEntrants(self):
