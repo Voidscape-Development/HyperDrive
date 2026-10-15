@@ -53,6 +53,9 @@ class DisplayControls:
                 self.groupValues[name] = v is not False
         self.Export()
 
+    # =====================================================
+    # STATE
+    # =====================================================
     def State(self):
         return BuildState(self.folders, self.folderValues, self.groupValues)
 
@@ -75,6 +78,9 @@ class DisplayControls:
         StateManager.Set("display", self.State())
         DisplayControls.signals.changed.emit()
 
+    # =====================================================
+    # SHOWING AND HIDING
+    # =====================================================
     def Set(self, kind, name, action):
         """Shows, hides or toggles a folder or group. Returns its name and
         whether it's shown, or an error code."""
@@ -134,6 +140,9 @@ class DisplayControls:
         self._Save()
         return {"kind": "all", "shown": shown}
 
+    # =====================================================
+    # GROUPS
+    # =====================================================
     def AddGroups(self, groups):
         """Adds the groups a layout uses (shown) if they aren't known yet."""
         added = False
@@ -227,6 +236,9 @@ class DisplayControlsWidget(QDockWidget):
         DisplayControls.signals.changed.connect(self.Update)
         self.Update()
 
+    # =====================================================
+    # LIST
+    # =====================================================
     def Update(self):
         controls = DisplayControls.instance
         if controls is None:
@@ -276,6 +288,9 @@ class DisplayControlsWidget(QDockWidget):
         shown = item.checkState(0) == Qt.CheckState.Checked
         DisplayControls.instance.Set(kind, item.text(0), ACTION_SHOW if shown else ACTION_HIDE)
 
+    # =====================================================
+    # GROUPS
+    # =====================================================
     def AddGroup(self):
         name = NormalizeGroupName(self.groupName.text())
         if name:

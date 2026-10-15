@@ -171,6 +171,9 @@ class PredictionManager:
         self.lastError = ""
         self.lock = threading.Lock()
 
+    # =====================================================
+    # STATE
+    # =====================================================
     def Enabled(self):
         return bool(self.settings("enabled", False))
 
@@ -179,6 +182,9 @@ class PredictionManager:
             prediction = dict(self.prediction) if self.prediction else None
         return {"enabled": self.Enabled(), "prediction": prediction, "error": self.lastError}
 
+    # =====================================================
+    # API
+    # =====================================================
     def _Api(self):
         api = self.api_factory()
         # A new token means a new API client
@@ -201,8 +207,10 @@ class PredictionManager:
 
         self.executor.submit(Task)
 
+    # =====================================================
+    # SET EVENTS
+    # =====================================================
     # From the scoreboard
-
     def SetLoaded(self, setId, team1, team2, roundName=""):
         """A set was loaded on the scoreboard: the open prediction of
         another set is cancelled and one is opened for this one."""
@@ -219,8 +227,10 @@ class PredictionManager:
             return
         self._Run(self._Finish, setId, winnerTeam)
 
+    # =====================================================
+    # CONTROLS
+    # =====================================================
     # By hand
-
     def Start(self, setId, team1, team2, roundName=""):
         self._Run(self._Start, setId, team1, team2, roundName)
 
@@ -233,8 +243,10 @@ class PredictionManager:
     def Cancel(self):
         self._Run(self._End, STATUS_CANCELED, None)
 
+    # =====================================================
+    # PREDICTIONS
+    # =====================================================
     # On the background thread
-
     def _Open(self):
         with self.lock:
             p = self.prediction
@@ -328,6 +340,9 @@ class TwitchPredictionsHook:
             self.Connect(n)
         TwitchPredictionsHook.instance = self
 
+    # =====================================================
+    # SCOREBOARD
+    # =====================================================
     def Scoreboard(self):
         try:
             return int(self.Setting("scoreboard", 1) or 1)
@@ -362,6 +377,9 @@ class TwitchPredictionsHook:
             names.append(name)
         return names
 
+    # =====================================================
+    # SET EVENTS
+    # =====================================================
     def SetLoaded(self, number):
         if number != self.Scoreboard() or not self.manager.Enabled():
             return

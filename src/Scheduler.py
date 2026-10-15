@@ -64,6 +64,9 @@ class Scheduler(QObject):
         # Created on first use, once the QApplication exists
         self.tickTimer: QTimer = None
 
+    # =====================================================
+    # JOBS
+    # =====================================================
     def Register(self, name, callback, interval_ms, min_interval_ms=0, group=None):
         self.Unregister(name)
         job = ScheduledJob(name, callback, interval_ms, min_interval_ms, group)
@@ -101,6 +104,9 @@ class Scheduler(QObject):
     def TriggerNow(self, name):
         self._Run(self.jobs[name])
 
+    # =====================================================
+    # INTERVALS
+    # =====================================================
     def SetInterval(self, name, interval_ms):
         job = self.jobs[name]
         job.interval_ms = max(interval_ms, job.min_interval_ms)
@@ -113,6 +119,9 @@ class Scheduler(QObject):
             if job.group == group:
                 self.SetInterval(name, interval_ms)
 
+    # =====================================================
+    # STATUS
+    # =====================================================
     def IsEnabled(self, name):
         return self.jobs[name].enabled
 
@@ -126,6 +135,9 @@ class Scheduler(QObject):
             return None
         return max(0, job.timer.remainingTime())
 
+    # =====================================================
+    # RUNNING JOBS
+    # =====================================================
     def _Run(self, job: ScheduledJob):
         if job.running:
             logger.debug(f"Scheduler: {job.name} is still running, running again once done")

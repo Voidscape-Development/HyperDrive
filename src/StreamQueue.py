@@ -75,8 +75,10 @@ class StreamQueueModel:
         self.afterSet = AFTER_SET_ASK
         self.lastUpdated = None
 
+    # =====================================================
+    # STREAMS
+    # =====================================================
     # Streams
-
     def GetStream(self, name) -> StreamConfig:
         lname = str(name or "").lower()
         return next((s for s in self.streams if s.name.lower() == lname), None)
@@ -109,12 +111,24 @@ class StreamQueueModel:
         j = max(0, min(len(self.streams) - 1, i + offset))
         self.streams.insert(j, self.streams.pop(i))
 
+    def StreamOfScoreboard(self, scoreboard):
+        return next(
+            (
+                s
+                for s in self.streams
+                if s.scoreboard is not None and str(s.scoreboard) == str(scoreboard)
+            ),
+            None,
+        )
+
+    # =====================================================
+    # START.GG QUEUES
+    # =====================================================
     def _ProviderStreamName(self, name):
         lname = str(name or "").lower()
         return next((n for n in self.providerQueues if n.lower() == lname), None)
 
     # start.gg data
-
     def SetProviderQueues(self, queues):
         """start.gg's stream queue: {stream name: [set data] or {"1": set}}."""
         result = {}
@@ -160,8 +174,10 @@ class StreamQueueModel:
                 else:
                     entry["set"] = fresh
 
+    # =====================================================
+    # QUEUE
+    # =====================================================
     # Queues
-
     def Queue(self, name):
         """The stream's queue: [{"key", "source", "set"}], next set first."""
         config = self.GetStream(name)
@@ -195,6 +211,40 @@ class StreamQueueModel:
         order += [k for k in providerOrder + addedOrder if k not in placed]
         return [entries[k] for k in order]
 
+    def NextEntry(self, name, currentSetId=None):
+        """The set to show after `currentSetId` on this stream."""
+        currentKey = SetKey(currentSetId) if currentSetId is not None else None
+        for entry in self.Queue(name):
+            if entry["key"] == currentKey:
+                continue
+            if (entry.get("set") or {}).get("state") == STATE_COMPLETED:
+                continue
+            return entry
+        return None
+
+    def Estimates(self, name, currentSetId=None, durations=None, now=None):
+        """(eta, minutes from now) of each set of the stream's queue, in
+        order, see SetDurations.EstimateStarts. The set on the stream's
+        scoreboard (`currentSetId`) is being played, even if start.gg
+        doesn't know yet."""
+        currentKey = SetKey(currentSetId) if currentSetId is not None else None
+        sets = []
+        for entry in self.Queue(name):
+            data = entry.get("set") or {}
+            if entry["key"] == currentKey and data.get("state") != STATE_COMPLETED:
+                data = dict(data, state=2)
+            sets.append(data)
+        return EstimateStarts(sets, durations, now)
+
+    def SetFinished(self, setId):
+        """A set is over: it leaves every queue it was added to by hand."""
+        key = SetKey(setId)
+        for config in self.streams:
+            self._Drop(config, key)
+
+    # =====================================================
+    # EDITING THE QUEUE
+    # =====================================================
     def Move(self, name, key, offset):
         config = self.GetStream(name)
         if config is None:
@@ -303,49 +353,10 @@ class StreamQueueModel:
         config.hidden = []
         config.added = []
 
-    def SetFinished(self, setId):
-        """A set is over: it leaves every queue it was added to by hand."""
-        key = SetKey(setId)
-        for config in self.streams:
-            self._Drop(config, key)
-
-    def NextEntry(self, name, currentSetId=None):
-        """The set to show after `currentSetId` on this stream."""
-        currentKey = SetKey(currentSetId) if currentSetId is not None else None
-        for entry in self.Queue(name):
-            if entry["key"] == currentKey:
-                continue
-            if (entry.get("set") or {}).get("state") == STATE_COMPLETED:
-                continue
-            return entry
-        return None
-
-    def Estimates(self, name, currentSetId=None, durations=None, now=None):
-        """(eta, minutes from now) of each set of the stream's queue, in
-        order, see SetDurations.EstimateStarts. The set on the stream's
-        scoreboard (`currentSetId`) is being played, even if start.gg
-        doesn't know yet."""
-        currentKey = SetKey(currentSetId) if currentSetId is not None else None
-        sets = []
-        for entry in self.Queue(name):
-            data = entry.get("set") or {}
-            if entry["key"] == currentKey and data.get("state") != STATE_COMPLETED:
-                data = dict(data, state=2)
-            sets.append(data)
-        return EstimateStarts(sets, durations, now)
-
-    def StreamOfScoreboard(self, scoreboard):
-        return next(
-            (
-                s
-                for s in self.streams
-                if s.scoreboard is not None and str(s.scoreboard) == str(scoreboard)
-            ),
-            None,
-        )
-
+    # =====================================================
+    # SAVING AND EXPORT
+    # =====================================================
     # Saving and exporting
-
     def ToDict(self):
         return {
             "streams": [s.ToDict() for s in self.streams],

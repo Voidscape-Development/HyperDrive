@@ -259,6 +259,9 @@ class StreamQueueTab(QWidget):
 
         self.updating = False
 
+    # =====================================================
+    # SELECTION
+    # =====================================================
     def Config(self):
         return self.owner.model.GetStream(self.name)
 
@@ -266,6 +269,17 @@ class StreamQueueTab(QWidget):
         item = self.tree.currentItem()
         return item.data(0, Qt.ItemDataRole.UserRole) if item else None
 
+    def SelectedSetId(self):
+        """start.gg id of the selected set, or None for a set typed in by hand."""
+        key = self.SelectedKey()
+        entry = next((e for e in self.owner.model.Queue(self.name) if e["key"] == key), None)
+        if entry is None or entry.get("source") == SOURCE_CUSTOM:
+            return None
+        return (entry.get("set") or {}).get("id")
+
+    # =====================================================
+    # REFRESHING
+    # =====================================================
     def Refresh(self):
         config = self.Config()
         if config is None:
@@ -337,6 +351,9 @@ class StreamQueueTab(QWidget):
         config.scoreboard = number
         self.owner.Changed()
 
+    # =====================================================
+    # EDITING THE QUEUE
+    # =====================================================
     def RowsMoved(self, *args):
         if self.updating:
             return
@@ -375,32 +392,6 @@ class StreamQueueTab(QWidget):
             self.owner.model.ResetOrder(self.name)
             self.owner.Changed()
 
-    def LoadSelected(self):
-        key = self.SelectedKey()
-        entry = next((e for e in self.owner.model.Queue(self.name) if e["key"] == key), None)
-        if entry is None:
-            return
-        config = self.Config()
-        number = config.scoreboard if config else None
-        if number is None:
-            numbers = ScoreboardManager.instance.GetScoreboardNumbers()
-            if len(numbers) == 1:
-                number = numbers[0]
-            else:
-                names = [ScoreboardManager.instance.GetTabName(n) for n in numbers]
-                name, ok = QInputDialog.getItem(
-                    self,
-                    QApplication.translate("app", "Load into scoreboard"),
-                    QApplication.translate("app", "Scoreboard"),
-                    names,
-                    0,
-                    False,
-                )
-                if not ok:
-                    return
-                number = numbers[names.index(name)]
-        self.owner.LoadEntry(entry, number)
-
     def AddStartggSet(self):
         dialog = AddStartggSetDialog(self, self.owner.threadPool)
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -436,6 +427,38 @@ class StreamQueueTab(QWidget):
             )
             self.owner.Changed()
 
+    # =====================================================
+    # LOADING SETS
+    # =====================================================
+    def LoadSelected(self):
+        key = self.SelectedKey()
+        entry = next((e for e in self.owner.model.Queue(self.name) if e["key"] == key), None)
+        if entry is None:
+            return
+        config = self.Config()
+        number = config.scoreboard if config else None
+        if number is None:
+            numbers = ScoreboardManager.instance.GetScoreboardNumbers()
+            if len(numbers) == 1:
+                number = numbers[0]
+            else:
+                names = [ScoreboardManager.instance.GetTabName(n) for n in numbers]
+                name, ok = QInputDialog.getItem(
+                    self,
+                    QApplication.translate("app", "Load into scoreboard"),
+                    QApplication.translate("app", "Scoreboard"),
+                    names,
+                    0,
+                    False,
+                )
+                if not ok:
+                    return
+                number = numbers[names.index(name)]
+        self.owner.LoadEntry(entry, number)
+
+    # =====================================================
+    # CONTEXT MENU
+    # =====================================================
     def ContextMenu(self, pos):
         item = self.tree.itemAt(pos)
         if item is None:
@@ -453,14 +476,6 @@ class StreamQueueTab(QWidget):
         menu.addAction(QApplication.translate("app", "Remove"), self.RemoveSelected)
         self.AddStartggActions(menu)
         menu.exec(self.tree.viewport().mapToGlobal(pos))
-
-    def SelectedSetId(self):
-        """start.gg id of the selected set, or None for a set typed in by hand."""
-        key = self.SelectedKey()
-        entry = next((e for e in self.owner.model.Queue(self.name) if e["key"] == key), None)
-        if entry is None or entry.get("source") == SOURCE_CUSTOM:
-            return None
-        return (entry.get("set") or {}).get("id")
 
     def AddStartggActions(self, menu):
         """Calling the set, or assigning it to this stream or a station, on
@@ -634,8 +649,10 @@ class StreamQueueWidget(QDockWidget):
         self.UpdateTabs()
         self.Export()
 
+    # =====================================================
+    # SETTINGS
+    # =====================================================
     # Updating from start.gg
-
     def TournamentChanged(self):
         self.durations = {}
         self.durationsUpdated = 0
@@ -656,6 +673,19 @@ class StreamQueueWidget(QDockWidget):
         SettingsManager.Set("stream_queue_options.interval", value)
         Scheduler.instance.SetInterval(JOB_NAME, value * 1000)
 
+    def AutoAddChanged(self, checked):
+        self.model.autoAddStreams = checked
+        if checked:
+            self.model.SetProviderQueues(self.model.providerQueues)
+        self.Changed()
+
+    def AfterSetChanged(self):
+        self.model.afterSet = self.afterSet.currentData()
+        self.Changed()
+
+    # =====================================================
+    # REFRESHING
+    # =====================================================
     def Refresh(self):
         if TournamentDataManager.instance.provider is None:
             return
@@ -715,8 +745,10 @@ class StreamQueueWidget(QDockWidget):
             parts.append(QApplication.translate("app", "Updating..."))
         self.statusLabel.setText(" · ".join(parts))
 
+    # =====================================================
+    # START.GG STREAMS AND STATIONS
+    # =====================================================
     # start.gg's streams and stations
-
     def LoadStreamsStations(self):
         provider = TournamentDataManager.instance.provider
         if provider is None:
@@ -767,8 +799,10 @@ class StreamQueueWidget(QDockWidget):
 
         StartGGReporter.instance.RunAction(kind, setId, variables, Done)
 
+    # =====================================================
+    # TABS
+    # =====================================================
     # Tabs
-
     def UpdateTabs(self):
         names = [s.name for s in self.model.streams]
         # Remove tabs of streams that are gone
@@ -836,18 +870,10 @@ class StreamQueueWidget(QDockWidget):
             self.Changed()
             self.tabWidget.setCurrentWidget(self.tabs.get(self.model.GetStream(name.strip()).name))
 
-    def AutoAddChanged(self, checked):
-        self.model.autoAddStreams = checked
-        if checked:
-            self.model.SetProviderQueues(self.model.providerQueues)
-        self.Changed()
-
-    def AfterSetChanged(self):
-        self.model.afterSet = self.afterSet.currentData()
-        self.Changed()
-
+    # =====================================================
+    # SCOREBOARDS
+    # =====================================================
     # Scoreboards
-
     def ScoreboardsChanged(self, number=None):
         if number is not None:
             scoreboard = ScoreboardManager.instance.GetScoreboard(number)
@@ -935,8 +961,10 @@ class StreamQueueWidget(QDockWidget):
             # Not from inside the signal that reported it
             QTimer.singleShot(0, lambda: self.LoadNext(config.name, ask=True))
 
+    # =====================================================
+    # EXPORTS
+    # =====================================================
     # Saving and exporting
-
     def Changed(self, save=True):
         if save:
             SettingsManager.Set("stream_queue", self.model.ToDict())
