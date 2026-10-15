@@ -1432,34 +1432,23 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return data
 
-    def GetMatchAndInsertInList(self, setId, list, i, progress_callback, cancel_event):
-        set = self.GetFutureMatch(setId, None)
-
-        if set:
-            list[i] = set
-
     def GetFutureMatchesList(self, setsId, progress_callback, cancel_event):
-        sets = []
-        pool = self.getStationMatchesThreadPool
-        i = 0
-        workers = []
-        for set in setsId:
-            sets.append(None)
-            worker = Worker(
-                self.GetMatchAndInsertInList, **{"setId": set.get("id"), "list": sets, "i": i}
-            )
-            workers.append(worker)
-            pool.start(worker)
+        """The future-set data of each set, {"1": set, "2": ...} in the same
+        order, None for a set that couldn't be fetched"""
 
-            i += 1
+        def fetch(set):
+            try:
+                return self.GetFutureMatch(set.get("id")) or None
+            except Exception:
+                logger.error(traceback.format_exc())
+                return None
 
-        Worker.wait_for_all(workers, self._request_timeout_secs)
-
-        sets_ = {}
-        for index, set in enumerate(sets):
-            sets_[str(index + 1)] = set
-
-        return sets_
+        if not setsId:
+            return {}
+        # Fetched in parallel; map keeps them in order
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            sets = list(executor.map(fetch, setsId))
+        return {str(index + 1): set for index, set in enumerate(sets)}
 
     # =====================================================
     # STREAMS AND STATIONS
