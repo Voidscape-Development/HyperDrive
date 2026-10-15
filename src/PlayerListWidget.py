@@ -34,6 +34,9 @@ class PlayerListWidget(QDockWidget):
             super().__init__(*args)
             self.SetupUi(base)
 
+    # =====================================================
+    # SETUP
+    # =====================================================
     def SetupUi(self, base):
         self.signals = PlayerListWidgetSignals()
 
@@ -131,6 +134,30 @@ class PlayerListWidget(QDockWidget):
 
         GameAssetManager.instance.signals.onLoad.connect(self.SetDefaultsFromAssets)
 
+    def SetDefaultsFromAssets(self):
+        if StateManager.Get("game.defaults"):
+            players, characters = (
+                StateManager.Get("game.defaults.players_per_team", 1),
+                StateManager.Get("game.defaults.characters_per_player", 1),
+            )
+        else:
+            players, characters = 1, 1
+
+        # The spin boxes show the new sizes; the slots are resized a few at a
+        # time, so loading a game doesn't freeze the window
+        for spin, value in [(self.playerPerTeam, players), (self.charNumber, characters)]:
+            spin.blockSignals(True)
+            spin.setValue(value)
+            spin.blockSignals(False)
+        if (
+            self.playerList.playersPerTeam != players
+            or self.playerList.charactersPerPlayer != characters
+        ):
+            self.playerList.SetSizesGradually(players, characters)
+
+    # =====================================================
+    # STANDINGS
+    # =====================================================
     def LoadFromStandingsClicked(self):
         if TournamentDataManager.instance.provider is None:
             return
@@ -143,6 +170,18 @@ class PlayerListWidget(QDockWidget):
             on_finished=self.StandingsFinished,
         )
 
+    def LoadFromStandings(self, data):
+        if not data:
+            return
+        with StateManager.SaveBlock():
+            # Keep the spin boxes in step with what the list is set to
+            self.playerPerTeam.setValue(len(data[0].get("players") or []))
+            self.slotNumber.setValue(len(data))
+            # Provider lookups for missing details (e.g. mains) happen in the
+            # background instead of one network request per player here on
+            # the UI thread
+            self.playerList.LoadFromStandings(data, enrichBlocking=False)
+
     def StandingsProgress(self, done, total):
         self.loadFromStandingsBt.setText(
             QApplication.translate("app", "Loading standings...") + f" {done}/{total}"
@@ -152,6 +191,9 @@ class PlayerListWidget(QDockWidget):
         self.loadFromStandingsBt.setEnabled(True)
         self.loadFromStandingsBt.setText(QApplication.translate("app", "Load tournament standings"))
 
+    # =====================================================
+    # ALT TEXT
+    # =====================================================
     def AltTextWindow(self):
         options = load_options()
         try:
@@ -275,36 +317,3 @@ class PlayerListWidget(QDockWidget):
 
         messagebox.exec()
         save_options(options)
-
-    def LoadFromStandings(self, data):
-        if not data:
-            return
-        with StateManager.SaveBlock():
-            # Keep the spin boxes in step with what the list is set to
-            self.playerPerTeam.setValue(len(data[0].get("players") or []))
-            self.slotNumber.setValue(len(data))
-            # Provider lookups for missing details (e.g. mains) happen in the
-            # background instead of one network request per player here on
-            # the UI thread
-            self.playerList.LoadFromStandings(data, enrichBlocking=False)
-
-    def SetDefaultsFromAssets(self):
-        if StateManager.Get("game.defaults"):
-            players, characters = (
-                StateManager.Get("game.defaults.players_per_team", 1),
-                StateManager.Get("game.defaults.characters_per_player", 1),
-            )
-        else:
-            players, characters = 1, 1
-
-        # The spin boxes show the new sizes; the slots are resized a few at a
-        # time, so loading a game doesn't freeze the window
-        for spin, value in [(self.playerPerTeam, players), (self.charNumber, characters)]:
-            spin.blockSignals(True)
-            spin.setValue(value)
-            spin.blockSignals(False)
-        if (
-            self.playerList.playersPerTeam != players
-            or self.playerList.charactersPerPlayer != characters
-        ):
-            self.playerList.SetSizesGradually(players, characters)

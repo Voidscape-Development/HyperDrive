@@ -42,6 +42,9 @@ class StatsUtil:
         self.signals.last_sets_updated.connect(self.UpdateLastSets)
         self.signals.recent_sets_updated.connect(self.UpdateRecentSets)
 
+    # =====================================================
+    # RECENT SETS
+    # =====================================================
     def GetRecentSets(self):
         updated = False
         # Only if 1 player on each side
@@ -84,6 +87,9 @@ class StatsUtil:
                 },
             )
 
+    # =====================================================
+    # LAST SETS
+    # =====================================================
     def GetLastSetsP1(self):
         # Only if 1 player on each side
         if len(self.scoreboard.team1playerWidgets) == 1 and TournamentDataManager.instance:
@@ -121,6 +127,27 @@ class StatsUtil:
                 )
                 i += 1
 
+    def LastSetEntry(set: dict) -> dict:
+        """A set of a player's last sets, as in score.N.last_sets"""
+        return {
+            "phase_id": set.get("phase_id"),
+            "phase_name": set.get("phase_name"),
+            "round_name": set.get("round_name"),
+            "player_score": set.get("player1_score"),
+            "player_seed": set.get("player1_seed"),
+            "player_team": set.get("player1_team"),
+            "player_name": set.get("player1_name"),
+            "player_char": set.get("player_char", {}),
+            "oponent_score": set.get("player2_score"),
+            "oponent_seed": set.get("player2_seed"),
+            "oponent_team": set.get("player2_team"),
+            "oponent_name": set.get("player2_name"),
+            "oponent_char": set.get("oponent_char", {}),
+        }
+
+    # =====================================================
+    # PLACEMENT HISTORY
+    # =====================================================
     def GetPlayerHistoryStandingsP1(self):
         # Only if 1 player on each side
         if (
@@ -172,24 +199,6 @@ class StatsUtil:
                 )
                 i += 1
 
-    def LastSetEntry(set: dict) -> dict:
-        """A set of a player's last sets, as in score.N.last_sets"""
-        return {
-            "phase_id": set.get("phase_id"),
-            "phase_name": set.get("phase_name"),
-            "round_name": set.get("round_name"),
-            "player_score": set.get("player1_score"),
-            "player_seed": set.get("player1_seed"),
-            "player_team": set.get("player1_team"),
-            "player_name": set.get("player1_name"),
-            "player_char": set.get("player_char", {}),
-            "oponent_score": set.get("player2_score"),
-            "oponent_seed": set.get("player2_seed"),
-            "oponent_team": set.get("player2_team"),
-            "oponent_name": set.get("player2_name"),
-            "oponent_char": set.get("oponent_char", {}),
-        }
-
     def HistorySetEntry(set: dict) -> dict:
         """A placement of a player's past events, as in score.N.history_sets"""
         return {
@@ -209,6 +218,9 @@ class StatsUtil:
             "event_date_year": datetime.fromtimestamp(set.get("event_date")).strftime("%Y"),
         }
 
+    # =====================================================
+    # UPSET FACTOR
+    # =====================================================
     def GetSetUpsetFactor(self):
         if len(self.scoreboard.team1playerWidgets) == 1:
             bracket_type = StateManager.Get("score.bracket_type", "DOUBLE_ELIMINATION")
@@ -227,11 +239,14 @@ class StatsUtil:
         else:
             StateManager.Set("score.upset_factor", 0)
 
+    # Placement rounds of a seed or placement, see Helpers.SeedPerformance
+    def CalculatePlacementMath(self, bracket_type, x):
+        return PlacementRounds(bracket_type, x)
+
+    # =====================================================
+    # HELPERS
+    # =====================================================
     def _setWithDifferentKey(source, sKey, target, tKey):
         value = source.deep_get(sKey)
         if value:
             target.deep_set(tKey, value)
-
-    # Placement rounds of a seed or placement, see Helpers.SeedPerformance
-    def CalculatePlacementMath(self, bracket_type, x):
-        return PlacementRounds(bracket_type, x)

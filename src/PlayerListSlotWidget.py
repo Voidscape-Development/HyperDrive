@@ -67,12 +67,14 @@ class PlayerListSlotWidget(QGroupBox):
 
         self.playerWidgets = []
 
+    # =====================================================
+    # SIZE
+    # =====================================================
     def SetPlayersPerTeam(self, number):
         # logger.info(f"PlayerListSlotWidget#SetPlayersPerTeam({number})")
         if number != len(self.playerWidgets):
             with StateManager.SaveBlock():
                 self.DoSetPlayersPerTeam(number)
-
         # if number > 1:
         #     self.team1column.findChild(QLineEdit, "teamName").setVisible(True)
         #     self.team2column.findChild(QLineEdit, "teamName").setVisible(True)
@@ -120,16 +122,15 @@ class PlayerListSlotWidget(QGroupBox):
             StateManager.Unset(p.path)
             p.deleteLater()
 
-    def ChildDataChangedEmit(self):
-        if not self.childDataChangedLock:
-            self.signals.dataChanged.emit()
-
     def SetCharacterNumber(self, value):
         # logger.info(f"PlayerListSlotWidget#SetCharacterNumber({value})")
         with StateManager.SaveBlock():
             for pw in self.playerWidgets:
                 pw.SetCharactersPerPlayer(value)
 
+    # =====================================================
+    # TEAM DATA
+    # =====================================================
     def SetTeamData(self, data, enrichBlocking=True):
         data = data or {}
 
@@ -177,3 +178,7 @@ class PlayerListSlotWidget(QGroupBox):
             self.childDataChangedLock = False
 
         self.signals.dataChanged.emit()
+
+    def ChildDataChangedEmit(self):
+        if not self.childDataChangedLock:
+            self.signals.dataChanged.emit()

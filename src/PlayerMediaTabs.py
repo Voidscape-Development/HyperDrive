@@ -317,8 +317,10 @@ class PlayerMediaTab(QWidget):
 
         self.LoadPerson()
 
+    # =====================================================
+    # PEOPLE LIST
+    # =====================================================
     # People
-
     def showEvent(self, event):
         self.RefreshList()
         self.LoadPerson()
@@ -474,8 +476,10 @@ class PlayerMediaTab(QWidget):
             widget.setEnabled(hasName)
         self.RefreshFiles()
 
+    # =====================================================
+    # AVATAR AND SPONSOR LOGO
+    # =====================================================
     # Avatar
-
     def ChooseAvatar(self):
         path, _ = QFileDialog.getOpenFileName(
             self, QApplication.translate("app", "Choose an avatar"), "", MediaHelper.ImageFilter()
@@ -529,8 +533,10 @@ class PlayerMediaTab(QWidget):
         MediaHelper.Changed()
         self.LoadPerson()
 
+    # =====================================================
+    # CUSTOM FILES
+    # =====================================================
     # Custom data
-
     def CustomFolder(self) -> str | None:
         """The person's folder, or where it would be made"""
         team, name = self.Person()
@@ -602,60 +608,6 @@ class PlayerMediaTab(QWidget):
                 QApplication.translate("app", "Layouts get its path: {0}").format(path)
             )
             self.editorStack.setCurrentWidget(self.fileInfo)
-
-    def TextChanged(self):
-        if self.loadingText:
-            return
-        self.dirty = True
-        self.textSaveBt.setEnabled(True)
-        self.textStatus.setText(QApplication.translate("app", "Not saved"))
-
-    def SaveText(self):
-        if not self.editingFile or not self.dirty:
-            return True
-        text = self.textEdit.toPlainText()
-        if self.editingFile.lower().endswith(".json"):
-            try:
-                orjson.loads(text)
-            except orjson.JSONDecodeError as e:
-                self.textStatus.setText(
-                    QApplication.translate("app", "Not valid JSON: {0}").format(e)
-                )
-                self.textStatus.setStyleSheet("color: #f44336")
-                return False
-        try:
-            with open(self.editingFile, "w", encoding="utf-8") as f:
-                f.write(text)
-        except OSError as e:
-            ShowError(self, str(e))
-            return False
-        self.dirty = False
-        self.textSaveBt.setEnabled(False)
-        self.textStatus.setStyleSheet("")
-        self.textStatus.setText(QApplication.translate("app", "Saved"))
-        MediaHelper.Changed()
-        return True
-
-    def ConfirmDiscard(self) -> bool:
-        """Asks what to do with unsaved text. False to stay on it."""
-        if not self.dirty:
-            return True
-        answer = QMessageBox.question(
-            self,
-            QApplication.translate("app", "Unsaved changes"),
-            QApplication.translate("app", "Save the changes to {0}?").format(
-                os.path.basename(self.editingFile)
-            ),
-            QMessageBox.StandardButton.Save
-            | QMessageBox.StandardButton.Discard
-            | QMessageBox.StandardButton.Cancel,
-        )
-        if answer == QMessageBox.StandardButton.Save:
-            return self.SaveText()
-        if answer == QMessageBox.StandardButton.Discard:
-            self.dirty = False
-            return True
-        return False
 
     def AskFileName(self, title: str, default: str) -> str | None:
         name, ok = QInputDialog.getText(
@@ -758,6 +710,63 @@ class PlayerMediaTab(QWidget):
         MediaHelper.Changed()
         self.RefreshFiles()
 
+    # =====================================================
+    # TEXT EDITING
+    # =====================================================
+    def TextChanged(self):
+        if self.loadingText:
+            return
+        self.dirty = True
+        self.textSaveBt.setEnabled(True)
+        self.textStatus.setText(QApplication.translate("app", "Not saved"))
+
+    def SaveText(self):
+        if not self.editingFile or not self.dirty:
+            return True
+        text = self.textEdit.toPlainText()
+        if self.editingFile.lower().endswith(".json"):
+            try:
+                orjson.loads(text)
+            except orjson.JSONDecodeError as e:
+                self.textStatus.setText(
+                    QApplication.translate("app", "Not valid JSON: {0}").format(e)
+                )
+                self.textStatus.setStyleSheet("color: #f44336")
+                return False
+        try:
+            with open(self.editingFile, "w", encoding="utf-8") as f:
+                f.write(text)
+        except OSError as e:
+            ShowError(self, str(e))
+            return False
+        self.dirty = False
+        self.textSaveBt.setEnabled(False)
+        self.textStatus.setStyleSheet("")
+        self.textStatus.setText(QApplication.translate("app", "Saved"))
+        MediaHelper.Changed()
+        return True
+
+    def ConfirmDiscard(self) -> bool:
+        """Asks what to do with unsaved text. False to stay on it."""
+        if not self.dirty:
+            return True
+        answer = QMessageBox.question(
+            self,
+            QApplication.translate("app", "Unsaved changes"),
+            QApplication.translate("app", "Save the changes to {0}?").format(
+                os.path.basename(self.editingFile)
+            ),
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel,
+        )
+        if answer == QMessageBox.StandardButton.Save:
+            return self.SaveText()
+        if answer == QMessageBox.StandardButton.Discard:
+            self.dirty = False
+            return True
+        return False
+
 
 class LogoGridTab(QWidget):
     """The images in a logo folder (sponsor logos, team logos): add, rename
@@ -816,6 +825,9 @@ class LogoGridTab(QWidget):
 
         self.UpdateButtons()
 
+    # =====================================================
+    # LOGO LIST
+    # =====================================================
     def showEvent(self, event):
         self.Refresh()
         super().showEvent(event)
@@ -845,6 +857,9 @@ class LogoGridTab(QWidget):
         self.renameBt.setEnabled(len(selected) == 1)
         self.deleteBt.setEnabled(len(selected) > 0)
 
+    # =====================================================
+    # EDITING LOGOS
+    # =====================================================
     def AskName(self, title: str, default: str) -> str | None:
         name, ok = QInputDialog.getText(
             self,

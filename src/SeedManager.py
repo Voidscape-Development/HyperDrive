@@ -29,6 +29,9 @@ class SeedManager:
     # URL of the event the seeds were set for, "" for none
     event = ""
 
+    # =====================================================
+    # SAVING
+    # =====================================================
     @staticmethod
     def Load():
         try:
@@ -56,6 +59,9 @@ class SeedManager:
         except Exception:
             logger.error(traceback.format_exc())
 
+    # =====================================================
+    # SEEDS
+    # =====================================================
     @staticmethod
     def GetImportedSeed(tag):
         player = PlayerDB.database.get(tag)
@@ -108,6 +114,9 @@ class SeedManager:
         SeedManager.Save()
         SeedManager.signals.seed_changed.emit("")
 
+    # =====================================================
+    # EVENTS
+    # =====================================================
     @staticmethod
     def EventLoaded(url):
         """Drops the seeds set for another event. Unsetting the event keeps them."""

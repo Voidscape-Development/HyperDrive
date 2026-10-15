@@ -47,6 +47,9 @@ class PlayerDB:
     fieldnames = PLAYER_FIELDS
     saveLock = threading.Lock()
 
+    # =====================================================
+    # LOADING
+    # =====================================================
     @staticmethod
     def LoadDB():
         try:
@@ -84,6 +87,31 @@ class PlayerDB:
         # The admin page edits twitter on its own
         return SocialsHelper.Normalize(player)
 
+    @staticmethod
+    @gui_thread_sync
+    def ReloadDB():
+        """Loads the players again after the database was edited elsewhere
+        (the admin page). Fields that aren't saved are kept."""
+        try:
+            saved = PlayerDB.ReadDB()
+            for tag in list(PlayerDB.database.keys()):
+                if tag not in saved:
+                    del PlayerDB.database[tag]
+            for tag, player in saved.items():
+                entry = PlayerDB.database.get(tag)
+                if entry is None:
+                    PlayerDB.database[tag] = player
+                else:
+                    for field in PlayerDB.fieldnames:
+                        entry.pop(field, None)
+                    entry.update(player)
+            PlayerDB.SetupModel()
+        except Exception:
+            logger.error(traceback.format_exc())
+
+    # =====================================================
+    # IMPORT AND EXPORT
+    # =====================================================
     @staticmethod
     def MigrateLegacyFiles():
         """Imports local_players.json (or the older local_players.csv) into an
@@ -169,28 +197,9 @@ class PlayerDB:
                 orjson.dumps(player_list, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS)
             )
 
-    @staticmethod
-    @gui_thread_sync
-    def ReloadDB():
-        """Loads the players again after the database was edited elsewhere
-        (the admin page). Fields that aren't saved are kept."""
-        try:
-            saved = PlayerDB.ReadDB()
-            for tag in list(PlayerDB.database.keys()):
-                if tag not in saved:
-                    del PlayerDB.database[tag]
-            for tag, player in saved.items():
-                entry = PlayerDB.database.get(tag)
-                if entry is None:
-                    PlayerDB.database[tag] = player
-                else:
-                    for field in PlayerDB.fieldnames:
-                        entry.pop(field, None)
-                    entry.update(player)
-            PlayerDB.SetupModel()
-        except Exception:
-            logger.error(traceback.format_exc())
-
+    # =====================================================
+    # EDITING PLAYERS
+    # =====================================================
     @staticmethod
     def AddPlayers(players, overwrite=False):
         logger.info(f"Adding players to DB: {len(players)}")
@@ -261,19 +270,6 @@ class PlayerDB:
         PlayerDB.SetupModel()
 
     @staticmethod
-    def DeletePlayer(tag):
-        if tag in PlayerDB.database:
-            del PlayerDB.database[tag]
-
-        PlayerDB.SaveDB()
-        PlayerDB.SetupModel()
-
-    @staticmethod
-    def GetTag(player):
-        """The key a player is saved under: prefix + gamerTag, or just gamerTag."""
-        return MakeTag(player.get("prefix"), player.get("gamerTag"))
-
-    @staticmethod
     def UpdatePlayer(oldTag, player):
         """Saves an edited player, which may have been renamed.
 
@@ -303,12 +299,28 @@ class PlayerDB:
         return newTag
 
     @staticmethod
+    def DeletePlayer(tag):
+        if tag in PlayerDB.database:
+            del PlayerDB.database[tag]
+
+        PlayerDB.SaveDB()
+        PlayerDB.SetupModel()
+
+    @staticmethod
     def DeletePlayers(tags):
         for tag in tags:
             PlayerDB.database.pop(tag, None)
 
         PlayerDB.SaveDB()
         PlayerDB.SetupModel()
+
+    # =====================================================
+    # LOOKUPS
+    # =====================================================
+    @staticmethod
+    def GetTag(player):
+        """The key a player is saved under: prefix + gamerTag, or just gamerTag."""
+        return MakeTag(player.get("prefix"), player.get("gamerTag"))
 
     @staticmethod
     def GetPlayer(tag):
@@ -323,6 +335,9 @@ class PlayerDB:
                 return player_db
         return None
 
+    # =====================================================
+    # MODEL
+    # =====================================================
     @staticmethod
     @gui_thread_sync
     def SetupModel():
@@ -443,6 +458,9 @@ class PlayerDB:
 
             PlayerDB.signals.db_updated.emit()
 
+    # =====================================================
+    # SAVING
+    # =====================================================
     @staticmethod
     def SaveDB():
         try:

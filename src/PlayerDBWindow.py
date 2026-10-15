@@ -286,8 +286,10 @@ class PlayersTab(QWidget):
         self.SetupCombos()
         self.LoadForm(None)
 
+    # =====================================================
+    # PLAYER LIST
+    # =====================================================
     # List
-
     def DBUpdated(self):
         if self.isVisible():
             self.RefreshList()
@@ -398,6 +400,9 @@ class PlayersTab(QWidget):
             return
         self.LoadForm(tags[0])
 
+    # =====================================================
+    # ADDING AND DELETING
+    # =====================================================
     def NewPlayer(self):
         if not self.ConfirmDiscard():
             return
@@ -425,6 +430,9 @@ class PlayersTab(QWidget):
             self.LoadForm(None)
         PlayerDB.DeletePlayers(tags)
 
+    # =====================================================
+    # IMPORT AND EXPORT
+    # =====================================================
     def ImportJSON(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
@@ -460,8 +468,10 @@ class PlayersTab(QWidget):
             logger.error(traceback.format_exc())
             QMessageBox.warning(self, QApplication.translate("app", "Export JSON"), str(e))
 
+    # =====================================================
+    # FORM
+    # =====================================================
     # Form
-
     def SetupCombos(self):
         self.loadingForm = True
         try:
@@ -513,30 +523,6 @@ class PlayersTab(QWidget):
             self.mainRows.remove(row)
             row.deleteLater()
             self.SetDirty()
-
-    def SetDirty(self):
-        if self.loadingForm:
-            return
-        self.dirty = True
-        self.UpdateButtons()
-
-    def UpdateButtons(self):
-        self.saveBt.setEnabled(self.dirty or self.editingTag is None)
-        self.revertBt.setEnabled(self.dirty)
-        if self.editingTag is None:
-            self.formTitle.setText(QApplication.translate("app", "New player"))
-        else:
-            self.formTitle.setText(self.editingTag + (" *" if self.dirty else ""))
-
-    def ConfirmDiscard(self):
-        if not self.dirty:
-            return True
-        answer = QMessageBox.question(
-            self,
-            QApplication.translate("app", "Unsaved changes"),
-            QApplication.translate("app", "Discard the changes made to this player?"),
-        )
-        return answer == QMessageBox.StandardButton.Yes
 
     def LoadForm(self, tag):
         self.loadingForm = True
@@ -600,10 +586,6 @@ class PlayersTab(QWidget):
             self.dirty = False
             self.UpdateButtons()
 
-    def Revert(self):
-        self.dirty = False
-        self.LoadForm(self.editingTag)
-
     def GetFormData(self):
         countryData = self.country.currentData(Qt.ItemDataRole.UserRole) or {}
         stateData = self.state.currentData(Qt.ItemDataRole.UserRole) or {}
@@ -630,6 +612,37 @@ class PlayersTab(QWidget):
             data["mains"] = mains
 
         return data
+
+    # =====================================================
+    # SAVING
+    # =====================================================
+    def SetDirty(self):
+        if self.loadingForm:
+            return
+        self.dirty = True
+        self.UpdateButtons()
+
+    def UpdateButtons(self):
+        self.saveBt.setEnabled(self.dirty or self.editingTag is None)
+        self.revertBt.setEnabled(self.dirty)
+        if self.editingTag is None:
+            self.formTitle.setText(QApplication.translate("app", "New player"))
+        else:
+            self.formTitle.setText(self.editingTag + (" *" if self.dirty else ""))
+
+    def ConfirmDiscard(self):
+        if not self.dirty:
+            return True
+        answer = QMessageBox.question(
+            self,
+            QApplication.translate("app", "Unsaved changes"),
+            QApplication.translate("app", "Discard the changes made to this player?"),
+        )
+        return answer == QMessageBox.StandardButton.Yes
+
+    def Revert(self):
+        self.dirty = False
+        self.LoadForm(self.editingTag)
 
     def Save(self):
         data = self.GetFormData()
@@ -762,6 +775,9 @@ class SeedsTab(QWidget):
         PlayerDB.signals.db_updated.connect(self.Changed)
         SeedManager.signals.seed_changed.connect(lambda _: self.Changed())
 
+    # =====================================================
+    # SEED LIST
+    # =====================================================
     def Changed(self):
         if self.isVisible():
             self.refreshTimer.start()
@@ -843,6 +859,15 @@ class SeedsTab(QWidget):
         finally:
             self.refreshing = False
 
+    def SelectedTags(self):
+        return [
+            self.proxy.index(r.row(), self.COLUMN_SEED).data(TagRole)
+            for r in self.table.selectionModel().selectedRows()
+        ]
+
+    # =====================================================
+    # EDITING SEEDS
+    # =====================================================
     def ItemChanged(self, item: QStandardItem):
         if self.refreshing or item.column() != self.COLUMN_SEED:
             return
@@ -864,12 +889,6 @@ class SeedsTab(QWidget):
         self.addTag.clear()
         self.addSeed.setValue(self.addSeed.value() + 1)
         self.addTag.setFocus()
-
-    def SelectedTags(self):
-        return [
-            self.proxy.index(r.row(), self.COLUMN_SEED).data(TagRole)
-            for r in self.table.selectionModel().selectedRows()
-        ]
 
     def ResetSelected(self):
         for tag in self.SelectedTags():
