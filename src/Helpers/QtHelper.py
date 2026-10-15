@@ -1,6 +1,7 @@
 import functools
 import os
 import threading
+import time
 
 from loguru import logger
 from qtpy.QtCore import *
@@ -19,43 +20,14 @@ except ValueError:
 # =====================================================
 # GUI THREAD DISPATCH
 # =====================================================
-def invokeSlot(meth, *args):
-    """
-    This will invoke a QObject's slot using the auto connection type, in the same
-    way that it would be triggered from a signal. The auto connection type will either:
-
-    - execute immediately if we are in the QObject's native thread.
-    - be queued for execution if we are in a different thread.
-
-    This lets us call other methods in a thread-safe way without having to bother with connecting
-    a signal and cleaning it up. WARNING: If the invocation is queued, the effects of the invoked method
-    may or may not be applied at any given time and if the caller is expecting this function
-    to execute immediately there will likely be a race condition.
-
-    Here is an example of a concrete call to invokeMethod() that this function constructs::
-
-        QMetaObject.invokeMethod(self.dataManager, 'SetTournament',
-            Q_ARG(str, "https://start.gg/"+deep_get(userSet, "event.slug"))
-        )
-
-    :param meth: The bound object method to call via slot mechanism
-    :param args: The function arguments to pass in.
-    """
-    obj = getattr(meth, "__self__", None)
-    meth_name = getattr(meth, "__name__", None)
-
-    if not obj:
-        raise ValueError(f"The provided method {meth} does not have a bound object instance.")
-
-    if not meth_name:
-        raise ValueError(f"The provided method {meth} does not have a __name__")
-
-    QMetaObject.invokeMethod(obj, meth_name, *(Q_ARG(type(arg), arg) for arg in args))
+# How often run_sync checks whether the GUI is shutting down while it waits
+_SYNC_POLL_INTERVAL = 0.1
 
 
 class GuiExecutor(QObject):
     _invoke = Signal(object)
-    _invokeWithResult = Signal(object, dict)
+    # object, not dict: the holder must reach the slot as the same dict, not a copy
+    _invokeWithResult = Signal(object, object)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -64,8 +36,14 @@ class GuiExecutor(QObject):
         self._invoke.connect(self._run, Qt.ConnectionType.AutoConnection)
         self._invokeWithResult.connect(self._run, Qt.ConnectionType.AutoConnection)
 
+        # Once the event loop stops, queued calls never run, so threads
+        # waiting in run_sync must stop waiting
+        self._shuttingDown = threading.Event()
+        if (app := QCoreApplication.instance()) is not None:
+            app.aboutToQuit.connect(self._shuttingDown.set)
+
     @Slot(object)
-    @Slot(object, dict)
+    @Slot(object, object)
     def _run(self, fn, resultHolder=None):
         if resultHolder is not None:
             try:
@@ -87,11 +65,25 @@ class GuiExecutor(QObject):
         else:
             self._invokeWithResult.emit(fn, result_holder)
 
-    def run_sync(self, fn):
-        result_holder = {"done": threading.Event()}
+    def run_sync(self, fn, timeout=None):
+        """
+        Runs fn on the gui thread and returns its result, blocking the calling thread until then.
+
+        Raises TimeoutError if fn hasn't finished after `timeout` seconds, and RuntimeError if the
+        application quits first. In both cases fn may still run later (or never), so the caller
+        must not rely on its effects.
+        """
+        done = threading.Event()
+        result_holder = {"done": done}
         # Fine if this throws exception... we want to re-throw anyway.
         self(fn, result_holder)
-        result_holder["done"].wait()
+
+        deadline = None if timeout is None else time.monotonic() + timeout
+        while not done.wait(_SYNC_POLL_INTERVAL):
+            if self._shuttingDown.is_set():
+                raise RuntimeError(f"The gui thread is shutting down, {fn} may not have run.")
+            if deadline is not None and time.monotonic() >= deadline:
+                raise TimeoutError(f"{fn} didn't finish on the gui thread within {timeout}s.")
 
         if (exc := result_holder.get("exc", None)) is not None:
             raise exc
