@@ -37,6 +37,9 @@ POINTS_DRAW = 1
 POINTS_LOSS = 0
 
 
+# =====================================================
+# SEEDING
+# =====================================================
 def NextPowerOf2(x):
     return 1 if x <= 1 else 2 ** math.ceil(math.log2(x))
 
@@ -51,6 +54,9 @@ def SeedingOrder(size):
     return order
 
 
+# =====================================================
+# IDENTIFIERS
+# =====================================================
 def _Identifier(index):
     # A, B, ..., Z, AA, AB, ... like start.gg
     letters = string.ascii_uppercase
@@ -67,6 +73,9 @@ def _IdentifierKey(identifier):
     return (len(identifier), identifier)
 
 
+# =====================================================
+# SLOT SOURCES
+# =====================================================
 # Where a slot's player comes from
 def SeedSource(seed):
     return {"type": "seed", "seed": int(seed)}
@@ -93,6 +102,9 @@ def PendingSource():
     return {"type": "pending"}
 
 
+# =====================================================
+# MATCHES
+# =====================================================
 class BracketMatch:
     def __init__(self, id, side, sources=None):
         self.id = str(id)
@@ -178,6 +190,9 @@ class BracketMatch:
         return m
 
 
+# =====================================================
+# BRACKETS
+# =====================================================
 class Bracket:
     """A bracket of any type. `seeds` are the player ids of the bracket's
     seeds, best first: a player id (> 0), BYE or PENDING (e.g. a player
@@ -207,8 +222,10 @@ class Bracket:
         self.order = []
         self._nextId = 1
 
+    # =====================================================
+    # BUILDING
+    # =====================================================
     # Structure
-
     def IsPool(self):
         return self.type in POOL_TYPES
 
@@ -371,8 +388,10 @@ class Bracket:
             if m.isBye:
                 m.identifier = ""
 
+    # =====================================================
+    # RESULTS
+    # =====================================================
     # Results
-
     def _SourcePlayer(self, source):
         type = source.get("type")
         if type == "seed":
@@ -491,6 +510,9 @@ class Bracket:
             return gf.winner
         return final.winner
 
+    # =====================================================
+    # PLACEMENTS
+    # =====================================================
     def _EliminationGroups(self):
         """Matches whose loser is out, grouped by round, from the last
         round played to the first."""
@@ -625,8 +647,10 @@ class Bracket:
         except ValueError:
             return 9999
 
+    # =====================================================
+    # EDITING BY HAND
+    # =====================================================
     # Editing
-
     def SetScore(self, matchId, slot, value):
         self.matches[matchId].score[slot] = int(value)
         self.Resolve()
@@ -673,8 +697,10 @@ class Bracket:
     def HasOverrides(self):
         return any(o is not None for m in self.matches.values() for o in m.override)
 
+    # =====================================================
+    # ROUNDS
+    # =====================================================
     # Layout and names
-
     def Columns(self, side, includeHidden=False):
         """The side's columns, each a list of matches top to bottom. Matches
         against a bye (and columns left empty) are left out unless
@@ -760,8 +786,10 @@ class Bracket:
             return Name("losers_round", "Losers Round {0}", number)
         return Name("round", "Round {0}", column)
 
+    # =====================================================
+    # POOLS
+    # =====================================================
     # Round robin and swiss
-
     def PoolRounds(self):
         return sorted({m.round for m in self.matches.values()})
 
@@ -900,6 +928,9 @@ class Bracket:
                 played.add(frozenset((p1, p2)))
         return played
 
+    # =====================================================
+    # SWISS
+    # =====================================================
     def CanPairNextRound(self):
         """Swiss only: there are rounds left and the last one is done."""
         if self.type != TYPE_SWISS or self.fromProvider:
@@ -967,8 +998,10 @@ class Bracket:
         self._Build()
         return True
 
+    # =====================================================
+    # SAVING
+    # =====================================================
     # Saving
-
     def ToDict(self):
         return {
             "type": self.type,
@@ -1001,6 +1034,9 @@ class Bracket:
         return bracket
 
 
+# =====================================================
+# GENERATING BRACKETS
+# =====================================================
 def _PairAvoidingRematches(order, played, maxSteps=20000):
     """Pairs players in standings order, each with the next best player they
     haven't played. Backtracks when that leaves someone with nobody to play.
@@ -1059,8 +1095,6 @@ def RoundRobinSchedule(playerCount):
 
 
 # Generators
-
-
 def GenerateBracket(
     type,
     seeds,
@@ -1306,6 +1340,9 @@ def _GenerateDouble(seeds, grandFinalReset, progressionsOut, losersSeeds):
     return bracket
 
 
+# =====================================================
+# PROVIDER BRACKETS
+# =====================================================
 def FromProviderSets(type, sets, seedCount, entrantIds=None, progressionsOut=0):
     """Builds the bracket from the provider's sets:
 
@@ -1460,6 +1497,9 @@ def ApplyProviderUpdate(bracket, sets):
     return True
 
 
+# =====================================================
+# PHASES AND TOURNAMENTS
+# =====================================================
 class BracketPhase:
     """One bracket of the tournament built in the bracket widget, e.g. pools
     or the top cut. Its seeds can be players or results of another phase."""
@@ -1545,6 +1585,9 @@ class BracketTournament:
         self.phases: list[BracketPhase] = []
         self._nextId = 1
 
+    # =====================================================
+    # PHASES
+    # =====================================================
     def NewPhaseId(self):
         id = f"phase{self._nextId}"
         self._nextId += 1
@@ -1605,6 +1648,9 @@ class BracketTournament:
             Visit(p)
         return order
 
+    # =====================================================
+    # SEEDING
+    # =====================================================
     def SeedPlayers(self, phase):
         """The player ids of the phase's seeds, from its seed sources."""
         players = []
@@ -1634,6 +1680,9 @@ class BracketTournament:
                 phase.bracket.seeds = seeds
                 phase.bracket.Resolve()
 
+    # =====================================================
+    # SAVING
+    # =====================================================
     def ToDict(self):
         return {
             "phases": [p.ToDict() for p in self.phases],

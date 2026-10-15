@@ -49,6 +49,9 @@ class FocusChannel(QObject):
         self.followTimer.timeout.connect(self.Refresh)
         self._StartTimers()
 
+    # =====================================================
+    # PHASE AND SETTINGS
+    # =====================================================
     def Bracket(self):
         return StateManager.Get(f"bracket.channels.{self.name}.bracket", {}) or {}
 
@@ -78,8 +81,10 @@ class FocusChannel(QObject):
             BracketFocus.instance.signals.settingsChanged.emit(self.name)
         self.Refresh(force=True)
 
+    # =====================================================
+    # FOCUS MODES
+    # =====================================================
     # Changing the focus
-
     def Set(self, request):
         request = NormalizeRequest(request)
         if request.get("mode") != self.request.get("mode") or request.get("mode") != MODE_TOUR:
@@ -130,6 +135,9 @@ class FocusChannel(QObject):
         elif mode == MODE_TOUR:
             self.Tour()
 
+    # =====================================================
+    # ROUNDS AND TOUR STEPS
+    # =====================================================
     def MoveRound(self, offset):
         """The next (or previous) round. In a tour, its next step."""
         if self.request.get("mode") == MODE_TOUR:
@@ -159,8 +167,10 @@ class FocusChannel(QObject):
         self.tourTimer.stop()
         self.followTimer.stop()
 
+    # =====================================================
+    # REFRESHING
+    # =====================================================
     # Exporting
-
     def Refresh(self, force=False):
         """Works out the focus again (the bracket, the scoreboard or the
         tour's step changed) and sends it to the layouts if it changed."""
@@ -209,6 +219,9 @@ class BracketFocus(QObject):
         current = SettingsManager.Get("bracket_focus_current", MAIN_CHANNEL)
         self.current = current if current in self.channels else MAIN_CHANNEL
 
+    # =====================================================
+    # CHANNELS
+    # =====================================================
     def _Make(self, name, request=None, phase=None, limit=None):
         channel = FocusChannel(name, request, phase, limit, self)
         channel.signals.changed.connect(lambda: self.signals.changed.emit(channel.name))
@@ -219,18 +232,7 @@ class BracketFocus(QObject):
         self.channels[name] = channel
         return channel
 
-    def SaveChannels(self):
-        SettingsManager.Set(
-            "bracket_focus_channels",
-            {
-                name: dict(c.request, phase=c.phase, limit=c.limit)
-                for name, c in self.channels.items()
-            },
-        )
-        SettingsManager.Set("bracket_focus_current", self.current)
-
     # Channels
-
     def Channel(self, name=None):
         """A channel by name (the current one without a name), or None."""
         if name in (None, ""):
@@ -297,12 +299,29 @@ class BracketFocus(QObject):
         """Names of the channels showing a phase."""
         return [n for n, c in self.channels.items() if c.phase == str(phase)]
 
+    def HasPhase(self, phase):
+        return any(
+            str(p.get("id")) == str(phase) for p in StateManager.Get("bracket.phases", []) or []
+        )
+
+    def SaveChannels(self):
+        SettingsManager.Set(
+            "bracket_focus_channels",
+            {
+                name: dict(c.request, phase=c.phase, limit=c.limit)
+                for name, c in self.channels.items()
+            },
+        )
+        SettingsManager.Set("bracket_focus_current", self.current)
+
+    # =====================================================
+    # FOCUS STATE
+    # =====================================================
     def Refresh(self):
         for channel in list(self.channels.values()):
             channel.Refresh()
 
     # The web page
-
     def State(self, name=None):
         """What's in focus on a channel and what can be picked."""
         channel = self.Channel(name) or self.Current()
@@ -347,8 +366,3 @@ class BracketFocus(QObject):
             ],
             "players": sorted(players.values(), key=lambda p: (p.get("seed") or 9999, p["name"])),
         }
-
-    def HasPhase(self, phase):
-        return any(
-            str(p.get("id")) == str(phase) for p in StateManager.Get("bracket.phases", []) or []
-        )

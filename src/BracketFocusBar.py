@@ -138,12 +138,14 @@ class BracketFocusBar(QWidget):
         self.UpdateSelection()
         self.UpdateFocus()
 
+    # =====================================================
+    # CHANNELS
+    # =====================================================
     def Ch(self):
         """The channel the controls act on."""
         return self.focus.Current()
 
     # Channels (from the widget's tabs)
-
     def AskName(self, title, text=""):
         name, ok = QInputDialog.getText(
             self,
@@ -154,6 +156,13 @@ class BracketFocusBar(QWidget):
             text=text,
         )
         return NormalizeChannelName(name) if ok else None
+
+    def NameTaken(self, name):
+        QMessageBox.warning(
+            self,
+            QApplication.translate("app", "Channel"),
+            QApplication.translate("app", 'There\'s already a channel named "{0}".').format(name),
+        )
 
     def AddChannel(self):
         name = self.AskName(QApplication.translate("app", "New channel"))
@@ -167,13 +176,6 @@ class BracketFocusBar(QWidget):
         name = self.AskName(QApplication.translate("app", "Rename channel"), old)
         if name and name != old and self.focus.RenameChannel(old, name) is None:
             self.NameTaken(name)
-
-    def NameTaken(self, name):
-        QMessageBox.warning(
-            self,
-            QApplication.translate("app", "Channel"),
-            QApplication.translate("app", 'There\'s already a channel named "{0}".').format(name),
-        )
 
     def RemoveChannel(self):
         name = self.focus.current
@@ -189,6 +191,9 @@ class BracketFocusBar(QWidget):
         if answer == QMessageBox.StandardButton.Yes:
             self.focus.RemoveChannel(name)
 
+    # =====================================================
+    # FOCUS
+    # =====================================================
     def FocusSelected(self):
         self.Ch().FocusSets(
             [id for id in self.view.matchItems if id in self.view.selected],
@@ -209,6 +214,9 @@ class BracketFocusBar(QWidget):
         elif self.Ch().request.get("mode") == MODE_PLAYER:
             self.Ch().ShowAll()
 
+    # =====================================================
+    # UPDATING
+    # =====================================================
     def UpdateSelection(self):
         count = len(self.view.selected) + len(self.view.selectedRounds)
         self.btSelected.setText(
