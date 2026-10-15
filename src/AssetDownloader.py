@@ -11,7 +11,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from src.GameAssetManager import GameAssetManager
-from src.Helpers.QtHelper import assert_gui_thread, gui_thread_sync
+from src.Helpers.QtHelper import assert_gui_thread, gui_thread_async
 from src.Workers import Worker
 
 from .Theme import ThemedIcon
@@ -479,8 +479,9 @@ class AssetDownloader(QObject):
                     logger.info("Downloading " + f["name"])
 
                     # Queue to slot so we're not modifying the GUI from
-                    # a worker thread.
-                    gui_thread_sync(self.DownloadAssetsSetLabelText)(
+                    # a worker thread. No need to wait for it: it lands
+                    # before the progress events posted after it
+                    gui_thread_async(self.DownloadAssetsSetLabelText)(
                         QApplication.translate("app", "Downloading {0}... ({1}/{2})").format(
                             f["name"], i + 1, len(files)
                         )
@@ -504,16 +505,15 @@ class AssetDownloader(QObject):
 
                     logger.info("Download OK")
 
-            @gui_thread_sync
-            def update_gui():
-                self.DownloadAssetsSetLabelText(
-                    QApplication.translate("app", "Extracting... ({0}/{1})").format(
-                        i + 1, len(files)
-                    )
-                )
+            # The text is passed in: by the time this runs, i may have moved on
+            @gui_thread_async
+            def update_gui(text):
+                self.DownloadAssetsSetLabelText(text)
                 self.downloadDialogue.setRange(0, 0)
 
-            update_gui()
+            update_gui(
+                QApplication.translate("app", "Extracting... ({0}/{1})").format(i + 1, len(files))
+            )
 
             is7z = ".7z" in fileList[0]["name"]
 
