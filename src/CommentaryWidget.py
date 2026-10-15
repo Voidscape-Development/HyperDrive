@@ -161,29 +161,31 @@ class CommentaryWidget(QDockWidget):
             action: QAction = self.eyeBt.menu().actions()[x]
             self.ToggleElements(action, element[1])
 
-    def SetData(self, index, data):
-        if index > len(self.commentaryWidgets):
-            self.SetCommentatorNumber(index + 1)
-            self.commentatorNumber.setValue(index + 1)
+    # =====================================================
+    # SETUP
+    # =====================================================
+    def SetDefaultsFromAssets(self):
+        if StateManager.Get("game.defaults"):
+            characters = StateManager.Get("game.defaults.characters_per_player", 1)
+        else:
+            characters = 1
+        self.characterNumber.setValue(characters)
 
-        logger.info(index)
+    def GetIP(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(("10.255.255.255", 1))
+            IP = s.getsockname()[0]
+        except Exception:
+            IP = "127.0.0.1"
+        finally:
+            s.close()
+        return IP
 
-        commentatorWidget = self.commentaryWidgets[index]
-        logger.info(commentatorWidget)
-        commentatorWidget.SetData(data, False, False)
-
-    def LoadCommentatorFromTag(self, index: int, tag: str, no_mains: bool):
-        if index > len(self.commentaryWidgets) - 1:
-            self.SetCommentatorNumber(index + 1)
-            self.commentatorNumber.setValue(index + 1)
-
-        playerData = PlayerDB.GetPlayerFromTag(tag)
-        if playerData:
-            widget = self.commentaryWidgets[index]
-            widget.SetData(playerData, False, True, no_mains)
-            return True
-        return False
-
+    # =====================================================
+    # COMMENTATORS
+    # =====================================================
     def SetCommentatorNumber(self, number):
         while len(self.commentaryWidgets) < number:
             comm = ScoreboardPlayerWidget(
@@ -216,6 +218,36 @@ class CommentaryWidget(QDockWidget):
                 if not k.isnumeric() or (k.isnumeric() and int(k) > number):
                     StateManager.Unset(f"commentary.{k}")
 
+    def SetCharacterNumber(self, value):
+        for pw in self.commentaryWidgets:
+            pw.SetCharactersPerPlayer(value)
+
+    def SetData(self, index, data):
+        if index > len(self.commentaryWidgets):
+            self.SetCommentatorNumber(index + 1)
+            self.commentatorNumber.setValue(index + 1)
+
+        logger.info(index)
+
+        commentatorWidget = self.commentaryWidgets[index]
+        logger.info(commentatorWidget)
+        commentatorWidget.SetData(data, False, False)
+
+    def LoadCommentatorFromTag(self, index: int, tag: str, no_mains: bool):
+        if index > len(self.commentaryWidgets) - 1:
+            self.SetCommentatorNumber(index + 1)
+            self.commentatorNumber.setValue(index + 1)
+
+        playerData = PlayerDB.GetPlayerFromTag(tag)
+        if playerData:
+            widget = self.commentaryWidgets[index]
+            widget.SetData(playerData, False, True, no_mains)
+            return True
+        return False
+
+    # =====================================================
+    # ORDER
+    # =====================================================
     def MoveUp(self, index):
         if index > 0:
             self.SwapComms(index, index - 1)
@@ -227,6 +259,9 @@ class CommentaryWidget(QDockWidget):
     def SwapComms(self, index1, index2):
         self.commentaryWidgets[index1].SwapWith(self.commentaryWidgets[index2])
 
+    # =====================================================
+    # DISPLAY OPTIONS
+    # =====================================================
     def ToggleElements(self, action: QAction, elements):
         for pw in self.commentaryWidgets:
             for element in elements:
@@ -235,26 +270,3 @@ class CommentaryWidget(QDockWidget):
     def SetCompactPlayers(self, compact):
         for pw in self.commentaryWidgets:
             pw.SetDetailsShown(not compact)
-
-    def SetCharacterNumber(self, value):
-        for pw in self.commentaryWidgets:
-            pw.SetCharactersPerPlayer(value)
-
-    def SetDefaultsFromAssets(self):
-        if StateManager.Get("game.defaults"):
-            characters = StateManager.Get("game.defaults.characters_per_player", 1)
-        else:
-            characters = 1
-        self.characterNumber.setValue(characters)
-
-    def GetIP(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            # doesn't even have to be reachable
-            s.connect(("10.255.255.255", 1))
-            IP = s.getsockname()[0]
-        except Exception:
-            IP = "127.0.0.1"
-        finally:
-            s.close()
-        return IP

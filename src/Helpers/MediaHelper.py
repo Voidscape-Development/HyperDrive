@@ -29,6 +29,9 @@ class MediaHelper:
 
     signals = MediaHelperSignals()
 
+    # =====================================================
+    # PATHS
+    # =====================================================
     def Sanitize(name: str) -> str:
         return re.sub(INVALID_CHARACTERS, "_", name)
 
@@ -67,6 +70,9 @@ class MediaHelper:
         """Where a new custom data folder for this tag is made"""
         return f"{CUSTOM_PLAYER_DIR}/{MediaHelper.Sanitize(name).strip()}"
 
+    # =====================================================
+    # IMAGE FILES
+    # =====================================================
     def IsImage(path: str) -> bool:
         return os.path.splitext(path)[1].lower() in IMAGE_EXTENSIONS
 
@@ -119,5 +125,8 @@ class MediaHelper:
             key=str.lower,
         )
 
+    # =====================================================
+    # CHANGE NOTIFICATIONS
+    # =====================================================
     def Changed():
         MediaHelper.signals.changed.emit()

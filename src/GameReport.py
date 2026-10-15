@@ -22,6 +22,9 @@ class GameReport:
         self.games = []
         self.bestOf = 0
 
+    # =====================================================
+    # SETTING UP
+    # =====================================================
     def Reset(self):
         self.games = [EmptyGame() for _ in range(self.bestOf)]
 
@@ -41,6 +44,9 @@ class GameReport:
             self.games.append(EmptyGame())
         return self.games[index]
 
+    # =====================================================
+    # RESULTS
+    # =====================================================
     def SetWinner(self, index, winner):
         """1 or 2 for the team that won, DRAW, or UNDECIDED to clear it."""
         self._Ensure(index)["winner"] = winner
@@ -51,6 +57,48 @@ class GameReport:
     def SetCharacters(self, index, team, characters):
         self._Ensure(index)["characters"][int(team)] = list(characters or [])
 
+    def SetScore(self, team, value):
+        """The score was changed outside of the games (e.g. the scoreboard's
+        score): adds the team's wins to the next games, or removes its last
+        ones. Returns True if the games changed."""
+        value = max(0, int(value))
+        changed = False
+        while len(self.Wins(team)) < value:
+            self.SetWinner(self.CurrentGameIndex(), team)
+            changed = True
+        while len(self.Wins(team)) > value:
+            self.SetWinner(self.Wins(team)[-1], UNDECIDED)
+            changed = True
+        if changed:
+            self.SetBestOf(self.bestOf)
+        return changed
+
+    def Swap(self):
+        """The teams were swapped on the scoreboard."""
+        for g in self.games:
+            if g["winner"] in (1, 2):
+                g["winner"] = 3 - g["winner"]
+            g["characters"] = {1: g["characters"].get(2, []), 2: g["characters"].get(1, [])}
+
+    def SetFromProvider(self, games, swapped=False):
+        """Games already reported on start.gg, in slot order: [{"winner": slot
+        (0 or 1) or None, "stage": codename, "characters": [[slot 0's], [slot
+        1's]]}]."""
+        self.games = []
+        for i, g in enumerate(games or []):
+            game = EmptyGame()
+            slot = g.get("winner")
+            if slot in (0, 1):
+                game["winner"] = TeamOfSlot(slot, swapped)
+            game["stage"] = g.get("stage")
+            for s, chars in enumerate(g.get("characters") or [[], []]):
+                game["characters"][TeamOfSlot(s, swapped)] = list(chars or [])
+            self.games.append(game)
+        self.SetBestOf(self.bestOf)
+
+    # =====================================================
+    # SCORE
+    # =====================================================
     def Score(self):
         wins = {1: 0, 2: 0}
         for g in self.games:
@@ -79,29 +127,6 @@ class GameReport:
                 return i
         return len(self.games)
 
-    def SetScore(self, team, value):
-        """The score was changed outside of the games (e.g. the scoreboard's
-        score): adds the team's wins to the next games, or removes its last
-        ones. Returns True if the games changed."""
-        value = max(0, int(value))
-        changed = False
-        while len(self.Wins(team)) < value:
-            self.SetWinner(self.CurrentGameIndex(), team)
-            changed = True
-        while len(self.Wins(team)) > value:
-            self.SetWinner(self.Wins(team)[-1], UNDECIDED)
-            changed = True
-        if changed:
-            self.SetBestOf(self.bestOf)
-        return changed
-
-    def Swap(self):
-        """The teams were swapped on the scoreboard."""
-        for g in self.games:
-            if g["winner"] in (1, 2):
-                g["winner"] = 3 - g["winner"]
-            g["characters"] = {1: g["characters"].get(2, []), 2: g["characters"].get(1, [])}
-
     def SetWinnerTeam(self):
         """Team that won the set by games, or None."""
         t1, t2 = self.Score()
@@ -112,6 +137,9 @@ class GameReport:
     def HasResults(self):
         return any(g["winner"] is not UNDECIDED for g in self.games)
 
+    # =====================================================
+    # SAVING
+    # =====================================================
     def ToDict(self):
         return {
             "bestOf": self.bestOf,
@@ -137,22 +165,6 @@ class GameReport:
                 game["characters"][int(k)] = list(v or [])
             report.games.append(game)
         return report
-
-    def SetFromProvider(self, games, swapped=False):
-        """Games already reported on start.gg, in slot order: [{"winner": slot
-        (0 or 1) or None, "stage": codename, "characters": [[slot 0's], [slot
-        1's]]}]."""
-        self.games = []
-        for i, g in enumerate(games or []):
-            game = EmptyGame()
-            slot = g.get("winner")
-            if slot in (0, 1):
-                game["winner"] = TeamOfSlot(slot, swapped)
-            game["stage"] = g.get("stage")
-            for s, chars in enumerate(g.get("characters") or [[], []]):
-                game["characters"][TeamOfSlot(s, swapped)] = list(chars or [])
-            self.games.append(game)
-        self.SetBestOf(self.bestOf)
 
 
 def SlotOfTeam(team, swapped):

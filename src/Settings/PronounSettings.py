@@ -57,10 +57,9 @@ class PronounSettings(QWidget):
         buttons.addWidget(defaultsButton)
         layout.addLayout(buttons)
 
-    def Save(self, *args):
-        # Also drops empty rows and duplicates left by an edit
-        PronounHelper.Save(self.model.stringList())
-
+    # =====================================================
+    # EDITING THE LIST
+    # =====================================================
     def Add(self):
         row = self.model.rowCount()
         self.model.insertRows(row, 1)
@@ -73,15 +72,22 @@ class PronounSettings(QWidget):
         if index.isValid():
             self.list.edit(index)
 
-    def AddDefaults(self):
-        PronounHelper.Save(self.model.stringList() + DEFAULT_PRONOUNS)
-
     def Remove(self):
         index = self.list.currentIndex()
         if index.isValid():
             self.model.removeRows(index.row(), 1)
             self.Save()
 
+    def AddDefaults(self):
+        PronounHelper.Save(self.model.stringList() + DEFAULT_PRONOUNS)
+
     def Sort(self):
         self.model.sort(0)
         self.Save()
+
+    # =====================================================
+    # SAVING
+    # =====================================================
+    def Save(self, *args):
+        # Also drops empty rows and duplicates left by an edit
+        PronounHelper.Save(self.model.stringList())

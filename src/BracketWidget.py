@@ -104,6 +104,9 @@ class BracketWidget(QDockWidget):
             BracketWidget.instance = self
             self.SetupUi()
 
+    # =====================================================
+    # BUILDING THE UI
+    # =====================================================
     def SetupUi(self):
         self.setWindowTitle(QApplication.translate("app", "Bracket"))
         self.setFloating(True)
@@ -371,7 +374,6 @@ class BracketWidget(QDockWidget):
         self.Load()
 
     # Building the UI
-
     def BuildPhasesTab(self):
         tab = QWidget()
         tab.setLayout(QVBoxLayout())
@@ -579,6 +581,9 @@ class BracketWidget(QDockWidget):
         self.charNumber.setValue(1)
         return tab
 
+    # =====================================================
+    # WINDOW
+    # =====================================================
     def showEvent(self, event):
         super().showEvent(event)
         # The phases window comes back with the widget, if it was open
@@ -600,15 +605,14 @@ class BracketWidget(QDockWidget):
         if SettingsManager.Get("bracket_phases_window_shown", False) != shown:
             SettingsManager.Set("bracket_phases_window_shown", shown)
 
+    # =====================================================
+    # PHASES
+    # =====================================================
     # Phases
-
     def CurrentPhase(self) -> BracketPhase:
         """The current channel's phase."""
         phase = self.Ch().phase
         return self.tournament.GetPhase(phase) if phase else None
-
-    def RosterIds(self):
-        return list(range(1, len(self.playerList.slotWidgets) + 1))
 
     def NewPhase(self, type=TYPE_DOUBLE_ELIMINATION, name=None):
         phase = BracketPhase(
@@ -680,6 +684,14 @@ class BracketWidget(QDockWidget):
         if 0 <= row < len(self.tournament.phases):
             self.Ch().SetPhase(self.tournament.phases[row].id)
 
+    def PhaseNameChanged(self):
+        phase = self.CurrentPhase()
+        if phase is None or self.updatingControls:
+            return
+        phase.name = self.phaseName.text().strip() or phase.name
+        self.RefreshPhaseList()
+        self.Changed(rebuildView=False)
+
     def UpdateControls(self):
         phase = self.CurrentPhase()
         self.updatingControls = True
@@ -744,6 +756,9 @@ class BracketWidget(QDockWidget):
         finally:
             self.updatingControls = False
 
+    # =====================================================
+    # SEEDS
+    # =====================================================
     def SeedSourceOptions(self, phase):
         """(label, source) for every seed source this phase can take."""
         options = [(QApplication.translate("app", "Bye"), None)]
@@ -911,14 +926,6 @@ class BracketWidget(QDockWidget):
         phase.seedSources = sources
         self.Rebuild(ask=True)
 
-    def PhaseNameChanged(self):
-        phase = self.CurrentPhase()
-        if phase is None or self.updatingControls:
-            return
-        phase.name = self.phaseName.text().strip() or phase.name
-        self.RefreshPhaseList()
-        self.Changed(rebuildView=False)
-
     def SeedCountChanged(self, count):
         phase = self.CurrentPhase()
         if phase is None or self.updatingControls:
@@ -934,6 +941,9 @@ class BracketWidget(QDockWidget):
         phase.losersSeedCount = min(phase.losersSeedCount, max(0, count - 2))
         self.Rebuild(ask=True)
 
+    # =====================================================
+    # BRACKET STRUCTURE
+    # =====================================================
     def StructureChanged(self, *args):
         phase = self.CurrentPhase()
         if phase is None or self.updatingControls:
@@ -1005,12 +1015,14 @@ class BracketWidget(QDockWidget):
             self.view.Refresh()
 
     # Changes
-
     def BracketEdited(self):
         # Results of this phase can be the seeds of another
         self.tournament.Resolve()
         self.Changed(rebuildView=False)
 
+    # =====================================================
+    # UPDATING AFTER CHANGES
+    # =====================================================
     def PlayersChanged(self):
         if not self.ready:
             return
@@ -1090,9 +1102,11 @@ class BracketWidget(QDockWidget):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.standingsTable.setItem(r, c, item)
 
+    # =====================================================
+    # CHANNELS
+    # =====================================================
     # Channels: a tab each. The widget shows the current channel's phase,
     # its top N and its view of the bracket (zoom, scroll and selection)
-
     def Ch(self) -> FocusChannel:
         return BracketFocus.instance.Current()
 
@@ -1228,9 +1242,14 @@ class BracketWidget(QDockWidget):
         for widget in (self.limitExport, self.limitExportNumber):
             widget.blockSignals(False)
 
+    # =====================================================
+    # PLAYER LISTS
+    # =====================================================
+    def RosterIds(self):
+        return list(range(1, len(self.playerList.slotWidgets) + 1))
+
     # Player lists: the phases built here share one, each start.gg phase
     # group has its own
-
     def RosterKey(self, phase):
         if phase is not None and phase.providerPhaseGroupId is not None:
             return str(phase.providerPhaseGroupId)
@@ -1284,8 +1303,36 @@ class BracketWidget(QDockWidget):
         if players != (StateManager.Get("bracket.players", {}) or {}):
             StateManager.Set("bracket.players", copy.deepcopy(players))
 
-    # Exporting to the layouts
+    # Saving, so a tournament run in HyperDrive survives a restart. The
+    # channels are saved in the settings (BracketFocus).
+    def RosterSnapshot(self, key="local"):
+        roster = []
+        count = len(self.rosters[key].slotWidgets) if key in self.rosters else 0
+        for i in range(1, count + 1):
+            slot = StateManager.Get(f"{RosterPath(key)}.slot.{i}", {}) or {}
+            players = []
+            for p in (slot.get("player") or {}).values():
+                players.append(
+                    {
+                        "gamerTag": p.get("name") or "",
+                        "prefix": p.get("team") or "",
+                        "name": p.get("real_name") or "",
+                        "country_code": (p.get("country") or {}).get("code")
+                        if isinstance(p.get("country"), dict)
+                        else None,
+                        "state_code": (p.get("state") or {}).get("code")
+                        if isinstance(p.get("state"), dict)
+                        else None,
+                        "pronoun": p.get("pronoun") or "",
+                    }
+                )
+            roster.append({"name": slot.get("name") or "", "players": players})
+        return roster
 
+    # =====================================================
+    # EXPORTS
+    # =====================================================
+    # Exporting to the layouts
     def ChannelExport(self, phase, limit, cache):
         if phase is None:
             return {
@@ -1354,9 +1401,11 @@ class BracketWidget(QDockWidget):
         if getattr(self, "focusBar", None) is not None:
             self.focusBar.UpdatePlayers()
 
+    # =====================================================
+    # PROVIDER PHASES
+    # =====================================================
     # start.gg: phase groups are loaded into the phases, each with its own
     # player list. Loading one again reloads it.
-
     def UpdatePhases(self, phases):
         self.phaseSelection.blockSignals(True)
         self.phaseSelection.clear()
@@ -1369,7 +1418,7 @@ class BracketWidget(QDockWidget):
     def UpdatePhaseGroups(self):
         self.phaseGroupSelection.clear()
         provider = TournamentDataManager.instance.provider
-        supported = getattr(provider, "SUPPORTS_BRACKETS", False)
+        supported = provider is not None and provider.SUPPORTS_BRACKETS
         for phaseGroup in (self.phaseSelection.currentData() or {}).get("groups", []):
             self.phaseGroupSelection.addItem(phaseGroup.get("name"), phaseGroup)
             if not supported or phaseGroup.get("bracketType") not in BRACKET_TYPES:
@@ -1399,106 +1448,6 @@ class BracketWidget(QDockWidget):
         return next(
             (p for p in self.ProviderPhases() if str(p.providerPhaseGroupId) == str(id)), None
         )
-
-    def RefreshSets(self):
-        # Returns what it did, for the web server's update-bracket-sets
-        if not self.ProviderPhases():
-            selected = self.phaseGroupSelection.currentData()
-            if selected is None or selected.get("id") is None:
-                return "NO_PHASE_GROUP"
-            self.PhaseGroupChanged()
-            return "RELOADING_PHASE_GROUP"
-
-        if self.fetching:
-            return "ALREADY_UPDATING"
-
-        self.FetchSets()
-        return "OK"
-
-    def FetchSets(self, onFinished=None):
-        """Fetches the results of every phase group loaded."""
-        ids = [str(p.providerPhaseGroupId) for p in self.ProviderPhases()]
-        if not ids:
-            if onFinished:
-                onFinished()
-            return
-        # The button stays disabled while a fetch runs, so manual and
-        # automatic updates can't overlap
-        self.fetching = len(ids)
-        self.btRefreshSets.setEnabled(False)
-
-        def finished():
-            self.fetching -= 1
-            if self.fetching > 0:
-                return
-            self.btRefreshSets.setEnabled(bool(self.ProviderPhases()))
-            if onFinished:
-                onFinished()
-
-        for id in ids:
-            TournamentDataManager.instance.GetTournamentPhaseGroupSets(id, onFinished=finished)
-
-    # Bracket auto update
-
-    def AutoUpdateSets(self, done):
-        # Nothing to update without a phase group loaded, or while a manual
-        # update is still running
-        if (
-            not self.ProviderPhases()
-            or TournamentDataManager.instance.provider is None
-            or self.fetching
-        ):
-            done()
-            return
-        self.FetchSets(onFinished=done)
-
-    def ToggleAutoUpdateSets(self, enabled):
-        SettingsManager.Set("general.bracket_auto_update", enabled)
-        if enabled:
-            Scheduler.instance.Start("bracket_sets", run_now=True)
-        else:
-            Scheduler.instance.Stop("bracket_sets")
-
-    def UpdateAutoUpdateTimer(self):
-        scheduler = Scheduler.instance
-        if not scheduler.IsEnabled("bracket_sets"):
-            self.labelAutoUpdateTimer.setVisible(False)
-            return
-        self.labelAutoUpdateTimer.setVisible(True)
-        if not self.ProviderPhases():
-            self.labelAutoUpdateTimer.setText(
-                QApplication.translate("app", "Waiting for a loaded bracket")
-            )
-        elif scheduler.IsRunning("bracket_sets"):
-            self.labelAutoUpdateTimer.setText(QApplication.translate("app", "Updating..."))
-        else:
-            remaining = scheduler.RemainingMs("bracket_sets")
-            if remaining is not None:
-                self.labelAutoUpdateTimer.setText(
-                    QApplication.translate("app", "Next update in {0}s").format(
-                        round(remaining / 1000)
-                    )
-                )
-
-    def ApplySetsUpdate(self, update):
-        id = update.get("phaseGroupId")
-        phase = self.ProviderPhase(id)
-        if phase is None or phase.bracket is None:
-            return
-        sets = (update.get("data") or {}).get("sets") or []
-        if not sets:
-            logger.warning("Got no sets for the phase group; bracket left as is")
-            return
-        try:
-            if not ApplyProviderUpdate(phase.bracket, sets):
-                logger.info("The phase group's sets changed since it was loaded; reloading it")
-                TournamentDataManager.instance.GetTournamentPhaseGroup(id)
-                return
-            if phase.id == self.Ch().phase:
-                self.view.Refresh()
-            self.Changed(rebuildView=False)
-        except Exception:
-            logger.error(traceback.format_exc())
 
     def UpdatePhaseGroup(self, data):
         if not data:
@@ -1612,6 +1561,111 @@ class BracketWidget(QDockWidget):
                     roster.childDataChangedLock = False
         self.MirrorPlayers()
 
+    # =====================================================
+    # PROVIDER SETS
+    # =====================================================
+    def RefreshSets(self):
+        # Returns what it did, for the web server's update-bracket-sets
+        if not self.ProviderPhases():
+            selected = self.phaseGroupSelection.currentData()
+            if selected is None or selected.get("id") is None:
+                return "NO_PHASE_GROUP"
+            self.PhaseGroupChanged()
+            return "RELOADING_PHASE_GROUP"
+
+        if self.fetching:
+            return "ALREADY_UPDATING"
+
+        self.FetchSets()
+        return "OK"
+
+    def FetchSets(self, onFinished=None):
+        """Fetches the results of every phase group loaded."""
+        ids = [str(p.providerPhaseGroupId) for p in self.ProviderPhases()]
+        if not ids:
+            if onFinished:
+                onFinished()
+            return
+        # The button stays disabled while a fetch runs, so manual and
+        # automatic updates can't overlap
+        self.fetching = len(ids)
+        self.btRefreshSets.setEnabled(False)
+
+        def finished():
+            self.fetching -= 1
+            if self.fetching > 0:
+                return
+            self.btRefreshSets.setEnabled(bool(self.ProviderPhases()))
+            if onFinished:
+                onFinished()
+
+        for id in ids:
+            TournamentDataManager.instance.GetTournamentPhaseGroupSets(id, onFinished=finished)
+
+    # Bracket auto update
+    def AutoUpdateSets(self, done):
+        # Nothing to update without a phase group loaded, or while a manual
+        # update is still running
+        if (
+            not self.ProviderPhases()
+            or TournamentDataManager.instance.provider is None
+            or self.fetching
+        ):
+            done()
+            return
+        self.FetchSets(onFinished=done)
+
+    def ToggleAutoUpdateSets(self, enabled):
+        SettingsManager.Set("general.bracket_auto_update", enabled)
+        if enabled:
+            Scheduler.instance.Start("bracket_sets", run_now=True)
+        else:
+            Scheduler.instance.Stop("bracket_sets")
+
+    def UpdateAutoUpdateTimer(self):
+        scheduler = Scheduler.instance
+        if not scheduler.IsEnabled("bracket_sets"):
+            self.labelAutoUpdateTimer.setVisible(False)
+            return
+        self.labelAutoUpdateTimer.setVisible(True)
+        if not self.ProviderPhases():
+            self.labelAutoUpdateTimer.setText(
+                QApplication.translate("app", "Waiting for a loaded bracket")
+            )
+        elif scheduler.IsRunning("bracket_sets"):
+            self.labelAutoUpdateTimer.setText(QApplication.translate("app", "Updating..."))
+        else:
+            remaining = scheduler.RemainingMs("bracket_sets")
+            if remaining is not None:
+                self.labelAutoUpdateTimer.setText(
+                    QApplication.translate("app", "Next update in {0}s").format(
+                        round(remaining / 1000)
+                    )
+                )
+
+    def ApplySetsUpdate(self, update):
+        id = update.get("phaseGroupId")
+        phase = self.ProviderPhase(id)
+        if phase is None or phase.bracket is None:
+            return
+        sets = (update.get("data") or {}).get("sets") or []
+        if not sets:
+            logger.warning("Got no sets for the phase group; bracket left as is")
+            return
+        try:
+            if not ApplyProviderUpdate(phase.bracket, sets):
+                logger.info("The phase group's sets changed since it was loaded; reloading it")
+                TournamentDataManager.instance.GetTournamentPhaseGroup(id)
+                return
+            if phase.id == self.Ch().phase:
+                self.view.Refresh()
+            self.Changed(rebuildView=False)
+        except Exception:
+            logger.error(traceback.format_exc())
+
+    # =====================================================
+    # GAME DEFAULTS
+    # =====================================================
     def SetDefaultsFromAssets(self):
         if StateManager.Get("game.defaults"):
             players = StateManager.Get("game.defaults.players_per_team", 1)
@@ -1638,33 +1692,9 @@ class BracketWidget(QDockWidget):
         for roster in self.rosters.values():
             roster.SetCharactersPerPlayer(value)
 
-    # Saving, so a tournament run in HyperDrive survives a restart. The
-    # channels are saved in the settings (BracketFocus).
-
-    def RosterSnapshot(self, key="local"):
-        roster = []
-        count = len(self.rosters[key].slotWidgets) if key in self.rosters else 0
-        for i in range(1, count + 1):
-            slot = StateManager.Get(f"{RosterPath(key)}.slot.{i}", {}) or {}
-            players = []
-            for p in (slot.get("player") or {}).values():
-                players.append(
-                    {
-                        "gamerTag": p.get("name") or "",
-                        "prefix": p.get("team") or "",
-                        "name": p.get("real_name") or "",
-                        "country_code": (p.get("country") or {}).get("code")
-                        if isinstance(p.get("country"), dict)
-                        else None,
-                        "state_code": (p.get("state") or {}).get("code")
-                        if isinstance(p.get("state"), dict)
-                        else None,
-                        "pronoun": p.get("pronoun") or "",
-                    }
-                )
-            roster.append({"name": slot.get("name") or "", "players": players})
-        return roster
-
+    # =====================================================
+    # SAVING
+    # =====================================================
     def Save(self):
         try:
             data = {

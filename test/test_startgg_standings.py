@@ -18,6 +18,7 @@ for name, path in [
     package.__path__ = [os.path.abspath(path)]
     sys.modules[name] = package
 
+from src.TournamentDataProvider.ProviderContext import AppContext
 from src.TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
 
 
@@ -52,6 +53,7 @@ def Standing(placement, total):
 
 def Provider(total):
     provider = StartGGDataProvider.__new__(StartGGDataProvider)
+    provider.context = AppContext()
     provider.url = "https://www.start.gg/tournament/t/event/e"
     provider.asked = []
     lock = threading.Lock()

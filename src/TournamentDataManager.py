@@ -1,3 +1,4 @@
+import threading
 import time
 
 from loguru import logger
@@ -7,11 +8,12 @@ from qtpy.QtWidgets import *
 
 from .GameAssetManager import GameAssetManager
 from .Helpers.VersionHelper import get_supported_providers
+from .PlayerDB import PlayerDB
+from .PlayerMains import PlayerMains
 from .SelectEventWindow import SelectEventWindow
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .TournamentDataProvider.ParryGGDataProvider import ParryGGDataProvider
-from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
+from .TournamentDataProvider.Providers import ProviderClassFor
 from .TournamentDataProvider.TournamentDataProvider import TournamentDataProvider
 from .TournamentDataProvider.TournamentEventLookup import ParseTournamentLink
 from .Workers import Worker
@@ -51,6 +53,22 @@ class TournamentDataManager(QObject):
         GameAssetManager.instance.signals.onLoadAssets.connect(self.SetGameFromProvider)
 
         self.setLoadingWorker = None
+        # Background mains fetching for the provider, see MainsFor
+        self._mains = None
+        self._mainsLock = threading.Lock()
+
+    # =====================================================
+    # SETUP
+    # =====================================================
+    def UiMounted(self):
+        if SettingsManager.Get("TOURNAMENT_URL"):
+            TournamentDataManager.instance.SetTournament(
+                SettingsManager.Get("TOURNAMENT_URL"), initialLoading=True
+            )
+            TournamentDataManager.instance.signals.twitch_username_updated.emit()
+
+    def GetProvider(self):
+        return self.provider
 
     def GameChanged(self, videogame):
         StateManager.Set("provider_videogame", {"id": videogame})
@@ -61,12 +79,53 @@ class TournamentDataManager(QObject):
         if not self.provider or not self.provider.videogame:
             return
 
-        if "start.gg" in self.provider.url:
-            GameAssetManager.instance.SetGameFromStartGGId(self.provider.videogame)
-        elif "parry.gg" in self.provider.url:
-            GameAssetManager.instance.SetGameFromIGDBId(self.provider.videogame)
+        # The provider's videogame ids are start.gg's or IGDB's
+        setGame = {
+            "startgg": GameAssetManager.instance.SetGameFromStartGGId,
+            "igdb": GameAssetManager.instance.SetGameFromIGDBId,
+        }.get(self.provider.GAME_ID_KIND)
+        if setGame:
+            setGame(self.provider.videogame)
         else:
             logger.error("Unsupported provider...")
+
+    # =====================================================
+    # TOURNAMENT
+    # =====================================================
+    def CreateProvider(self, url):
+        """A provider for the event link, None if there's none for it or it
+        can't be made (its API key isn't set)"""
+        providerClass = ProviderClassFor(url)
+        if providerClass is None:
+            logger.error("Unsupported provider...")
+            return None
+
+        apiKey = None
+        if providerClass.API_KEY_SETTING:
+            apiKey = SettingsManager.Get(providerClass.API_KEY_SETTING)
+            if not apiKey:
+                logger.error(f"{providerClass.NAME} API key not set")
+                self.ShowApiKeyMissing(providerClass)
+                return None
+
+        try:
+            return providerClass(url, self.threadPool, self, apiKey)
+        except Exception as e:
+            logger.error(f"Failed to initialize {providerClass.NAME} provider: {e}")
+            return None
+
+    def ShowApiKeyMissing(self, providerClass):
+        url = providerClass.API_KEY_URL
+        messagebox = QMessageBox()
+        messagebox.setWindowTitle(QApplication.translate("app", "Error"))
+        messagebox.setTextFormat(Qt.RichText)
+        messagebox.setText(
+            QApplication.translate("app", providerClass.API_KEY_MISSING)
+            + "<br><br>"
+            + QApplication.translate("app", "API keys can be created at: ")
+            + f'<a href="{url}">{url.split("://")[-1]}</a>'
+        )
+        messagebox.exec()
 
     @Slot(str, bool)
     @Slot(str)
@@ -74,41 +133,10 @@ class TournamentDataManager(QObject):
         if self.provider and self.provider.url == url:
             return
 
-        if url is not None and "start.gg" in url:
-            TournamentDataManager.instance.provider = StartGGDataProvider(
-                url, self.threadPool, self
-            )
-            url = TournamentDataManager.instance.provider.GetRealEventURL(url)
-        elif url is not None and "parry.gg" in url:
-            if not SettingsManager.Get("api_keys.parrygg"):
-                logger.error("ParryGG API key not set")
-
-                messagebox = QMessageBox()
-                messagebox.setWindowTitle(QApplication.translate("app", "Error"))
-                messagebox.setTextFormat(Qt.RichText)
-                messagebox.setText(
-                    QApplication.translate(
-                        "app",
-                        "Parry.gg API key has not been set. Please configure it in Settings > API Keys.",
-                    )
-                    + "<br><br>"
-                    + QApplication.translate("app", "API keys can be created at: ")
-                    + '<a href="https://parry.gg/api-keys">parry.gg/api-keys</a>'
-                )
-                messagebox.exec()
-
-                TournamentDataManager.instance.provider = None
-            else:
-                try:
-                    TournamentDataManager.instance.provider = ParryGGDataProvider(
-                        url, self.threadPool, self, SettingsManager.Get("api_keys.parrygg")
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to initialize ParryGG provider: {e}")
-                    TournamentDataManager.instance.provider = None
-        else:
-            logger.error("Unsupported provider...")
-            TournamentDataManager.instance.provider = None
+        TournamentDataManager.instance.provider = self.CreateProvider(url)
+        if self.provider is not None:
+            # A start.gg admin link becomes its event's link
+            url = self.provider.GetRealEventURL(url)
 
         SettingsManager.Set("TOURNAMENT_URL", url)
 
@@ -116,10 +144,8 @@ class TournamentDataManager(QObject):
             self.GetTournamentData(initialLoading=initialLoading)
             self.GetTournamentPhases()
 
-            TournamentDataManager.instance.provider.GetEntrants()
+            self.LoadEntrants()
             TournamentDataManager.instance.signals.tournament_changed.emit()
-
-            # TournamentDataManager.instance.SetGameFromProvider()
         else:
             TournamentDataManager.instance.signals.tournament_data_updated.emit({})
             TournamentDataManager.instance.signals.tournament_phases_updated.emit([])
@@ -127,33 +153,9 @@ class TournamentDataManager(QObject):
             GameAssetManager.instance.LoadGameAssets(0)
 
     def SetTournamentSignal(self, url, initialLoading=False):
-        if self.provider and self.provider.url == url:
-            return
-
-        if url is not None and "start.gg" in url:
-            TournamentDataManager.instance.provider = StartGGDataProvider(
-                url, self.threadPool, self
-            )
-        elif url is not None and "parry.gg" in url:
-            TournamentDataManager.instance.provider = ParryGGDataProvider(
-                url, self.threadPool, self
-            )
-        else:
-            logger.error("Unsupported provider...")
-            TournamentDataManager.instance.provider = None
-
-        SettingsManager.Set("TOURNAMENT_URL", url)
-
-        if self.provider is not None:
-            self.GetTournamentData(initialLoading=initialLoading)
-            self.GetTournamentPhases()
-
-            TournamentDataManager.instance.provider.GetEntrants()
-            TournamentDataManager.instance.signals.tournament_changed.emit()
-        else:
-            TournamentDataManager.instance.signals.tournament_data_updated.emit({})
-            TournamentDataManager.instance.signals.tournament_phases_updated.emit([])
-            TournamentDataManager.instance.signals.tournament_changed.emit()
+        # An event loaded from the web server (/load-tournament), like one
+        # loaded here
+        self.SetTournament(url, initialLoading)
 
     def SetStartggEventSlug(self, mainWindow):
         inp = QDialog(mainWindow)
@@ -218,16 +220,6 @@ class TournamentDataManager(QObject):
             parsed, SettingsManager.Get("api_keys.parrygg")
         )
 
-    def RepullEntrants(self):
-        # For entrants who registered after the event was loaded. Players
-        # already pulled are updated, not removed.
-        if self.provider is None:
-            return
-        provider = self.provider
-        # parry.gg pulls them on the calling thread, so keep it off the UI
-        worker = Worker(lambda progress_callback=None, cancel_event=None: provider.GetEntrants())
-        self.threadPool.start(worker)
-
     def SetTwitchUsername(self, window):
         input_dialog = QInputDialog(window)
         input_dialog.setWindowTitle(QApplication.translate("app", "Set Twitch username"))
@@ -239,15 +231,84 @@ class TournamentDataManager(QObject):
             SettingsManager.Set("twitch_username", input_dialog.textValue())
 
     def GetTournamentData(self, initialLoading=False):
-        worker = Worker(self.provider.GetTournamentData)
-        worker.signals.result.connect(
-            lambda tournamentData: [
-                tournamentData.update({"initial_load": initialLoading}),
-                TournamentDataManager.instance.signals.tournament_data_updated.emit(tournamentData),
-            ]
-        )
+        provider = self.provider
+
+        def fetch(progress_callback=None, cancel_event=None):
+            provider.videogameFound = None
+            data = provider.GetTournamentData()
+            return data, provider.videogameFound
+
+        def loaded(result):
+            tournamentData, videogame = result
+            # The event's game first, as the layouts' game comes with it
+            if videogame:
+                self.signals.game_changed.emit(videogame)
+            tournamentData.update({"initial_load": initialLoading})
+            TournamentDataManager.instance.signals.tournament_data_updated.emit(tournamentData)
+
+        worker = Worker(fetch)
+        worker.signals.result.connect(loaded)
         self.threadPool.start(worker)
 
+    def RepullEntrants(self):
+        # For entrants who registered after the event was loaded. Players
+        # already pulled are updated, not removed.
+        self.LoadEntrants()
+
+    # =====================================================
+    # ENTRANTS AND PLAYERS
+    # =====================================================
+    def LoadEntrants(self):
+        """Adds the event's entrants to the player database, in the
+        background, then fetches their mains ahead of time"""
+        provider = self.provider
+        if provider is None:
+            return
+
+        def load(progress_callback=None, cancel_event=None):
+            players = provider.FetchEntrants(progress_callback, cancel_event)
+            PlayerDB.AddPlayers(players)
+            # The entrants query doesn't carry each player's last set (that
+            # blew start.gg's complexity cap), so mains are filled in the
+            # background instead of the scoreboard fetching them one by one
+            mains = self.MainsFor(provider)
+            if mains is not None and players:
+                mains.Prewarm(players)
+
+        self.threadPool.start(Worker(load))
+
+    def MainsFor(self, provider):
+        """The background mains fetching for the provider, None if it has
+        none (SUPPORTS_MAINS_PREFETCH)"""
+        if not provider.SUPPORTS_MAINS_PREFETCH:
+            return None
+        with self._mainsLock:
+            if self._mains is None or self._mains.provider is not provider:
+                self._mains = PlayerMains(
+                    provider,
+                    isCurrent=lambda: self.provider is provider,
+                    onUpdated=self.signals.player_mains_updated.emit,
+                )
+            return self._mains
+
+    def EnrichPlayer(self, playerData, blocking=True):
+        """Fills in what the provider can add to a player loaded on a
+        scoreboard (their mains). Without blocking, only what it already
+        has: the rest is fetched in the background, and
+        signals.player_mains_updated says when it's there."""
+        provider = self.provider
+        if provider is None:
+            return playerData
+        playerData = provider.EnrichPlayerData(playerData, blocking=blocking) or playerData
+        if not blocking and not playerData.get("mains"):
+            mains = self.MainsFor(provider)
+            if mains is not None:
+                mains.Queue(playerData)
+        return playerData
+
+    # =====================================================
+    # PHASES AND BRACKETS
+    # =====================================================
     def GetTournamentPhases(self):
         worker = Worker(self.provider.GetTournamentPhases)
         worker.signals.result.connect(
@@ -285,6 +346,9 @@ class TournamentDataManager(QObject):
             worker.signals.finished.connect(onFinished)
         self.threadPool.start(worker)
 
+    # =====================================================
+    # SETS
+    # =====================================================
     def LoadSets(self, showFinished):
         if self.setLoadingWorker:
             # If there was a previous set loading worker,
@@ -309,6 +373,25 @@ class TournamentDataManager(QObject):
         self.setLoadingWorker = worker
         self.threadPool.start(worker)
 
+    def GetMatch(self, mainWindow, setId, overwrite=True, no_mains=False, on_finished=None):
+        if self.provider is None:
+            if on_finished:
+                on_finished()
+            return
+        worker = Worker(self.provider.GetMatch, **{"setId": setId})
+        worker.signals.result.connect(
+            lambda data: [
+                data.update({"overwrite": overwrite, "no_mains": no_mains}),
+                mainWindow.signals.UpdateSetData.emit(data),
+            ]
+        )
+        if on_finished:
+            worker.signals.finished.connect(on_finished)
+        self.threadPool.start(worker)
+
+    # =====================================================
+    # STREAMS AND STATIONS
+    # =====================================================
     def LoadStations(self):
         worker = Worker(self.provider.GetStations)
         worker.signals.result.connect(
@@ -374,22 +457,9 @@ class TournamentDataManager(QObject):
         worker.signals.result.connect(lambda sets: mainWindow.signals.StationSetsLoaded.emit(sets))
         self.threadPool.start(worker)
 
-    def GetMatch(self, mainWindow, setId, overwrite=True, no_mains=False, on_finished=None):
-        if self.provider is None:
-            if on_finished:
-                on_finished()
-            return
-        worker = Worker(self.provider.GetMatch, **{"setId": setId})
-        worker.signals.result.connect(
-            lambda data: [
-                data.update({"overwrite": overwrite, "no_mains": no_mains}),
-                mainWindow.signals.UpdateSetData.emit(data),
-            ]
-        )
-        if on_finished:
-            worker.signals.finished.connect(on_finished)
-        self.threadPool.start(worker)
-
+    # =====================================================
+    # SET HISTORY
+    # =====================================================
     def GetRecentSets(self, callback, id1, id2, videogame):
         worker = Worker(
             self.provider.GetRecentSets,
@@ -401,15 +471,6 @@ class TournamentDataManager(QObject):
                 "videogame": videogame,
             },
         )
-        self.threadPool.start(worker)
-
-    def GetStandings(self, playerNumber, callback, on_progress=None, on_finished=None):
-        worker = Worker(self.provider.GetStandings, **{"playerNumber": playerNumber})
-        worker.signals.result.connect(lambda data: [callback.emit(data)])
-        if on_progress:
-            worker.signals.progress.connect(on_progress)
-        if on_finished:
-            worker.signals.finished.connect(on_finished)
         self.threadPool.start(worker)
 
     def GetLastSets(self, callback, playerId, playerNumber):
@@ -442,15 +503,17 @@ class TournamentDataManager(QObject):
             worker.signals.finished.connect(on_finished)
         self.threadPool.start(worker)
 
-    def UiMounted(self):
-        if SettingsManager.Get("TOURNAMENT_URL"):
-            TournamentDataManager.instance.SetTournament(
-                SettingsManager.Get("TOURNAMENT_URL"), initialLoading=True
-            )
-            TournamentDataManager.instance.signals.twitch_username_updated.emit()
-
-    def GetProvider(self):
-        return self.provider
+    # =====================================================
+    # STANDINGS
+    # =====================================================
+    def GetStandings(self, playerNumber, callback, on_progress=None, on_finished=None):
+        worker = Worker(self.provider.GetStandings, **{"playerNumber": playerNumber})
+        worker.signals.result.connect(lambda data: [callback.emit(data)])
+        if on_progress:
+            worker.signals.progress.connect(on_progress)
+        if on_finished:
+            worker.signals.finished.connect(on_finished)
+        self.threadPool.start(worker)
 
 
 TournamentDataManager.instance = TournamentDataManager()

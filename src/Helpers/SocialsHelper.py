@@ -29,6 +29,9 @@ PLATFORM_KEYS = [key for key, _, _ in PLATFORMS]
 _IGNORED_TYPES = {"mixer"}
 
 
+# =====================================================
+# HANDLES
+# =====================================================
 def CleanHandle(handle):
     """The handle without surrounding spaces. A leading @ is kept, the
     layouts handle it themselves."""
@@ -51,6 +54,9 @@ def URL(platform, handle):
     return None
 
 
+# =====================================================
+# PLAYER SOCIALS
+# =====================================================
 def Clean(socials):
     """socials as {platform: handle}, without empty handles, with the known
     platforms first in PLATFORMS order."""

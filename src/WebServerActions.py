@@ -52,6 +52,9 @@ class WebServerActions(QThread):
         self.commentaryWidget = commentaryWidget
         self.threadPool = QThreadPool()
 
+    # =====================================================
+    # SCOREBOARD AND STAGE STRIKE LOOKUPS
+    # =====================================================
     def _get_scoreboard(self, number=1):
         """Get a scoreboard by number, raising ScoreboardNotAvailable if it doesn't exist."""
         sb = self.scoreboard.GetScoreboard(number)
@@ -99,6 +102,9 @@ class WebServerActions(QThread):
         state = logic.CurrentState()
         return state.currPlayer != self._team_strike_player(logic.scoreboardNumber, team)
 
+    # =====================================================
+    # STAGE STRIKING
+    # =====================================================
     @gui_thread_sync
     def ruleset(self, scoreboard=1):
         data = {}
@@ -341,6 +347,9 @@ class WebServerActions(QThread):
         self._get_scoreboard(n).gameReport.ResetAllStages()
         return "OK"
 
+    # =====================================================
+    # SCOREBOARD SCORE AND TEAMS
+    # =====================================================
     @gui_thread_sync
     def UpdateScore(self, scoreboard=1):
         if not SettingsManager.Get("general.control_score_from_stage_strike", True):
@@ -490,6 +499,9 @@ class WebServerActions(QThread):
         self._team_battle()
         return StateManager.Get("team_battle", {})
 
+    # =====================================================
+    # SCOREBOARD DATA
+    # =====================================================
     def get_scoreboard(self, scoreboard):
         sb_widget: ScoreboardWidget = self._get_scoreboard(scoreboard)
         return StateManager.Get(f"score.{sb_widget.scoreboardNumber}")
@@ -607,6 +619,9 @@ class WebServerActions(QThread):
 
         return "OK"
 
+    # =====================================================
+    # GAMES AND CHARACTERS
+    # =====================================================
     @gui_thread_sync
     def set_game(self, data):
         # Not actually sure if this needs to be in the GUI thread but the asset manager is complex enough that it seems
@@ -685,6 +700,9 @@ class WebServerActions(QThread):
                 data[item_data.get("name")] = item_data
         return data
 
+    # =====================================================
+    # SWAPPING AND LOADING SETS
+    # =====================================================
     def swap_teams(self, scoreboard):
         sb = self._get_scoreboard(scoreboard)
         sb.signals.SwapTeams.emit()
@@ -702,6 +720,21 @@ class WebServerActions(QThread):
         self._get_scoreboard(scoreboard).signals.StreamSetSelection.emit()
         return "OK"
 
+    @gui_thread_sync
+    def load_set(self, scoreboard, set=None, no_mains=False):
+        if no_mains is False:
+            no_mains = SettingsManager.Get("general.force_no_mains_on_new_set_loads", False)
+        if set is not None:
+            if not isinstance(set, str):
+                set = "0"
+            self._get_scoreboard(scoreboard).signals.NewSetSelected.emit(
+                orjson.loads(orjson.dumps({"id": set, "auto_update": "set", "no_mains": no_mains}))
+            )
+        return "OK"
+
+    # =====================================================
+    # PLAYER STATS
+    # =====================================================
     def stats_recent_sets(self, scoreboard):
         StatsUtil.instance.signals.RecentSetsSignal.emit()
         return "OK"
@@ -757,6 +790,9 @@ class WebServerActions(QThread):
         dashboard: {"teams": [[player...], [player...]]}"""
         return CommentaryPreview.Preview((data or {}).get("teams"))
 
+    # =====================================================
+    # RESETTING
+    # =====================================================
     @gui_thread_sync
     def reset_scores(self, scoreboard):
         self._get_scoreboard(scoreboard).ResetScore()
@@ -782,6 +818,43 @@ class WebServerActions(QThread):
         self._get_scoreboard(scoreboard).CommandClearAll()
         return "OK"
 
+    # =====================================================
+    # SETS AND COMMENTATORS
+    # =====================================================
+    def get_sets(self, args):
+        provider = TournamentDataManager.instance.GetProvider()
+        if provider is None:
+            return []
+
+        if args.get("getFinished") is not None:
+            sets = provider.GetMatches(getFinished=True)
+            return sets
+        else:
+            sets = provider.GetMatches(getFinished=False)
+            return sets
+
+    def get_set(self, scoreboard):
+        if self._get_scoreboard(scoreboard).lastSetSelected is None:
+            return "0"
+        else:
+            return str(self._get_scoreboard(scoreboard).lastSetSelected)
+
+    def get_match(self, setId=None):
+        provider = TournamentDataManager.instance.GetProvider()
+        return provider.GetMatch(setId=int(setId))
+
+    def get_comms(self):
+        return StateManager.Get("commentary")
+
+    # =====================================================
+    # PLAYER DATABASE
+    # =====================================================
+    def get_playerdb(self):
+        return PlayerDB.database
+
+    # =====================================================
+    # BRACKET
+    # =====================================================
     @gui_thread_sync
     def update_bracket(self):
         phase_name = StateManager.Get("bracket.phase")
@@ -839,6 +912,18 @@ class WebServerActions(QThread):
         return data
 
     @gui_thread_sync
+    def update_bracket_sets(self):
+        # Only the set results of the bracket loaded in the bracket widget,
+        # without reloading its players. The sets are fetched in the
+        # background, so this returns once the update has started.
+        if BracketWidget.instance is None:
+            return "NO_BRACKET"
+        return BracketWidget.instance.RefreshSets()
+
+    # =====================================================
+    # STREAM QUEUE
+    # =====================================================
+    @gui_thread_sync
     def stream_queue(self):
         return StateManager.Get("stream_queue") or {}
 
@@ -871,70 +956,9 @@ class WebServerActions(QThread):
         widget.LoadNext(config.name)
         return "OK"
 
-    @gui_thread_sync
-    def update_bracket_sets(self):
-        # Only the set results of the bracket loaded in the bracket widget,
-        # without reloading its players. The sets are fetched in the
-        # background, so this returns once the update has started.
-        if BracketWidget.instance is None:
-            return "NO_BRACKET"
-        return BracketWidget.instance.RefreshSets()
-
-    # Display Controls: kind is "folder", "group" or "all", action "show",
-    # "hide", "toggle" or None to only answer whether it's shown
-    @gui_thread_sync
-    def display(self, kind, name=None, action=None):
-        from .DisplayControls import DisplayControls
-
-        controls = DisplayControls.instance
-        if controls is None:
-            return "NO_DISPLAY_CONTROLS", 503
-        if kind == "all":
-            if action is None:
-                return {"kind": "all", "shown": controls.AllShown(), **controls.State()}
-            result = controls.SetAll(action)
-        elif action is None:
-            result = controls.Get(kind, name)
-        else:
-            result = controls.Set(kind, name, action)
-        error = result.get("error")
-        if error:
-            return error, 400 if error in ("UNKNOWN_ACTION", "UNKNOWN_KIND") else 404
-        return result
-
-    # Twitch prediction of the stream's scoreboard: action is "start",
-    # "lock", "resolve" (with team 1 or 2), "cancel", or None for its state
-    @gui_thread_sync
-    def twitch_prediction(self, action=None, team=None):
-        from .TwitchPredictions import TwitchPredictionsHook
-
-        hook = TwitchPredictionsHook.instance
-        if hook is None:
-            return "NO_TWITCH_PREDICTIONS", 503
-        manager = hook.manager
-        if action is None:
-            return manager.State()
-        if action == "start":
-            return hook.StartForScoreboard()
-        if action == "lock":
-            manager.Lock()
-        elif action == "cancel":
-            manager.Cancel()
-        elif action == "resolve":
-            if str(team) not in ("1", "2"):
-                return "UNKNOWN_TEAM", 400
-            manager.Resolve(int(team))
-        else:
-            return "UNKNOWN_ACTION", 400
-        return manager.State()
-
-    @gui_thread_sync
-    def display_register(self, groups):
-        from .DisplayControls import DisplayControls
-
-        if DisplayControls.instance is not None and isinstance(groups, list):
-            DisplayControls.instance.AddGroups(groups)
-
+    # =====================================================
+    # BRACKET FOCUS
+    # =====================================================
     @gui_thread_sync
     def bracket_focus(self, channel=None):
         # A focus channel's state, "main" by default
@@ -975,46 +999,70 @@ class WebServerActions(QThread):
             target.Set(request)
         return focus.State(target.name)
 
+    # =====================================================
+    # DISPLAY CONTROLS
+    # =====================================================
+    # Display Controls: kind is "folder", "group" or "all", action "show",
+    # "hide", "toggle" or None to only answer whether it's shown
     @gui_thread_sync
-    def load_set(self, scoreboard, set=None, no_mains=False):
-        if no_mains is False:
-            no_mains = SettingsManager.Get("general.force_no_mains_on_new_set_loads", False)
-        if set is not None:
-            if not isinstance(set, str):
-                set = "0"
-            self._get_scoreboard(scoreboard).signals.NewSetSelected.emit(
-                orjson.loads(orjson.dumps({"id": set, "auto_update": "set", "no_mains": no_mains}))
-            )
-        return "OK"
+    def display(self, kind, name=None, action=None):
+        from .DisplayControls import DisplayControls
 
-    def get_comms(self):
-        return StateManager.Get("commentary")
-
-    def get_set(self, scoreboard):
-        if self._get_scoreboard(scoreboard).lastSetSelected is None:
-            return "0"
+        controls = DisplayControls.instance
+        if controls is None:
+            return "NO_DISPLAY_CONTROLS", 503
+        if kind == "all":
+            if action is None:
+                return {"kind": "all", "shown": controls.AllShown(), **controls.State()}
+            result = controls.SetAll(action)
+        elif action is None:
+            result = controls.Get(kind, name)
         else:
-            return str(self._get_scoreboard(scoreboard).lastSetSelected)
+            result = controls.Set(kind, name, action)
+        error = result.get("error")
+        if error:
+            return error, 400 if error in ("UNKNOWN_ACTION", "UNKNOWN_KIND") else 404
+        return result
 
-    def get_sets(self, args):
-        provider = TournamentDataManager.instance.GetProvider()
-        if provider is None:
-            return []
+    @gui_thread_sync
+    def display_register(self, groups):
+        from .DisplayControls import DisplayControls
 
-        if args.get("getFinished") is not None:
-            sets = provider.GetMatches(getFinished=True)
-            return sets
+        if DisplayControls.instance is not None and isinstance(groups, list):
+            DisplayControls.instance.AddGroups(groups)
+
+    # =====================================================
+    # TWITCH PREDICTIONS
+    # =====================================================
+    # Twitch prediction of the stream's scoreboard: action is "start",
+    # "lock", "resolve" (with team 1 or 2), "cancel", or None for its state
+    @gui_thread_sync
+    def twitch_prediction(self, action=None, team=None):
+        from .TwitchPredictions import TwitchPredictionsHook
+
+        hook = TwitchPredictionsHook.instance
+        if hook is None:
+            return "NO_TWITCH_PREDICTIONS", 503
+        manager = hook.manager
+        if action is None:
+            return manager.State()
+        if action == "start":
+            return hook.StartForScoreboard()
+        if action == "lock":
+            manager.Lock()
+        elif action == "cancel":
+            manager.Cancel()
+        elif action == "resolve":
+            if str(team) not in ("1", "2"):
+                return "UNKNOWN_TEAM", 400
+            manager.Resolve(int(team))
         else:
-            sets = provider.GetMatches(getFinished=False)
-            return sets
+            return "UNKNOWN_ACTION", 400
+        return manager.State()
 
-    def get_playerdb(self):
-        return PlayerDB.database
-
-    def get_match(self, setId=None):
-        provider = TournamentDataManager.instance.GetProvider()
-        return provider.GetMatch(setId=int(setId))
-
+    # =====================================================
+    # LOADING PLAYERS FROM TAGS
+    # =====================================================
     @gui_thread_sync
     def load_player_from_tag(self, scoreboard, tag, team, player, no_mains=False):
         result = self._get_scoreboard(scoreboard).LoadPlayerFromTag(
@@ -1031,6 +1079,9 @@ class WebServerActions(QThread):
             return "ERROR : index can't be lower than 1"
         result = self.commentaryWidget.LoadCommFromTagSignal.emit(index, tag, no_mains)
 
+    # =====================================================
+    # TOURNAMENT
+    # =====================================================
     def load_tournament(self, url=None):
         logger.error(f"URL PROVIDED: {url}")
         if url is None or url == "":
@@ -1064,6 +1115,9 @@ class WebServerActions(QThread):
         except TournamentLookupError as e:
             return {"error": e.code, "message": str(e)}
 
+    # =====================================================
+    # STATES AND STAGES
+    # =====================================================
     @gui_thread_sync
     def get_states(self, countryCode: str):
         return CountryHelper.GetStates(countryCode)

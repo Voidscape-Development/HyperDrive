@@ -11,6 +11,9 @@
 // (HTML), line (polyline options), fly (zoom to the players, the lines
 // once there)
 (() => {
+  // -------------------------------------------------------------------
+  // Distances and pings
+
   const radians = (deg) => (deg * Math.PI) / 180;
 
   // Great circle distance
@@ -26,6 +29,9 @@
     _.minBy(servers, (s) => Math.hypot(parseFloat(s.latitude) - lat, parseFloat(s.longitude) - lng));
 
   const pairs = (list) => list.flatMap((a, i) => list.slice(i + 1).map((b) => [a, b]));
+
+  // -------------------------------------------------------------------
+  // Players and the HUD
 
   // Where a player is: [lat, lng], and whether it's known
   function locate(player, countryOnly) {
@@ -50,6 +56,9 @@
     const distance = km < 100 ? "< 100 Km / < 62 mi" : `${km.toFixed(2)} Km / ${(km * 0.621371).toFixed(2)} mi`;
     $("#distance").text(`${spots.length === 2 ? "DISTANCE" : "MAX DISTANCE"}: ${distance}`);
   }
+
+  // -------------------------------------------------------------------
+  // The layout
 
   HD.layouts.map = (
     map,

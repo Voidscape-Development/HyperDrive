@@ -81,6 +81,9 @@ class StateManager:
     # Use this for large lookup tables that are only useful as JSON (e.g. game.stages).
     EXPORT_EXCLUDED_PREFIXES = ("root['game']['stages']",)
 
+    # =====================================================
+    # SAVE BLOCKS
+    # =====================================================
     @contextlib.contextmanager
     def SaveBlock(watchdog=True):
         StateManager.BlockSaving(watchdog=watchdog)
@@ -163,6 +166,9 @@ class StateManager:
                 "BlockSaving() without a matching ReleaseSaving()"
             )
 
+    # =====================================================
+    # SAVING
+    # =====================================================
     def SaveState():
         if StateManager.saveBlocked != 0:
             return
@@ -300,6 +306,48 @@ class StateManager:
                 changedPaths if diff is not None and changedPaths else None,
             )
 
+    def UpdateLastSavedState(changedPaths):
+        """Copy the changed paths of the state into lastSavedState.
+
+        Much cheaper than cloning the whole state on every save. With
+        changedPaths=None the whole state is cloned.
+        """
+        if changedPaths is not None:
+            try:
+                # Parents first, so a child copied later isn't overwritten
+                for path in sorted(set(changedPaths), key=len):
+                    src = StateManager.state
+                    exists = True
+                    for k in path:
+                        if isinstance(src, dict) and k in src:
+                            src = src[k]
+                        else:
+                            exists = False
+                            break
+
+                    dst = StateManager.lastSavedState
+                    for k in path[:-1]:
+                        if k not in dst:
+                            if not exists:
+                                break
+                            dst[k] = {}
+                        dst = dst[k]
+                        if not isinstance(dst, dict):
+                            raise TypeError(f"Can't update lastSavedState at {path}")
+                    else:
+                        if exists:
+                            dst[path[-1]] = deep_clone(src)
+                        else:
+                            dst.pop(path[-1], None)
+                return
+            except Exception:
+                logger.warning(traceback.format_exc())
+
+        StateManager.lastSavedState = deep_clone(StateManager.state)
+
+    # =====================================================
+    # NARROWING CHANGES
+    # =====================================================
     def NarrowChangedKeys(changedPaths):
         """Return DeepDiff include_paths giving the same diff as changedPaths.
 
@@ -503,45 +551,9 @@ class StateManager:
             )
         return result
 
-    def UpdateLastSavedState(changedPaths):
-        """Copy the changed paths of the state into lastSavedState.
-
-        Much cheaper than cloning the whole state on every save. With
-        changedPaths=None the whole state is cloned.
-        """
-        if changedPaths is not None:
-            try:
-                # Parents first, so a child copied later isn't overwritten
-                for path in sorted(set(changedPaths), key=len):
-                    src = StateManager.state
-                    exists = True
-                    for k in path:
-                        if isinstance(src, dict) and k in src:
-                            src = src[k]
-                        else:
-                            exists = False
-                            break
-
-                    dst = StateManager.lastSavedState
-                    for k in path[:-1]:
-                        if k not in dst:
-                            if not exists:
-                                break
-                            dst[k] = {}
-                        dst = dst[k]
-                        if not isinstance(dst, dict):
-                            raise TypeError(f"Can't update lastSavedState at {path}")
-                    else:
-                        if exists:
-                            dst[path[-1]] = deep_clone(src)
-                        else:
-                            dst.pop(path[-1], None)
-                return
-            except Exception:
-                logger.warning(traceback.format_exc())
-
-        StateManager.lastSavedState = deep_clone(StateManager.state)
-
+    # =====================================================
+    # READING AND WRITING STATE
+    # =====================================================
     def LoadState():
         StateManager.load_error = None
         try:
@@ -562,6 +574,9 @@ class StateManager:
             StateManager.signals.state_big_change.emit()
             StateManager.SaveState()
 
+    def Get(key: str, default=None):
+        return deep_get(StateManager.state, key, default)
+
     def Set(key: str, value):
         with StateManager.lock:
             deep_set(StateManager.state, key, value)
@@ -580,9 +595,9 @@ class StateManager:
         else:
             StateManager.CheckSaveBlockWatchdog()
 
-    def Get(key: str, default=None):
-        return deep_get(StateManager.state, key, default)
-
+    # =====================================================
+    # FILE EXPORT
+    # =====================================================
     def ExportText(oldState, diff):
         changes = [*diff.get("values_changed", {}).items(), *diff.get("type_changes", {}).items()]
         for key, change in changes:

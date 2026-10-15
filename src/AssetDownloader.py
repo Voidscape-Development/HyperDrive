@@ -35,6 +35,9 @@ class AssetDownloader(QObject):
         self.threadpool = QThreadPool()
         self.signals = AssetDownloaderSignals()
 
+    # =====================================================
+    # UPDATE CHECKS
+    # =====================================================
     def UiMounted(self):
         self.iconUpdateAvailable = ThemedIcon("assets/icons/update_available.svg")
         self.iconInstalled = ThemedIcon("assets/icons/installed.svg")
@@ -66,6 +69,52 @@ class AssetDownloader(QObject):
         thread = AssetUpdatesThread(self)
         thread.start()
 
+    @assert_gui_thread
+    def UpdateAllAssets(self):
+        def f(assets):
+            AssetDownloader.instance.signals.AssetUpdates.disconnect(f)
+
+            allFilesToDownload = []
+
+            for game, _assets in assets.items():
+                for asset in _assets:
+                    if "files" not in asset:
+                        logger.warning(
+                            f"Asset entry for game={game!r} missing 'files' key, skipping"
+                        )
+                        continue
+                    filesToDownload = list(asset["files"].values())
+                    for fileToDownload in filesToDownload:
+                        fileToDownload["path"] = (
+                            f"https://github.com/joaorb64/StreamHelperAssets/releases/latest/download/{fileToDownload['name']}"
+                        )
+                        fileToDownload["extractpath"] = f"./user_data/games/{game}"
+                    allFilesToDownload.append(filesToDownload)
+
+            AssetDownloader.instance.downloadDialogue = QProgressDialog(
+                QApplication.translate("app", "Downloading assets"),
+                QApplication.translate("app", "Cancel"),
+                0,
+                100,
+            )
+            AssetDownloader.instance.downloadDialogue.setMinimumWidth(1200)
+            AssetDownloader.instance.downloadDialogue.setWindowModality(
+                Qt.WindowModality.WindowModal
+            )
+            AssetDownloader.instance.downloadDialogue.show()
+            AssetDownloader.instance.downloadDialogue.setFocus()
+            worker = Worker(AssetDownloader.instance.DownloadAssetsWorker, *[allFilesToDownload])
+            worker.signals.progress.connect(AssetDownloader.instance.DownloadAssetsProgress)
+            worker.signals.finished.connect(AssetDownloader.instance.DownloadAssetsFinished)
+            worker.signals.error.connect(AssetDownloader.instance.DownloadAssetsFailed)
+            AssetDownloader.instance.threadpool.start(worker)
+
+        AssetDownloader.instance.signals.AssetUpdates.connect(f)
+        AssetDownloader.instance.CheckAssetUpdates()
+
+    # =====================================================
+    # DOWNLOAD WINDOW
+    # =====================================================
     @assert_gui_thread
     def DownloadAssets(self, main_window):
         assets = self.DownloadAssetsFetch()
@@ -415,6 +464,9 @@ class AssetDownloader(QObject):
             logger.error(traceback.format_exc())
             return None
 
+    # =====================================================
+    # DOWNLOAD PROGRESS
+    # =====================================================
     def DownloadAssetsWorker(self, files, progress_callback, cancel_event):
         totalSize = sum(sum(f["size"] for f in fileList) for fileList in files)
         downloaded = 0
@@ -532,49 +584,6 @@ class AssetDownloader(QObject):
         self.downloadDialogue.close()
         self.preDownloadDialogue.setEnabled(True)
         self.preDownloadDialogue.setFocus()
-
-    @assert_gui_thread
-    def UpdateAllAssets(self):
-        def f(assets):
-            AssetDownloader.instance.signals.AssetUpdates.disconnect(f)
-
-            allFilesToDownload = []
-
-            for game, _assets in assets.items():
-                for asset in _assets:
-                    if "files" not in asset:
-                        logger.warning(
-                            f"Asset entry for game={game!r} missing 'files' key, skipping"
-                        )
-                        continue
-                    filesToDownload = list(asset["files"].values())
-                    for fileToDownload in filesToDownload:
-                        fileToDownload["path"] = (
-                            f"https://github.com/joaorb64/StreamHelperAssets/releases/latest/download/{fileToDownload['name']}"
-                        )
-                        fileToDownload["extractpath"] = f"./user_data/games/{game}"
-                    allFilesToDownload.append(filesToDownload)
-
-            AssetDownloader.instance.downloadDialogue = QProgressDialog(
-                QApplication.translate("app", "Downloading assets"),
-                QApplication.translate("app", "Cancel"),
-                0,
-                100,
-            )
-            AssetDownloader.instance.downloadDialogue.setMinimumWidth(1200)
-            AssetDownloader.instance.downloadDialogue.setWindowModality(
-                Qt.WindowModality.WindowModal
-            )
-            AssetDownloader.instance.downloadDialogue.show()
-            AssetDownloader.instance.downloadDialogue.setFocus()
-            worker = Worker(AssetDownloader.instance.DownloadAssetsWorker, *[allFilesToDownload])
-            worker.signals.progress.connect(AssetDownloader.instance.DownloadAssetsProgress)
-            worker.signals.finished.connect(AssetDownloader.instance.DownloadAssetsFinished)
-            worker.signals.error.connect(AssetDownloader.instance.DownloadAssetsFailed)
-            AssetDownloader.instance.threadpool.start(worker)
-
-        AssetDownloader.instance.signals.AssetUpdates.connect(f)
-        AssetDownloader.instance.CheckAssetUpdates()
 
 
 AssetDownloader.instance = AssetDownloader()

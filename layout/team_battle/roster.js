@@ -1,6 +1,10 @@
 // Roster board: both teams' players in two columns, with their character,
 // avatar, flag, pronouns and stocks or games won. The active players are lit
 // and eliminated ones crossed out. Cards shrink to fit any number of players.
+
+// ---------------------------------------------------------------------
+// Markup
+
 const teamColumn = (t) => HD.html`
   <div class="rs_team t${t}">
     <div class="rs_head">
@@ -26,6 +30,9 @@ const playerCard = (_p, i) => HD.html`
     <div class="x_mark"></div>
   </div>`;
 
+// ---------------------------------------------------------------------
+// Cards
+
 // Every card the same height on both sides, as big as fits
 function sizeCards(teams) {
   const most = Math.max(teams[0].players.length, teams[1].players.length, 1);
@@ -50,6 +57,9 @@ function updateCard(card, p, team, animate) {
   TB.setEliminated(card, p.dead, animate);
   TB.setActive(card, p.active && !p.dead, animate);
 }
+
+// ---------------------------------------------------------------------
+// The layout
 
 HD.layout({
   subscribe: ["team_battle", "score", "game", "tournamentInfo", "commentary"],

@@ -128,6 +128,9 @@ class StartGGReporter(QObject):
         self.sending = set()
         self.status = {}
 
+    # =====================================================
+    # STATUS
+    # =====================================================
     def Status(self, scoreboard):
         return self.status.get(scoreboard, {"state": STATUS_IDLE, "message": "", "setId": None})
 
@@ -144,6 +147,9 @@ class StartGGReporter(QObject):
     def Busy(self, scoreboard):
         return bool(self.queues.get(scoreboard))
 
+    # =====================================================
+    # REQUEST QUEUE
+    # =====================================================
     def Clear(self, scoreboard):
         """Drops requests not sent yet, e.g. another set was loaded."""
         queue = self.queues.get(scoreboard) or []
@@ -264,6 +270,9 @@ class StartGGReporter(QObject):
         if request is not None:
             self.Submit(scoreboard, request["kind"], request["setId"], request.get("variables"))
 
+    # =====================================================
+    # OTHER ACTIONS
+    # =====================================================
     def RunAction(self, kind, setId, variables=None, callback=None):
         """Calls a set, or assigns it to a stream or a station, on
         start.gg. Not queued like reports: it's one request, retried while

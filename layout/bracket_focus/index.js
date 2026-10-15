@@ -11,6 +11,9 @@
 //                 theme's, 200)
 // no_title.html has no title bar: the bracket takes the whole page.
 
+// ---------------------------------------------------------------------
+// Sizes
+
 // Sizes in world pixels, before zooming
 const PLAYER_H = 40;
 const SET_GAP = 2;
@@ -27,6 +30,9 @@ const PADDING = 60;
 const LABEL_ROOM = 90;
 const CAMERA_TIME = 1.0;
 
+// ---------------------------------------------------------------------
+// State
+
 // Set id: number used in class names (ids can be anything)
 let setIndex = {};
 // What build() placed: {sets: {id: {x, y, w, h}}, headers, byes, areas,
@@ -42,6 +48,9 @@ const box = (b) => `left: ${b.x}px; top: ${b.y}px; width: ${b.w}px;${b.h ? ` hei
 // Every set is shown, waiting ones with where their players come from, but
 // a grand final reset only when it's needed
 const isShown = (set) => set && HDBracket.SetState(set, true) != "hidden";
+
+// ---------------------------------------------------------------------
+// Placing the bracket
 
 // Places the columns of one part of the bracket from `top`, each set level
 // with the sets that feed it, like the bracket widget does. Returns the
@@ -166,6 +175,9 @@ function place(bracket) {
   return result;
 }
 
+// ---------------------------------------------------------------------
+// Drawing
+
 // Lines from each set to where its winner goes, within one part of the
 // bracket, and arrows out of it for players going on to another phase
 function lines(bracket) {
@@ -238,6 +250,9 @@ function build(data) {
     clearProps: "opacity,visibility",
   });
 }
+
+// ---------------------------------------------------------------------
+// Camera and focus
 
 // The world's size, with the pool standings once drawn
 function worldSize() {
@@ -340,6 +355,9 @@ function applyFocus(s, data, animate) {
   moveCamera(s, focusBox({ sets: [...inFocus], rounds: inFocus.size ? [...rounds] : [] }), animate);
 }
 
+// ---------------------------------------------------------------------
+// Updating sets
+
 function updateSets(s, data) {
   const bracket = data.bracket.bracket;
   const columns = Object.values(bracket.sides || {}).flat();
@@ -356,6 +374,9 @@ function updateSets(s, data) {
     if (set && element.get(0)) HDBracket.UpdateSet(s, element, set, data);
   }
 }
+
+// ---------------------------------------------------------------------
+// The layout
 
 HD.layout({
   subscribe: ["bracket", "score", "game", "tournamentInfo", "commentary"],

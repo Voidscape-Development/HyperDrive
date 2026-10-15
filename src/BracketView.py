@@ -63,6 +63,9 @@ class MatchItem(QGraphicsObject):
             )
         )
 
+    # =====================================================
+    # GEOMETRY
+    # =====================================================
     def boundingRect(self):
         # Room around the set for the selection outline
         return QRectF(-4, -4, MatchItem.WIDTH + 8, MatchItem.ROW_HEIGHT * 2 + 9)
@@ -75,16 +78,9 @@ class MatchItem(QGraphicsObject):
             return None
         return 0 if pos.y() < MatchItem.ROW_HEIGHT else 1
 
-    def hoverMoveEvent(self, event):
-        row = self.RowAt(event.pos())
-        if row != self.hovered:
-            self.hovered = row
-            self.update()
-
-    def hoverLeaveEvent(self, event):
-        self.hovered = None
-        self.update()
-
+    # =====================================================
+    # PAINTING
+    # =====================================================
     def paint(self, painter: QPainter, option, widget=None):
         m = self.match
         bracket = self.view.bracket
@@ -241,6 +237,19 @@ class MatchItem(QGraphicsObject):
             outline = QPainterPath()
             outline.addRoundedRect(rect.adjusted(-3, -3, 3, 3), 6, 6)
             painter.drawPath(outline)
+
+    # =====================================================
+    # EVENTS
+    # =====================================================
+    def hoverMoveEvent(self, event):
+        row = self.RowAt(event.pos())
+        if row != self.hovered:
+            self.hovered = row
+            self.update()
+
+    def hoverLeaveEvent(self, event):
+        self.hovered = None
+        self.update()
 
     def mouseDoubleClickEvent(self, event):
         self.view.EditMatch(self.match)
@@ -425,8 +434,10 @@ class BracketView(QGraphicsView):
         self._lastTarget = None
         self._fitPending = False
 
+    # =====================================================
+    # PLAYERS
+    # =====================================================
     # Data the widget provides
-
     def PlayerName(self, player):
         try:
             return self.playerName(player)
@@ -441,8 +452,10 @@ class BracketView(QGraphicsView):
             return True
         return self.bracket.InTopN(m, self.exportLimit)
 
+    # =====================================================
+    # BUILDING THE VIEW
+    # =====================================================
     # Building the scene
-
     def SetBracket(self, bracket: Bracket, fit=True):
         self.bracket = bracket
         self.Rebuild()
@@ -504,6 +517,9 @@ class BracketView(QGraphicsView):
         self.matchItems[m.id] = item
         return item
 
+    # =====================================================
+    # LAYOUT
+    # =====================================================
     def _LayOutSide(self, side, top, left=0):
         """Places a side's columns from `left`, `top`. Each set goes next to
         the sets that feed it. Returns {match id: (x, y)} and the bottom."""
@@ -641,8 +657,10 @@ class BracketView(QGraphicsView):
                 text.setPos(x, y)
                 self._scene.addItem(text)
 
+    # =====================================================
+    # EDITING
+    # =====================================================
     # Editing
-
     def Edited(self):
         self.Refresh()
         self.signals.edited.emit()
@@ -653,53 +671,21 @@ class BracketView(QGraphicsView):
             dialog.Apply()
             self.Edited()
 
-    # Selecting for the bracket focus layout
-
-    def ToggleSelected(self, id):
-        self.selected ^= {id}
-        if id in self.matchItems:
-            self.matchItems[id].update()
-        self.signals.selectionChanged.emit()
-        if id not in self.selected:
-            self.signals.unselected.emit([id], [])
-
-    def ToggleSelectedRound(self, key):
-        self.selectedRounds ^= {key}
-        if key in self.headerItems:
-            self.headerItems[key].UpdateStyle()
-        self.signals.selectionChanged.emit()
-        if key not in self.selectedRounds:
-            self.signals.unselected.emit([], [key])
-
-    def SetSelection(self, sets, rounds):
-        """Selects these sets and rounds (e.g. a channel's, coming back to it)."""
-        self.selected = set(sets or []) & set(self.matchItems.keys())
-        self.selectedRounds = set(rounds or []) & set(self.headerItems.keys())
-        for item in self.matchItems.values():
-            item.update()
-        for header in self.headerItems.values():
-            header.UpdateStyle()
-        self.signals.selectionChanged.emit()
-
-    def ClearSelection(self):
-        self.selected = set()
-        self.selectedRounds = set()
-        for item in self.matchItems.values():
-            item.update()
-        for header in self.headerItems.values():
-            header.UpdateStyle()
-        self.signals.selectionChanged.emit()
-
-    def SetFocused(self, sets, rounds):
-        """Shows which sets and rounds the bracket focus layout shows."""
-        sets, rounds = set(sets or []), set(rounds or [])
-        if sets == self.focused and rounds == self.focusedRounds:
-            return
-        self.focused, self.focusedRounds = sets, rounds
-        for item in self.matchItems.values():
-            item.update()
-        for header in self.headerItems.values():
-            header.UpdateStyle()
+    def RenameRound(self, side, column):
+        key = Bracket.RoundKey(side, column)
+        name, ok = QInputDialog.getText(
+            self,
+            QApplication.translate("app", "Round name"),
+            QApplication.translate("app", "Name (leave empty for the default one):"),
+            text=self.bracket.roundNames.get(key, ""),
+        )
+        if ok:
+            if name.strip():
+                self.bracket.roundNames[key] = name.strip()
+            else:
+                self.bracket.roundNames.pop(key, None)
+            self.Rebuild()
+            self.signals.edited.emit()
 
     def RoundMenu(self, key, screenPos):
         menu = QMenu(self)
@@ -761,24 +747,60 @@ class BracketView(QGraphicsView):
             )
         menu.exec(screenPos if isinstance(screenPos, QPoint) else screenPos.toPoint())
 
-    def RenameRound(self, side, column):
-        key = Bracket.RoundKey(side, column)
-        name, ok = QInputDialog.getText(
-            self,
-            QApplication.translate("app", "Round name"),
-            QApplication.translate("app", "Name (leave empty for the default one):"),
-            text=self.bracket.roundNames.get(key, ""),
-        )
-        if ok:
-            if name.strip():
-                self.bracket.roundNames[key] = name.strip()
-            else:
-                self.bracket.roundNames.pop(key, None)
-            self.Rebuild()
-            self.signals.edited.emit()
+    # =====================================================
+    # SELECTION
+    # =====================================================
+    # Selecting for the bracket focus layout
+    def ToggleSelected(self, id):
+        self.selected ^= {id}
+        if id in self.matchItems:
+            self.matchItems[id].update()
+        self.signals.selectionChanged.emit()
+        if id not in self.selected:
+            self.signals.unselected.emit([id], [])
 
+    def ToggleSelectedRound(self, key):
+        self.selectedRounds ^= {key}
+        if key in self.headerItems:
+            self.headerItems[key].UpdateStyle()
+        self.signals.selectionChanged.emit()
+        if key not in self.selectedRounds:
+            self.signals.unselected.emit([], [key])
+
+    def SetSelection(self, sets, rounds):
+        """Selects these sets and rounds (e.g. a channel's, coming back to it)."""
+        self.selected = set(sets or []) & set(self.matchItems.keys())
+        self.selectedRounds = set(rounds or []) & set(self.headerItems.keys())
+        for item in self.matchItems.values():
+            item.update()
+        for header in self.headerItems.values():
+            header.UpdateStyle()
+        self.signals.selectionChanged.emit()
+
+    def ClearSelection(self):
+        self.selected = set()
+        self.selectedRounds = set()
+        for item in self.matchItems.values():
+            item.update()
+        for header in self.headerItems.values():
+            header.UpdateStyle()
+        self.signals.selectionChanged.emit()
+
+    def SetFocused(self, sets, rounds):
+        """Shows which sets and rounds the bracket focus layout shows."""
+        sets, rounds = set(sets or []), set(rounds or [])
+        if sets == self.focused and rounds == self.focusedRounds:
+            return
+        self.focused, self.focusedRounds = sets, rounds
+        for item in self.matchItems.values():
+            item.update()
+        for header in self.headerItems.values():
+            header.UpdateStyle()
+
+    # =====================================================
+    # MOUSE AND ZOOM
+    # =====================================================
     # Dragging a player onto another slot swaps them
-
     def _SlotAt(self, viewPos):
         for item in self._scene.items(self.mapToScene(viewPos)):
             if isinstance(item, MatchItem):
@@ -856,7 +878,6 @@ class BracketView(QGraphicsView):
         super().mouseReleaseEvent(event)
 
     # Zoom
-
     def FitInView(self):
         rect = self._scene.sceneRect()
         if rect.isNull():

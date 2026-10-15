@@ -35,6 +35,9 @@ class PronounHelper:
     # Shared by every pronoun completer, so a change shows up everywhere
     model: QStringListModel = None
 
+    # =====================================================
+    # PRONOUN LIST
+    # =====================================================
     def Model() -> QStringListModel:
         if PronounHelper.model is None:
             PronounHelper.model = QStringListModel()
@@ -94,6 +97,9 @@ class PronounHelper:
         if pronoun and pronoun.strip() and pronoun.strip() not in pronouns:
             PronounHelper.Save(pronouns + [pronoun])
 
+    # =====================================================
+    # PRONOUN FIELDS
+    # =====================================================
     def SetupField(lineEdit: QLineEdit):
         """Makes a pronoun field an editable dropdown: an arrow lists every
         pronoun, and typing suggests the matching ones or a new pronoun"""

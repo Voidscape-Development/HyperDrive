@@ -64,6 +64,9 @@ _PLACEHOLDER = re.compile(r"\{(\w+)\}")
 _OPTIONAL = re.compile(r"\[\[(.*?)\]\]", re.DOTALL)
 
 
+# =====================================================
+# TOOLTIP
+# =====================================================
 def add_alt_text_tooltip_to_button(push_button: QPushButton):
     altTextTooltip = QApplication.translate(
         "tips",
@@ -73,6 +76,9 @@ def add_alt_text_tooltip_to_button(push_button: QPushButton):
     return push_button
 
 
+# =====================================================
+# OPTIONS AND TEMPLATES
+# =====================================================
 def default_footer_text():
     return QApplication.translate("altText", "Stream powered by HyperDrive")
 
@@ -128,6 +134,9 @@ def fill_template(template, values):
     return _PLACEHOLDER.sub(value, _OPTIONAL.sub(optional, template))
 
 
+# =====================================================
+# DATA
+# =====================================================
 def load_program_state():
     # Make sure program_state.json has the latest changes
     StateManager.FlushPendingSave()
@@ -254,6 +263,9 @@ def collect_data(data, bracket_link="", bracket_type="DOUBLE_ELIMINATION"):
     return general, entries
 
 
+# =====================================================
+# RENDERING
+# =====================================================
 def _join_lines(lines):
     return "\n".join(lines)
 

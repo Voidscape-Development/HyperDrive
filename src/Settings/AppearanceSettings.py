@@ -241,6 +241,9 @@ class AppearanceSettings(QWidget):
 
         self.Refresh()
 
+    # =====================================================
+    # REFRESHING
+    # =====================================================
     def Refresh(self):
         # Fills the controls in from the settings
         self.updating = True
@@ -295,32 +298,6 @@ class AppearanceSettings(QWidget):
             self.fontSelect.setCurrentIndex(font)
         self.updating = False
 
-    def ThemeSelected(self, index):
-        if self.updating:
-            return
-        self.SaveEdits()
-        SettingsManager.Set("appearance.theme", self.themeSelect.currentData())
-        Theme.Apply()
-        self.Refresh()
-
-    def AccentChanged(self, color):
-        if self.updating or not color:
-            return
-        SettingsManager.Set("appearance.accent_color", color)
-        self.accentReset.setEnabled(QColor(color) != QColor(DEFAULT_ACCENT))
-        Theme.Apply()
-
-    def ResetButton(self, tooltip):
-        button = QToolButton()
-        button.setIcon(ThemedIcon("assets/icons/undo.svg"))
-        button.setToolTip(tooltip)
-        button.setAutoRaise(True)
-        return button
-
-    def ColorEdited(self, key, color):
-        self.Edit(lambda theme: theme["colors"].__setitem__(key, color))
-        self.UpdateResetButtons()
-
     def UpdateResetButtons(self):
         # Reset buttons are only enabled for colors that differ from the default
         if self.editing is None:
@@ -332,6 +309,43 @@ class AppearanceSettings(QWidget):
             reset.setEnabled(differs)
             changed = changed or differs
         self.resetColorsButton.setEnabled(changed)
+
+    def ResetButton(self, tooltip):
+        button = QToolButton()
+        button.setIcon(ThemedIcon("assets/icons/undo.svg"))
+        button.setToolTip(tooltip)
+        button.setAutoRaise(True)
+        return button
+
+    # =====================================================
+    # THEME SELECTION
+    # =====================================================
+    def ThemeSelected(self, index):
+        if self.updating:
+            return
+        self.SaveEdits()
+        SettingsManager.Set("appearance.theme", self.themeSelect.currentData())
+        Theme.Apply()
+        self.Refresh()
+
+    def SelectCustom(self, name):
+        SettingsManager.Set("appearance.theme", CUSTOM_PREFIX + name)
+        Theme.Apply()
+        self.Refresh()
+
+    def AccentChanged(self, color):
+        if self.updating or not color:
+            return
+        SettingsManager.Set("appearance.accent_color", color)
+        self.accentReset.setEnabled(QColor(color) != QColor(DEFAULT_ACCENT))
+        Theme.Apply()
+
+    # =====================================================
+    # EDITING COLORS
+    # =====================================================
+    def ColorEdited(self, key, color):
+        self.Edit(lambda theme: theme["colors"].__setitem__(key, color))
+        self.UpdateResetButtons()
 
     def ResetColor(self, key):
         if self.editing is None:
@@ -372,11 +386,9 @@ class AppearanceSettings(QWidget):
         Theme.SaveCustomTheme(self.editing)
         Theme.Apply()
 
-    def SelectCustom(self, name):
-        SettingsManager.Set("appearance.theme", CUSTOM_PREFIX + name)
-        Theme.Apply()
-        self.Refresh()
-
+    # =====================================================
+    # MANAGING THEMES
+    # =====================================================
     def AskName(self, title, name):
         name, ok = QInputDialog.getText(
             self,
@@ -435,6 +447,9 @@ class AppearanceSettings(QWidget):
         Theme.Apply()
         self.Refresh()
 
+    # =====================================================
+    # IMPORT AND EXPORT
+    # =====================================================
     def Import(self):
         self.SaveEdits()
         path, _ = QFileDialog.getOpenFileName(

@@ -33,13 +33,12 @@ from parrygg.services.tournament_service_pb2 import *
 from parrygg.services.tournament_service_pb2_grpc import TournamentServiceStub
 from parrygg.services.user_service_pb2 import *
 from parrygg.services.user_service_pb2_grpc import UserServiceStub
+from qtpy.QtCore import QT_TRANSLATE_NOOP
 
-from ..GameAssetManager import GameAssetManager
 from ..Helpers import CompletedSetsHelper
 from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.SeedPerformance import EventBracketType
-from ..PlayerDB import PlayerDB
 from .StartGGDataProvider import StartGGDataProvider
 from .TournamentDataProvider import TournamentDataProvider
 
@@ -90,6 +89,19 @@ class _CapturingCallback:
 
 
 class ParryGGDataProvider(TournamentDataProvider):
+    NAME = "ParryGG"
+    HOST = "parry.gg"
+    API_KEY_SETTING = "api_keys.parrygg"
+    API_KEY_MISSING = QT_TRANSLATE_NOOP(
+        "app", "Parry.gg API key has not been set. Please configure it in Settings > API Keys."
+    )
+    API_KEY_URL = "https://parry.gg/api-keys"
+    GAME_ID_KIND = "igdb"
+    ICON = "./assets/icons/parrygg.png"
+    COMPLETED_SETS_BUTTON = QT_TRANSLATE_NOOP("app", "Pull Latest Completed Sets from ParryGG")
+
+    SUPPORTS_STATS = True
+    SUPPORTS_COMPLETED_SETS = True
     # GetTournamentPhaseGroup returns "poolSets", for round robin pools
     SUPPORTS_POOL_SETS = True
 
@@ -123,9 +135,8 @@ class ParryGGDataProvider(TournamentDataProvider):
     _startgg_mains_cache = None  # dict[parry_user_id -> mains dict or {}]
     _startgg_subquery = None  # lazy StartGGDataProvider for cross-platform fallback queries
 
-    def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
-        super().__init__(url, threadpool, dataManager)
-        self.name = "ParryGG"
+    def __init__(self, url, threadpool, dataManager, api_key=None, context=None) -> None:
+        super().__init__(url, threadpool, dataManager, context=context)
         self._initialized = False
 
         if api_key:
@@ -136,6 +147,9 @@ class ParryGGDataProvider(TournamentDataProvider):
 
         self._get_slugs_and_ids()
 
+    # =====================================================
+    # SETUP
+    # =====================================================
     def _get_slugs_and_ids(self):
         if self._initialized:
             return
@@ -215,6 +229,22 @@ class ParryGGDataProvider(TournamentDataProvider):
             case _:
                 logger.error(f"Service {service_name} not recognized")
 
+    def cleanup(self):
+        """Properly cleanup gRPC channel and resources"""
+        if hasattr(self, "channel") and self.channel:
+            try:
+                self.channel.close()
+                logger.info("gRPC channel closed successfully")
+            except Exception as e:
+                logger.error(f"Error closing gRPC channel: {e}")
+
+    def __del__(self):
+        """Ensure cleanup happens when destroyed"""
+        self.cleanup()
+
+    # =====================================================
+    # LOOKUPS
+    # =====================================================
     def _get_phases(self):
         """Lazy-load and cache event phases keyed by phase ID."""
         if self._phases_cache is not None:
@@ -351,6 +381,9 @@ class ParryGGDataProvider(TournamentDataProvider):
             logger.info(f"Match {match.id} resolved to stream {url}")
         return url
 
+    # =====================================================
+    # START.GG FALLBACK
+    # =====================================================
     def _get_startgg_subquery(self):
         """Lazy-init a StartGGDataProvider used to run cross-platform fallback
         queries (H2H, character lookup) when a parry user has a linked
@@ -362,6 +395,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                 "start.gg/",
                 self.threadpool,
                 self.dataManager,
+                context=self.context,
             )
         return self._startgg_subquery
 
@@ -433,6 +467,58 @@ class ParryGGDataProvider(TournamentDataProvider):
         self._startgg_pid_cache[startgg_slug] = result
         return result
 
+    def _fetch_startgg_h2h(self, parry_user_id_1, parry_user_id_2):
+        link_1 = self._get_linked_startgg_account(parry_user_id_1)
+        link_2 = self._get_linked_startgg_account(parry_user_id_2)
+        if not link_1 or not link_2:
+            return []
+        videogame_id = self.context.games.selectedGame.get("smashgg_game_id")
+        if not videogame_id:
+            return []
+        pid_1 = self._resolve_startgg_player_id(link_1["slug"])
+        pid_2 = self._resolve_startgg_player_id(link_2["slug"])
+        if not pid_1 or not pid_2:
+            return []
+
+        # Delegate to StartGG's public GetRecentSets — it owns the
+        # event lookups, head-to-head filtering, and sort.
+        cb = _CapturingCallback()
+        self._get_startgg_subquery().GetRecentSets(
+            [pid_1, str(link_1["user_id"])],
+            [pid_2, str(link_2["user_id"])],
+            videogame_id,
+            cb,
+            0,
+            None,
+            None,
+        )
+        return (cb.result or {}).get("sets", [])
+
+    def _fetch_startgg_mains(self, parry_user_id):
+        # Delegates to StartGG's GetUserMains. Returns the same `mains`
+        # shape ProcessEntrantData produces ({gameCodename: [[char], ...]})
+        # or {} when the user lacks a linked start.gg account or no
+        # smashgg_game_id is mapped for the active game.
+        if self._startgg_mains_cache is None:
+            self._startgg_mains_cache = {}
+        if parry_user_id in self._startgg_mains_cache:
+            return self._startgg_mains_cache[parry_user_id]
+
+        link = self._get_linked_startgg_account(parry_user_id)
+        if not link:
+            self._startgg_mains_cache[parry_user_id] = {}
+            return {}
+        selected = self.context.games.selectedGame or {}
+        videogame_id = selected.get("smashgg_game_id")
+        if not videogame_id:
+            return {}  # don't cache — game may change
+        mains = self._get_startgg_subquery().GetUserMains(link["slug"], videogame_id)
+        self._startgg_mains_cache[parry_user_id] = mains
+        return mains
+
+    # =====================================================
+    # BUILDING SETS
+    # =====================================================
     def _fetch_bracket(self, bracket_id):
         """Fetch a single bracket (with matches/seeds/rounds populated)."""
         self._setup_service("Bracket")
@@ -535,16 +621,14 @@ class ParryGGDataProvider(TournamentDataProvider):
                     # per-game shape.
                     char_tuple = None
                     for character in participant.characters:
-                        char_tuple = GameAssetManager.instance.GetCharacterFromParryGGSlug(
-                            character.slug
-                        )
+                        char_tuple = self.context.games.GetCharacterFromParryGGSlug(character.slug)
                         if char_tuple:
                             break
                     if slugs and char_tuple is None:
                         logger.debug(
                             f"  game {match_game.index} slot {slot.slot} user {participant.user_id}: "
                             f"parry slug(s) {slugs} did NOT resolve to any character with a matching "
-                            f"'parrygg_slug' in game '{GameAssetManager.instance.selectedGame.get('codename')}'"
+                            f"'parrygg_slug' in game '{self.context.games.selectedGame.get('codename')}'"
                         )
                     else:
                         logger.debug(
@@ -647,90 +731,9 @@ class ParryGGDataProvider(TournamentDataProvider):
 
         return result
 
-    def _fetch_future_set(self, match_id):
-        """Fetch a single match by ID and convert to HyperDrive future-set format."""
-        try:
-            req = GetMatchRequest()
-            req.id = match_id
-            resp = self.match_service.GetMatch(req, metadata=self.metadata, timeout=self._timeout)
-            return self._process_future_set(resp.match)
-        except Exception as e:
-            logger.error(
-                f"Error fetching match {match_id} for stream queue: {traceback.format_exc()}"
-            )
-            return None
-
-    def _process_future_set(self, ctx):
-        """Convert a parry MatchContext to HyperDrive future-set format.
-
-        Mirrors the shape produced by StartGGDataProvider.ProcessFutureSet so
-        downstream consumers (templates, scoreboard widgets) can render parry
-        and start.gg stream queues identically.
-        """
-        match = ctx.match
-        seeds = ctx.seeds
-        hierarchy = ctx.hierarchy
-
-        phase_id = self._phase_id_from_hierarchy(hierarchy)
-        phase_name = self._phase_name_from_hierarchy(hierarchy)
-        phase = self._get_phases().get(phase_id) if phase_id else None
-        is_pools = bool(phase and len(phase.brackets) > 1)
-        if is_pools:
-            bracket_name = self._bracket_name_from_hierarchy(hierarchy)
-            if bracket_name:
-                phase_name = f"{phase_name} - {bracket_name}"
-
-        teams = {}
-        for team_index, seed in enumerate(seeds):
-            team = {
-                "teamName": self._team_display_name(seed),
-                "losers": False,
-                "seed": seed.seed,
-                "player": {},
-            }
-            ee = self._seed_entrant(seed)
-            if ee is not None:
-                for player_index, user in enumerate(ee.entrant.users):
-                    country_data = CountryHelper.countries.get(user.location_country) or {}
-                    state_data = {}
-                    if user.location_state:
-                        state_data = (country_data.get("states") or {}).get(user.location_state, {})
-
-                    avatar_url = next(
-                        (img.url for img in user.images if img.type == ImageType.IMAGE_TYPE_AVATAR),
-                        "",
-                    )
-                    name = user.gamer_tag
-                    sponsor = user.sponsor_name
-                    team["player"][str(player_index + 1)] = {
-                        "country": CountryHelper.GetBasicCountryInfo(user.location_country),
-                        "state": state_data,
-                        "name": name,
-                        "team": sponsor,
-                        "mergedName": f"{sponsor}|{name}" if sponsor else name,
-                        "pronoun": user.pronouns,
-                        "real_name": (user.first_name + " " + user.last_name).strip(),
-                        "online_avatar": avatar_url,
-                        "twitter": "",
-                        "socials": {},
-                        # For the commentary dashboard's stats of the players
-                        "id": [user.id, user.id],
-                    }
-            teams[str(team_index + 1)] = team
-
-        return {
-            "id": match.id,
-            "match": self._translate_round_name(ctx.round.label),
-            "phase": phase_name,
-            "best_of": 0,
-            "best_of_text": "",
-            "state": match.state,
-            "team": teams,
-            "station": "",
-            "event": self.event_slug,
-            "isCurrentEvent": True,
-        }
-
+    # =====================================================
+    # TOURNAMENT
+    # =====================================================
     def GetIconURL(self):
         self._setup_service("Tournament")
 
@@ -748,55 +751,6 @@ class ParryGGDataProvider(TournamentDataProvider):
         # Fallback to the ParryGG favicon if no suitable image is found.
         logger.warning("No banner image found.")
         return PARRY_FAVICON_URL
-
-    def GetEntrants(self):
-        self._setup_service("Event")
-
-        players = []
-
-        try:
-            get_event_entrants_request = GetEventEntrantsRequest()
-            get_event_entrants_request.event_identifier.event_slug_path.tournament_slug = (
-                self.tournament_slug
-            )
-            get_event_entrants_request.event_identifier.event_slug_path.event_slug = self.event_slug
-            get_event_entrants_response = self.event_service.GetEventEntrants(
-                get_event_entrants_request, metadata=self.metadata, timeout=self._timeout
-            )
-
-            logger.info(
-                f"GetEntrants: parry returned {len(get_event_entrants_response.event_entrants)} entrants"
-            )
-
-            for entrant in get_event_entrants_response.event_entrants:
-                # Emit one player per user; team members share the same
-                # entrant.id and seed.
-                for user in entrant.entrant.users:
-                    formatted_entrant = {
-                        "prefix": user.sponsor_name,
-                        "gamerTag": user.gamer_tag,
-                        "name": f"{user.first_name} {user.last_name}".strip(),
-                        # id = [lookup_id, global_user_id]; parry has no
-                        # per-game scope so both are user.id.
-                        "id": [user.id, user.id],
-                        "pronoun": user.pronouns,
-                        "avatar": "",
-                        "country_code": user.location_country,
-                        "state_code": user.location_state,
-                        "seed": entrant.seed,
-                    }
-
-                    for image in user.images:
-                        if image.type == ImageType.IMAGE_TYPE_AVATAR:
-                            formatted_entrant["avatar"] = image.url
-                            break
-
-                    players.append(formatted_entrant)
-        except Exception as e:
-            logger.error(f"Error processing entrants: {traceback.format_exc()}")
-
-        logger.info(f"GetEntrants: adding {len(players)} players to PlayerDB")
-        PlayerDB.AddPlayers(players)
 
     def GetTournamentData(self, progress_callback=None, cancel_event=None):
         self._setup_service("Tournament")
@@ -841,721 +795,16 @@ class ParryGGDataProvider(TournamentDataProvider):
             videogame = event_data.game.slug
             if videogame:
                 self.videogame = videogame
-                self.dataManager.signals.game_changed.emit(videogame)
+                self.videogameFound = videogame
 
         except Exception as e:
             logger.error(f"Error extracting tournament data: {e}")
 
         return tournament_info
 
-    def GetMatch(self, setId, progress_callback=None, cancel_event=None):
-        self._setup_service("Match")
-        try:
-            req = GetMatchRequest()
-            req.id = setId
-            resp = self.match_service.GetMatch(req, metadata=self.metadata, timeout=self._timeout)
-            ctx = resp.match
-
-            # Full dump of what MatchService.GetMatch returns for the set the
-            # user actually loaded, so we can see whether parry populates the
-            # per-game participant character selections here at all.
-            try:
-                from google.protobuf.json_format import MessageToDict
-
-                logger.debug(
-                    f"GetMatch({setId}): raw match_games = "
-                    f"{MessageToDict(ctx.match, preserving_proto_field_name=True).get('match_games')}"
-                )
-            except Exception:
-                logger.debug(
-                    f"GetMatch({setId}): failed to dump match proto: {traceback.format_exc()}"
-                )
-
-            phase_id = self._phase_id_from_hierarchy(ctx.hierarchy)
-            phase = self._get_phases().get(phase_id) if phase_id else None
-            # MatchContext doesn't carry the bracket struct directly — phase.brackets[i]
-            # references match the bracket id from the hierarchy path.
-            bracket_id = next(
-                (p.id for p in ctx.hierarchy.paths if p.type == PathType.PATH_TYPE_BRACKET),
-                None,
-            )
-            bracket = next(
-                (b for b in (phase.brackets if phase else []) if b.id == bracket_id),
-                None,
-            )
-            return self._build_match_info(
-                ctx.match, list(ctx.seeds), phase, bracket, ctx.round.label
-            )
-        except Exception as e:
-            logger.error(f"Error getting match: {traceback.format_exc()}")
-            return {}
-
-    def GetMatches(self, getFinished=False, progress_callback=None, cancel_event=None):
-        """Traverse Event -> Phase -> Bracket and emit one HyperDrive match dict per match.
-
-        Bracket-traversal is preferred over MatchService.GetMatches because the
-        Bracket-side Match protos populate stream_queue_entry, which the flat
-        match list does not.
-        """
-        final_data = []
-        with_queue_entry = 0
-        phases = self._get_phases()
-        total_brackets = sum(len(p.brackets) for p in phases.values())
-
-        try:
-            for phase in phases.values():
-                for bracket_ref in phase.brackets:
-                    bracket = self._fetch_bracket(bracket_ref.id)
-                    if bracket is None:
-                        continue
-                    seeds_by_id = {s.id: s for s in bracket.seeds}
-                    rounds_by_key = {(r.number, r.winners_side): r for r in bracket.rounds}
-
-                    for match in bracket.matches:
-                        if not getFinished and match.state == MatchState.MATCH_STATE_COMPLETED:
-                            continue
-                        seeds = self._seeds_for_match(match, seeds_by_id)
-                        if len(seeds) == 0:
-                            continue
-                        if match.HasField("stream_queue_entry"):
-                            with_queue_entry += 1
-                        if bracket.type != BracketType.BRACKET_TYPE_ROUND_ROBIN:
-                            round_label = self._round_label_for_match(match, rounds_by_key)
-                        else:
-                            round_label = "Round Robin"
-                        final_data.append(
-                            self._build_match_info(match, seeds, phase, bracket, round_label)
-                        )
-
-            logger.info(
-                f"GetMatches (bracket traversal): kept {len(final_data)} matches across "
-                f"{total_brackets} brackets (getFinished={getFinished}); "
-                f"{with_queue_entry} have stream_queue_entry set"
-            )
-
-        except Exception as e:
-            logger.error(f"Error processing matches: {traceback.format_exc()}")
-
-        return final_data
-
-    def GetStations(self, progress_callback=None, cancel_event=None):
-        # parry.gg has no first-class "station" concept; emit each stream as a
-        # HyperDrive "stream" entry so the stream selector populates. The "stream"
-        # field carries the resolved URL for the dialog's Stream column;
-        # "identifier" is the human-friendly display name for the auto-update
-        # banner ("Auto update (Stream [<identifier>])").
-        #
-        # parry streams have a "capacity" field for multi-up broadcasts (e.g.
-        # capacity=4 = four matches on screen at once). Each capacity slot is
-        # surfaced as its own row so a user can bind one HyperDrive scoreboard per
-        # slot. The provider's GetStreamMatchId reads the "slot" key to pick
-        # the Nth STREAM_QUEUE_ENTRY_STATUS_ONSTREAM match for that stream.
-        rows = []
-        for stream_id, info in self._get_streams().items():
-            capacity = info.get("capacity", 1)
-            for slot in range(capacity):
-                identifier = info["display_name"]
-                if capacity > 1:
-                    identifier = f"{identifier} (Slot {slot + 1}/{capacity})"
-                rows.append(
-                    {
-                        "id": stream_id,
-                        "identifier": identifier,
-                        "type": "stream",
-                        "stream": info["url"],
-                        "slot": slot,
-                    }
-                )
-        return rows
-
-    def GetStreamQueue(self, progress_callback=None, cancel_event=None):
-        """Return {stream_display_name: {position_str: future_set_data}} across all streams."""
-        self._setup_service("Stream")
-        self._setup_service("Match")
-        final_data = {}
-        try:
-            for stream_id, info in self._get_streams().items():
-                req = GetStreamQueueRequest()
-                req.stream_id = stream_id
-                resp = self.stream_service.GetStreamQueue(
-                    req, metadata=self.metadata, timeout=self._timeout
-                )
-                queue_data = {}
-                for position, entry in enumerate(resp.entries, start=1):
-                    if not entry.match_id:
-                        continue
-                    set_data = self._fetch_future_set(entry.match_id)
-                    if set_data:
-                        queue_data[str(position)] = set_data
-                final_data[info["display_name"]] = queue_data
-            logger.info(f"GetStreamQueue: returned queues for {len(final_data)} streams")
-        except Exception as e:
-            logger.error(f"Error processing stream queue: {traceback.format_exc()}")
-        return final_data
-
-    def GetStreamMatchId(self, station):
-        """Return the future-set data for the match currently ON_STREAM on the station's slot.
-
-        ``station`` is the dict produced by ``GetStations`` — uses
-        ``station['id']`` (parry stream UUID) and ``station['slot']`` (0-indexed
-        capacity slot) to select the Nth STREAM_QUEUE_ENTRY_STATUS_ONSTREAM
-        match in queue order. For backward compatibility with callers passing
-        a bare identifier string, falls back to a name-based lookup with slot 0.
-        """
-        self._setup_service("Stream")
-        self._setup_service("Match")
-        try:
-            if isinstance(station, dict):
-                stream_id = station.get("id")
-                slot = station.get("slot", 0)
-            else:
-                target = (station or "").lower()
-                stream_id = next(
-                    (
-                        sid
-                        for sid, info in self._get_streams().items()
-                        if info["display_name"].lower() == target
-                        or info["channel"].lower() == target
-                    ),
-                    None,
-                )
-                slot = 0
-            if not stream_id:
-                return None
-            req = GetStreamQueueRequest()
-            req.stream_id = stream_id
-            resp = self.stream_service.GetStreamQueue(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
-            on_stream_entries = [
-                e
-                for e in resp.entries
-                if e.status == StreamQueueEntryStatus.STREAM_QUEUE_ENTRY_STATUS_ONSTREAM
-                and e.match_id
-            ]
-            if slot >= len(on_stream_entries):
-                return None
-            return self._fetch_future_set(on_stream_entries[slot].match_id)
-        except Exception as e:
-            logger.error(f"Error in GetStreamMatchId: {traceback.format_exc()}")
-            return None
-
-    def GetStationMatchId(self, stationId):
-        # parry.gg has no station concept.
-        return None
-
-    def GetStationMatchsId(self, stationId):
-        # parry has no station concept, but a parry stream has an ordered
-        # queue of matches. Returning that queue here lets HyperDrive's existing
-        # station-queue plumbing (LoadStationSetsDo → GetFutureMatchesList →
-        # station_queue StateManager key) populate an upcoming-matches
-        # overlay for parry streams. ``stationId`` is the parry stream UUID
-        # passed via lastStationSelected['id'].
-        if not stationId or stationId not in self._get_streams():
-            return []
-        self._setup_service("Stream")
-        try:
-            req = GetStreamQueueRequest()
-            req.stream_id = stationId
-            resp = self.stream_service.GetStreamQueue(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
-            return [{"id": entry.match_id} for entry in resp.entries if entry.match_id]
-        except Exception:
-            logger.error(
-                f"Error fetching parry stream queue for {stationId}: {traceback.format_exc()}"
-            )
-            return []
-
-    def _build_event_player_dict(self, user):
-        """Build a StartGG-shaped player dict for set/standings consumers."""
-        return {
-            "prefix": user.sponsor_name,
-            "gamerTag": user.gamer_tag,
-            "name": (user.first_name + " " + user.last_name).strip(),
-            "id": [user.id, user.id],
-            "country_code": user.location_country,
-            "state_code": user.location_state,
-            "pronoun": user.pronouns,
-        }
-
-    def _set_player_pair_from_match(self, match, seeds_by_id):
-        """Return (seed1, seed2, p1_user, p2_user) for a match, or None if missing data."""
-        if len(match.slots) < 2:
-            return None
-        seed1 = seeds_by_id.get(match.slots[0].seed_id)
-        seed2 = seeds_by_id.get(match.slots[1].seed_id)
-        if not seed1 or not seed2:
-            return None
-        if not seed1.HasField("event_entrant") or not seed1.event_entrant.HasField("entrant"):
-            return None
-        if not seed2.HasField("event_entrant") or not seed2.event_entrant.HasField("entrant"):
-            return None
-        users1 = seed1.event_entrant.entrant.users
-        users2 = seed2.event_entrant.entrant.users
-        if not users1 or not users2:
-            return None
-        return seed1, seed2, users1[0], users2[0]
-
-    def _build_completed_set(self, match, seeds_by_id, rounds_by_key, phase, bracket):
-        """Build a StartGG-shaped completed-set dict (winner/loser oriented)."""
-        pair = self._set_player_pair_from_match(match, seeds_by_id)
-        if pair is None:
-            return None
-        seed1, seed2, u1, u2 = pair
-        team1_player = self._build_event_player_dict(u1)
-        team2_player = self._build_event_player_dict(u2)
-        score1 = int(match.slots[0].score)
-        score2 = int(match.slots[1].score)
-
-        # winner/loser orientation — score wins (parry doesn't expose a winner_id).
-        if score1 >= score2:
-            keys = ["winner", "loser"]
-        else:
-            keys = ["loser", "winner"]
-
-        round_msg = rounds_by_key.get((match.round, match.winners_side))
-        round_label = self._translate_round_name(round_msg.label if round_msg else "")
-
-        phase_name = phase.name if phase else ""
-        phase_identifier = bracket.name if (bracket and phase and len(phase.brackets) > 1) else ""
-
-        # Characters played, by user, when the match has its games
-        characters = {}
-        for match_game in sorted(match.match_games, key=lambda g: g.index):
-            for slot in match_game.slots:
-                for participant in slot.participants:
-                    for character in participant.characters:
-                        char = GameAssetManager.instance.GetCharacterFromParryGGSlug(character.slug)
-                        if char:
-                            AddCharacterKey(characters.setdefault(participant.user_id, []), char[0])
-
-        def team(user, player):
-            return {
-                1: {
-                    "sponsor": player["prefix"],
-                    "gamertag": player["gamerTag"],
-                    "country_code": player["country_code"],
-                    "state_code": player["state_code"],
-                    "character_keys": characters.get(user.id, []),
-                }
-            }
-
-        return {
-            "phase_id": phase_identifier,
-            "phase_name": phase_name,
-            "round_name": round_label,
-            f"{keys[0]}_score": score1,
-            f"{keys[0]}_seed": seed1.seed,
-            f"{keys[0]}_team": team(u1, team1_player),
-            f"{keys[0]}_team_name": "",
-            f"{keys[1]}_score": score2,
-            f"{keys[1]}_seed": seed2.seed,
-            f"{keys[1]}_team": team(u2, team2_player),
-            f"{keys[1]}_team_name": "",
-            "bracket_type": _bracket_type_name(phase.bracket_type) if phase else "",
-            "ended_at": match.ended_at.seconds,
-        }
-
-    def _build_last_set(self, match, seeds_by_id, rounds_by_key, phase, bracket, target_user_id):
-        """Build a StartGG-shaped last-set dict (player1/player2 oriented; target as player1)."""
-        pair = self._set_player_pair_from_match(match, seeds_by_id)
-        if pair is None:
-            return None
-        seed1, seed2, u1, u2 = pair
-        score1 = int(match.slots[0].score)
-        score2 = int(match.slots[1].score)
-
-        # Target user goes to player1
-        if u1.id != target_user_id and u2.id == target_user_id:
-            seed1, seed2 = seed2, seed1
-            u1, u2 = u2, u1
-            score1, score2 = score2, score1
-
-        round_msg = rounds_by_key.get((match.round, match.winners_side))
-        round_label = self._translate_round_name(round_msg.label if round_msg else "")
-        phase_name = phase.name if phase else ""
-        phase_identifier = bracket.name if (bracket and phase and len(phase.brackets) > 1) else ""
-
-        return {
-            "phase_id": phase_identifier,
-            "phase_name": phase_name,
-            "round_name": round_label,
-            "player1_score": score1,
-            "player1_seed": seed1.seed,
-            "player1_team": u1.sponsor_name,
-            "player1_name": u1.gamer_tag,
-            "player2_score": score2,
-            "player2_seed": seed2.seed,
-            "player2_team": u2.sponsor_name,
-            "player2_name": u2.gamer_tag,
-            "ended_at": match.ended_at.seconds,
-        }
-
-    def _iter_completed_matches(self):
-        """Yield (match, seeds_by_id, rounds_by_key, phase, bracket) for every completed match in the event."""
-        for phase in self._get_phases().values():
-            for bracket_ref in phase.brackets:
-                bracket = self._fetch_bracket(bracket_ref.id)
-                if bracket is None:
-                    continue
-                seeds_by_id = {s.id: s for s in bracket.seeds}
-                rounds_by_key = {(r.number, r.winners_side): r for r in bracket.rounds}
-                for match in bracket.matches:
-                    if match.state != MatchState.MATCH_STATE_COMPLETED:
-                        continue
-                    yield match, seeds_by_id, rounds_by_key, phase, bracket
-
-    def GetRecentSets(
-        self, id1, id2, videogame, callback, requestTime, progress_callback=None, cancel_event=None
-    ):
-        """Head-to-head: list of sets where both players faced each other.
-
-        ``id1``/``id2`` are ``[lookup_id, user_id]`` lists from parry's
-        player dicts (both elements are user_id since parry has no
-        per-game scope). Uses parry user_ids to filter
-        MatchService.GetMatches and intersect by opponent. Cross-platform
-        merge with start.gg linked accounts is handled below.
-        """
-        try:
-            user_id_1 = id1[1] if len(id1) > 1 else None
-            user_id_2 = id2[1] if len(id2) > 1 else None
-            if not user_id_1 or not user_id_2:
-                callback.emit({"sets": [], "request_time": requestTime})
-                return
-
-            self._setup_service("Match")
-            req = GetMatchesRequest()
-            req.filter.user_id = user_id_1
-            resp = self.match_service.GetMatches(req, metadata=self.metadata, timeout=self._timeout)
-
-            recent = []
-            for match_context in resp.matches:
-                match = match_context.match
-                seeds = list(match_context.seeds)
-                if len(seeds) < 2 or match.state != MatchState.MATCH_STATE_COMPLETED:
-                    continue
-                set_data = self._build_h2h_set(match_context, user_id_1, user_id_2)
-                if set_data is not None:
-                    recent.append(set_data)
-
-            # Cross-platform fallback: when both parry users have linked
-            # start.gg accounts, fetch their start.gg H2H history too and
-            # merge. Output shape matches parry-native sets, so dedupe by id
-            # and re-sort works without remapping.
-            startgg_sets = self._fetch_startgg_h2h(user_id_1, user_id_2)
-            if startgg_sets:
-                seen_ids = {s.get("id") for s in recent if s.get("id")}
-                for s in startgg_sets:
-                    if s.get("id") not in seen_ids:
-                        recent.append(s)
-
-            recent.sort(key=lambda s: s.get("timestamp", 0), reverse=True)
-            logger.info(
-                f"GetRecentSets: H2H {user_id_1} vs {user_id_2} -> {len(recent)} sets "
-                f"(parry + {len(startgg_sets) if startgg_sets else 0} from linked start.gg)"
-            )
-            callback.emit({"sets": recent, "request_time": requestTime})
-        except Exception as e:
-            logger.error(f"Error in GetRecentSets: {traceback.format_exc()}")
-            callback.emit({"sets": [], "request_time": requestTime})
-
-    def _fetch_startgg_h2h(self, parry_user_id_1, parry_user_id_2):
-        link_1 = self._get_linked_startgg_account(parry_user_id_1)
-        link_2 = self._get_linked_startgg_account(parry_user_id_2)
-        if not link_1 or not link_2:
-            return []
-        videogame_id = GameAssetManager.instance.selectedGame.get("smashgg_game_id")
-        if not videogame_id:
-            return []
-        pid_1 = self._resolve_startgg_player_id(link_1["slug"])
-        pid_2 = self._resolve_startgg_player_id(link_2["slug"])
-        if not pid_1 or not pid_2:
-            return []
-
-        # Delegate to StartGG's public GetRecentSets — it owns the
-        # event lookups, head-to-head filtering, and sort.
-        cb = _CapturingCallback()
-        self._get_startgg_subquery().GetRecentSets(
-            [pid_1, str(link_1["user_id"])],
-            [pid_2, str(link_2["user_id"])],
-            videogame_id,
-            cb,
-            0,
-            None,
-            None,
-        )
-        return (cb.result or {}).get("sets", [])
-
-    def EnrichPlayerData(self, playerData, blocking=True):
-        # Lazy mains fill from a linked start.gg account. Fires once per
-        # SetData; cached at every layer (linked-account, player-id,
-        # mains) so repeated slot loads are free.
-        if not playerData or playerData.get("mains"):
-            return playerData
-        ids = playerData.get("id") or []
-        user_id = ids[1] if len(ids) > 1 else None
-        if not user_id:
-            return playerData
-        if not blocking and user_id not in (self._startgg_mains_cache or {}):
-            return playerData
-        mains = self._fetch_startgg_mains(user_id)
-        if mains:
-            playerData["mains"] = mains
-        return playerData
-
-    def _fetch_startgg_mains(self, parry_user_id):
-        # Delegates to StartGG's GetUserMains. Returns the same `mains`
-        # shape ProcessEntrantData produces ({gameCodename: [[char], ...]})
-        # or {} when the user lacks a linked start.gg account or no
-        # smashgg_game_id is mapped for the active game.
-        if self._startgg_mains_cache is None:
-            self._startgg_mains_cache = {}
-        if parry_user_id in self._startgg_mains_cache:
-            return self._startgg_mains_cache[parry_user_id]
-
-        link = self._get_linked_startgg_account(parry_user_id)
-        if not link:
-            self._startgg_mains_cache[parry_user_id] = {}
-            return {}
-        selected = GameAssetManager.instance.selectedGame or {}
-        videogame_id = selected.get("smashgg_game_id")
-        if not videogame_id:
-            return {}  # don't cache — game may change
-        mains = self._get_startgg_subquery().GetUserMains(link["slug"], videogame_id)
-        self._startgg_mains_cache[parry_user_id] = mains
-        return mains
-
-    def _build_h2h_set(self, match_context, target_user_id, opponent_user_id):
-        """Build a set dict in the shape `recent_sets` / `recent_sets_full` layouts expect:
-        score=[target_score, opponent_score], winner=0/1 (0 if target won),
-        plus tournament/event/online/timestamp/round/phase fields.
-        Returns None if the match doesn't actually pair target vs opponent.
-        """
-        match = match_context.match
-        seeds = list(match_context.seeds)
-        if len(seeds) < 2 or len(match.slots) < 2:
-            return None
-
-        # Identify which slot belongs to which user
-        def slot_user_ids(seed):
-            if not seed.HasField("event_entrant") or not seed.event_entrant.HasField("entrant"):
-                return ()
-            return tuple(u.id for u in seed.event_entrant.entrant.users)
-
-        slot0_users = frozenset(slot_user_ids(seeds[0]))
-        slot1_users = frozenset(slot_user_ids(seeds[1]))
-        # Set-equality (not membership) so a doubles match where the two
-        # users happen to face each other across opposing teams isn't
-        # counted as a 1v1 H2H. Using sets keeps the comparison
-        # forward-compatible: lifting target/opponent to multi-user team
-        # frozensets later would let the same check serve team-vs-team H2H
-        # without further changes.
-        target_team = frozenset([target_user_id])
-        opponent_team = frozenset([opponent_user_id])
-        if slot0_users == target_team and slot1_users == opponent_team:
-            target_slot, opponent_slot = 0, 1
-        elif slot1_users == target_team and slot0_users == opponent_team:
-            target_slot, opponent_slot = 1, 0
-        else:
-            return None
-
-        target_score = int(match.slots[target_slot].score)
-        opponent_score = int(match.slots[opponent_slot].score)
-
-        # Tournament/event names from MatchContext.hierarchy
-        hierarchy = match_context.hierarchy
-        tournament_name = next(
-            (p.name for p in hierarchy.paths if p.type == PathType.PATH_TYPE_TOURNAMENT),
-            "",
-        )
-        event_name = next(
-            (p.name for p in hierarchy.paths if p.type == PathType.PATH_TYPE_EVENT),
-            "",
-        )
-
-        return {
-            "id": match.id,
-            "tournament": tournament_name,
-            "event": event_name,
-            "online": self._is_online(),
-            "score": [target_score, opponent_score],
-            "timestamp": match.ended_at.seconds,
-            "winner": 0 if target_score >= opponent_score else 1,
-            "round": self._translate_round_name(match_context.round.label),
-            "phase_name": self._phase_name_from_hierarchy(hierarchy),
-            "phase_id": "",
-        }
-
-    def GetLastSets(
-        self, playerID, playerNumber, callback, progress_callback=None, cancel_event=None
-    ):
-        """Last 10 completed sets for the given player in the current event.
-        playerID is the parry user_id (UUID) — populated as id[0] in the
-        provider's player dicts; see id-shape note in _build_match_info.
-        """
-        try:
-            user_id = playerID
-            if not user_id:
-                callback.emit({"playerNumber": playerNumber, "last_sets": []})
-                return
-
-            sets = []
-            for match, seeds_by_id, rounds_by_key, phase, bracket in self._iter_completed_matches():
-                # Check if target user participated
-                participating = False
-                for slot in match.slots:
-                    seed = seeds_by_id.get(slot.seed_id)
-                    if (
-                        seed
-                        and seed.HasField("event_entrant")
-                        and seed.event_entrant.HasField("entrant")
-                    ):
-                        for user in seed.event_entrant.entrant.users:
-                            if user.id == user_id:
-                                participating = True
-                                break
-                    if participating:
-                        break
-                if not participating:
-                    continue
-
-                set_data = self._build_last_set(
-                    match, seeds_by_id, rounds_by_key, phase, bracket, user_id
-                )
-                if set_data:
-                    sets.append(set_data)
-
-            sets.sort(key=lambda s: s.get("ended_at", 0), reverse=True)
-            sets = sets[:10]
-            logger.info(f"GetLastSets: user {user_id} player{playerNumber} -> {len(sets)} sets")
-            callback.emit({"playerNumber": playerNumber, "last_sets": sets})
-        except Exception as e:
-            logger.error(f"Error in GetLastSets: {traceback.format_exc()}")
-            callback.emit({"playerNumber": playerNumber, "last_sets": []})
-
-    def GetCompletedSets(self, progress_callback=None, cancel_event=None):
-        """Last 10 completed sets in the current event, most recent first."""
-        try:
-            sets = []
-            for match, seeds_by_id, rounds_by_key, phase, bracket in self._iter_completed_matches():
-                set_data = self._build_completed_set(
-                    match, seeds_by_id, rounds_by_key, phase, bracket
-                )
-                if set_data:
-                    sets.append(set_data)
-            sets.sort(key=lambda s: s.get("ended_at", 0), reverse=True)
-            sets = sets[:10]
-            logger.info(f"GetCompletedSets: -> {len(sets)} sets")
-            return CompletedSetsHelper.Finish(sets)
-        except Exception as e:
-            logger.error(f"Error in GetCompletedSets: {traceback.format_exc()}")
-            return []
-
-    def GetPlayerHistoryStandings(
-        self, playerID, playerNumber, gameType, callback, progress_callback=None, cancel_event=None
-    ):
-        """Recent tournament placements for a player, via UserService.GetUserPlacements.
-
-        Filters out non-singles events (entrant_size != 1) since the consumer
-        in StatsUtil only requests this data when the scoreboard is in
-        1v1 mode.
-
-        To resolve event/tournament metadata we use the same trick as
-        parrygg-web's RecentTournamentResults (parrygg-web/app/components/
-        RecentTournamentResults.tsx + routes/_base-layout.profile.$userId.tsx):
-        a single GetTournaments(filter={user_id}) returns every tournament
-        the user is registered in with each tournament's events embedded,
-        so we build an event_id -> (event, tournament) map in-memory and
-        avoid per-placement RPCs.
-
-        Pass-1 (parry-native): uses parry's placements only. Pass 2 will merge
-        in start.gg history for users with linked accounts.
-        """
-        try:
-            user_id = playerID
-            if not user_id:
-                callback.emit({"playerNumber": playerNumber, "history_sets": []})
-                return
-
-            self._setup_service("User")
-            self._setup_service("Tournament")
-
-            # One-shot: fetch every tournament the user is registered in
-            # (with embedded events list).
-            event_lookup = {}
-            try:
-                t_req = GetTournamentsRequest()
-                t_req.filter.user_id = user_id
-                t_resp = self.tournament_service.GetTournaments(
-                    t_req, metadata=self.metadata, timeout=self._timeout
-                )
-                for tournament in t_resp.tournaments:
-                    for event in tournament.events:
-                        event_lookup[event.id] = (event, tournament)
-            except Exception as e:
-                logger.warning(
-                    f"GetPlayerHistoryStandings: failed to fetch user's tournaments: {e}"
-                )
-
-            req = GetUserPlacementsRequest()
-            req.id = user_id
-            # Page over ~50 to ensure we have enough singles results after
-            # filtering out doubles/3v3 events.
-            req.pagination_request.page_size = 50
-            resp = self.user_service.GetUserPlacements(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
-
-            history = []
-            for result in resp.results:
-                if len(history) >= 10:
-                    break
-                if not result.HasField("placement"):
-                    continue
-                event_id = result.event_id
-                lookup = event_lookup.get(event_id)
-                if not lookup:
-                    continue
-                event, tournament = lookup
-
-                if event.entrant_size != 1:
-                    continue
-
-                tournament_picture = next(
-                    (
-                        img.url
-                        for img in tournament.images
-                        if img.type == ImageType.IMAGE_TYPE_BANNER
-                    ),
-                    None,
-                )
-
-                placement = result.placement
-                history.append(
-                    {
-                        "placement": placement.placement,
-                        "event_name": event.name,
-                        "tournament_name": tournament.name,
-                        "tournament_picture": tournament_picture,
-                        "entrants": event.entrant_count,
-                        "event_date": event.start_date.seconds,
-                        "seed": placement.seed or None,
-                        "bracket_type": EventBracketType(
-                            [
-                                _bracket_type_name(phase.bracket_type)
-                                for phase in (result.phases or event.phases)
-                            ]
-                        ),
-                    }
-                )
-
-            logger.info(f"GetPlayerHistoryStandings: user {user_id} -> {len(history)} placements")
-            callback.emit({"playerNumber": playerNumber, "history_sets": history})
-        except Exception as e:
-            logger.error(f"Error in GetPlayerHistoryStandings: {traceback.format_exc()}")
-            callback.emit({"playerNumber": playerNumber, "history_sets": []})
-
+    # =====================================================
+    # PHASES AND BRACKETS
+    # =====================================================
     def GetTournamentPhases(self, progress_callback=None, cancel_event=None):
         self._setup_service("Event")
 
@@ -1825,6 +1074,832 @@ class ParryGGDataProvider(TournamentDataProvider):
 
         return final_data
 
+    # =====================================================
+    # SETS
+    # =====================================================
+    def GetMatch(self, setId, progress_callback=None, cancel_event=None):
+        self._setup_service("Match")
+        try:
+            req = GetMatchRequest()
+            req.id = setId
+            resp = self.match_service.GetMatch(req, metadata=self.metadata, timeout=self._timeout)
+            ctx = resp.match
+
+            # Full dump of what MatchService.GetMatch returns for the set the
+            # user actually loaded, so we can see whether parry populates the
+            # per-game participant character selections here at all.
+            try:
+                from google.protobuf.json_format import MessageToDict
+
+                logger.debug(
+                    f"GetMatch({setId}): raw match_games = "
+                    f"{MessageToDict(ctx.match, preserving_proto_field_name=True).get('match_games')}"
+                )
+            except Exception:
+                logger.debug(
+                    f"GetMatch({setId}): failed to dump match proto: {traceback.format_exc()}"
+                )
+
+            phase_id = self._phase_id_from_hierarchy(ctx.hierarchy)
+            phase = self._get_phases().get(phase_id) if phase_id else None
+            # MatchContext doesn't carry the bracket struct directly — phase.brackets[i]
+            # references match the bracket id from the hierarchy path.
+            bracket_id = next(
+                (p.id for p in ctx.hierarchy.paths if p.type == PathType.PATH_TYPE_BRACKET),
+                None,
+            )
+            bracket = next(
+                (b for b in (phase.brackets if phase else []) if b.id == bracket_id),
+                None,
+            )
+            return self._build_match_info(
+                ctx.match, list(ctx.seeds), phase, bracket, ctx.round.label
+            )
+        except Exception as e:
+            logger.error(f"Error getting match: {traceback.format_exc()}")
+            return {}
+
+    def GetMatches(self, getFinished=False, progress_callback=None, cancel_event=None):
+        """Traverse Event -> Phase -> Bracket and emit one HyperDrive match dict per match.
+
+        Bracket-traversal is preferred over MatchService.GetMatches because the
+        Bracket-side Match protos populate stream_queue_entry, which the flat
+        match list does not.
+        """
+        final_data = []
+        with_queue_entry = 0
+        phases = self._get_phases()
+        total_brackets = sum(len(p.brackets) for p in phases.values())
+
+        try:
+            for phase in phases.values():
+                for bracket_ref in phase.brackets:
+                    bracket = self._fetch_bracket(bracket_ref.id)
+                    if bracket is None:
+                        continue
+                    seeds_by_id = {s.id: s for s in bracket.seeds}
+                    rounds_by_key = {(r.number, r.winners_side): r for r in bracket.rounds}
+
+                    for match in bracket.matches:
+                        if not getFinished and match.state == MatchState.MATCH_STATE_COMPLETED:
+                            continue
+                        seeds = self._seeds_for_match(match, seeds_by_id)
+                        if len(seeds) == 0:
+                            continue
+                        if match.HasField("stream_queue_entry"):
+                            with_queue_entry += 1
+                        if bracket.type != BracketType.BRACKET_TYPE_ROUND_ROBIN:
+                            round_label = self._round_label_for_match(match, rounds_by_key)
+                        else:
+                            round_label = "Round Robin"
+                        final_data.append(
+                            self._build_match_info(match, seeds, phase, bracket, round_label)
+                        )
+
+            logger.info(
+                f"GetMatches (bracket traversal): kept {len(final_data)} matches across "
+                f"{total_brackets} brackets (getFinished={getFinished}); "
+                f"{with_queue_entry} have stream_queue_entry set"
+            )
+
+        except Exception as e:
+            logger.error(f"Error processing matches: {traceback.format_exc()}")
+
+        return final_data
+
+    # =====================================================
+    # FUTURE SETS
+    # =====================================================
+    def _fetch_future_set(self, match_id):
+        """Fetch a single match by ID and convert to HyperDrive future-set format."""
+        try:
+            req = GetMatchRequest()
+            req.id = match_id
+            resp = self.match_service.GetMatch(req, metadata=self.metadata, timeout=self._timeout)
+            return self._process_future_set(resp.match)
+        except Exception as e:
+            logger.error(
+                f"Error fetching match {match_id} for stream queue: {traceback.format_exc()}"
+            )
+            return None
+
+    def _process_future_set(self, ctx):
+        """Convert a parry MatchContext to HyperDrive future-set format.
+
+        Mirrors the shape produced by StartGGDataProvider.ProcessFutureSet so
+        downstream consumers (templates, scoreboard widgets) can render parry
+        and start.gg stream queues identically.
+        """
+        match = ctx.match
+        seeds = ctx.seeds
+        hierarchy = ctx.hierarchy
+
+        phase_id = self._phase_id_from_hierarchy(hierarchy)
+        phase_name = self._phase_name_from_hierarchy(hierarchy)
+        phase = self._get_phases().get(phase_id) if phase_id else None
+        is_pools = bool(phase and len(phase.brackets) > 1)
+        if is_pools:
+            bracket_name = self._bracket_name_from_hierarchy(hierarchy)
+            if bracket_name:
+                phase_name = f"{phase_name} - {bracket_name}"
+
+        teams = {}
+        for team_index, seed in enumerate(seeds):
+            team = {
+                "teamName": self._team_display_name(seed),
+                "losers": False,
+                "seed": seed.seed,
+                "player": {},
+            }
+            ee = self._seed_entrant(seed)
+            if ee is not None:
+                for player_index, user in enumerate(ee.entrant.users):
+                    country_data = CountryHelper.countries.get(user.location_country) or {}
+                    state_data = {}
+                    if user.location_state:
+                        state_data = (country_data.get("states") or {}).get(user.location_state, {})
+
+                    avatar_url = next(
+                        (img.url for img in user.images if img.type == ImageType.IMAGE_TYPE_AVATAR),
+                        "",
+                    )
+                    name = user.gamer_tag
+                    sponsor = user.sponsor_name
+                    team["player"][str(player_index + 1)] = {
+                        "country": CountryHelper.GetBasicCountryInfo(user.location_country),
+                        "state": state_data,
+                        "name": name,
+                        "team": sponsor,
+                        "mergedName": f"{sponsor}|{name}" if sponsor else name,
+                        "pronoun": user.pronouns,
+                        "real_name": (user.first_name + " " + user.last_name).strip(),
+                        "online_avatar": avatar_url,
+                        "twitter": "",
+                        "socials": {},
+                        # For the commentary dashboard's stats of the players
+                        "id": [user.id, user.id],
+                    }
+            teams[str(team_index + 1)] = team
+
+        return {
+            "id": match.id,
+            "match": self._translate_round_name(ctx.round.label),
+            "phase": phase_name,
+            "best_of": 0,
+            "best_of_text": "",
+            "state": match.state,
+            "team": teams,
+            "station": "",
+            "event": self.event_slug,
+            "isCurrentEvent": True,
+        }
+
+    def GetFutureMatch(self, matchId, progress_callback, cancel_event):
+        return self._fetch_future_set(matchId) or {}
+
+    def GetFutureMatchesList(self, setsId, progress_callback, cancel_event):
+        # Returns {position_str: future_set} keyed by 1-based position in
+        # the queue, matching StartGGDataProvider.GetFutureMatchesList shape.
+        result = {}
+        for position, item in enumerate(setsId or [], start=1):
+            match_id = item.get("id") if isinstance(item, dict) else item
+            if not match_id:
+                continue
+            future_set = self._fetch_future_set(match_id)
+            if future_set:
+                result[str(position)] = future_set
+        return result
+
+    # =====================================================
+    # STREAMS AND STATIONS
+    # =====================================================
+    def GetStations(self, progress_callback=None, cancel_event=None):
+        # parry.gg has no first-class "station" concept; emit each stream as a
+        # HyperDrive "stream" entry so the stream selector populates. The "stream"
+        # field carries the resolved URL for the dialog's Stream column;
+        # "identifier" is the human-friendly display name for the auto-update
+        # banner ("Auto update (Stream [<identifier>])").
+        #
+        # parry streams have a "capacity" field for multi-up broadcasts (e.g.
+        # capacity=4 = four matches on screen at once). Each capacity slot is
+        # surfaced as its own row so a user can bind one HyperDrive scoreboard per
+        # slot. The provider's GetStreamMatchId reads the "slot" key to pick
+        # the Nth STREAM_QUEUE_ENTRY_STATUS_ONSTREAM match for that stream.
+        rows = []
+        for stream_id, info in self._get_streams().items():
+            capacity = info.get("capacity", 1)
+            for slot in range(capacity):
+                identifier = info["display_name"]
+                if capacity > 1:
+                    identifier = f"{identifier} (Slot {slot + 1}/{capacity})"
+                rows.append(
+                    {
+                        "id": stream_id,
+                        "identifier": identifier,
+                        "type": "stream",
+                        "stream": info["url"],
+                        "slot": slot,
+                    }
+                )
+        return rows
+
+    def GetStreamQueue(self, progress_callback=None, cancel_event=None):
+        """Return {stream_display_name: {position_str: future_set_data}} across all streams."""
+        self._setup_service("Stream")
+        self._setup_service("Match")
+        final_data = {}
+        try:
+            for stream_id, info in self._get_streams().items():
+                req = GetStreamQueueRequest()
+                req.stream_id = stream_id
+                resp = self.stream_service.GetStreamQueue(
+                    req, metadata=self.metadata, timeout=self._timeout
+                )
+                queue_data = {}
+                for position, entry in enumerate(resp.entries, start=1):
+                    if not entry.match_id:
+                        continue
+                    set_data = self._fetch_future_set(entry.match_id)
+                    if set_data:
+                        queue_data[str(position)] = set_data
+                final_data[info["display_name"]] = queue_data
+            logger.info(f"GetStreamQueue: returned queues for {len(final_data)} streams")
+        except Exception as e:
+            logger.error(f"Error processing stream queue: {traceback.format_exc()}")
+        return final_data
+
+    def GetStreamMatchId(self, station):
+        """Return the future-set data for the match currently ON_STREAM on the station's slot.
+
+        ``station`` is the dict produced by ``GetStations`` — uses
+        ``station['id']`` (parry stream UUID) and ``station['slot']`` (0-indexed
+        capacity slot) to select the Nth STREAM_QUEUE_ENTRY_STATUS_ONSTREAM
+        match in queue order. For backward compatibility with callers passing
+        a bare identifier string, falls back to a name-based lookup with slot 0.
+        """
+        self._setup_service("Stream")
+        self._setup_service("Match")
+        try:
+            if isinstance(station, dict):
+                stream_id = station.get("id")
+                slot = station.get("slot", 0)
+            else:
+                target = (station or "").lower()
+                stream_id = next(
+                    (
+                        sid
+                        for sid, info in self._get_streams().items()
+                        if info["display_name"].lower() == target
+                        or info["channel"].lower() == target
+                    ),
+                    None,
+                )
+                slot = 0
+            if not stream_id:
+                return None
+            req = GetStreamQueueRequest()
+            req.stream_id = stream_id
+            resp = self.stream_service.GetStreamQueue(
+                req, metadata=self.metadata, timeout=self._timeout
+            )
+            on_stream_entries = [
+                e
+                for e in resp.entries
+                if e.status == StreamQueueEntryStatus.STREAM_QUEUE_ENTRY_STATUS_ONSTREAM
+                and e.match_id
+            ]
+            if slot >= len(on_stream_entries):
+                return None
+            return self._fetch_future_set(on_stream_entries[slot].match_id)
+        except Exception as e:
+            logger.error(f"Error in GetStreamMatchId: {traceback.format_exc()}")
+            return None
+
+    def GetStationMatchId(self, stationId):
+        # parry.gg has no station concept.
+        return None
+
+    def GetStationMatchsId(self, stationId):
+        # parry has no station concept, but a parry stream has an ordered
+        # queue of matches. Returning that queue here lets HyperDrive's existing
+        # station-queue plumbing (LoadStationSetsDo → GetFutureMatchesList →
+        # station_queue StateManager key) populate an upcoming-matches
+        # overlay for parry streams. ``stationId`` is the parry stream UUID
+        # passed via lastStationSelected['id'].
+        if not stationId or stationId not in self._get_streams():
+            return []
+        self._setup_service("Stream")
+        try:
+            req = GetStreamQueueRequest()
+            req.stream_id = stationId
+            resp = self.stream_service.GetStreamQueue(
+                req, metadata=self.metadata, timeout=self._timeout
+            )
+            return [{"id": entry.match_id} for entry in resp.entries if entry.match_id]
+        except Exception:
+            logger.error(
+                f"Error fetching parry stream queue for {stationId}: {traceback.format_exc()}"
+            )
+            return []
+
+    # =====================================================
+    # SET HISTORY
+    # =====================================================
+    def _build_event_player_dict(self, user):
+        """Build a StartGG-shaped player dict for set/standings consumers."""
+        return {
+            "prefix": user.sponsor_name,
+            "gamerTag": user.gamer_tag,
+            "name": (user.first_name + " " + user.last_name).strip(),
+            "id": [user.id, user.id],
+            "country_code": user.location_country,
+            "state_code": user.location_state,
+            "pronoun": user.pronouns,
+        }
+
+    def _set_player_pair_from_match(self, match, seeds_by_id):
+        """Return (seed1, seed2, p1_user, p2_user) for a match, or None if missing data."""
+        if len(match.slots) < 2:
+            return None
+        seed1 = seeds_by_id.get(match.slots[0].seed_id)
+        seed2 = seeds_by_id.get(match.slots[1].seed_id)
+        if not seed1 or not seed2:
+            return None
+        if not seed1.HasField("event_entrant") or not seed1.event_entrant.HasField("entrant"):
+            return None
+        if not seed2.HasField("event_entrant") or not seed2.event_entrant.HasField("entrant"):
+            return None
+        users1 = seed1.event_entrant.entrant.users
+        users2 = seed2.event_entrant.entrant.users
+        if not users1 or not users2:
+            return None
+        return seed1, seed2, users1[0], users2[0]
+
+    def _build_completed_set(self, match, seeds_by_id, rounds_by_key, phase, bracket):
+        """Build a StartGG-shaped completed-set dict (winner/loser oriented)."""
+        pair = self._set_player_pair_from_match(match, seeds_by_id)
+        if pair is None:
+            return None
+        seed1, seed2, u1, u2 = pair
+        team1_player = self._build_event_player_dict(u1)
+        team2_player = self._build_event_player_dict(u2)
+        score1 = int(match.slots[0].score)
+        score2 = int(match.slots[1].score)
+
+        # winner/loser orientation — score wins (parry doesn't expose a winner_id).
+        if score1 >= score2:
+            keys = ["winner", "loser"]
+        else:
+            keys = ["loser", "winner"]
+
+        round_msg = rounds_by_key.get((match.round, match.winners_side))
+        round_label = self._translate_round_name(round_msg.label if round_msg else "")
+
+        phase_name = phase.name if phase else ""
+        phase_identifier = bracket.name if (bracket and phase and len(phase.brackets) > 1) else ""
+
+        # Characters played, by user, when the match has its games
+        characters = {}
+        for match_game in sorted(match.match_games, key=lambda g: g.index):
+            for slot in match_game.slots:
+                for participant in slot.participants:
+                    for character in participant.characters:
+                        char = self.context.games.GetCharacterFromParryGGSlug(character.slug)
+                        if char:
+                            AddCharacterKey(characters.setdefault(participant.user_id, []), char[0])
+
+        def team(user, player):
+            return {
+                1: {
+                    "sponsor": player["prefix"],
+                    "gamertag": player["gamerTag"],
+                    "country_code": player["country_code"],
+                    "state_code": player["state_code"],
+                    "character_keys": characters.get(user.id, []),
+                }
+            }
+
+        return {
+            "phase_id": phase_identifier,
+            "phase_name": phase_name,
+            "round_name": round_label,
+            f"{keys[0]}_score": score1,
+            f"{keys[0]}_seed": seed1.seed,
+            f"{keys[0]}_team": team(u1, team1_player),
+            f"{keys[0]}_team_name": "",
+            f"{keys[1]}_score": score2,
+            f"{keys[1]}_seed": seed2.seed,
+            f"{keys[1]}_team": team(u2, team2_player),
+            f"{keys[1]}_team_name": "",
+            "bracket_type": _bracket_type_name(phase.bracket_type) if phase else "",
+            "ended_at": match.ended_at.seconds,
+        }
+
+    def _build_last_set(self, match, seeds_by_id, rounds_by_key, phase, bracket, target_user_id):
+        """Build a StartGG-shaped last-set dict (player1/player2 oriented; target as player1)."""
+        pair = self._set_player_pair_from_match(match, seeds_by_id)
+        if pair is None:
+            return None
+        seed1, seed2, u1, u2 = pair
+        score1 = int(match.slots[0].score)
+        score2 = int(match.slots[1].score)
+
+        # Target user goes to player1
+        if u1.id != target_user_id and u2.id == target_user_id:
+            seed1, seed2 = seed2, seed1
+            u1, u2 = u2, u1
+            score1, score2 = score2, score1
+
+        round_msg = rounds_by_key.get((match.round, match.winners_side))
+        round_label = self._translate_round_name(round_msg.label if round_msg else "")
+        phase_name = phase.name if phase else ""
+        phase_identifier = bracket.name if (bracket and phase and len(phase.brackets) > 1) else ""
+
+        return {
+            "phase_id": phase_identifier,
+            "phase_name": phase_name,
+            "round_name": round_label,
+            "player1_score": score1,
+            "player1_seed": seed1.seed,
+            "player1_team": u1.sponsor_name,
+            "player1_name": u1.gamer_tag,
+            "player2_score": score2,
+            "player2_seed": seed2.seed,
+            "player2_team": u2.sponsor_name,
+            "player2_name": u2.gamer_tag,
+            "ended_at": match.ended_at.seconds,
+        }
+
+    def _iter_completed_matches(self):
+        """Yield (match, seeds_by_id, rounds_by_key, phase, bracket) for every completed match in the event."""
+        for phase in self._get_phases().values():
+            for bracket_ref in phase.brackets:
+                bracket = self._fetch_bracket(bracket_ref.id)
+                if bracket is None:
+                    continue
+                seeds_by_id = {s.id: s for s in bracket.seeds}
+                rounds_by_key = {(r.number, r.winners_side): r for r in bracket.rounds}
+                for match in bracket.matches:
+                    if match.state != MatchState.MATCH_STATE_COMPLETED:
+                        continue
+                    yield match, seeds_by_id, rounds_by_key, phase, bracket
+
+    def GetLastSets(
+        self, playerID, playerNumber, callback, progress_callback=None, cancel_event=None
+    ):
+        """Last 10 completed sets for the given player in the current event.
+        playerID is the parry user_id (UUID) — populated as id[0] in the
+        provider's player dicts; see id-shape note in _build_match_info.
+        """
+        try:
+            user_id = playerID
+            if not user_id:
+                callback.emit({"playerNumber": playerNumber, "last_sets": []})
+                return
+
+            sets = []
+            for match, seeds_by_id, rounds_by_key, phase, bracket in self._iter_completed_matches():
+                # Check if target user participated
+                participating = False
+                for slot in match.slots:
+                    seed = seeds_by_id.get(slot.seed_id)
+                    if (
+                        seed
+                        and seed.HasField("event_entrant")
+                        and seed.event_entrant.HasField("entrant")
+                    ):
+                        for user in seed.event_entrant.entrant.users:
+                            if user.id == user_id:
+                                participating = True
+                                break
+                    if participating:
+                        break
+                if not participating:
+                    continue
+
+                set_data = self._build_last_set(
+                    match, seeds_by_id, rounds_by_key, phase, bracket, user_id
+                )
+                if set_data:
+                    sets.append(set_data)
+
+            sets.sort(key=lambda s: s.get("ended_at", 0), reverse=True)
+            sets = sets[:10]
+            logger.info(f"GetLastSets: user {user_id} player{playerNumber} -> {len(sets)} sets")
+            callback.emit({"playerNumber": playerNumber, "last_sets": sets})
+        except Exception as e:
+            logger.error(f"Error in GetLastSets: {traceback.format_exc()}")
+            callback.emit({"playerNumber": playerNumber, "last_sets": []})
+
+    def GetCompletedSets(self, progress_callback=None, cancel_event=None):
+        """Last 10 completed sets in the current event, most recent first."""
+        try:
+            sets = []
+            for match, seeds_by_id, rounds_by_key, phase, bracket in self._iter_completed_matches():
+                set_data = self._build_completed_set(
+                    match, seeds_by_id, rounds_by_key, phase, bracket
+                )
+                if set_data:
+                    sets.append(set_data)
+            sets.sort(key=lambda s: s.get("ended_at", 0), reverse=True)
+            sets = sets[:10]
+            logger.info(f"GetCompletedSets: -> {len(sets)} sets")
+            return CompletedSetsHelper.Finish(sets, self.context)
+        except Exception as e:
+            logger.error(f"Error in GetCompletedSets: {traceback.format_exc()}")
+            return []
+
+    def GetPlayerHistoryStandings(
+        self, playerID, playerNumber, gameType, callback, progress_callback=None, cancel_event=None
+    ):
+        """Recent tournament placements for a player, via UserService.GetUserPlacements.
+
+        Filters out non-singles events (entrant_size != 1) since the consumer
+        in StatsUtil only requests this data when the scoreboard is in
+        1v1 mode.
+
+        To resolve event/tournament metadata we use the same trick as
+        parrygg-web's RecentTournamentResults (parrygg-web/app/components/
+        RecentTournamentResults.tsx + routes/_base-layout.profile.$userId.tsx):
+        a single GetTournaments(filter={user_id}) returns every tournament
+        the user is registered in with each tournament's events embedded,
+        so we build an event_id -> (event, tournament) map in-memory and
+        avoid per-placement RPCs.
+
+        Pass-1 (parry-native): uses parry's placements only. Pass 2 will merge
+        in start.gg history for users with linked accounts.
+        """
+        try:
+            user_id = playerID
+            if not user_id:
+                callback.emit({"playerNumber": playerNumber, "history_sets": []})
+                return
+
+            self._setup_service("User")
+            self._setup_service("Tournament")
+
+            # One-shot: fetch every tournament the user is registered in
+            # (with embedded events list).
+            event_lookup = {}
+            try:
+                t_req = GetTournamentsRequest()
+                t_req.filter.user_id = user_id
+                t_resp = self.tournament_service.GetTournaments(
+                    t_req, metadata=self.metadata, timeout=self._timeout
+                )
+                for tournament in t_resp.tournaments:
+                    for event in tournament.events:
+                        event_lookup[event.id] = (event, tournament)
+            except Exception as e:
+                logger.warning(
+                    f"GetPlayerHistoryStandings: failed to fetch user's tournaments: {e}"
+                )
+
+            req = GetUserPlacementsRequest()
+            req.id = user_id
+            # Page over ~50 to ensure we have enough singles results after
+            # filtering out doubles/3v3 events.
+            req.pagination_request.page_size = 50
+            resp = self.user_service.GetUserPlacements(
+                req, metadata=self.metadata, timeout=self._timeout
+            )
+
+            history = []
+            for result in resp.results:
+                if len(history) >= 10:
+                    break
+                if not result.HasField("placement"):
+                    continue
+                event_id = result.event_id
+                lookup = event_lookup.get(event_id)
+                if not lookup:
+                    continue
+                event, tournament = lookup
+
+                if event.entrant_size != 1:
+                    continue
+
+                tournament_picture = next(
+                    (
+                        img.url
+                        for img in tournament.images
+                        if img.type == ImageType.IMAGE_TYPE_BANNER
+                    ),
+                    None,
+                )
+
+                placement = result.placement
+                history.append(
+                    {
+                        "placement": placement.placement,
+                        "event_name": event.name,
+                        "tournament_name": tournament.name,
+                        "tournament_picture": tournament_picture,
+                        "entrants": event.entrant_count,
+                        "event_date": event.start_date.seconds,
+                        "seed": placement.seed or None,
+                        "bracket_type": EventBracketType(
+                            [
+                                _bracket_type_name(phase.bracket_type)
+                                for phase in (result.phases or event.phases)
+                            ]
+                        ),
+                    }
+                )
+
+            logger.info(f"GetPlayerHistoryStandings: user {user_id} -> {len(history)} placements")
+            callback.emit({"playerNumber": playerNumber, "history_sets": history})
+        except Exception as e:
+            logger.error(f"Error in GetPlayerHistoryStandings: {traceback.format_exc()}")
+            callback.emit({"playerNumber": playerNumber, "history_sets": []})
+
+    def GetRecentSets(
+        self, id1, id2, videogame, callback, requestTime, progress_callback=None, cancel_event=None
+    ):
+        """Head-to-head: list of sets where both players faced each other.
+
+        ``id1``/``id2`` are ``[lookup_id, user_id]`` lists from parry's
+        player dicts (both elements are user_id since parry has no
+        per-game scope). Uses parry user_ids to filter
+        MatchService.GetMatches and intersect by opponent. Cross-platform
+        merge with start.gg linked accounts is handled below.
+        """
+        try:
+            user_id_1 = id1[1] if len(id1) > 1 else None
+            user_id_2 = id2[1] if len(id2) > 1 else None
+            if not user_id_1 or not user_id_2:
+                callback.emit({"sets": [], "request_time": requestTime})
+                return
+
+            self._setup_service("Match")
+            req = GetMatchesRequest()
+            req.filter.user_id = user_id_1
+            resp = self.match_service.GetMatches(req, metadata=self.metadata, timeout=self._timeout)
+
+            recent = []
+            for match_context in resp.matches:
+                match = match_context.match
+                seeds = list(match_context.seeds)
+                if len(seeds) < 2 or match.state != MatchState.MATCH_STATE_COMPLETED:
+                    continue
+                set_data = self._build_h2h_set(match_context, user_id_1, user_id_2)
+                if set_data is not None:
+                    recent.append(set_data)
+
+            # Cross-platform fallback: when both parry users have linked
+            # start.gg accounts, fetch their start.gg H2H history too and
+            # merge. Output shape matches parry-native sets, so dedupe by id
+            # and re-sort works without remapping.
+            startgg_sets = self._fetch_startgg_h2h(user_id_1, user_id_2)
+            if startgg_sets:
+                seen_ids = {s.get("id") for s in recent if s.get("id")}
+                for s in startgg_sets:
+                    if s.get("id") not in seen_ids:
+                        recent.append(s)
+
+            recent.sort(key=lambda s: s.get("timestamp", 0), reverse=True)
+            logger.info(
+                f"GetRecentSets: H2H {user_id_1} vs {user_id_2} -> {len(recent)} sets "
+                f"(parry + {len(startgg_sets) if startgg_sets else 0} from linked start.gg)"
+            )
+            callback.emit({"sets": recent, "request_time": requestTime})
+        except Exception as e:
+            logger.error(f"Error in GetRecentSets: {traceback.format_exc()}")
+            callback.emit({"sets": [], "request_time": requestTime})
+
+    def _build_h2h_set(self, match_context, target_user_id, opponent_user_id):
+        """Build a set dict in the shape `recent_sets` / `recent_sets_full` layouts expect:
+        score=[target_score, opponent_score], winner=0/1 (0 if target won),
+        plus tournament/event/online/timestamp/round/phase fields.
+        Returns None if the match doesn't actually pair target vs opponent.
+        """
+        match = match_context.match
+        seeds = list(match_context.seeds)
+        if len(seeds) < 2 or len(match.slots) < 2:
+            return None
+
+        # Identify which slot belongs to which user
+        def slot_user_ids(seed):
+            if not seed.HasField("event_entrant") or not seed.event_entrant.HasField("entrant"):
+                return ()
+            return tuple(u.id for u in seed.event_entrant.entrant.users)
+
+        slot0_users = frozenset(slot_user_ids(seeds[0]))
+        slot1_users = frozenset(slot_user_ids(seeds[1]))
+        # Set-equality (not membership) so a doubles match where the two
+        # users happen to face each other across opposing teams isn't
+        # counted as a 1v1 H2H. Using sets keeps the comparison
+        # forward-compatible: lifting target/opponent to multi-user team
+        # frozensets later would let the same check serve team-vs-team H2H
+        # without further changes.
+        target_team = frozenset([target_user_id])
+        opponent_team = frozenset([opponent_user_id])
+        if slot0_users == target_team and slot1_users == opponent_team:
+            target_slot, opponent_slot = 0, 1
+        elif slot1_users == target_team and slot0_users == opponent_team:
+            target_slot, opponent_slot = 1, 0
+        else:
+            return None
+
+        target_score = int(match.slots[target_slot].score)
+        opponent_score = int(match.slots[opponent_slot].score)
+
+        # Tournament/event names from MatchContext.hierarchy
+        hierarchy = match_context.hierarchy
+        tournament_name = next(
+            (p.name for p in hierarchy.paths if p.type == PathType.PATH_TYPE_TOURNAMENT),
+            "",
+        )
+        event_name = next(
+            (p.name for p in hierarchy.paths if p.type == PathType.PATH_TYPE_EVENT),
+            "",
+        )
+
+        return {
+            "id": match.id,
+            "tournament": tournament_name,
+            "event": event_name,
+            "online": self._is_online(),
+            "score": [target_score, opponent_score],
+            "timestamp": match.ended_at.seconds,
+            "winner": 0 if target_score >= opponent_score else 1,
+            "round": self._translate_round_name(match_context.round.label),
+            "phase_name": self._phase_name_from_hierarchy(hierarchy),
+            "phase_id": "",
+        }
+
+    # =====================================================
+    # ENTRANTS AND PLAYERS
+    # =====================================================
+    def FetchEntrants(self, progress_callback=None, cancel_event=None):
+        self._setup_service("Event")
+
+        players = []
+
+        try:
+            get_event_entrants_request = GetEventEntrantsRequest()
+            get_event_entrants_request.event_identifier.event_slug_path.tournament_slug = (
+                self.tournament_slug
+            )
+            get_event_entrants_request.event_identifier.event_slug_path.event_slug = self.event_slug
+            get_event_entrants_response = self.event_service.GetEventEntrants(
+                get_event_entrants_request, metadata=self.metadata, timeout=self._timeout
+            )
+
+            logger.info(
+                f"FetchEntrants: parry returned {len(get_event_entrants_response.event_entrants)} entrants"
+            )
+
+            for entrant in get_event_entrants_response.event_entrants:
+                # Emit one player per user; team members share the same
+                # entrant.id and seed.
+                for user in entrant.entrant.users:
+                    formatted_entrant = {
+                        "prefix": user.sponsor_name,
+                        "gamerTag": user.gamer_tag,
+                        "name": f"{user.first_name} {user.last_name}".strip(),
+                        # id = [lookup_id, global_user_id]; parry has no
+                        # per-game scope so both are user.id.
+                        "id": [user.id, user.id],
+                        "pronoun": user.pronouns,
+                        "avatar": "",
+                        "country_code": user.location_country,
+                        "state_code": user.location_state,
+                        "seed": entrant.seed,
+                    }
+
+                    for image in user.images:
+                        if image.type == ImageType.IMAGE_TYPE_AVATAR:
+                            formatted_entrant["avatar"] = image.url
+                            break
+
+                    players.append(formatted_entrant)
+        except Exception as e:
+            logger.error(f"Error processing entrants: {traceback.format_exc()}")
+
+        logger.info(f"FetchEntrants: {len(players)} players")
+        return players
+
+    def EnrichPlayerData(self, playerData, blocking=True):
+        # Lazy mains fill from a linked start.gg account. Fires once per
+        # SetData; cached at every layer (linked-account, player-id,
+        # mains) so repeated slot loads are free.
+        if not playerData or playerData.get("mains"):
+            return playerData
+        ids = playerData.get("id") or []
+        user_id = ids[1] if len(ids) > 1 else None
+        if not user_id:
+            return playerData
+        if not blocking and user_id not in (self._startgg_mains_cache or {}):
+            return playerData
+        mains = self._fetch_startgg_mains(user_id)
+        if mains:
+            playerData["mains"] = mains
+        return playerData
+
+    # =====================================================
+    # STANDINGS
+    # =====================================================
     def GetStandings(self, playerNumber, progress_callback=None, cancel_event=None):
         """Top N event placements via EventService.GetEventPlacements.
 
@@ -1875,32 +1950,3 @@ class ParryGGDataProvider(TournamentDataProvider):
         except Exception as e:
             logger.error(f"Error in GetStandings: {traceback.format_exc()}")
             return []
-
-    def GetFutureMatch(self, matchId, progress_callback, cancel_event):
-        return self._fetch_future_set(matchId) or {}
-
-    def GetFutureMatchesList(self, setsId, progress_callback, cancel_event):
-        # Returns {position_str: future_set} keyed by 1-based position in
-        # the queue, matching StartGGDataProvider.GetFutureMatchesList shape.
-        result = {}
-        for position, item in enumerate(setsId or [], start=1):
-            match_id = item.get("id") if isinstance(item, dict) else item
-            if not match_id:
-                continue
-            future_set = self._fetch_future_set(match_id)
-            if future_set:
-                result[str(position)] = future_set
-        return result
-
-    def cleanup(self):
-        """Properly cleanup gRPC channel and resources"""
-        if hasattr(self, "channel") and self.channel:
-            try:
-                self.channel.close()
-                logger.info("gRPC channel closed successfully")
-            except Exception as e:
-                logger.error(f"Error closing gRPC channel: {e}")
-
-    def __del__(self):
-        """Ensure cleanup happens when destroyed"""
-        self.cleanup()

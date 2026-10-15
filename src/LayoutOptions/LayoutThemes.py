@@ -42,6 +42,9 @@ GRADIENT_DIRECTIONS = [
 ]
 
 
+# =====================================================
+# SCHEMA
+# =====================================================
 def Fill(color, color2=None, gradient=False, direction="to right"):
     return {"color": color, "color2": color2 or color, "gradient": gradient, "direction": direction}
 
@@ -406,6 +409,9 @@ def DefaultValues(schema=None):
     }
 
 
+# =====================================================
+# NORMALIZING VALUES
+# =====================================================
 def _Copy(value):
     return dict(value) if isinstance(value, dict) else value
 
@@ -479,6 +485,9 @@ def NormalizeLayoutTheme(data, name=None, schema=None):
     return theme
 
 
+# =====================================================
+# CSS
+# =====================================================
 def CssColor(color):
     # Qt writes alpha first (#AARRGGBB), CSS last; rgba() reads the same in both
     qcolor = QColor(color)
@@ -529,6 +538,9 @@ def StateExport(theme, schema=None):
     }
 
 
+# =====================================================
+# THEME FILES
+# =====================================================
 def ExportLayoutTheme(theme, path):
     data = {"hyperdrive_layout_theme": THEME_FILE_VERSION, **NormalizeLayoutTheme(theme)}
     with open(path, "w", encoding="utf-8") as f:
@@ -551,6 +563,9 @@ def ImportLayoutTheme(path):
     return NormalizeLayoutTheme(data, name)
 
 
+# =====================================================
+# SAVED THEMES
+# =====================================================
 class LayoutThemes:
     """The user's layout themes and which one is in use, kept in
     user_data/layout_themes.json:
@@ -559,6 +574,9 @@ class LayoutThemes:
     data = {"active": DEFAULT_THEME, "themes": {}}
     path = THEMES_FILE
 
+    # =====================================================
+    # SAVED THEMES
+    # =====================================================
     @staticmethod
     def Load(path=None):
         LayoutThemes.path = path or THEMES_FILE
@@ -588,14 +606,6 @@ class LayoutThemes:
             logger.error(f"Could not save {LayoutThemes.path}: {e}")
 
     @staticmethod
-    def DefaultTheme():
-        return {"name": DEFAULT_THEME, "values": DefaultValues()}
-
-    @staticmethod
-    def DisplayName(name):
-        return _tr("Default") if name == DEFAULT_THEME else name
-
-    @staticmethod
     def UserThemes():
         themes = {}
         for name, data in LayoutThemes.data["themes"].items():
@@ -606,31 +616,6 @@ class LayoutThemes:
             except ValueError:
                 pass
         return themes
-
-    @staticmethod
-    def IsBuiltin(name):
-        return name == DEFAULT_THEME
-
-    @staticmethod
-    def ActiveName():
-        active = LayoutThemes.data.get("active")
-        if active in LayoutThemes.UserThemes():
-            return active
-        return DEFAULT_THEME
-
-    @staticmethod
-    def Active():
-        """The theme in use, as a theme dict."""
-        name = LayoutThemes.ActiveName()
-        if name == DEFAULT_THEME:
-            return LayoutThemes.DefaultTheme()
-        return LayoutThemes.UserThemes()[name]
-
-    @staticmethod
-    def SetActive(name):
-        LayoutThemes.data["active"] = name if name in LayoutThemes.UserThemes() else DEFAULT_THEME
-        LayoutThemes.Save()
-        LayoutThemes.ExportToState()
 
     @staticmethod
     def SaveTheme(theme, oldName=None):
@@ -669,6 +654,45 @@ class LayoutThemes:
         while f"{name} ({i})" in taken:
             i += 1
         return f"{name} ({i})"
+
+    # =====================================================
+    # BUILT-IN THEMES
+    # =====================================================
+    @staticmethod
+    def DefaultTheme():
+        return {"name": DEFAULT_THEME, "values": DefaultValues()}
+
+    @staticmethod
+    def DisplayName(name):
+        return _tr("Default") if name == DEFAULT_THEME else name
+
+    @staticmethod
+    def IsBuiltin(name):
+        return name == DEFAULT_THEME
+
+    # =====================================================
+    # ACTIVE THEME
+    # =====================================================
+    @staticmethod
+    def ActiveName():
+        active = LayoutThemes.data.get("active")
+        if active in LayoutThemes.UserThemes():
+            return active
+        return DEFAULT_THEME
+
+    @staticmethod
+    def Active():
+        """The theme in use, as a theme dict."""
+        name = LayoutThemes.ActiveName()
+        if name == DEFAULT_THEME:
+            return LayoutThemes.DefaultTheme()
+        return LayoutThemes.UserThemes()[name]
+
+    @staticmethod
+    def SetActive(name):
+        LayoutThemes.data["active"] = name if name in LayoutThemes.UserThemes() else DEFAULT_THEME
+        LayoutThemes.Save()
+        LayoutThemes.ExportToState()
 
     @staticmethod
     def ExportToState():

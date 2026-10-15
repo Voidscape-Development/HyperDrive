@@ -134,6 +134,9 @@ class PlayerDragBoard(QObject):
         self.groups = groups
         self.swap = swap
 
+    # =====================================================
+    # REGISTERING PLAYERS
+    # =====================================================
     def Register(self, player):
         """Adds the grip to the player's header and takes drops on it."""
         grip = _Grip(player, self)
@@ -152,6 +155,9 @@ class PlayerDragBoard(QObject):
                     return g, i
         return None
 
+    # =====================================================
+    # DRAGGING
+    # =====================================================
     def CanDrop(self, source, target):
         return (
             source is not None
@@ -189,6 +195,9 @@ class PlayerDragBoard(QObject):
             grip.setCursor(Qt.CursorShape.OpenHandCursor)
             _dragged = None
 
+    # =====================================================
+    # MOVING
+    # =====================================================
     def Pairs(self, source, target):
         """The swaps, in order, that move source to target's place."""
         sourceAt, targetAt = self.Find(source), self.Find(target)

@@ -11,9 +11,6 @@ from .StateManager import StateManager
 from .StatsUtil import StatsUtil
 from .TournamentDataManager import TournamentDataManager
 
-# Providers that can look up a player's sets and past events
-STATS_PROVIDERS = ("StartGG", "ParryGG")
-
 
 class _Result:
     """Stands in for the Qt signal the providers' stats functions emit their
@@ -40,6 +37,9 @@ class CommentaryPreview:
     _cache: dict[str, tuple[float, object]] = {}
     _lock = threading.Lock()
 
+    # =====================================================
+    # PREVIEW
+    # =====================================================
     def Preview(teams: list) -> dict:
         """teams: the set's two teams, each a list of players as in the stream
         queue ({name, team, id...}). Stats are only looked up for 1v1
@@ -48,7 +48,7 @@ class CommentaryPreview:
         provider = (
             TournamentDataManager.instance.provider if TournamentDataManager.instance else None
         )
-        stats = provider is not None and provider.name in STATS_PROVIDERS
+        stats = provider is not None and provider.SUPPORTS_STATS
         singles = len(teams) == 2 and all(len(team) == 1 for team in teams)
 
         result = {
@@ -91,6 +91,9 @@ class CommentaryPreview:
 
         return result
 
+    # =====================================================
+    # PLAYER LOOKUPS
+    # =====================================================
     def _Media(player: dict) -> dict:
         # The stream queue's players have their tag as name and sponsor as team
         name = player.get("gamerTag") or player.get("name") or ""
@@ -106,6 +109,9 @@ class CommentaryPreview:
             return playerId
         return None
 
+    # =====================================================
+    # CACHE
+    # =====================================================
     def _Cached(key: str, fetch):
         now = time.time()
         with CommentaryPreview._lock:
@@ -125,6 +131,9 @@ class CommentaryPreview:
     def _Key(*parts) -> str:
         return orjson.dumps(parts).decode()
 
+    # =====================================================
+    # SETS
+    # =====================================================
     def _LastSets(provider, playerId):
         def fetch():
             result = _Result()

@@ -8,6 +8,9 @@
 // ?channel=<name> in the URL shows that channel of the bracket widget (the
 // main one without it).
 
+// ---------------------------------------------------------------------
+// State
+
 // Per set id: its timeline, labels hidden > displayed > done
 let animations = {};
 let entryAnim = null;
@@ -16,6 +19,9 @@ let setIndex = {};
 let lastSignature = null;
 
 const setElement = (id) => $(`.set_${setIndex[id]}`);
+
+// ---------------------------------------------------------------------
+// Markup and lines
 
 // A line drawing itself
 function animateLine(element) {
@@ -118,6 +124,9 @@ function linesHtml(bracket, areas) {
   return lines;
 }
 
+// ---------------------------------------------------------------------
+// Fitting the page
+
 // Spacers as tall as a set, and play-in sets moved level with the slot
 // they feed (a slot is the top or bottom half of the set)
 function alignPlayIns() {
@@ -143,6 +152,9 @@ function resize(columnsList, containers) {
   root.css("--score-size", size * 0.75);
   root.css("--flag-height", size * 0.6);
 }
+
+// ---------------------------------------------------------------------
+// Building and updating
 
 // Plays a set's timeline to its state (pools show every set)
 const showSet = (s, id, set, pool) =>
@@ -244,6 +256,9 @@ function updateGrid(data) {
     gsap.from(container.find("tr"), { autoAlpha: 0, x: -20, stagger: 0.04, duration: 0.3 });
   }
 }
+
+// ---------------------------------------------------------------------
+// The layout
 
 HD.layout({
   subscribe: ["bracket", "score", "game", "tournamentInfo", "commentary"],

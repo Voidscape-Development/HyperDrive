@@ -34,9 +34,6 @@ class WikiWindow(QWidget):
     # hyperdrive://open/<target>/<argument> calls it with the argument.
     APP_LINKS: dict = {}
 
-    def RegisterAppLink(target: str, open):
-        WikiWindow.APP_LINKS[target] = open
-
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowType.Window)
         self.setWindowTitle(QApplication.translate("wiki", "HyperDrive Guide"))
@@ -122,6 +119,9 @@ class WikiWindow(QWidget):
         self.FillContents()
         self.UpdateButtons()
 
+    # =====================================================
+    # SETUP
+    # =====================================================
     def _ToolButton(self, icon, tooltip):
         button = QToolButton()
         button.setIcon(ThemedIcon(icon))
@@ -129,9 +129,29 @@ class WikiWindow(QWidget):
         button.setAutoRaise(True)
         return button
 
-    def _FocusSearch(self):
-        self.search.setFocus()
-        self.search.selectAll()
+    def StyleSheet(self):
+        # QTextDocument's subset of CSS, in the theme's colors
+        colors = Theme.Colors()
+        text = colors["text"].name()
+        muted = colors["muted"].name()
+        border = colors["border"].name()
+        raised = colors["raised"].name()
+        accent = colors["accentText"].name()
+        return f"""
+            body {{ color: {text}; }}
+            h1 {{ font-size: x-large; margin-bottom: 8px; }}
+            h2 {{ font-size: large; margin-top: 18px; }}
+            h3 {{ font-size: medium; margin-top: 14px; }}
+            p, li {{ line-height: 130%; }}
+            a {{ color: {accent}; }}
+            a.app-link {{ color: {accent}; font-weight: bold; }}
+            code {{ background-color: {raised}; font-family: monospace; }}
+            pre {{ background-color: {raised}; font-family: monospace; padding: 6px; }}
+            table {{ border-collapse: collapse; margin-top: 4px; margin-bottom: 8px; }}
+            th {{ background-color: {raised}; text-align: left; }}
+            th, td {{ border: 1px solid {border}; padding: 4px 8px; }}
+            blockquote {{ color: {muted}; margin-left: 12px; }}
+        """
 
     def FillContents(self):
         self.contents.clear()
@@ -148,6 +168,32 @@ class WikiWindow(QWidget):
                 section.addChild(item)
         self.contents.expandAll()
 
+    # =====================================================
+    # APP LINKS
+    # =====================================================
+    def RegisterAppLink(target: str, open):
+        WikiWindow.APP_LINKS[target] = open
+
+    def OpenInApp(self, target):
+        # "settings/api-keys" is the "settings" link, given "api-keys"
+        name, _, argument = target.partition("/")
+        open = WikiWindow.APP_LINKS.get(name)
+        if open is None:
+            logger.warning(f"The guide links to {target}, which isn't a part of the app")
+            self.status.setText(
+                QApplication.translate("wiki", "This version of HyperDrive can't open {0}.").format(
+                    target
+                )
+            )
+            return
+        try:
+            open(argument) if argument else open()
+        except Exception:
+            logger.opt(exception=True).error(f"Could not open {target} from the guide")
+
+    # =====================================================
+    # NAVIGATION
+    # =====================================================
     def Open(self, page=None, anchor=None):
         """Shows the window, on page if given"""
         if page:
@@ -224,6 +270,43 @@ class WikiWindow(QWidget):
         if page:
             self.ShowPage(page)
 
+    def LinkClicked(self, url: QUrl):
+        href = url.toString()
+
+        target = AppLinkTarget(href)
+        if target is not None:
+            self.OpenInApp(target)
+            return
+
+        if href.startswith("#"):
+            self.ShowPage(self.page, href[1:])
+            return
+
+        link = PageLink(href)
+        if link is not None:
+            page, anchor = link
+            self.ShowPage(page, anchor or None)
+            return
+
+        QDesktopServices.openUrl(url)
+
+    def _LinkHovered(self, url: QUrl):
+        href = url.toString()
+        target = AppLinkTarget(href)
+        if target is not None:
+            self.status.setText(QApplication.translate("wiki", "Opens it in HyperDrive"))
+        elif href and PageLink(href) is None and not href.startswith("#"):
+            self.status.setText(href)
+        else:
+            self.status.setText("")
+
+    # =====================================================
+    # SEARCH
+    # =====================================================
+    def _FocusSearch(self):
+        self.search.setFocus()
+        self.search.selectAll()
+
     def UpdateSearch(self, text):
         if not text.strip():
             self.sidebar.setCurrentWidget(self.contents)
@@ -253,74 +336,3 @@ class WikiWindow(QWidget):
         link = PageLink(url.toString())
         if link is not None:
             self.ShowPage(link[0], highlight=self.search.text())
-
-    def _LinkHovered(self, url: QUrl):
-        href = url.toString()
-        target = AppLinkTarget(href)
-        if target is not None:
-            self.status.setText(QApplication.translate("wiki", "Opens it in HyperDrive"))
-        elif href and PageLink(href) is None and not href.startswith("#"):
-            self.status.setText(href)
-        else:
-            self.status.setText("")
-
-    def LinkClicked(self, url: QUrl):
-        href = url.toString()
-
-        target = AppLinkTarget(href)
-        if target is not None:
-            self.OpenInApp(target)
-            return
-
-        if href.startswith("#"):
-            self.ShowPage(self.page, href[1:])
-            return
-
-        link = PageLink(href)
-        if link is not None:
-            page, anchor = link
-            self.ShowPage(page, anchor or None)
-            return
-
-        QDesktopServices.openUrl(url)
-
-    def OpenInApp(self, target):
-        # "settings/api-keys" is the "settings" link, given "api-keys"
-        name, _, argument = target.partition("/")
-        open = WikiWindow.APP_LINKS.get(name)
-        if open is None:
-            logger.warning(f"The guide links to {target}, which isn't a part of the app")
-            self.status.setText(
-                QApplication.translate("wiki", "This version of HyperDrive can't open {0}.").format(
-                    target
-                )
-            )
-            return
-        try:
-            open(argument) if argument else open()
-        except Exception:
-            logger.opt(exception=True).error(f"Could not open {target} from the guide")
-
-    def StyleSheet(self):
-        # QTextDocument's subset of CSS, in the theme's colors
-        colors = Theme.Colors()
-        text = colors["text"].name()
-        muted = colors["muted"].name()
-        border = colors["border"].name()
-        raised = colors["raised"].name()
-        accent = colors["accentText"].name()
-        return f"""
-            body {{ color: {text}; }}
-            h1 {{ font-size: x-large; margin-bottom: 8px; }}
-            h2 {{ font-size: large; margin-top: 18px; }}
-            h3 {{ font-size: medium; margin-top: 14px; }}
-            p, li {{ line-height: 130%; }}
-            a {{ color: {accent}; }}
-            a.app-link {{ color: {accent}; font-weight: bold; }}
-            code {{ background-color: {raised}; font-family: monospace; }}
-            pre {{ background-color: {raised}; font-family: monospace; padding: 6px; }}
-            table {{ border-collapse: collapse; margin-top: 4px; margin-bottom: 8px; }}
-            th {{ background-color: {raised}; text-align: left; }}
-            th, td {{ border: 1px solid {border}; padding: 4px 8px; }}
-            blockquote {{ color: {muted}; margin-left: 12px; }}
-        """

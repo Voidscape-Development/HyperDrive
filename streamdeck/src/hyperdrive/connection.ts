@@ -18,6 +18,9 @@ type Events = {
 	status: [ConnectionStatus];
 };
 
+// ---------------------------------------------------------------------------
+// Addresses
+
 /**
  * Normalizes what a user typed as HyperDrive's address: "192.168.1.5",
  * "http://pc.local:5500/" or "pc:5501" (a port typed with the host wins).
@@ -43,6 +46,9 @@ export function baseUrl(address: Address): string {
 	return `http://${host}:${address.port}`;
 }
 
+// ---------------------------------------------------------------------------
+// The connection
+
 /**
  * The plugin's one connection to HyperDrive: socket.io for the state, and
  * the web server's links for commands (their answers tell a failed command
@@ -66,6 +72,9 @@ export class HyperDriveConnection extends EventEmitter<Events> {
 	get url(): string {
 		return baseUrl(this.address);
 	}
+
+	// -------------------------------------------------------------------
+	// Connecting
 
 	/** Connects to HyperDrive, or reconnects if the address changed. */
 	connect(address: Address = this.address): void {
@@ -140,6 +149,9 @@ export class HyperDriveConnection extends EventEmitter<Events> {
 		this.#queueState();
 	}
 
+	// -------------------------------------------------------------------
+	// Commands
+
 	/**
 	 * Calls one of the web server's links, e.g. "/scoreboard1-team1-scoreup".
 	 * Never throws: an unreachable HyperDrive is status 0.
@@ -177,6 +189,9 @@ export class HyperDriveConnection extends EventEmitter<Events> {
 			return undefined;
 		}
 	}
+
+	// -------------------------------------------------------------------
+	// Status and state
 
 	#setStatus(status: ConnectionStatus): void {
 		if (status !== this.status) {

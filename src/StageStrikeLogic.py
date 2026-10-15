@@ -63,6 +63,9 @@ class StageStrikeLogic:
         # picked, 2: picked}}. A new score lets them pick again.
         self.characterLock = None
 
+    # =====================================================
+    # HISTORY
+    # =====================================================
     def AddHistory(self, state, justOverwrite=False):
         self.history = self.history[: self.historyIndex + 1]
         state.actor = self.actor
@@ -101,6 +104,28 @@ class StageStrikeLogic:
         self.pendingWinner = None
         self.historyIndex = min(self.historyIndex + 1, len(self.history) - 1)
         self.ExportState()
+
+    # =====================================================
+    # STATE
+    # =====================================================
+    def Initialize(self, resetStreamScore=False):
+        logger.info(f"Stage Strike Logic Initialize (scoreboard {self.scoreboardNumber})")
+        self.characterSelect = None
+        self.AddHistory(StageStrikeState())
+        self.ExportState()
+
+    def SetRuleset(self, ruleset):
+        self.ruleset = ruleset
+        self.Initialize()
+
+    def CurrentState(self) -> StageStrikeState:
+        return self.history[self.historyIndex]
+
+    def initNewState(self, newState):
+        newState.strikedStages = [[]]
+        newState.selectedStage = None
+        newState.strikedBy = [[], []]
+        newState.gentlemans = False
 
     def ExportState(self):
         state = self.CurrentState()
@@ -161,19 +186,9 @@ class StageStrikeLogic:
                     f"Could not find scoreboard {self.scoreboardNumber} when piloting the stage history!"
                 )
 
-    def SetRuleset(self, ruleset):
-        self.ruleset = ruleset
-        self.Initialize()
-
-    def Initialize(self, resetStreamScore=False):
-        logger.info(f"Stage Strike Logic Initialize (scoreboard {self.scoreboardNumber})")
-        self.characterSelect = None
-        self.AddHistory(StageStrikeState())
-        self.ExportState()
-
-    def CurrentState(self) -> StageStrikeState:
-        return self.history[self.historyIndex]
-
+    # =====================================================
+    # STAGE STRIKING
+    # =====================================================
     def RpsResult(self, player):
         # Only decides who starts. Once someone's striking, a late or second
         # report (e.g. both teams' pages tapping at once) would switch the
@@ -302,12 +317,24 @@ class StageStrikeLogic:
 
         self.AddHistory(newState, justOverwrite=justOverwrite)
 
-    def initNewState(self, newState):
-        newState.strikedStages = [[]]
-        newState.selectedStage = None
-        newState.strikedBy = [[], []]
-        newState.gentlemans = False
+    def SetGentlemans(self, value):
+        logger.info(f"Setting gentlemans to {value}")
+        newState = self.CurrentState().Clone()
 
+        self.initNewState(newState)
+        newState.gentlemans = value
+        newState.currPlayer = newState.lastWinner
+        newState.currStep = 0
+
+        self.AddHistory(newState)
+
+        # Back to striking, skip the bans like MatchWinner does if there are none
+        if not value and newState.currGame > 0 and self.GetStrikeNumber() == 0:
+            self.ConfirmClicked(justOverwrite=True)
+
+    # =====================================================
+    # GAME RESULTS
+    # =====================================================
     def MatchWinner(self, id):
         newState = self.CurrentState().Clone()
         newState.currGame += 1
@@ -328,21 +355,6 @@ class StageStrikeLogic:
 
         # If next step has no bans, skip it
         if self.GetStrikeNumber() == 0:
-            self.ConfirmClicked(justOverwrite=True)
-
-    def SetGentlemans(self, value):
-        logger.info(f"Setting gentlemans to {value}")
-        newState = self.CurrentState().Clone()
-
-        self.initNewState(newState)
-        newState.gentlemans = value
-        newState.currPlayer = newState.lastWinner
-        newState.currStep = 0
-
-        self.AddHistory(newState)
-
-        # Back to striking, skip the bans like MatchWinner does if there are none
-        if not value and newState.currGame > 0 and self.GetStrikeNumber() == 0:
             self.ConfirmClicked(justOverwrite=True)
 
     def ReportWinner(self, winner, team=None):
@@ -381,6 +393,15 @@ class StageStrikeLogic:
         self.ExportState()
         return False
 
+    def CurrentScore(self):
+        """The scoreboard's score, [team 1, team 2]."""
+        return [
+            _Int(StateManager.Get(f"score.{self.scoreboardNumber}.team.{t}.score")) for t in (1, 2)
+        ]
+
+    # =====================================================
+    # CHARACTER SELECT
+    # =====================================================
     def GetCharacterSelectState(self):
         # Only who sent their characters, not what they picked
         if self.characterSelect is None:
@@ -392,12 +413,6 @@ class StageStrikeLogic:
                 str(t): picks is not None for t, picks in self.characterSelect["teams"].items()
             },
         }
-
-    def CurrentScore(self):
-        """The scoreboard's score, [team 1, team 2]."""
-        return [
-            _Int(StateManager.Get(f"score.{self.scoreboardNumber}.team.{t}.score")) for t in (1, 2)
-        ]
 
     def CharacterLockState(self, score):
         """Which teams already picked their characters for this score on the

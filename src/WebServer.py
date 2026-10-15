@@ -237,6 +237,11 @@ class WebServer(QThread):
     loop: asyncio.AbstractEventLoop | None = None
     routesAdded = False
 
+    # Stage striking is per scoreboard. HTTP requests pick it with
+    # ?scoreboard=<n> or a "scoreboardNumber" field in their JSON body, and
+    # socket messages with a "scoreboardNumber" field. Both default to 1.
+    parse_message = staticmethod(parse_message)
+
     def __init__(
         self, parent=None, stageWidget=None, commentaryWidget: CommentaryWidget = None
     ) -> None:
@@ -266,6 +271,9 @@ class WebServer(QThread):
             )
             api.add_api_route("/{filename:path}", WebServer.file_request, methods=["GET", "POST"])
 
+    # =====================================================
+    # SOCKET MESSAGES AND PROGRAM STATE
+    # =====================================================
     # Don't override the QObject emit() method
     def ws_emit(event, *args, **kwargs):
         """Sends a socket event. In a socket event handler it answers the
@@ -350,11 +358,9 @@ class WebServer(QThread):
     def ws_program_state(message=None):
         WebServer.ws_emit_state("program_state", WebServer.actions.program_state(), filter_state)
 
-    # Stage striking is per scoreboard. HTTP requests pick it with
-    # ?scoreboard=<n> or a "scoreboardNumber" field in their JSON body, and
-    # socket messages with a "scoreboardNumber" field. Both default to 1.
-    parse_message = staticmethod(parse_message)
-
+    # =====================================================
+    # REQUEST HELPERS
+    # =====================================================
     def request_scoreboard(request: Request, body=None):
         if request.query_params.get("scoreboard"):
             return request.query_params.get("scoreboard")
@@ -368,6 +374,9 @@ class WebServer(QThread):
     def request_team(request: Request, body=None):
         return request.query_params.get("team") or (body or {}).get("team")
 
+    # =====================================================
+    # STAGE STRIKING
+    # =====================================================
     @api.get("/ruleset")
     async def ruleset(request: Request):
         return await call(WebServer.actions.ruleset, WebServer.request_scoreboard(request))
@@ -560,6 +569,9 @@ class WebServer(QThread):
             WebServer.actions.reset(info.get("scoreboardNumber", 1), info.get("team")),
         )
 
+    # =====================================================
+    # SCOREBOARD SCORE AND TEAMS
+    # =====================================================
     @api.post("/score")
     async def post_score(request: Request):
         return await call(WebServer.actions.post_score, await request.body())
@@ -624,6 +636,9 @@ class WebServer(QThread):
             WebServer.actions.team_info(info.get("scoreboardNumber", "1"), info.get("team"), info),
         )
 
+    # =====================================================
+    # CREW/TEAM BATTLE
+    # =====================================================
     # Crew/Team Battle
     # A team scores: in Stock Pool the other team's active player loses a
     # stock, in First To the team's active player wins a game
@@ -697,6 +712,9 @@ class WebServer(QThread):
     async def get_team_battle():
         return await call(WebServer.actions.get_team_battle)
 
+    # =====================================================
+    # SCOREBOARD DATA
+    # =====================================================
     @api.get("/scoreboard{scoreboardNumber:seg}-get")
     async def get_route(scoreboardNumber: str):
         return await call(WebServer.actions.get_scoreboard, scoreboardNumber)
@@ -777,6 +795,9 @@ class WebServer(QThread):
     def ws_set_game_data(message=None):
         WebServer.ws_emit("update_game", WebServer.actions.set_game(load_message(message)))
 
+    # =====================================================
+    # GAMES AND CHARACTERS
+    # =====================================================
     # Get games
     @api.get("/games")
     async def get_games():
@@ -822,6 +843,9 @@ class WebServer(QThread):
     def ws_get_variants(message=None):
         WebServer.ws_emit("variants", WebServer.actions.get_variants())
 
+    # =====================================================
+    # SWAPPING AND LOADING SETS
+    # =====================================================
     # Swaps teams
     @api.get("/scoreboard{scoreboardNumber:seg}-swap-teams")
     async def swap_teams(scoreboardNumber: str):
@@ -868,6 +892,9 @@ class WebServer(QThread):
             "pull_stream", WebServer.actions.pull_stream_set(info.get("scoreboardNumber", "1"))
         )
 
+    # =====================================================
+    # PLAYER STATS
+    # =====================================================
     # Resubmits Call for Recent Sets
     @api.get("/scoreboard{scoreboardNumber:seg}-stats-recent-sets")
     async def stats_recent_sets(scoreboardNumber: str):
@@ -941,6 +968,9 @@ class WebServer(QThread):
             WebServer.actions.commentary_preview, await WebServer.request_body(request)
         )
 
+    # =====================================================
+    # RESETTING
+    # =====================================================
     # Resets scores
     @api.get("/scoreboard{scoreboardNumber:seg}-reset-scores")
     async def reset_scores(scoreboardNumber: str):
@@ -989,6 +1019,9 @@ class WebServer(QThread):
             "clear_all", WebServer.actions.clear_all(info.get("scoreboardNumber", "1"))
         )
 
+    # =====================================================
+    # SETS AND COMMENTATORS
+    # =====================================================
     # Get the sets to be played
     @api.get("/get-sets")
     async def get_sets(request: Request):
@@ -1056,6 +1089,9 @@ class WebServer(QThread):
             WebServer.actions.get_set(load_message(message).get("scoreboardNumber", "1")),
         )
 
+    # =====================================================
+    # PLAYER DATABASE
+    # =====================================================
     @api.get("/playerdb")
     async def playerdb():
         return await call(WebServer.actions.get_playerdb)
@@ -1065,6 +1101,9 @@ class WebServer(QThread):
         logger.info("Emitting playerdb info.")
         WebServer.ws_emit("playerdb", WebServer.actions.get_playerdb())
 
+    # =====================================================
+    # BRACKET
+    # =====================================================
     # Update bracket
     @api.get("/update-bracket")
     async def update_bracket():
@@ -1083,6 +1122,9 @@ class WebServer(QThread):
     def ws_update_bracket_sets(message=None):
         WebServer.ws_emit("update_bracket_sets", WebServer.actions.update_bracket_sets())
 
+    # =====================================================
+    # STREAM QUEUE
+    # =====================================================
     # The stream queues, as sent to the layouts
     @api.get("/stream-queue")
     async def stream_queue():
@@ -1102,6 +1144,9 @@ class WebServer(QThread):
             request.query_params.get("scoreboard"),
         )
 
+    # =====================================================
+    # BRACKET FOCUS
+    # =====================================================
     # What the bracket focus layout zooms to (see docs/layout-data.md):
     # GET answers what's in focus and what can be picked, POST a focus
     # request, e.g. {"mode": "sets", "sets": ["m1"]}, or {"move": 1} for the
@@ -1132,6 +1177,9 @@ class WebServer(QThread):
             "bracket_focus", WebServer.actions.bracket_focus_set(parse_message(message))
         )
 
+    # =====================================================
+    # DISPLAY CONTROLS
+    # =====================================================
     # Display Controls, as links for a Stream Deck: /display/state is
     # everything, /display/all/<action>, /display/folder/<folder>/<action>
     # and /display/group/<group>/<action>, with show, hide or toggle as the
@@ -1152,6 +1200,9 @@ class WebServer(QThread):
     async def display_set(kind: str, name: str, action: str):
         return await call(WebServer.actions.display, kind, name, action)
 
+    # =====================================================
+    # TWITCH PREDICTIONS
+    # =====================================================
     # The Twitch prediction of the stream's scoreboard: /twitch/prediction
     # for its state, /twitch/prediction/<start, lock or cancel> and
     # /twitch/prediction/resolve/<team 1 or 2>. Twitch is called in the
@@ -1168,6 +1219,9 @@ class WebServer(QThread):
     async def twitch_prediction_action(action: str):
         return await call(WebServer.actions.twitch_prediction, action)
 
+    # =====================================================
+    # DISPLAY CONTROLS MESSAGES
+    # =====================================================
     # {"folder": <name>} or {"group": <name>} or {"all": true}, with
     # "action": show, hide or toggle (without it, answers whether it's shown)
     @on("display")
@@ -1201,6 +1255,9 @@ class WebServer(QThread):
         state = {"kind": "all", "shown": controls.AllShown(), **controls.State()}
         asyncio.run_coroutine_threadsafe(sio.emit("display_state", state), loop)
 
+    # =====================================================
+    # BRACKET FOCUS LINKS
+    # =====================================================
     # The same as links, e.g. for a Stream Deck: /bracket-focus/all,
     # /bracket-focus/next-round, /bracket-focus/previous-round,
     # /bracket-focus/follow?scoreboard=<n>, /bracket-focus/tour?interval=<s>
@@ -1223,6 +1280,9 @@ class WebServer(QThread):
             return HTMLResponse("Unknown action", status_code=404)
         return await call(WebServer.actions.bracket_focus_set, body, args.get("channel"))
 
+    # =====================================================
+    # LOADING PLAYERS FROM TAGS
+    # =====================================================
     # Load player from tag
     @api.get("/scoreboard{scoreboardNumber:seg}-load-player-from-tag-{team:seg}-{player:seg}")
     async def load_player_from_tag(scoreboardNumber: str, team: str, player: str, request: Request):
@@ -1284,6 +1344,9 @@ class WebServer(QThread):
             ),
         )
 
+    # =====================================================
+    # TOURNAMENT
+    # =====================================================
     # Update bracket
     @api.get("/set-tournament")
     async def set_tournament(request: Request):
@@ -1306,6 +1369,9 @@ class WebServer(QThread):
             "get_tournament_events", WebServer.actions.get_tournament_events(info.get("url"))
         )
 
+    # =====================================================
+    # STATES AND STAGES
+    # =====================================================
     @api.get("/states")
     async def get_states(request: Request):
         countryCode = request.query_params.get("countryCode", None)
@@ -1338,6 +1404,9 @@ class WebServer(QThread):
             ),
         )
 
+    # =====================================================
+    # PAGES AND FILES
+    # =====================================================
     @api.get("/")
     @api.get("/scoreboard")
     @api.get("/stage-strike-app")
@@ -1411,6 +1480,9 @@ class WebServer(QThread):
             filename=os.path.basename(path) if filename.endswith(".gz") else None,
         )
 
+    # =====================================================
+    # RUNNING THE SERVER
+    # =====================================================
     def run(self):
         try:
             logger.info(f"Starting HyperDrive Web Server at {self.GetIP()}:{self.port}")

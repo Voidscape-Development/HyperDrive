@@ -592,6 +592,9 @@ class ScoreboardWidget(QWidget):
             ]
         )
 
+    # =====================================================
+    # SETUP AND CLEANUP
+    # =====================================================
     def ReloadTournamentTerms(self):
         # The match and phase names were edited in the settings
         LocaleHelper.RefreshNamesInWidget(
@@ -601,118 +604,32 @@ class ScoreboardWidget(QWidget):
             self.scoreColumn.findChild(QComboBox, "match"), LocaleHelper.LoadMatchNamesToWidget
         )
 
-    def ExportBestOf(self, value):
+    def SetDefaultsFromAssets(self):
+        if StateManager.Get("game.defaults"):
+            players, characters = (
+                StateManager.Get("game.defaults.players_per_team", 1),
+                StateManager.Get("game.defaults.characters_per_player", 1),
+            )
+        else:
+            players, characters = 1, 1
+        logger.info(f"{players} players, {characters} characters")
+        # Players now and characters on the next pass of the event loop, so
+        # loading a game doesn't hold the window for both at once. Each in a
+        # save block, so the cards' fields are exported once, not one by one
         with StateManager.SaveBlock():
-            StateManager.Set(f"score.{self.scoreboardNumber}.best_of", value)
-            StateManager.Set(f"score.{self.scoreboardNumber}.best_of_short_text", f"BO{value}")
-            StateManager.Set(
-                f"score.{self.scoreboardNumber}.best_of_text",
-                LocaleHelper.matchNames.get("best_of").format(value) if value > 0 else "",
-            )
-            StateManager.Set(f"score.{self.scoreboardNumber}.first_to", math.ceil(value / 2))
-            StateManager.Set(
-                f"score.{self.scoreboardNumber}.first_to_short_text", f"FT{math.ceil(value / 2)}"
-            )
-            StateManager.Set(
-                f"score.{self.scoreboardNumber}.first_to_text",
-                LocaleHelper.matchNames.get("first_to").format(math.ceil(value / 2))
-                if value > 0
-                else "",
-            )
-            self.gameReport.SetBestOf(value)
+            self.playerNumber.setValue(players)
+        self.defaultCharacters = characters
+        if getattr(self, "defaultCharactersTimer", None) is None:
+            # Owned by the scoreboard, so it can't fire after it's gone
+            self.defaultCharactersTimer = QTimer(self)
+            self.defaultCharactersTimer.setSingleShot(True)
+            self.defaultCharactersTimer.setInterval(0)
+            self.defaultCharactersTimer.timeout.connect(self.SetDefaultCharacters)
+        self.defaultCharactersTimer.start()
 
-    def StageResultsToScore(self, team_1_score, team_2_score):
-        with QSignalBlocker(self.scoreColumn.findChild(QSpinBox, "score_left")):
-            self.scoreColumn.findChild(QSpinBox, "score_left").setValue(team_1_score)
-            StateManager.Set(f"score.{self.scoreboardNumber}.team.1.score", team_1_score)
-
-        with QSignalBlocker(self.scoreColumn.findChild(QSpinBox, "score_right")):
-            self.scoreColumn.findChild(QSpinBox, "score_right").setValue(team_2_score)
-            StateManager.Set(f"score.{self.scoreboardNumber}.team.2.score", team_2_score)
-
-    def closeEvent(self, event):
-        Scheduler.instance.Stop(self.autoUpdateJob)
-
-    def RemoveAutoUpdate(self):
-        """Called before the scoreboard is deleted, so its job doesn't keep
-        running for a widget that no longer exists."""
-        self.autoUpdateData = None
-        Scheduler.instance.signals.job_state_changed.disconnect(self.AutoUpdateJobStateChanged)
-        Scheduler.instance.signals.tick.disconnect(self.UpdateTimeLeftTimer)
-        Scheduler.instance.Unregister(self.autoUpdateJob)
-        MediaHelper.signals.changed.disconnect(self.RefreshTeamLogos)
-
-    def ExportTeamLogo(self, team, value):
-        logo = MediaHelper.TeamLogoPath(value)
-        StateManager.Set(
-            f"score.{self.scoreboardNumber}.team.{team}.logo",
-            logo if os.path.exists(logo) else None,
-        )
-
-    def RefreshTeamLogos(self):
-        """After a team logo is changed in the Player Database window"""
-        for team, column in (("1", self.team1column), ("2", self.team2column)):
-            self.ExportTeamLogo(team, column.findChild(QLineEdit, "teamName").text())
-
-    def ExportLosersStatus(self, team, team_name, is_in_losers):
-        merged_team_name = deepcopy(team_name)
-        if (
-            not team_name
-        ):  # If no manually set team name, add generated team name based on player names
-            players = StateManager.Get(f"score.{self.scoreboardNumber}.team.{team}.player", {})
-            player_names = []
-            players_names_only = []
-            for index in players.keys():
-                if players[index].get("name", ""):
-                    players_names_only.append(players[index].get("name", ""))
-                    if players[index].get("team"):
-                        player_names.append(
-                            f"{players[index].get('team', '')} | {players[index].get('name', '')}"
-                        )
-                    else:
-                        player_names.append(players[index].get("name", ""))
-            if (
-                len(player_names) >= 2
-            ):  # If the team has 2 players or more, only export the names of the players in the team name
-                merged_team_name = " / ".join(players_names_only)
-            else:
-                merged_team_name = " / ".join(player_names)
-        losers_indicator = ""
-        if is_in_losers:
-            losers_indicator = "[L]"
-            merged_team_name = merged_team_name + " " + losers_indicator
-        StateManager.Set(
-            f"score.{self.scoreboardNumber}.team.{team}.mergedTeamName", merged_team_name
-        )
-        StateManager.Set(
-            f"score.{self.scoreboardNumber}.team.{team}.losersIndicator", losers_indicator
-        )
-
-    def ToggleElements(self, action: QAction, elements):
-        for pw in self.playerWidgets:
-            for element in elements:
-                pw.SetElementVisible(element, action.isChecked())
-
-    def SetCompactPlayers(self, compact):
-        for pw in self.playerWidgets:
-            pw.SetDetailsShown(not compact)
-
-    def OpenGames(self):
-        self.gamesWindow.show()
-        self.gamesWindow.raise_()
-        self.gamesWindow.activateWindow()
-
-    def OpenGame(self, index):
-        """Opens the Games window on a game (a games tracker square)."""
-        self.OpenGames()
-        # Once the window is laid out, so the row's place is known
-        QTimer.singleShot(50, lambda: self.gameReport.FocusGame(index))
-
-    def UpdateGamesTracker(self):
-        self.gamesTracker.SetColors(self.colorButton1.color(), self.colorButton2.color())
-        self.gamesTracker.SetGames(
-            self.gameReport.report.games, self.gameReport.report.CurrentGameIndex()
-        )
+    def SetDefaultCharacters(self):
+        with StateManager.SaveBlock():
+            self.charNumber.setValue(self.defaultCharacters)
 
     def UpdateBottomButtons(self):
         if TournamentDataManager.instance.provider and TournamentDataManager.instance.provider.url:
@@ -728,23 +645,33 @@ class ScoreboardWidget(QWidget):
             self.btSelectSet.setEnabled(False)
             self.btLoadStationSet.setEnabled(False)
 
-    def SetCharacterNumber(self, value):
-        # logger.info(f"ScoreboardWidget#SetCharacterNumber({value})")
-        for pw in self.playerWidgets:
-            pw.SetCharactersPerPlayer(value)
+    def GetIP(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(("10.255.255.255", 1))
+            IP = s.getsockname()[0]
+        except Exception:
+            IP = "127.0.0.1"
+        finally:
+            s.close()
+        return IP
 
-    def ConnectLosersStatus(self, p, team, teamColumn):
-        # Connected once per player widget: connecting every existing player
-        # on each call made the export run several times per edit
-        for field in ("name", "team"):
-            p.findChild(QLineEdit, field).editingFinished.connect(
-                lambda: self.ExportLosersStatus(
-                    team,
-                    teamColumn.findChild(QLineEdit, "teamName").text(),
-                    teamColumn.findChild(QCheckBox, "losers").isChecked(),
-                )
-            )
+    def closeEvent(self, event):
+        Scheduler.instance.Stop(self.autoUpdateJob)
 
+    def RemoveAutoUpdate(self):
+        """Called before the scoreboard is deleted, so its job doesn't keep
+        running for a widget that no longer exists."""
+        self.autoUpdateData = None
+        Scheduler.instance.signals.job_state_changed.disconnect(self.AutoUpdateJobStateChanged)
+        Scheduler.instance.signals.tick.disconnect(self.UpdateTimeLeftTimer)
+        Scheduler.instance.Unregister(self.autoUpdateJob)
+        MediaHelper.signals.changed.disconnect(self.RefreshTeamLogos)
+
+    # =====================================================
+    # PLAYERS
+    # =====================================================
     def SetPlayersPerTeam(self, number):
         # logger.info(f"ScoreboardWidget#SetPlayersPerTeam({number})")
         while len(self.team1playerWidgets) < number:
@@ -884,6 +811,45 @@ class ScoreboardWidget(QWidget):
             action: QAction = self.eyeBt.menu().actions()[x]
             self.ToggleElements(action, element[1])
 
+    def ConnectLosersStatus(self, p, team, teamColumn):
+        # Connected once per player widget: connecting every existing player
+        # on each call made the export run several times per edit
+        for field in ("name", "team"):
+            p.findChild(QLineEdit, field).editingFinished.connect(
+                lambda: self.ExportLosersStatus(
+                    team,
+                    teamColumn.findChild(QLineEdit, "teamName").text(),
+                    teamColumn.findChild(QCheckBox, "losers").isChecked(),
+                )
+            )
+
+    def SetCharacterNumber(self, value):
+        # logger.info(f"ScoreboardWidget#SetCharacterNumber({value})")
+        for pw in self.playerWidgets:
+            pw.SetCharactersPerPlayer(value)
+
+    def LoadPlayerFromTag(self, tag, team, player, no_mains=False):
+        team = int(team) - 1
+        player = int(player) - 1
+        teamInstances = [self.team1playerWidgets, self.team2playerWidgets]
+
+        if self.teamsSwapped:
+            teamInstances.reverse()
+
+        if team >= len(teamInstances):
+            logger.warning(f"Team index {team + 1} out of range in LoadPlayerFromTag")
+            return False
+
+        if player >= len(teamInstances[team]):
+            logger.warning(f"Player index {player + 1} out of range in LoadPlayerFromTag")
+            return False
+
+        playerData = PlayerDB.GetPlayerFromTag(tag)
+        if playerData:
+            teamInstances[team][player].SetData(playerData, False, True, no_mains)
+            return True
+        return False
+
     def SwapTeams(self):
         # Lock all player widgets
         for p in self.playerWidgets:
@@ -966,9 +932,35 @@ class ScoreboardWidget(QWidget):
             # Still loading for the old order, ask again for the new one
             self.stats.signals.RecentSetsSignal.emit()
 
+    # =====================================================
+    # DISPLAY OPTIONS
+    # =====================================================
+    def ToggleElements(self, action: QAction, elements):
+        for pw in self.playerWidgets:
+            for element in elements:
+                pw.SetElementVisible(element, action.isChecked())
+
+    def SetCompactPlayers(self, compact):
+        for pw in self.playerWidgets:
+            pw.SetDetailsShown(not compact)
+
+    # =====================================================
+    # SCORE
+    # =====================================================
     def ResetScore(self):
         self.scoreColumn.findChild(QSpinBox, "score_left").setValue(0)
         self.scoreColumn.findChild(QSpinBox, "score_right").setValue(0)
+
+    def ClearScore(self):
+        for c in self.scoreColumn.findChildren(QComboBox):
+            c.setCurrentText("")
+            c.lineEdit().editingFinished.emit()
+
+        self.scoreColumn.findChild(QSpinBox, "score_left").setValue(0)
+        self.scoreColumn.findChild(QSpinBox, "score_right").setValue(0)
+
+        self.team1column.findChild(QCheckBox, "losers").setChecked(False)
+        self.team2column.findChild(QCheckBox, "losers").setChecked(False)
 
     def ClearAllClicked(self):
         answer = QMessageBox.question(
@@ -992,32 +984,50 @@ class ScoreboardWidget(QWidget):
             self.ClearScore()
             StateManager.Unset(f"score.{self.scoreboardNumber}.stage_strike")
 
-    def RunAutoUpdate(self, done):
-        data = self.autoUpdateData or {}
+    def StageResultsToScore(self, team_1_score, team_2_score):
+        with QSignalBlocker(self.scoreColumn.findChild(QSpinBox, "score_left")):
+            self.scoreColumn.findChild(QSpinBox, "score_left").setValue(team_1_score)
+            StateManager.Set(f"score.{self.scoreboardNumber}.team.1.score", team_1_score)
 
-        # done() once every request started below has finished, so the next
-        # update can't start while this one is still loading. Starts at 1 so
-        # a request finishing immediately can't call it before the others
-        # are started.
-        pending = [1]
+        with QSignalBlocker(self.scoreColumn.findChild(QSpinBox, "score_right")):
+            self.scoreColumn.findChild(QSpinBox, "score_right").setValue(team_2_score)
+            StateManager.Set(f"score.{self.scoreboardNumber}.team.2.score", team_2_score)
 
-        def finished():
-            pending[0] -= 1
-            if pending[0] == 0:
-                done()
+    # =====================================================
+    # GAMES
+    # =====================================================
+    def OpenGames(self):
+        self.gamesWindow.show()
+        self.gamesWindow.raise_()
+        self.gamesWindow.activateWindow()
 
-        def track():
-            pending[0] += 1
-            return finished
+    def OpenGame(self, index):
+        """Opens the Games window on a game (a games tracker square)."""
+        self.OpenGames()
+        # Once the window is laid out, so the row's place is known
+        QTimer.singleShot(50, lambda: self.gameReport.FocusGame(index))
 
-        TournamentDataManager.instance.GetMatch(
-            self, data.get("id"), overwrite=False, on_finished=track()
+    def UpdateGamesTracker(self):
+        self.gamesTracker.SetColors(self.colorButton1.color(), self.colorButton2.color())
+        self.gamesTracker.SetGames(
+            self.gameReport.report.games, self.gameReport.report.CurrentGameIndex()
         )
 
-        if data.get("auto_update") in ("stream", "station"):
-            TournamentDataManager.instance.LoadStationSets(self, on_finished=track())
+    # =====================================================
+    # LOADING SETS
+    # =====================================================
+    def LoadSetClicked(self):
+        self.selectSetWindow.LoadSets()
+        self.selectSetWindow.show()
 
-        finished()
+    def LoadStationSets(self, station):
+        self.lastSetSelected = None
+        self.lastStationSelected = station
+        TournamentDataManager.instance.LoadStationSets(self)
+
+    def LoadStationSetClicked(self):
+        self.selectStationWindow.LoadStations()
+        self.selectStationWindow.show()
 
     def StationSetsLoaded(self, data):
         # Ici peut être lancer le chargement des sets voire même trigger un autre signal ?
@@ -1121,114 +1131,6 @@ class ScoreboardWidget(QWidget):
 
         if newSet:
             self.signals.NewSetLoaded.emit()
-
-    def StartAutoUpdateAfterLoad(self, data):
-        # Unless another set was selected or auto update was stopped meanwhile
-        if self.autoUpdateData is data:
-            Scheduler.instance.Start(self.autoUpdateJob)
-
-    def StopAutoUpdate(self, clear_variables=False):
-        self.autoUpdateData = None
-        Scheduler.instance.Stop(self.autoUpdateJob)
-
-        if clear_variables:
-            self.lastSetSelected = None
-            self.lastStationSelected = None
-
-            StateManager.Set(f"score.{self.scoreboardNumber}.auto_update", None)
-            StateManager.Set(f"score.{self.scoreboardNumber}.set_id", None)
-            StateManager.Set(f"score.{self.scoreboardNumber}.station", None)
-            self.gameReport.NewSet(None)
-
-        self.timerLayout.setVisible(False)
-
-    def AutoUpdateJobStateChanged(self, name):
-        if name == self.autoUpdateJob:
-            self.UpdateTimeLeftTimer()
-
-    def UpdateTimeLeftTimer(self):
-        # None while an update or a newly selected set is loading
-        remaining = Scheduler.instance.RemainingMs(self.autoUpdateJob)
-        self.timerTime.setText(str(math.ceil(remaining / 1000) if remaining is not None else 0))
-
-    def LoadSetClicked(self):
-        self.selectSetWindow.LoadSets()
-        self.selectSetWindow.show()
-
-    def LoadStationSets(self, station):
-        self.lastSetSelected = None
-        self.lastStationSelected = station
-        TournamentDataManager.instance.LoadStationSets(self)
-
-    def LoadStationSetClicked(self):
-        self.selectStationWindow.LoadStations()
-        self.selectStationWindow.show()
-
-    # Used for score change commands
-    # Change <team>(0, 1) score by <change>(+X, -X)
-    def CommandScoreChange(self, team: int, change: int):
-        if team in (0, 1):
-            scoreContainers = [
-                self.scoreColumn.findChild(QSpinBox, "score_left"),
-                self.scoreColumn.findChild(QSpinBox, "score_right"),
-            ]
-            scoreContainers[team].setValue(scoreContainers[team].value() + change)
-
-    def CommandClearAll(self, no_mains=False):
-        for t, team in enumerate([self.team1playerWidgets, self.team2playerWidgets]):
-            for i, p in enumerate(team):
-                p.Clear(no_mains)
-        self.lastSetSelected = None
-
-    # Sets a team's name, losers state and color from the web API.
-    # <team>(0, 1) is the side on screen, like CommandScoreChange
-    def CommandTeamInfo(self, team: int, data):
-        if team not in (0, 1):
-            return
-        column = [self.team1column, self.team2column][team]
-        if data.get("name") is not None:
-            teamName = column.findChild(QLineEdit, "teamName")
-            teamName.setText(str(data.get("name")))
-            teamName.editingFinished.emit()
-        if data.get("losers") is not None:
-            column.findChild(QCheckBox, "losers").setChecked(bool(data.get("losers")))
-        if data.get("color"):
-            self.CommandTeamColor(team, data.get("color"))
-
-    def ClearScore(self):
-        for c in self.scoreColumn.findChildren(QComboBox):
-            c.setCurrentText("")
-            c.lineEdit().editingFinished.emit()
-
-        self.scoreColumn.findChild(QSpinBox, "score_left").setValue(0)
-        self.scoreColumn.findChild(QSpinBox, "score_right").setValue(0)
-
-        self.team1column.findChild(QCheckBox, "losers").setChecked(False)
-        self.team2column.findChild(QCheckBox, "losers").setChecked(False)
-
-    def CommandTeamColor(self, team: int, color, force_opponent=False):
-        if color:
-            value = None
-            if type(color) is str:
-                value = color
-            if type(color) is int and color > 0:
-                value = GameAssetManager.instance.colorModel.item(color).data(
-                    Qt.ItemDataRole.UserRole
-                )
-                if force_opponent:
-                    value = value.get("force_opponent")
-                else:
-                    value = value.get("value")
-                if value:
-                    value = "#" + value
-
-            if value:
-                if team == 0:
-                    self.colorButton1.setColor(value)
-                if team == 1:
-                    self.colorButton2.setColor(value)
-                if team in (0, 1):
-                    StateManager.Set(f"score.{self.scoreboardNumber}.team.{team + 1}.color", value)
 
     # Modifies the current set data. Does not check for id, so do not call this with data that may lead to another hbox incident
     #
@@ -1458,65 +1360,188 @@ class ScoreboardWidget(QWidget):
         self.finishedSets.add(str(setId))
         self.signals.SetFinished.emit(setId)
 
-    def LoadPlayerFromTag(self, tag, team, player, no_mains=False):
-        team = int(team) - 1
-        player = int(player) - 1
-        teamInstances = [self.team1playerWidgets, self.team2playerWidgets]
+    # =====================================================
+    # AUTO UPDATE
+    # =====================================================
+    def RunAutoUpdate(self, done):
+        data = self.autoUpdateData or {}
 
-        if self.teamsSwapped:
-            teamInstances.reverse()
+        # done() once every request started below has finished, so the next
+        # update can't start while this one is still loading. Starts at 1 so
+        # a request finishing immediately can't call it before the others
+        # are started.
+        pending = [1]
 
-        if team >= len(teamInstances):
-            logger.warning(f"Team index {team + 1} out of range in LoadPlayerFromTag")
-            return False
+        def finished():
+            pending[0] -= 1
+            if pending[0] == 0:
+                done()
 
-        if player >= len(teamInstances[team]):
-            logger.warning(f"Player index {player + 1} out of range in LoadPlayerFromTag")
-            return False
+        def track():
+            pending[0] += 1
+            return finished
 
-        playerData = PlayerDB.GetPlayerFromTag(tag)
-        if playerData:
-            teamInstances[team][player].SetData(playerData, False, True, no_mains)
-            return True
-        return False
+        TournamentDataManager.instance.GetMatch(
+            self, data.get("id"), overwrite=False, on_finished=track()
+        )
 
-    def SetDefaultsFromAssets(self):
-        if StateManager.Get("game.defaults"):
-            players, characters = (
-                StateManager.Get("game.defaults.players_per_team", 1),
-                StateManager.Get("game.defaults.characters_per_player", 1),
+        if data.get("auto_update") in ("stream", "station"):
+            TournamentDataManager.instance.LoadStationSets(self, on_finished=track())
+
+        finished()
+
+    def StartAutoUpdateAfterLoad(self, data):
+        # Unless another set was selected or auto update was stopped meanwhile
+        if self.autoUpdateData is data:
+            Scheduler.instance.Start(self.autoUpdateJob)
+
+    def StopAutoUpdate(self, clear_variables=False):
+        self.autoUpdateData = None
+        Scheduler.instance.Stop(self.autoUpdateJob)
+
+        if clear_variables:
+            self.lastSetSelected = None
+            self.lastStationSelected = None
+
+            StateManager.Set(f"score.{self.scoreboardNumber}.auto_update", None)
+            StateManager.Set(f"score.{self.scoreboardNumber}.set_id", None)
+            StateManager.Set(f"score.{self.scoreboardNumber}.station", None)
+            self.gameReport.NewSet(None)
+
+        self.timerLayout.setVisible(False)
+
+    def AutoUpdateJobStateChanged(self, name):
+        if name == self.autoUpdateJob:
+            self.UpdateTimeLeftTimer()
+
+    def UpdateTimeLeftTimer(self):
+        # None while an update or a newly selected set is loading
+        remaining = Scheduler.instance.RemainingMs(self.autoUpdateJob)
+        self.timerTime.setText(str(math.ceil(remaining / 1000) if remaining is not None else 0))
+
+    # =====================================================
+    # REMOTE COMMANDS
+    # =====================================================
+    # Used for score change commands
+    # Change <team>(0, 1) score by <change>(+X, -X)
+    def CommandScoreChange(self, team: int, change: int):
+        if team in (0, 1):
+            scoreContainers = [
+                self.scoreColumn.findChild(QSpinBox, "score_left"),
+                self.scoreColumn.findChild(QSpinBox, "score_right"),
+            ]
+            scoreContainers[team].setValue(scoreContainers[team].value() + change)
+
+    def CommandClearAll(self, no_mains=False):
+        for t, team in enumerate([self.team1playerWidgets, self.team2playerWidgets]):
+            for i, p in enumerate(team):
+                p.Clear(no_mains)
+        self.lastSetSelected = None
+
+    # Sets a team's name, losers state and color from the web API.
+    # <team>(0, 1) is the side on screen, like CommandScoreChange
+    def CommandTeamInfo(self, team: int, data):
+        if team not in (0, 1):
+            return
+        column = [self.team1column, self.team2column][team]
+        if data.get("name") is not None:
+            teamName = column.findChild(QLineEdit, "teamName")
+            teamName.setText(str(data.get("name")))
+            teamName.editingFinished.emit()
+        if data.get("losers") is not None:
+            column.findChild(QCheckBox, "losers").setChecked(bool(data.get("losers")))
+        if data.get("color"):
+            self.CommandTeamColor(team, data.get("color"))
+
+    def CommandTeamColor(self, team: int, color, force_opponent=False):
+        if color:
+            value = None
+            if type(color) is str:
+                value = color
+            if type(color) is int and color > 0:
+                value = GameAssetManager.instance.colorModel.item(color).data(
+                    Qt.ItemDataRole.UserRole
+                )
+                if force_opponent:
+                    value = value.get("force_opponent")
+                else:
+                    value = value.get("value")
+                if value:
+                    value = "#" + value
+
+            if value:
+                if team == 0:
+                    self.colorButton1.setColor(value)
+                if team == 1:
+                    self.colorButton2.setColor(value)
+                if team in (0, 1):
+                    StateManager.Set(f"score.{self.scoreboardNumber}.team.{team + 1}.color", value)
+
+    # =====================================================
+    # EXPORTS
+    # =====================================================
+    def ExportBestOf(self, value):
+        with StateManager.SaveBlock():
+            StateManager.Set(f"score.{self.scoreboardNumber}.best_of", value)
+            StateManager.Set(f"score.{self.scoreboardNumber}.best_of_short_text", f"BO{value}")
+            StateManager.Set(
+                f"score.{self.scoreboardNumber}.best_of_text",
+                LocaleHelper.matchNames.get("best_of").format(value) if value > 0 else "",
             )
-        else:
-            players, characters = 1, 1
-        logger.info(f"{players} players, {characters} characters")
-        # Players now and characters on the next pass of the event loop, so
-        # loading a game doesn't hold the window for both at once. Each in a
-        # save block, so the cards' fields are exported once, not one by one
-        with StateManager.SaveBlock():
-            self.playerNumber.setValue(players)
-        self.defaultCharacters = characters
-        if getattr(self, "defaultCharactersTimer", None) is None:
-            # Owned by the scoreboard, so it can't fire after it's gone
-            self.defaultCharactersTimer = QTimer(self)
-            self.defaultCharactersTimer.setSingleShot(True)
-            self.defaultCharactersTimer.setInterval(0)
-            self.defaultCharactersTimer.timeout.connect(self.SetDefaultCharacters)
-        self.defaultCharactersTimer.start()
+            StateManager.Set(f"score.{self.scoreboardNumber}.first_to", math.ceil(value / 2))
+            StateManager.Set(
+                f"score.{self.scoreboardNumber}.first_to_short_text", f"FT{math.ceil(value / 2)}"
+            )
+            StateManager.Set(
+                f"score.{self.scoreboardNumber}.first_to_text",
+                LocaleHelper.matchNames.get("first_to").format(math.ceil(value / 2))
+                if value > 0
+                else "",
+            )
+            self.gameReport.SetBestOf(value)
 
-    def SetDefaultCharacters(self):
-        with StateManager.SaveBlock():
-            self.charNumber.setValue(self.defaultCharacters)
+    def ExportTeamLogo(self, team, value):
+        logo = MediaHelper.TeamLogoPath(value)
+        StateManager.Set(
+            f"score.{self.scoreboardNumber}.team.{team}.logo",
+            logo if os.path.exists(logo) else None,
+        )
 
-    def GetIP(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            # doesn't even have to be reachable
-            s.connect(("10.255.255.255", 1))
-            IP = s.getsockname()[0]
-        except Exception:
-            IP = "127.0.0.1"
-        finally:
-            s.close()
-        return IP
+    def RefreshTeamLogos(self):
+        """After a team logo is changed in the Player Database window"""
+        for team, column in (("1", self.team1column), ("2", self.team2column)):
+            self.ExportTeamLogo(team, column.findChild(QLineEdit, "teamName").text())
 
-    pass
+    def ExportLosersStatus(self, team, team_name, is_in_losers):
+        merged_team_name = deepcopy(team_name)
+        if (
+            not team_name
+        ):  # If no manually set team name, add generated team name based on player names
+            players = StateManager.Get(f"score.{self.scoreboardNumber}.team.{team}.player", {})
+            player_names = []
+            players_names_only = []
+            for index in players.keys():
+                if players[index].get("name", ""):
+                    players_names_only.append(players[index].get("name", ""))
+                    if players[index].get("team"):
+                        player_names.append(
+                            f"{players[index].get('team', '')} | {players[index].get('name', '')}"
+                        )
+                    else:
+                        player_names.append(players[index].get("name", ""))
+            if (
+                len(player_names) >= 2
+            ):  # If the team has 2 players or more, only export the names of the players in the team name
+                merged_team_name = " / ".join(players_names_only)
+            else:
+                merged_team_name = " / ".join(player_names)
+        losers_indicator = ""
+        if is_in_losers:
+            losers_indicator = "[L]"
+            merged_team_name = merged_team_name + " " + losers_indicator
+        StateManager.Set(
+            f"score.{self.scoreboardNumber}.team.{team}.mergedTeamName", merged_team_name
+        )
+        StateManager.Set(
+            f"score.{self.scoreboardNumber}.team.{team}.losersIndicator", losers_indicator
+        )

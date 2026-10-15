@@ -9,6 +9,9 @@
 (() => {
   const mtf = () => document.body.classList.contains("mtf");
 
+  // -------------------------------------------------------------------
+  // Markup
+
   const slotCard = (slot, i, placement) => {
     const player = Object.values(slot.player)[0] || {};
     return HD.html`
@@ -38,6 +41,9 @@
     place &&
     place.asset &&
     HD.html`<div class='flagname'>${place.code}</div><div class='flag' style="background-image: url('${HD.asset(place.asset)}')"></div>`;
+
+  // -------------------------------------------------------------------
+  // Backdrop
 
   // A diagonal gradient in the art's colors behind it: palette colors
   // [a, b] at opacities [x, y]
@@ -71,6 +77,9 @@
       if (img) paint(container, img);
     }
   }
+
+  // -------------------------------------------------------------------
+  // The layout
 
   // placements: what each slot shows, by its order
   HD.layouts.top8 = (placements) => ({

@@ -121,50 +121,12 @@ class GameAssetManager(QObject):
         # Sorted listings of asset directories, cleared when games are reloaded
         self.assetDirCache = {}
 
-    def BuildStockIcons(self, gameObj, game_dir, iconPack):
-        """Paths of each character's icons, by skin. A character the icon
-        pack has none for gets them from another installed pack (see
-        IconPackOrder), and none at all if no pack has it, which shows as a
-        placeholder with its initials. Only paths: QImages must be made on
-        the main thread."""
-        assets = gameObj.get("assets", {})
-        packs = []
-        for key in IconPackOrder(assets, iconPack):
-            try:
-                files = self.ListAssetDir("./user_data/games/" + game_dir + "/" + key)
-            except OSError:
-                continue
-            packs.append((key, assets.get(key) or {}, files))
-
-        stockIcons = {}
-        for c in self.characters.keys():
-            stockIcons[c] = {}
-            codename = self.characters[c].get("codename")
-
-            for key, asset, files in packs:
-                prefix = asset.get("prefix", "")
-                postfix = asset.get("postfix", "")
-                pattern = f"({prefix})({codename})({postfix})([0-9]*)\\.([A-Za-z0-9]+)"
-                filteredFiles = MatchFilesWithPrefix(files, pattern, f"{prefix}{codename}")
-                if not filteredFiles:
-                    continue
-
-                if key != iconPack:
-                    logger.info(f"No icon for {c} in {iconPack}, using {key}")
-                for f in filteredFiles:
-                    numberStart = f.rfind(postfix) + len(postfix)
-                    numberEnd = f.rfind(".")
-                    number = 0
-                    try:
-                        number = int(f[numberStart:numberEnd])
-                    except ValueError:
-                        logger.error(f)
-                    stockIcons[c][number] = "./user_data/games/" + game_dir + "/" + key + "/" + f
-                # Skin 0 is the character's icon wherever one is needed
-                if 0 not in stockIcons[c]:
-                    stockIcons[c][0] = stockIcons[c][min(stockIcons[c])]
-                break
-        return stockIcons
+    # =====================================================
+    # LOADING GAMES
+    # =====================================================
+    def UiMounted(self):
+        self.DownloadStartGGCharacters()
+        self.LoadGames()
 
     def ListAssetDir(self, path):
         files = self.assetDirCache.get(path)
@@ -172,37 +134,6 @@ class GameAssetManager(QObject):
             files = sorted(os.listdir(path))
             self.assetDirCache[path] = files
         return files
-
-    def UiMounted(self):
-        self.DownloadStartGGCharacters()
-        self.LoadGames()
-
-    def DownloadStartGGCharacters(self):
-        class DownloaderThread(QThread):
-            def run(self):
-                try:
-                    url = "https://api.start.gg/characters"
-                    r = requests.get(url, allow_redirects=True)
-                    r_json = orjson.dumps(orjson.loads(r.text), option=orjson.OPT_INDENT_2)
-
-                    open("./assets/characters.json.tmp", "wb").write(r_json)
-
-                    try:
-                        # Test if downloaded JSON is valid
-                        orjson.loads(open("./assets/characters.json.tmp").read())
-
-                        # Remove old file, overwrite with new one
-                        os.remove("./assets/characters.json")
-                        os.rename("./assets/characters.json.tmp", "./assets/characters.json")
-
-                        logger.info("startgg characters file updated")
-                    except:
-                        logger.error("Characters file download failed")
-                except Exception as e:
-                    logger.error("Could not update /assets/characters.json: " + str(e))
-
-        thread = DownloaderThread(self)
-        thread.start()
 
     def LoadGames(self):
         class GameLoaderThread(QThread):
@@ -329,23 +260,32 @@ class GameAssetManager(QObject):
         gameLoaderThread = GameLoaderThread(self)
         gameLoaderThread.start()
 
-    def SetGameFromStartGGId(self, gameid):
-        if len(self.games.keys()) == 0:
-            return
+    def DownloadStartGGCharacters(self):
+        class DownloaderThread(QThread):
+            def run(self):
+                try:
+                    url = "https://api.start.gg/characters"
+                    r = requests.get(url, allow_redirects=True)
+                    r_json = orjson.dumps(orjson.loads(r.text), option=orjson.OPT_INDENT_2)
 
-        for i, game in enumerate(self.games.values()):
-            if str(game.get("smashgg_game_id", "")) == str(gameid):
-                self.LoadGameAssets(i + 1)
-                break
+                    open("./assets/characters.json.tmp", "wb").write(r_json)
 
-    def SetGameFromIGDBId(self, igdb_id):
-        if len(self.games.keys()) == 0:
-            return
+                    try:
+                        # Test if downloaded JSON is valid
+                        orjson.loads(open("./assets/characters.json.tmp").read())
 
-        for i, game in enumerate(self.games.values()):
-            if str(game.get("igdb_game_id", "")) == str(igdb_id):
-                self.LoadGameAssets(i + 1)
-                break
+                        # Remove old file, overwrite with new one
+                        os.remove("./assets/characters.json")
+                        os.rename("./assets/characters.json.tmp", "./assets/characters.json")
+
+                        logger.info("startgg characters file updated")
+                    except:
+                        logger.error("Characters file download failed")
+                except Exception as e:
+                    logger.error("Could not update /assets/characters.json: " + str(e))
+
+        thread = DownloaderThread(self)
+        thread.start()
 
     def CopyCSS(self, game):
         # Make dir if doesn't exists
@@ -381,6 +321,27 @@ class GameAssetManager(QObject):
                     logger.error(f"Error copying CSS file {file_path}: {e}")
 
         logger.info("Game CSS file copy complete")
+
+    # =====================================================
+    # LOADING A GAME
+    # =====================================================
+    def SetGameFromStartGGId(self, gameid):
+        if len(self.games.keys()) == 0:
+            return
+
+        for i, game in enumerate(self.games.values()):
+            if str(game.get("smashgg_game_id", "")) == str(gameid):
+                self.LoadGameAssets(i + 1)
+                break
+
+    def SetGameFromIGDBId(self, igdb_id):
+        if len(self.games.keys()) == 0:
+            return
+
+        for i, game in enumerate(self.games.values()):
+            if str(game.get("igdb_game_id", "")) == str(igdb_id):
+                self.LoadGameAssets(i + 1)
+                break
 
     def LoadGameAssets(
         self, game: int = 0, async_mode=True, mods_active=False, mods_reload_mode=False
@@ -627,6 +588,9 @@ class GameAssetManager(QObject):
         except:
             logger.error(traceback.format_exc())
 
+    # =====================================================
+    # STAGES
+    # =====================================================
     def UpdateStageModel(self, mods_active=True):
         # TODO: Make modded content disabled by default
         # TODO: Add checkbox on game bar to enable / disable modded content
@@ -749,6 +713,9 @@ class GameAssetManager(QObject):
             logger.error(traceback.format_exc())
             return None
 
+    # =====================================================
+    # CHARACTERS
+    # =====================================================
     def UpdateCharacterModel(self, mods_active=True):
         try:
             self.characterModel = NewItemModel()
@@ -845,105 +812,6 @@ class GameAssetManager(QObject):
 
         except:
             logger.error(traceback.format_exc())
-
-    def UpdateVariantModel(self, mods_active=True):
-        try:
-            self.variantModel = NewItemModel()
-
-            # Add one empty
-            item = QStandardItem("")
-            self.variantModel.appendRow(item)
-
-            for c in self.variants.keys():
-                item = QStandardItem()
-                item.setData(c, Qt.ItemDataRole.EditRole)
-                logger.info(c)
-
-                data = {
-                    "name": self.variants[c].get("export_name"),
-                    "en_name": c,
-                    "display_name": self.variants[c].get("display_name"),
-                    "codename": self.variants[c].get("codename"),
-                    "modded": self.variants[c].get("modded", False),
-                }
-
-                data["icon_path"] = self.GetVariantIconPath(data["codename"])
-                data["image_size"] = self.GetVariantIconSize(data["codename"])
-                if data["icon_path"]:
-                    item.setIcon(QIcon(QPixmap.fromImage(QImage(data["icon_path"]))))
-                else:
-                    item.setIcon(QIcon(QPixmap.fromImage(QImage("./assets/icons/cancel.svg"))))
-
-                if self.variants[c].get("display_name") != c:
-                    item.setData(
-                        f"{self.variants[c].get('display_name')} / {c}", Qt.ItemDataRole.EditRole
-                    )
-
-                availability = self.variants[c].get("igdb_playable_list", [])
-                igdb_id = self.selectedGame.get("igdb_game_id")
-                if data.get("modded"):
-                    if not availability or igdb_id in availability:
-                        self.has_modded_content = True
-
-                item.setData(data, Qt.ItemDataRole.UserRole)
-                if (not mods_active) and data.get("modded"):
-                    item.setEnabled(False)
-                    item.setSelectable(False)
-                else:
-                    if availability and igdb_id not in availability:
-                        item.setEnabled(False)
-                        item.setSelectable(False)
-                    else:
-                        self.variantModel.appendRow(item)
-
-            self.variantModel.sort(0)
-        except:
-            logger.error(traceback.format_exc())
-
-    def GetVariantIconPath(self, variant_codename):
-        game_codename = self.selectedGame.get("codename")
-        if "__alt_" in game_codename:
-            game_codename = game_codename.split("__alt_")[0]
-        icon_path, asset_root_path = "", "./user_data/games"
-        icon_config_path = f"{asset_root_path}/{game_codename}/variant_icon/config.json"
-        if os.path.isfile(icon_config_path):
-            with open(icon_config_path, encoding="utf-8") as icon_config_file:
-                try:
-                    icon_config = orjson.loads(icon_config_file.read())
-                except Exception as e:
-                    logger.error(f"JSON error in {icon_config_path}: {e}")
-                    self.signals.json_error.emit(
-                        QApplication.translate("app", "Invalid JSON file"),
-                        f"{icon_config_path}\n\n{e}",
-                    )
-                    return icon_path
-            extensions = ["png", "jpg", "gif", "webp"]
-            for extension in extensions:
-                icon_filename = f"{asset_root_path}/{game_codename}/variant_icon/{icon_config.get('prefix')}{variant_codename}{icon_config.get('postfix')}.{extension}"
-                if os.path.isfile(icon_filename):
-                    icon_path = icon_filename
-                    break
-        return icon_path
-
-    def GetVariantIconSize(self, variant_codename):
-        game_codename = self.selectedGame.get("codename")
-        icon_size, asset_root_path = None, "./user_data/games"
-        icon_config_path = f"{asset_root_path}/{game_codename}/variant_icon/config.json"
-        if os.path.isfile(icon_config_path):
-            with open(icon_config_path, encoding="utf-8") as icon_config_file:
-                try:
-                    icon_config = orjson.loads(icon_config_file.read())
-                except Exception as e:
-                    logger.error(f"JSON error in {icon_config_path}: {e}")
-                    self.signals.json_error.emit(
-                        QApplication.translate("app", "Invalid JSON file"),
-                        f"{icon_config_path}\n\n{e}",
-                    )
-                    return icon_size
-            icon_filename = f"{asset_root_path}/{game_codename}/variant_icon/{icon_config.get('prefix')}{variant_codename}{icon_config.get('postfix')}.png"
-            if os.path.isfile(icon_filename):
-                icon_size = icon_config.get("image_sizes", {}).get(variant_codename, {}).get("null")
-        return icon_size
 
     def UpdateSkinModel(self):
         self.skinModels = {}
@@ -1132,6 +1000,51 @@ class GameAssetManager(QObject):
         except Exception as e:
             logger.error(traceback.format_exc())
             return None
+
+    def BuildStockIcons(self, gameObj, game_dir, iconPack):
+        """Paths of each character's icons, by skin. A character the icon
+        pack has none for gets them from another installed pack (see
+        IconPackOrder), and none at all if no pack has it, which shows as a
+        placeholder with its initials. Only paths: QImages must be made on
+        the main thread."""
+        assets = gameObj.get("assets", {})
+        packs = []
+        for key in IconPackOrder(assets, iconPack):
+            try:
+                files = self.ListAssetDir("./user_data/games/" + game_dir + "/" + key)
+            except OSError:
+                continue
+            packs.append((key, assets.get(key) or {}, files))
+
+        stockIcons = {}
+        for c in self.characters.keys():
+            stockIcons[c] = {}
+            codename = self.characters[c].get("codename")
+
+            for key, asset, files in packs:
+                prefix = asset.get("prefix", "")
+                postfix = asset.get("postfix", "")
+                pattern = f"({prefix})({codename})({postfix})([0-9]*)\\.([A-Za-z0-9]+)"
+                filteredFiles = MatchFilesWithPrefix(files, pattern, f"{prefix}{codename}")
+                if not filteredFiles:
+                    continue
+
+                if key != iconPack:
+                    logger.info(f"No icon for {c} in {iconPack}, using {key}")
+                for f in filteredFiles:
+                    numberStart = f.rfind(postfix) + len(postfix)
+                    numberEnd = f.rfind(".")
+                    number = 0
+                    try:
+                        number = int(f[numberStart:numberEnd])
+                    except ValueError:
+                        logger.error(f)
+                    stockIcons[c][number] = "./user_data/games/" + game_dir + "/" + key + "/" + f
+                # Skin 0 is the character's icon wherever one is needed
+                if 0 not in stockIcons[c]:
+                    stockIcons[c][0] = stockIcons[c][min(stockIcons[c])]
+                break
+        return stockIcons
 
     def GetCharacterAssets(self, characterCodename: str, skin: int, assetpack: str = None):
         charFiles = {}
@@ -1328,6 +1241,111 @@ class GameAssetManager(QObject):
 
         return charFiles
 
+    # =====================================================
+    # VARIANTS
+    # =====================================================
+    def UpdateVariantModel(self, mods_active=True):
+        try:
+            self.variantModel = NewItemModel()
+
+            # Add one empty
+            item = QStandardItem("")
+            self.variantModel.appendRow(item)
+
+            for c in self.variants.keys():
+                item = QStandardItem()
+                item.setData(c, Qt.ItemDataRole.EditRole)
+                logger.info(c)
+
+                data = {
+                    "name": self.variants[c].get("export_name"),
+                    "en_name": c,
+                    "display_name": self.variants[c].get("display_name"),
+                    "codename": self.variants[c].get("codename"),
+                    "modded": self.variants[c].get("modded", False),
+                }
+
+                data["icon_path"] = self.GetVariantIconPath(data["codename"])
+                data["image_size"] = self.GetVariantIconSize(data["codename"])
+                if data["icon_path"]:
+                    item.setIcon(QIcon(QPixmap.fromImage(QImage(data["icon_path"]))))
+                else:
+                    item.setIcon(QIcon(QPixmap.fromImage(QImage("./assets/icons/cancel.svg"))))
+
+                if self.variants[c].get("display_name") != c:
+                    item.setData(
+                        f"{self.variants[c].get('display_name')} / {c}", Qt.ItemDataRole.EditRole
+                    )
+
+                availability = self.variants[c].get("igdb_playable_list", [])
+                igdb_id = self.selectedGame.get("igdb_game_id")
+                if data.get("modded"):
+                    if not availability or igdb_id in availability:
+                        self.has_modded_content = True
+
+                item.setData(data, Qt.ItemDataRole.UserRole)
+                if (not mods_active) and data.get("modded"):
+                    item.setEnabled(False)
+                    item.setSelectable(False)
+                else:
+                    if availability and igdb_id not in availability:
+                        item.setEnabled(False)
+                        item.setSelectable(False)
+                    else:
+                        self.variantModel.appendRow(item)
+
+            self.variantModel.sort(0)
+        except:
+            logger.error(traceback.format_exc())
+
+    def GetVariantIconPath(self, variant_codename):
+        game_codename = self.selectedGame.get("codename")
+        if "__alt_" in game_codename:
+            game_codename = game_codename.split("__alt_")[0]
+        icon_path, asset_root_path = "", "./user_data/games"
+        icon_config_path = f"{asset_root_path}/{game_codename}/variant_icon/config.json"
+        if os.path.isfile(icon_config_path):
+            with open(icon_config_path, encoding="utf-8") as icon_config_file:
+                try:
+                    icon_config = orjson.loads(icon_config_file.read())
+                except Exception as e:
+                    logger.error(f"JSON error in {icon_config_path}: {e}")
+                    self.signals.json_error.emit(
+                        QApplication.translate("app", "Invalid JSON file"),
+                        f"{icon_config_path}\n\n{e}",
+                    )
+                    return icon_path
+            extensions = ["png", "jpg", "gif", "webp"]
+            for extension in extensions:
+                icon_filename = f"{asset_root_path}/{game_codename}/variant_icon/{icon_config.get('prefix')}{variant_codename}{icon_config.get('postfix')}.{extension}"
+                if os.path.isfile(icon_filename):
+                    icon_path = icon_filename
+                    break
+        return icon_path
+
+    def GetVariantIconSize(self, variant_codename):
+        game_codename = self.selectedGame.get("codename")
+        icon_size, asset_root_path = None, "./user_data/games"
+        icon_config_path = f"{asset_root_path}/{game_codename}/variant_icon/config.json"
+        if os.path.isfile(icon_config_path):
+            with open(icon_config_path, encoding="utf-8") as icon_config_file:
+                try:
+                    icon_config = orjson.loads(icon_config_file.read())
+                except Exception as e:
+                    logger.error(f"JSON error in {icon_config_path}: {e}")
+                    self.signals.json_error.emit(
+                        QApplication.translate("app", "Invalid JSON file"),
+                        f"{icon_config_path}\n\n{e}",
+                    )
+                    return icon_size
+            icon_filename = f"{asset_root_path}/{game_codename}/variant_icon/{icon_config.get('prefix')}{variant_codename}{icon_config.get('postfix')}.png"
+            if os.path.isfile(icon_filename):
+                icon_size = icon_config.get("image_sizes", {}).get(variant_codename, {}).get("null")
+        return icon_size
+
+    # =====================================================
+    # PROVIDER IDS
+    # =====================================================
     def GetCharacterFromStartGGId(self, smashgg_id: int):
         startggcharacter = self.startgg_id_to_character.get(str(smashgg_id))
 

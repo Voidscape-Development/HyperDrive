@@ -43,6 +43,9 @@ class DynamicExport:
     # Path -> the avatar and sponsor logos last exported there
     _mediaSignatures: dict[str, tuple] = {}
 
+    # =====================================================
+    # SETUP
+    # =====================================================
     def Enabled() -> bool:
         """Custom data is exported. Avatars and sponsor logos always are."""
         return SettingsManager.Get(DynamicExport.SETTING, True)
@@ -64,6 +67,9 @@ class DynamicExport:
         """Exports the custom data again, or clears it when disabled"""
         DynamicExport.Refresh(force=True)
 
+    # =====================================================
+    # EXPORTING
+    # =====================================================
     def ExportPlayerMedia(name: str, team: str, path: str):
         """Exports the avatar, sponsor logos and custom data of the person now
         at path, and keeps them up to date while their files change."""
@@ -87,6 +93,63 @@ class DynamicExport:
                     continue
                 DynamicExport._Export(path, folders, force=force)
 
+    def _ExportMedia(path: str, name: str, team: str, force: bool):
+        avatars = MediaHelper.AvatarPaths(team, name)
+        sponsors = SponsorHelper.CandidatePaths(team) if team else []
+        signature = tuple((p, DynamicExport._Stat(p)) for p in [*avatars, *sponsors])
+        if not force and DynamicExport._mediaSignatures.get(path) == signature:
+            return
+        DynamicExport._mediaSignatures[path] = signature
+
+        StateManager.Set(f"{path}.avatar", MediaHelper.FindAvatar(team, name))
+        SponsorHelper.ExportValidSponsors(team, path)
+
+    def _Export(path: str, folders: dict[str, str], force=False):
+        name, team = DynamicExport._people[path]
+        DynamicExport._ExportMedia(path, name, team, force)
+
+        folder = DynamicExport._MatchFolder(name, team, folders)
+        files = DynamicExport.Files(folder) if folder else []
+
+        signature = []
+        for entry in files:
+            try:
+                stat = entry.stat()
+            except OSError:
+                continue
+            signature.append((entry.name, stat.st_mtime_ns, stat.st_size))
+        signature = (folder, tuple(signature))
+
+        if not force and DynamicExport._signatures.get(path) == signature:
+            return
+        DynamicExport._signatures[path] = signature
+
+        custom = DynamicExport._Custom(folder, files)
+
+        key = f"{path}.custom"
+        if custom:
+            if StateManager.Get(key) != custom:
+                StateManager.Set(key, custom)
+        elif StateManager.Get(key) is not None:
+            StateManager.Unset(key)
+
+    def Files(folder: str) -> list[os.DirEntry]:
+        try:
+            entries = [
+                e
+                for e in os.scandir(folder)
+                if e.is_file()
+                and not e.name.startswith(".")
+                and e.name.lower() not in DynamicExport.IGNORED_FILES
+            ]
+        except OSError as e:
+            logger.warning(f"Could not read {folder}: {e}")
+            return []
+        return sorted(entries, key=lambda e: e.name.lower())
+
+    # =====================================================
+    # CUSTOM FOLDERS
+    # =====================================================
     def FindCustomFolder(name: str, team: str) -> str | None:
         """The custom data folder of a person, whether or not it's exported"""
         return DynamicExport._MatchFolder(name, team, DynamicExport._Folders(always=True))
@@ -129,60 +192,9 @@ class DynamicExport:
             return None
         return (stat.st_mtime_ns, stat.st_size)
 
-    def _ExportMedia(path: str, name: str, team: str, force: bool):
-        avatars = MediaHelper.AvatarPaths(team, name)
-        sponsors = SponsorHelper.CandidatePaths(team) if team else []
-        signature = tuple((p, DynamicExport._Stat(p)) for p in [*avatars, *sponsors])
-        if not force and DynamicExport._mediaSignatures.get(path) == signature:
-            return
-        DynamicExport._mediaSignatures[path] = signature
-
-        StateManager.Set(f"{path}.avatar", MediaHelper.FindAvatar(team, name))
-        SponsorHelper.ExportValidSponsors(team, path)
-
-    def Files(folder: str) -> list[os.DirEntry]:
-        try:
-            entries = [
-                e
-                for e in os.scandir(folder)
-                if e.is_file()
-                and not e.name.startswith(".")
-                and e.name.lower() not in DynamicExport.IGNORED_FILES
-            ]
-        except OSError as e:
-            logger.warning(f"Could not read {folder}: {e}")
-            return []
-        return sorted(entries, key=lambda e: e.name.lower())
-
-    def _Export(path: str, folders: dict[str, str], force=False):
-        name, team = DynamicExport._people[path]
-        DynamicExport._ExportMedia(path, name, team, force)
-
-        folder = DynamicExport._MatchFolder(name, team, folders)
-        files = DynamicExport.Files(folder) if folder else []
-
-        signature = []
-        for entry in files:
-            try:
-                stat = entry.stat()
-            except OSError:
-                continue
-            signature.append((entry.name, stat.st_mtime_ns, stat.st_size))
-        signature = (folder, tuple(signature))
-
-        if not force and DynamicExport._signatures.get(path) == signature:
-            return
-        DynamicExport._signatures[path] = signature
-
-        custom = DynamicExport._Custom(folder, files)
-
-        key = f"{path}.custom"
-        if custom:
-            if StateManager.Get(key) != custom:
-                StateManager.Set(key, custom)
-        elif StateManager.Get(key) is not None:
-            StateManager.Unset(key)
-
+    # =====================================================
+    # CUSTOM DATA VALUES
+    # =====================================================
     def CustomData(name: str, team: str) -> dict:
         """A person's custom data as the layouts get it, for someone who isn't
         on a scoreboard (e.g. a player of an upcoming set). {} when there's

@@ -20,6 +20,9 @@ class PlayerList(QWidget):
             super().__init__(*args)
             self.SetupUi(base)
 
+    # =====================================================
+    # SETUP
+    # =====================================================
     def SetupUi(self, base):
         self.signals = PlayerListWidgetSignals()
 
@@ -68,6 +71,9 @@ class PlayerList(QWidget):
         if not self.childDataChangedLock:
             self.signals.DataChanged.emit()
 
+    # =====================================================
+    # STANDINGS
+    # =====================================================
     def LoadFromStandingsClicked(self):
         TournamentDataManager.instance.GetStandings(
             self.slotNumber.value(), self.signals.UpdateData
@@ -93,6 +99,9 @@ class PlayerList(QWidget):
                 finally:
                     self.childDataChangedLock = False
 
+    # =====================================================
+    # SIZE
+    # =====================================================
     def SetSlotNumber(self, number):
         with StateManager.SaveBlock():
             self.DoSetSlotNumber(number)
@@ -122,6 +131,18 @@ class PlayerList(QWidget):
             StateManager.Unset(f"{self.base}.slot.{s.index}")
 
         self.signals.DataChanged.emit()
+
+    def SetPlayersPerTeam(self, number):
+        # logger.info("PlayerList#SetPlayersPerTeam")
+        self.playersPerTeam = number
+        with StateManager.SaveBlock():
+            self.childDataChangedLock = True
+            try:
+                for s in self.slotWidgets:
+                    s.SetPlayersPerTeam(number)
+            finally:
+                self.childDataChangedLock = False
+            self.signals.DataChanged.emit()
 
     def SetCharactersPerPlayer(self, value):
         # logger.info("PlayerList#SetCharactersPerPlayer")
@@ -162,6 +183,9 @@ class PlayerList(QWidget):
         self.resizeTimer.stop()
         self.signals.DataChanged.emit()
 
+    # =====================================================
+    # DISPLAY
+    # =====================================================
     def SetHiddenElements(self, hidden):
         self.hiddenElements = set(hidden)
         for s in self.slotWidgets:
@@ -174,15 +198,3 @@ class PlayerList(QWidget):
                 s.scoreWidget.setVisible(False)
             else:
                 s.scoreWidget.setVisible(True)
-
-    def SetPlayersPerTeam(self, number):
-        # logger.info("PlayerList#SetPlayersPerTeam")
-        self.playersPerTeam = number
-        with StateManager.SaveBlock():
-            self.childDataChangedLock = True
-            try:
-                for s in self.slotWidgets:
-                    s.SetPlayersPerTeam(number)
-            finally:
-                self.childDataChangedLock = False
-            self.signals.DataChanged.emit()

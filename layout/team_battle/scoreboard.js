@@ -1,6 +1,10 @@
 // In-game scoreboard: a bar at the top center with each team's name, logo,
 // big number (stocks or players left) and team score, the active player
 // (character icon, tag, stocks or games won) under it, and the roster
+
+// ---------------------------------------------------------------------
+// Markup
+
 const teamPanel = (t) => HD.html`
   <div class="sb_team t${t}">
     <div class="sb_panel">
@@ -24,6 +28,9 @@ const sidePanel = (t) => HD.html`
     </div>
     <div class="sb_roster"></div>
   </div>`;
+
+// ---------------------------------------------------------------------
+// Roster and active players
 
 // Which player each team's plate shows, to slide the next one in
 const activeKeys = {};
@@ -70,6 +77,9 @@ function updateActive(t, team, animate) {
     TB.sweep(plate.querySelector(".sweep"), 0.15);
   }
 }
+
+// ---------------------------------------------------------------------
+// The layout
 
 HD.layout({
   subscribe: ["team_battle", "score", "game", "tournamentInfo", "commentary"],

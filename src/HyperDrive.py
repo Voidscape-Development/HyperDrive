@@ -160,6 +160,7 @@ from .StateManager import StateManager
 from .StreamQueueWidget import StreamQueueWidget
 from .TeamBattleWidget import TeamBattleWidget
 from .TournamentDataManager import TournamentDataManager
+from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
 from .TournamentInfoWidget import TournamentInfoWidget
 from .TwitchPredictions import TwitchPredictionsHook
 from .Wiki import GETTING_STARTED_PAGE, Wiki
@@ -311,6 +312,9 @@ class Window(QMainWindow):
 
         StateManager.Unset("completed_sets")
 
+    # =====================================================
+    # SETUP
+    # =====================================================
     def SetupUi(self):
         LocaleHelper.LoadLocale()
         LocaleHelper.LoadRoundNames()
@@ -979,6 +983,33 @@ class Window(QMainWindow):
         if SettingsManager.first_launch:
             self.wikiWindow.Open(GETTING_STARTED_PAGE)
 
+    def RegisterGuideLinks(self, docks):
+        """What the guide's hyperdrive://open/<target> links open"""
+
+        def ShowDock(dock):
+            dock.show()
+            dock.raise_()
+
+        for target, dock in docks.items():
+            WikiWindow.RegisterAppLink(target, lambda d=dock: ShowDock(d))
+
+        # settings/<page> opens a page of the settings, e.g. settings/api-keys
+        WikiWindow.RegisterAppLink("settings", lambda page=None: self.settingsWindow.Open(page))
+        WikiWindow.RegisterAppLink("player-database", lambda: self.playerDBWindow.Open(0))
+        WikiWindow.RegisterAppLink("seed-editor", lambda: self.playerDBWindow.Open(1))
+        WikiWindow.RegisterAppLink("layout-themes", self.OpenLayoutThemes)
+        WikiWindow.RegisterAppLink(
+            "download-assets", lambda: AssetDownloader.instance.DownloadAssets(self)
+        )
+        WikiWindow.RegisterAppLink(
+            "set-tournament",
+            lambda: TournamentDataManager.instance.SetStartggEventSlug(self),
+        )
+        WikiWindow.RegisterAppLink("about", lambda: self.aboutWidget.show())
+
+    # =====================================================
+    # GAMES
+    # =====================================================
     def SetGame(self, mods_active=False):
         index = next(
             (
@@ -998,109 +1029,6 @@ class Window(QMainWindow):
         if url == "":
             self.gameSelect.setCurrentIndex(0)
             GameAssetManager.instance.selectedGame = {}
-
-    def _CompletedSetsProviderName(self):
-        provider = (
-            TournamentDataManager.instance.provider if TournamentDataManager.instance else None
-        )
-        return provider.name if provider else None
-
-    def _CompletedSetsSupported(self):
-        # Both providers implement GetCompletedSets
-        return self._CompletedSetsProviderName() in ("StartGG", "ParryGG")
-
-    def PullCompletedSets(self, done):
-        if not self._CompletedSetsSupported():
-            done()
-            return
-        TournamentDataManager.instance.GetCompletedSets(on_finished=done)
-
-    def ToggleCompletedSetsAutoPull(self, enabled):
-        SettingsManager.Set("general.completed_sets_auto_pull", enabled)
-        if enabled:
-            Scheduler.instance.Start("completed_sets", run_now=True)
-        else:
-            Scheduler.instance.Stop("completed_sets")
-
-    def CompletedSetsTournamentChanged(self):
-        if Scheduler.instance.IsEnabled("completed_sets"):
-            Scheduler.instance.TriggerNow("completed_sets")
-
-    def UpdateCompletedSetsTimer(self):
-        scheduler = Scheduler.instance
-        if not scheduler.IsEnabled("completed_sets"):
-            self.labelCompletedSetsTimer.setVisible(False)
-            return
-        self.labelCompletedSetsTimer.setVisible(True)
-        if not self._CompletedSetsSupported():
-            self.labelCompletedSetsTimer.setText(
-                QApplication.translate("app", "Waiting for a tournament")
-            )
-        elif scheduler.IsRunning("completed_sets"):
-            self.labelCompletedSetsTimer.setText(QApplication.translate("app", "Pulling..."))
-        else:
-            remaining = scheduler.RemainingMs("completed_sets")
-            if remaining is not None:
-                self.labelCompletedSetsTimer.setText(
-                    QApplication.translate("app", "Next pull in {0}s").format(
-                        round(remaining / 1000)
-                    )
-                )
-
-    def UpdateLastSetsButton(self):
-        provider_name = self._CompletedSetsProviderName()
-
-        self.btPullCompletedSets.setEnabled(self._CompletedSetsSupported())
-
-        if provider_name == "StartGG":
-            self.btPullCompletedSets.setText(
-                QApplication.translate("app", "Pull Latest Completed Sets from StartGG")
-            )
-            self.btPullCompletedSets.setIcon(ThemedIcon("./assets/icons/startgg.svg"))
-        elif provider_name == "ParryGG":
-            self.btPullCompletedSets.setText(
-                QApplication.translate("app", "Pull Latest Completed Sets from ParryGG")
-            )
-            self.btPullCompletedSets.setIcon(QIcon("./assets/icons/parrygg.png"))
-        else:
-            self.btPullCompletedSets.setText(
-                QApplication.translate("app", "Pull Latest Completed Sets from StartGG")
-            )
-            self.btPullCompletedSets.setIcon(ThemedIcon("./assets/icons/startgg.svg"))
-
-    def UpdateTournamentButtons(self):
-        # Both need an event loaded
-        loaded = TournamentDataManager.instance.provider is not None
-        self.selectEventBt.setEnabled(loaded)
-        self.repullEntrantsBt.setEnabled(loaded)
-
-    def LoadCompletedSetsClicked(self, data):
-        StateManager.Set("completed_sets", {index + 1: set for index, set in enumerate(data)})
-
-    def closeEvent(self, event):
-        logger.info("Shutting down...")
-        StateManager.FlushPendingSave()
-        self.qtSettings.setValue("geometry", self.saveGeometry())
-        self.qtSettings.setValue("windowState", self.saveState())
-
-        tmpDir = ResolvePath("tmp")
-        if os.path.isdir(tmpDir):
-            shutil.rmtree(tmpDir)
-
-        try:
-            crashlog.close()
-            if crashpath.stat().st_size == 0:
-                crashpath.unlink()
-        except:
-            pass
-
-        self.webserver.Stop()
-
-        for window in QApplication.allWindows():
-            if window != self:
-                window.close()
-
-        super().closeEvent(event)
 
     def ReloadGames(self):
         logger.info("Reload games")
@@ -1160,6 +1088,83 @@ class Window(QMainWindow):
             self.gameSelect.setCurrentIndex(game)
             self.LoadGameAssets(game)
 
+    # =====================================================
+    # COMPLETED SETS
+    # =====================================================
+    def _CompletedSetsProvider(self):
+        return TournamentDataManager.instance.provider if TournamentDataManager.instance else None
+
+    def _CompletedSetsSupported(self):
+        provider = self._CompletedSetsProvider()
+        return provider is not None and provider.SUPPORTS_COMPLETED_SETS
+
+    def PullCompletedSets(self, done):
+        if not self._CompletedSetsSupported():
+            done()
+            return
+        TournamentDataManager.instance.GetCompletedSets(on_finished=done)
+
+    def ToggleCompletedSetsAutoPull(self, enabled):
+        SettingsManager.Set("general.completed_sets_auto_pull", enabled)
+        if enabled:
+            Scheduler.instance.Start("completed_sets", run_now=True)
+        else:
+            Scheduler.instance.Stop("completed_sets")
+
+    def CompletedSetsTournamentChanged(self):
+        if Scheduler.instance.IsEnabled("completed_sets"):
+            Scheduler.instance.TriggerNow("completed_sets")
+
+    def UpdateCompletedSetsTimer(self):
+        scheduler = Scheduler.instance
+        if not scheduler.IsEnabled("completed_sets"):
+            self.labelCompletedSetsTimer.setVisible(False)
+            return
+        self.labelCompletedSetsTimer.setVisible(True)
+        if not self._CompletedSetsSupported():
+            self.labelCompletedSetsTimer.setText(
+                QApplication.translate("app", "Waiting for a tournament")
+            )
+        elif scheduler.IsRunning("completed_sets"):
+            self.labelCompletedSetsTimer.setText(QApplication.translate("app", "Pulling..."))
+        else:
+            remaining = scheduler.RemainingMs("completed_sets")
+            if remaining is not None:
+                self.labelCompletedSetsTimer.setText(
+                    QApplication.translate("app", "Next pull in {0}s").format(
+                        round(remaining / 1000)
+                    )
+                )
+
+    def LoadCompletedSetsClicked(self, data):
+        StateManager.Set("completed_sets", {index + 1: set for index, set in enumerate(data)})
+
+    # =====================================================
+    # TOURNAMENT BUTTONS
+    # =====================================================
+    def UpdateLastSetsButton(self):
+        self.btPullCompletedSets.setEnabled(self._CompletedSetsSupported())
+
+        # start.gg's text and icon until an event is loaded
+        provider = self._CompletedSetsProvider()
+        if provider is None or not provider.COMPLETED_SETS_BUTTON:
+            provider = StartGGDataProvider
+        self.btPullCompletedSets.setText(
+            QApplication.translate("app", provider.COMPLETED_SETS_BUTTON)
+        )
+        self.btPullCompletedSets.setIcon(
+            ThemedIcon(provider.ICON) if provider.ICON_THEMED else QIcon(provider.ICON)
+        )
+
+    def UpdateTournamentButtons(self):
+        # Both need an event loaded
+        loaded = TournamentDataManager.instance.provider is not None
+        self.selectEventBt.setEnabled(loaded)
+        self.repullEntrantsBt.setEnabled(loaded)
+
+    # =====================================================
+    # UPDATES
+    # =====================================================
     def FetchLatestRelease(self, progress_callback=None, cancel_event=None):
         """GitHub's latest release, and the error if it couldn't be fetched"""
         try:
@@ -1302,6 +1307,9 @@ class Window(QMainWindow):
         except:
             logger.error(traceback.format_exc())
 
+    # =====================================================
+    # WINDOW
+    # =====================================================
     def ToggleAlwaysOnTop(self, checked):
         if checked:
             self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
@@ -1347,26 +1355,27 @@ class Window(QMainWindow):
         self.layoutThemes.raise_()
         self.layoutThemes.activateWindow()
 
-    def RegisterGuideLinks(self, docks):
-        """What the guide's hyperdrive://open/<target> links open"""
+    def closeEvent(self, event):
+        logger.info("Shutting down...")
+        StateManager.FlushPendingSave()
+        self.qtSettings.setValue("geometry", self.saveGeometry())
+        self.qtSettings.setValue("windowState", self.saveState())
 
-        def ShowDock(dock):
-            dock.show()
-            dock.raise_()
+        tmpDir = ResolvePath("tmp")
+        if os.path.isdir(tmpDir):
+            shutil.rmtree(tmpDir)
 
-        for target, dock in docks.items():
-            WikiWindow.RegisterAppLink(target, lambda d=dock: ShowDock(d))
+        try:
+            crashlog.close()
+            if crashpath.stat().st_size == 0:
+                crashpath.unlink()
+        except:
+            pass
 
-        # settings/<page> opens a page of the settings, e.g. settings/api-keys
-        WikiWindow.RegisterAppLink("settings", lambda page=None: self.settingsWindow.Open(page))
-        WikiWindow.RegisterAppLink("player-database", lambda: self.playerDBWindow.Open(0))
-        WikiWindow.RegisterAppLink("seed-editor", lambda: self.playerDBWindow.Open(1))
-        WikiWindow.RegisterAppLink("layout-themes", self.OpenLayoutThemes)
-        WikiWindow.RegisterAppLink(
-            "download-assets", lambda: AssetDownloader.instance.DownloadAssets(self)
-        )
-        WikiWindow.RegisterAppLink(
-            "set-tournament",
-            lambda: TournamentDataManager.instance.SetStartggEventSlug(self),
-        )
-        WikiWindow.RegisterAppLink("about", lambda: self.aboutWidget.show())
+        self.webserver.Stop()
+
+        for window in QApplication.allWindows():
+            if window != self:
+                window.close()
+
+        super().closeEvent(event)
