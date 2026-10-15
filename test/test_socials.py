@@ -49,6 +49,7 @@ assetModule.GameAssetManager = FakeAssetManager
 sys.modules["src.GameAssetManager"] = assetModule
 
 # Loads the locale and country files from the repository
+from src.TournamentDataProvider import StartGGConvert
 from src.TournamentDataProvider.ProviderContext import AppContext
 from src.TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
 
@@ -291,7 +292,7 @@ def TestParseSet():
             {"type": "TWITTER", "externalUsername": "beast"},
         ],
     }
-    data = StartGGDataProvider.ProcessEntrantData(
+    data = StartGGConvert.ProcessEntrantData(
         {"player": {"id": 1, "gamerTag": "Beast"}, "user": user}
     )
     # The first account used to be taken as the Twitter, whatever it was
@@ -299,7 +300,7 @@ def TestParseSet():
     assert data["socials"] == {"twitter": "beast", "twitch": "beasttv"}
 
     # Without the profile fields (local_player_data), none are set
-    data = StartGGDataProvider.ProcessEntrantData(
+    data = StartGGConvert.ProcessEntrantData(
         {"player": {"id": 1, "gamerTag": "Beast"}, "user": {"id": 9}}
     )
     assert "twitter" not in data and "socials" not in data

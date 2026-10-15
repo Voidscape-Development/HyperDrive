@@ -95,6 +95,11 @@ def TestDeclarations():
     for flag in FLAGS:
         assert getattr(TournamentDataProvider, flag) is False, flag
 
+    # parry.gg names its rounds with start.gg's TranslateRoundName
+    from src.TournamentDataProvider import StartGGConvert
+
+    assert StartGGDataProvider.TranslateRoundName is StartGGConvert.TranslateRoundName
+
     # provider.name, which the logs and players' data use, comes from NAME
     assert StartGGDataProvider("https://www.start.gg/t", None, None).name == "StartGG"
 
