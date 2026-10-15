@@ -4,7 +4,7 @@
 <context>
     <name>About</name>
     <message>
-        <location filename="../HyperDrive.py" line="805"/>
+        <location filename="../HyperDrive.py" line="809"/>
         <location filename="../layout/About.ui" line="17"/>
         <source>About</source>
         <translation>Sobre</translation>
@@ -723,7 +723,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../HyperDrive.py" line="800"/>
+        <location filename="../HyperDrive.py" line="804"/>
         <location filename="../Settings/SettingsWindow.py" line="29"/>
         <source>Settings</source>
         <translation>Configurações</translation>
@@ -740,18 +740,18 @@ p, li { white-space: pre-wrap; }
         <translation>Clique aqui para assistir</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="84"/>
-        <location filename="../Helpers/AltTextHelper.py" line="273"/>
+        <location filename="../Helpers/AltTextHelper.py" line="90"/>
+        <location filename="../Helpers/AltTextHelper.py" line="285"/>
         <source>Game:</source>
         <translation>Jogo:</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="275"/>
+        <location filename="../Helpers/AltTextHelper.py" line="287"/>
         <source>Bracket:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="305"/>
+        <location filename="../Helpers/AltTextHelper.py" line="317"/>
         <source>Seed {0}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -760,8 +760,8 @@ p, li { white-space: pre-wrap; }
         <translation>VS</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="90"/>
-        <location filename="../Helpers/AltTextHelper.py" line="311"/>
+        <location filename="../Helpers/AltTextHelper.py" line="96"/>
+        <location filename="../Helpers/AltTextHelper.py" line="323"/>
         <source>Commentators:</source>
         <translation>Comentaristas:</translation>
     </message>
@@ -770,13 +770,13 @@ p, li { white-space: pre-wrap; }
         <translation>Transmissão utilizando HyperDrive</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="86"/>
-        <location filename="../Helpers/AltTextHelper.py" line="277"/>
+        <location filename="../Helpers/AltTextHelper.py" line="92"/>
+        <location filename="../Helpers/AltTextHelper.py" line="289"/>
         <source>Standings:</source>
         <translation>Colocações:</translation>
     </message>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="77"/>
+        <location filename="../Helpers/AltTextHelper.py" line="83"/>
         <source>Stream powered by HyperDrive</source>
         <translation>Transmissão utilizando HyperDrive</translation>
     </message>
@@ -788,25 +788,25 @@ p, li { white-space: pre-wrap; }
         <translation>Configurações de Thumbnail</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="378"/>
-        <location filename="../BracketWidget.py" line="108"/>
+        <location filename="../HyperDrive.py" line="382"/>
+        <location filename="../BracketWidget.py" line="111"/>
         <source>Bracket</source>
         <translation>Chave</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="384"/>
+        <location filename="../HyperDrive.py" line="388"/>
         <source>Tournament Info</source>
         <translation>Informações do Torneio</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="396"/>
         <location filename="../HyperDrive.py" line="400"/>
+        <location filename="../HyperDrive.py" line="404"/>
         <source>Scoreboard Manager</source>
         <translation>Gerenciador de Placares</translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="173"/>
-        <location filename="../StreamQueueWidget.py" line="394"/>
+        <location filename="../StreamQueueWidget.py" line="449"/>
         <location filename="../ScoreboardManager.py" line="59"/>
         <location filename="../ScoreboardManager.py" line="98"/>
         <location filename="../ScoreboardManager.py" line="111"/>
@@ -815,13 +815,13 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../CommentaryWidget.py" line="23"/>
-        <location filename="../HyperDrive.py" line="419"/>
+        <location filename="../HyperDrive.py" line="423"/>
         <source>Commentary</source>
         <translation>Comentário</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="42"/>
-        <location filename="../HyperDrive.py" line="444"/>
+        <location filename="../PlayerListWidget.py" line="45"/>
+        <location filename="../HyperDrive.py" line="448"/>
         <source>Player List</source>
         <translation>Lista de Jogadores</translation>
     </message>
@@ -830,7 +830,7 @@ p, li { white-space: pre-wrap; }
         <translation>Notas Adicionais</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="470"/>
+        <location filename="../HyperDrive.py" line="474"/>
         <source>Set tournament</source>
         <translation>Definir torneio</translation>
     </message>
@@ -839,19 +839,19 @@ p, li { white-space: pre-wrap; }
         <translation>Carregar set de usuário do StartGG</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="597"/>
+        <location filename="../HyperDrive.py" line="601"/>
         <source>Always on top</source>
         <translation>Permanecer no topo</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="600"/>
-        <location filename="../HyperDrive.py" line="1283"/>
+        <location filename="../HyperDrive.py" line="604"/>
+        <location filename="../HyperDrive.py" line="1288"/>
         <source>Check for updates</source>
         <translation>Verificar por atualizações</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="604"/>
-        <location filename="../AssetDownloader.py" line="77"/>
+        <location filename="../HyperDrive.py" line="608"/>
+        <location filename="../AssetDownloader.py" line="126"/>
         <source>Download assets</source>
         <translation>Baixar conteúdo de jogos</translation>
     </message>
@@ -860,7 +860,7 @@ p, li { white-space: pre-wrap; }
         <translation>Modo claro</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="618"/>
+        <location filename="../HyperDrive.py" line="622"/>
         <source>Toggle widgets</source>
         <translation>Ativar/Desativar widgets</translation>
     </message>
@@ -873,7 +873,7 @@ p, li { white-space: pre-wrap; }
         <translation>Falhou em obter versão do github</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1225"/>
+        <location filename="../HyperDrive.py" line="1230"/>
         <source>Updater</source>
         <translation>Atualizador</translation>
     </message>
@@ -882,7 +882,7 @@ p, li { white-space: pre-wrap; }
         <translation>Nova atualização disponível: </translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1242"/>
+        <location filename="../HyperDrive.py" line="1247"/>
         <source>Update to latest version?</source>
         <translation>Atualizar para a versão mais recente?</translation>
     </message>
@@ -891,8 +891,8 @@ p, li { white-space: pre-wrap; }
         <translation>NOTA: UM BACKUP DE /layout/ SERÁ FEITO, MAS TODOS OS DADOS EM /assets/ SERÃO SUBSTITUIDOS</translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="473"/>
-        <location filename="../HyperDrive.py" line="1254"/>
+        <location filename="../ScoreboardStageWidget.py" line="472"/>
+        <location filename="../HyperDrive.py" line="1259"/>
         <source>Update</source>
         <translation>Atualizar</translation>
     </message>
@@ -909,10 +909,10 @@ p, li { white-space: pre-wrap; }
         <translation>Nova versão disponível</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1256"/>
-        <location filename="../AssetDownloader.py" line="347"/>
-        <location filename="../AssetDownloader.py" line="560"/>
-        <location filename="../TournamentDataManager.py" line="235"/>
+        <location filename="../HyperDrive.py" line="1261"/>
+        <location filename="../AssetDownloader.py" line="96"/>
+        <location filename="../AssetDownloader.py" line="396"/>
+        <location filename="../TournamentDataManager.py" line="227"/>
         <location filename="../Helpers/DownloadHelper.py" line="214"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
@@ -926,12 +926,12 @@ p, li { white-space: pre-wrap; }
         <translation>Baixando atualização</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1198"/>
+        <location filename="../HyperDrive.py" line="1203"/>
         <source>Failed to fetch version from github:</source>
         <translation>Falhou em obter a versão do github:</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1232"/>
+        <location filename="../HyperDrive.py" line="1237"/>
         <source>New version available:</source>
         <translation>Nova versão disponível:</translation>
     </message>
@@ -944,12 +944,12 @@ p, li { white-space: pre-wrap; }
         <translation>Atualização completa. O programa será fechado agora.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1272"/>
+        <location filename="../HyperDrive.py" line="1277"/>
         <source>You&apos;re already using the latest version</source>
         <translation>Você já está utilizando a última versão</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1286"/>
+        <location filename="../HyperDrive.py" line="1291"/>
         <source>Update available!</source>
         <translation>Atualização disponível!</translation>
     </message>
@@ -1005,27 +1005,27 @@ p, li { white-space: pre-wrap; }
         <translation>Filtrar...</translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="329"/>
+        <location filename="../SelectEventWindow.py" line="325"/>
         <source>{0} events</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="369"/>
+        <location filename="../SelectEventWindow.py" line="365"/>
         <source>The tournament could not be found. Check the link or slug and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="372"/>
+        <location filename="../SelectEventWindow.py" line="368"/>
         <source>This tournament has no events.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="373"/>
+        <location filename="../SelectEventWindow.py" line="369"/>
         <source>A valid parry.gg API key is needed to load parry.gg tournaments.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="376"/>
+        <location filename="../SelectEventWindow.py" line="372"/>
         <source>The tournament&apos;s events could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1034,60 +1034,59 @@ p, li { white-space: pre-wrap; }
         <translation>Nome do jogo</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="187"/>
+        <location filename="../HyperDrive.py" line="188"/>
         <source>The program will now close.</source>
         <translation>O programa será fechado agora.</translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="523"/>
-        <location filename="../HyperDrive.py" line="410"/>
+        <location filename="../StreamQueueWidget.py" line="538"/>
+        <location filename="../HyperDrive.py" line="414"/>
         <source>Stream Queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="477"/>
+        <location filename="../HyperDrive.py" line="481"/>
         <source>Select event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="480"/>
+        <location filename="../HyperDrive.py" line="484"/>
         <source>Switch to another event of the same tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="488"/>
+        <location filename="../HyperDrive.py" line="492"/>
         <source>Repull entrants</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="491"/>
+        <location filename="../HyperDrive.py" line="495"/>
         <source>Pull the event&apos;s entrants again, to get players who registered after it was loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="513"/>
-        <location filename="../HyperDrive.py" line="1057"/>
-        <location filename="../HyperDrive.py" line="1067"/>
+        <location filename="../HyperDrive.py" line="517"/>
+        <location filename="../TournamentDataProvider/StartGGDataProvider.py" line="32"/>
         <source>Pull Latest Completed Sets from StartGG</source>
         <translation>Buscar Últimos Sets Concluídos do StartGG</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="523"/>
+        <location filename="../HyperDrive.py" line="527"/>
         <source>Auto pull</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="525"/>
+        <location filename="../HyperDrive.py" line="529"/>
         <source>Pull the latest completed sets periodically. The interval can be changed in Settings &gt; General.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="610"/>
+        <location filename="../HyperDrive.py" line="614"/>
         <source>Player database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="613"/>
+        <location filename="../HyperDrive.py" line="617"/>
         <source>Seed editor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1096,7 +1095,7 @@ p, li { white-space: pre-wrap; }
         <translation>Migrar layout</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="647"/>
+        <location filename="../HyperDrive.py" line="651"/>
         <source>Program Language</source>
         <translation>Idioma do programa</translation>
     </message>
@@ -1105,7 +1104,7 @@ p, li { white-space: pre-wrap; }
         <translation>Idioma do programa modificado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="658"/>
+        <location filename="../HyperDrive.py" line="662"/>
         <source>System language</source>
         <translation>Idioma do sistema</translation>
     </message>
@@ -1118,7 +1117,7 @@ p, li { white-space: pre-wrap; }
         <translation>Idioma de exportação modificado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="655"/>
+        <location filename="../HyperDrive.py" line="659"/>
         <source>Program language changed successfully.</source>
         <translation>Idioma do programa modificado com sucesso.</translation>
     </message>
@@ -1127,8 +1126,8 @@ p, li { white-space: pre-wrap; }
         <translation>Idioma de exportação modificado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="695"/>
-        <location filename="../HyperDrive.py" line="732"/>
+        <location filename="../HyperDrive.py" line="699"/>
+        <location filename="../HyperDrive.py" line="736"/>
         <source>Same as program language</source>
         <translation>Igual ao idioma do programa</translation>
     </message>
@@ -1141,32 +1140,32 @@ p, li { white-space: pre-wrap; }
         <translation>Idioma de nome de fase modificado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="683"/>
+        <location filename="../HyperDrive.py" line="687"/>
         <source>Game Asset Language</source>
         <translation>Idioma dos arquivos de jogo</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="692"/>
+        <location filename="../HyperDrive.py" line="696"/>
         <source>Game Asset Language changed successfully.</source>
         <translation>Idioma dos arquivos de jogo alterado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="720"/>
+        <location filename="../HyperDrive.py" line="724"/>
         <source>Tournament term language</source>
         <translation>Idioma dos termos de torneio</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="729"/>
+        <location filename="../HyperDrive.py" line="733"/>
         <source>Tournament term language changed successfully.</source>
         <translation>Idioma dos termos de torneio alterado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="762"/>
+        <location filename="../HyperDrive.py" line="766"/>
         <source>A new window has been opened in your default webbrowser.</source>
         <translation>Uma janela foi aberta no seu navegador de internet padrão.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="767"/>
+        <location filename="../HyperDrive.py" line="771"/>
         <source>Help</source>
         <translation>Ajuda</translation>
     </message>
@@ -1179,7 +1178,7 @@ p, li { white-space: pre-wrap; }
         <translation>Procurar por ajuda no fórum</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="780"/>
+        <location filename="../HyperDrive.py" line="784"/>
         <source>Report a bug</source>
         <translation>Reportar um bug</translation>
     </message>
@@ -1188,42 +1187,42 @@ p, li { white-space: pre-wrap; }
         <translation>Pedir ajuda no Discord</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="789"/>
+        <location filename="../HyperDrive.py" line="793"/>
         <source>Contribute to the Asset Database</source>
         <translation>Contribuir para a Asset Database</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="861"/>
+        <location filename="../HyperDrive.py" line="865"/>
         <source>Modded content</source>
         <translation>Conteúdo modificado</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="906"/>
+        <location filename="../HyperDrive.py" line="910"/>
         <source>Reload game assets</source>
         <translation>Recarregar arquivos do jogo</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="931"/>
+        <location filename="../HyperDrive.py" line="935"/>
         <source>Number of Scoreboards</source>
         <translation>Número de Placares</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="934"/>
+        <location filename="../HyperDrive.py" line="938"/>
         <source>Modify Tab Name</source>
         <translation>Mudar nome da aba</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1037"/>
+        <location filename="../HyperDrive.py" line="1126"/>
         <source>Waiting for a tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1040"/>
+        <location filename="../HyperDrive.py" line="1129"/>
         <source>Pulling...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1045"/>
+        <location filename="../HyperDrive.py" line="1134"/>
         <source>Next pull in {0}s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1232,37 +1231,37 @@ p, li { white-space: pre-wrap; }
         <translation>Carregar torneio e sets de usuário do ParryGG</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="774"/>
+        <location filename="../HyperDrive.py" line="778"/>
         <source>Guide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1062"/>
+        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="101"/>
         <source>Pull Latest Completed Sets from ParryGG</source>
         <translation>Buscar Últimos Sets Concluídos do ParryGG</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1180"/>
+        <location filename="../HyperDrive.py" line="1185"/>
         <source>Updates aren&apos;t available for HyperDrive yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1244"/>
+        <location filename="../HyperDrive.py" line="1249"/>
         <source>NOTE: This will open a new tab in your browser and close HyperDrive.</source>
         <translation>ATENÇÃO: Isso abrirá uma nova aba no navegador e fechará o HyperDrive.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1314"/>
+        <location filename="../HyperDrive.py" line="1322"/>
         <source>Change Tab Title</source>
         <translation>Mudar título da aba</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1319"/>
+        <location filename="../HyperDrive.py" line="1327"/>
         <source>Scoreboard Number</source>
         <translation>Número de Placares</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1329"/>
+        <location filename="../HyperDrive.py" line="1337"/>
         <source>Set Tab Title</source>
         <translation>Definir título da aba</translation>
     </message>
@@ -1299,93 +1298,93 @@ p, li { white-space: pre-wrap; }
         <translation>Fechar janela</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="206"/>
+        <location filename="../HyperDrive.py" line="207"/>
         <source>Update download complete. The program will extract the update upon closing.</source>
         <translation>Download da atualização completo. O programa irá fechar para extrair a atualização.</translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="163"/>
-        <location filename="../HyperDrive.py" line="426"/>
+        <location filename="../DisplayControls.py" line="172"/>
+        <location filename="../HyperDrive.py" line="430"/>
         <source>Display Controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="172"/>
+        <location filename="../DisplayControls.py" line="181"/>
         <source>Show all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="175"/>
+        <location filename="../DisplayControls.py" line="184"/>
         <source>Hide all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="180"/>
+        <location filename="../DisplayControls.py" line="189"/>
         <source>Look for new layout folders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="196"/>
+        <location filename="../DisplayControls.py" line="205"/>
         <source>Checked layouts are shown. Right click to copy links for a Stream Deck.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="203"/>
+        <location filename="../DisplayControls.py" line="212"/>
         <source>Groups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="206"/>
+        <location filename="../DisplayControls.py" line="215"/>
         <source>Layouts with ?display=&lt;group&gt; in their URL are also hidden with their group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="210"/>
+        <location filename="../DisplayControls.py" line="219"/>
         <source>Layouts</source>
         <translation>Layouts</translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="219"/>
+        <location filename="../DisplayControls.py" line="228"/>
         <source>New group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="222"/>
+        <location filename="../DisplayControls.py" line="231"/>
         <source>Add group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="294"/>
+        <location filename="../DisplayControls.py" line="309"/>
         <source>Copy toggle link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="295"/>
+        <location filename="../DisplayControls.py" line="310"/>
         <source>Copy show link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="296"/>
+        <location filename="../DisplayControls.py" line="311"/>
         <source>Copy hide link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="304"/>
+        <location filename="../DisplayControls.py" line="319"/>
         <source>Copy state link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="310"/>
+        <location filename="../DisplayControls.py" line="325"/>
         <source>Copy layout URL parameter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DisplayControls.py" line="314"/>
+        <location filename="../DisplayControls.py" line="329"/>
         <source>Remove group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="210"/>
+        <location filename="../HyperDrive.py" line="211"/>
         <source>Please ensure the layout folder or its contents aren&apos;t open in another application before closing this window.</source>
         <translation>Certifique-se de que a pasta layout e seu conteúdo não estão abertos em outra aplicação antes de fechar esta janela</translation>
     </message>
@@ -1394,90 +1393,90 @@ p, li { white-space: pre-wrap; }
         <translation>Atualização completa.</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1178"/>
-        <location filename="../HyperDrive.py" line="1270"/>
+        <location filename="../HyperDrive.py" line="1183"/>
+        <location filename="../HyperDrive.py" line="1275"/>
         <source>Info</source>
         <translation>Informação</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="186"/>
+        <location filename="../AssetDownloader.py" line="235"/>
         <source>Asset pack name</source>
         <translation>Nome do pacote de gráficos</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="192"/>
+        <location filename="../AssetDownloader.py" line="241"/>
         <source>Description</source>
         <translation>Descrição</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="193"/>
+        <location filename="../AssetDownloader.py" line="242"/>
         <source>Credits</source>
         <translation>Créditos</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="187"/>
+        <location filename="../AssetDownloader.py" line="236"/>
         <source>Installed version</source>
         <translation>Versão instalada</translation>
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="235"/>
-        <location filename="../AssetDownloader.py" line="185"/>
+        <location filename="../AssetDownloader.py" line="234"/>
         <source>State</source>
         <translation>Estado</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="188"/>
+        <location filename="../AssetDownloader.py" line="237"/>
         <source>Latest version</source>
         <translation>Última versão</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="189"/>
+        <location filename="../AssetDownloader.py" line="238"/>
         <source>Size</source>
         <translation>Tamanho</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="190"/>
+        <location filename="../AssetDownloader.py" line="239"/>
         <source>Stage data</source>
         <translation>Dados de stages</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="191"/>
+        <location filename="../AssetDownloader.py" line="240"/>
         <source>Eyesight data</source>
         <translation>Posição de olhos</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="313"/>
+        <location filename="../AssetDownloader.py" line="362"/>
         <source>Download</source>
         <translation>Baixar</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="316"/>
+        <location filename="../AssetDownloader.py" line="365"/>
         <source>Update all</source>
         <translation>Atualizar todos</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="346"/>
-        <location filename="../AssetDownloader.py" line="559"/>
+        <location filename="../AssetDownloader.py" line="95"/>
+        <location filename="../AssetDownloader.py" line="395"/>
         <source>Downloading assets</source>
         <translation>Baixando conteúdo do jogo</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="375"/>
+        <location filename="../AssetDownloader.py" line="424"/>
         <source>Failed to fetch assets from github:</source>
         <translation>Falhou ao baixar os dados do github:</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="432"/>
+        <location filename="../AssetDownloader.py" line="484"/>
         <source>Downloading {0}... ({1}/{2})</source>
         <translation>Baixando {0}... ({1}/{2})</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="458"/>
+        <location filename="../AssetDownloader.py" line="510"/>
         <source>Extracting... ({0}/{1})</source>
         <translation>Extraindo... ({0}/{1})</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="525"/>
+        <location filename="../AssetDownloader.py" line="577"/>
         <source>Download failed:</source>
         <translation>Falha no download:</translation>
     </message>
@@ -1495,19 +1494,19 @@ p, li { white-space: pre-wrap; }
         <translation>Comentarista {0}</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="66"/>
-        <location filename="../BracketWidget.py" line="547"/>
+        <location filename="../PlayerListWidget.py" line="69"/>
+        <location filename="../BracketWidget.py" line="549"/>
         <source>Number of slots</source>
         <translation>Número de grupos</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="74"/>
-        <location filename="../BracketWidget.py" line="550"/>
+        <location filename="../PlayerListWidget.py" line="77"/>
+        <location filename="../BracketWidget.py" line="552"/>
         <source>Players per slot</source>
         <translation>Jogadores por grupo</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="211"/>
+        <location filename="../BracketWidget.py" line="214"/>
         <source>Update sets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1523,111 +1522,111 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../CommentaryWidget.py" line="58"/>
-        <location filename="../PlayerListWidget.py" line="82"/>
+        <location filename="../PlayerListWidget.py" line="85"/>
         <location filename="../ScoreboardWidget.py" line="170"/>
-        <location filename="../BracketWidget.py" line="555"/>
+        <location filename="../BracketWidget.py" line="557"/>
         <source>Characters per player</source>
         <translation>Personagens por jogador</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="95"/>
+        <location filename="../PlayerListWidget.py" line="98"/>
         <source>Show scores</source>
         <translation>Mostrar pontuações</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="101"/>
-        <location filename="../PlayerListWidget.py" line="153"/>
+        <location filename="../PlayerListWidget.py" line="104"/>
+        <location filename="../PlayerListWidget.py" line="192"/>
         <source>Load tournament standings</source>
         <translation>Carregar resultados do torneio</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="107"/>
+        <location filename="../PlayerListWidget.py" line="110"/>
         <source>Generate Descriptive Text for Results</source>
         <translation>Gerar texto de resultados</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="138"/>
-        <location filename="../PlayerListWidget.py" line="148"/>
+        <location filename="../PlayerListWidget.py" line="165"/>
+        <location filename="../PlayerListWidget.py" line="187"/>
         <source>Loading standings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="165"/>
+        <location filename="../PlayerListWidget.py" line="207"/>
         <source>Descriptive Text for Results</source>
         <translation>Texto de resultados</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="177"/>
+        <location filename="../PlayerListWidget.py" line="219"/>
         <source>Copy text</source>
         <translation>Copiar texto</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="202"/>
+        <location filename="../PlayerListWidget.py" line="244"/>
         <source>Date</source>
         <translation type="unfinished">Data</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="204"/>
+        <location filename="../PlayerListWidget.py" line="246"/>
         <source>Bracket link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="208"/>
+        <location filename="../PlayerListWidget.py" line="250"/>
         <source>Character variants</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="211"/>
+        <location filename="../PlayerListWidget.py" line="253"/>
         <source>Commentators</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="222"/>
+        <location filename="../PlayerListWidget.py" line="264"/>
         <source>Text at the top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="224"/>
+        <location filename="../PlayerListWidget.py" line="266"/>
         <source>Text at the bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="227"/>
+        <location filename="../PlayerListWidget.py" line="269"/>
         <source>Simple</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="236"/>
+        <location filename="../PlayerListWidget.py" line="278"/>
         <source>{name} is replaced by the value. A part in [[ ]] is only shown when every value in it is filled in, for example [[ ({twitter})]].</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="244"/>
+        <location filename="../PlayerListWidget.py" line="286"/>
         <source>Header</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="245"/>
+        <location filename="../PlayerListWidget.py" line="287"/>
         <source>Each placement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="246"/>
+        <location filename="../PlayerListWidget.py" line="288"/>
         <source>Each player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="247"/>
+        <location filename="../PlayerListWidget.py" line="289"/>
         <source>Footer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="266"/>
+        <location filename="../PlayerListWidget.py" line="308"/>
         <source>Reset templates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="270"/>
+        <location filename="../PlayerListWidget.py" line="312"/>
         <source>Template</source>
         <translation type="unfinished">Template</translation>
     </message>
@@ -1641,7 +1640,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="121"/>
-        <location filename="../ScoreboardPlayerWidget.py" line="949"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="893"/>
         <source>Save new player</source>
         <translation>Salvar novo jogador</translation>
     </message>
@@ -1666,24 +1665,24 @@ p, li { white-space: pre-wrap; }
         <translation>Limpar</translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="167"/>
+        <location filename="../BracketView.py" line="163"/>
         <location filename="../SelectSetWindow.py" line="103"/>
         <location filename="../SelectSetWindow.py" line="104"/>
         <source>Player {0}</source>
         <translation>Jogador {0}</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="560"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="428"/>
         <source>Hide details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="562"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="430"/>
         <source>Show details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="947"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="891"/>
         <source>Update player</source>
         <translation>Atualizar jogador</translation>
     </message>
@@ -1693,92 +1692,92 @@ p, li { white-space: pre-wrap; }
         <translation>Ruleset</translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="232"/>
+        <location filename="../ScoreboardStageWidget.py" line="258"/>
         <source>Edit ruleset for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="241"/>
+        <location filename="../ScoreboardStageWidget.py" line="267"/>
         <source>Use its own ruleset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="243"/>
+        <location filename="../ScoreboardStageWidget.py" line="269"/>
         <source>Give this scoreboard a ruleset of its own instead of the one shared by all scoreboards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="251"/>
+        <location filename="../ScoreboardStageWidget.py" line="277"/>
         <source>Restart stage strike</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="266"/>
+        <location filename="../ScoreboardStageWidget.py" line="292"/>
         <source>All scoreboards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="270"/>
+        <location filename="../ScoreboardStageWidget.py" line="296"/>
         <source>own ruleset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="290"/>
+        <location filename="../ScoreboardStageWidget.py" line="316"/>
         <source>Editing the ruleset shared by all scoreboards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="292"/>
+        <location filename="../ScoreboardStageWidget.py" line="318"/>
         <source>Editing {0}&apos;s own ruleset.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="296"/>
+        <location filename="../ScoreboardStageWidget.py" line="322"/>
         <source>{0} uses the shared ruleset; changes apply to every scoreboard using it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="311"/>
+        <location filename="../ScoreboardStageWidget.py" line="417"/>
         <source>Open {0} in a browser to stage strike.</source>
         <translation>Abra {0} em um navegador de internet para realizar o stage strike.</translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="315"/>
+        <location filename="../ScoreboardStageWidget.py" line="421"/>
         <source>Open {0} for character selection only.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="476"/>
+        <location filename="../ScoreboardStageWidget.py" line="475"/>
         <source>Save new</source>
         <translation>Salvar como novo</translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="764"/>
+        <location filename="../ScoreboardStageWidget.py" line="832"/>
         <source>Number striked stages does not match the number of neutral stages. Should strike {0} more stage(s).</source>
         <translation>Número de stages banidos não bate com o número de stages neutros. Devem ser banidos mais {0} stage(s).</translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="775"/>
+        <location filename="../ScoreboardStageWidget.py" line="843"/>
         <source>The current ruleset is valid!</source>
         <translation>As regras atuais são válidas!</translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="835"/>
+        <location filename="../ScoreboardStageWidget.py" line="808"/>
         <source>The text for banByMaxGames is invalid.</source>
         <translation>O texto para bans por número de partidas é inválido.</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="90"/>
+        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="95"/>
         <source>Parry.gg API key has not been set. Please configure it in Settings &gt; API Keys.</source>
         <translation>A chave de API do Parry.gg não foi configurada. Configure-a em Configurações &gt; Chaves de API.</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="95"/>
+        <location filename="../TournamentDataManager.py" line="125"/>
         <source>API keys can be created at: </source>
         <translation>Chaves de API podem ser criadas em: </translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="166"/>
+        <location filename="../TournamentDataManager.py" line="168"/>
         <source>Paste the tournament URL.</source>
         <translation>Cole a URL do torneio.</translation>
     </message>
@@ -1787,33 +1786,33 @@ p, li { white-space: pre-wrap; }
         <translation>Para o StartGG, o link deve conter /evento/</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="173"/>
+        <location filename="../TournamentDataManager.py" line="175"/>
         <source>Supported providers:</source>
         <translation>Provedores suportados:</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="168"/>
+        <location filename="../TournamentDataManager.py" line="170"/>
         <source>A tournament link, start.gg short link or tournament slug lets you pick one of its events. Use Select event to switch to another event of the same tournament later.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="180"/>
-        <location filename="../TournamentDataManager.py" line="236"/>
+        <location filename="../TournamentDataManager.py" line="182"/>
+        <location filename="../TournamentDataManager.py" line="228"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="193"/>
+        <location filename="../TournamentDataManager.py" line="195"/>
         <source>Set tournament URL</source>
         <translation>Definir a URL do torneio</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="233"/>
+        <location filename="../TournamentDataManager.py" line="225"/>
         <source>Set Twitch username</source>
         <translation>Definir o nome de usuário do Twitch</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="234"/>
+        <location filename="../TournamentDataManager.py" line="226"/>
         <source>Twitch Username:</source>
         <translation>Nome de usuário no Twitch:</translation>
     </message>
@@ -1854,7 +1853,7 @@ p, li { white-space: pre-wrap; }
         <translation>Estação</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="390"/>
+        <location filename="../HyperDrive.py" line="394"/>
         <location filename="../TeamBattleWidget.py" line="89"/>
         <source>Crew/Team Battle</source>
         <translation>Crew/Team Battle</translation>
@@ -1878,7 +1877,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../StreamQueueWidget.py" line="93"/>
         <location filename="../TeamBattleWidget.py" line="191"/>
-        <location filename="../BracketWidget.py" line="192"/>
+        <location filename="../BracketWidget.py" line="195"/>
         <location filename="../SelectSetWindow.py" line="101"/>
         <source>Phase</source>
         <translation>Fase</translation>
@@ -1886,7 +1885,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../StreamQueueWidget.py" line="94"/>
         <location filename="../StreamQueueWidget.py" line="194"/>
-        <location filename="../StreamQueueWidget.py" line="424"/>
+        <location filename="../StreamQueueWidget.py" line="415"/>
         <location filename="../TeamBattleWidget.py" line="192"/>
         <location filename="../SelectSetWindow.py" line="102"/>
         <source>Match</source>
@@ -1920,16 +1919,16 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="134"/>
-        <location filename="../PlayerDBWindow.py" line="711"/>
+        <location filename="../PlayerDBWindow.py" line="724"/>
         <location filename="../PlayerMediaTabs.py" line="138"/>
         <source>Search players...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="168"/>
-        <location filename="../PlayerDBWindow.py" line="431"/>
-        <location filename="../PlayerDBWindow.py" line="441"/>
-        <location filename="../PlayerDBWindow.py" line="446"/>
+        <location filename="../PlayerDBWindow.py" line="439"/>
+        <location filename="../PlayerDBWindow.py" line="449"/>
+        <location filename="../PlayerDBWindow.py" line="454"/>
         <source>Import JSON</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1940,8 +1939,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="175"/>
-        <location filename="../PlayerDBWindow.py" line="451"/>
-        <location filename="../PlayerDBWindow.py" line="461"/>
+        <location filename="../PlayerDBWindow.py" line="459"/>
+        <location filename="../PlayerDBWindow.py" line="469"/>
         <source>Export JSON</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1952,16 +1951,16 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="183"/>
-        <location filename="../PlayerDBWindow.py" line="527"/>
+        <location filename="../PlayerDBWindow.py" line="629"/>
         <source>New player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="188"/>
         <location filename="../PlayerMediaTabs.py" line="260"/>
-        <location filename="../PlayerMediaTabs.py" line="751"/>
-        <location filename="../PlayerMediaTabs.py" line="809"/>
-        <location filename="../PlayerMediaTabs.py" line="914"/>
+        <location filename="../PlayerMediaTabs.py" line="703"/>
+        <location filename="../PlayerMediaTabs.py" line="818"/>
+        <location filename="../PlayerMediaTabs.py" line="929"/>
         <source>Delete</source>
         <translation type="unfinished">Deletar</translation>
     </message>
@@ -1979,8 +1978,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="231"/>
-        <location filename="../PlayerDBWindow.py" line="313"/>
-        <location filename="../PlayerListWidget.py" line="206"/>
+        <location filename="../PlayerDBWindow.py" line="315"/>
+        <location filename="../PlayerListWidget.py" line="248"/>
         <source>Country</source>
         <translation type="unfinished">Região</translation>
     </message>
@@ -2029,13 +2028,13 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="200"/>
-        <location filename="../BracketView.py" line="344"/>
+        <location filename="../BracketView.py" line="196"/>
+        <location filename="../BracketView.py" line="353"/>
         <source>DQ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="227"/>
+        <location filename="../BracketView.py" line="223"/>
         <source>Not needed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2045,286 +2044,286 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="265"/>
+        <location filename="../BracketView.py" line="274"/>
         <source>Double click to rename this round. Ctrl+click to select it for the bracket focus layout.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="299"/>
+        <location filename="../BracketView.py" line="308"/>
         <source>Set {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="310"/>
-        <location filename="../PlayerDBWindow.py" line="784"/>
-        <location filename="../BracketView.py" line="304"/>
+        <location filename="../PlayerDBWindow.py" line="312"/>
+        <location filename="../PlayerDBWindow.py" line="800"/>
+        <location filename="../BracketView.py" line="313"/>
         <source>Player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="313"/>
+        <location filename="../BracketView.py" line="322"/>
         <source>From the bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="315"/>
-        <location filename="../BracketView.py" line="319"/>
+        <location filename="../BracketView.py" line="324"/>
+        <location filename="../BracketView.py" line="328"/>
         <source>From the bracket ({0})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="336"/>
+        <location filename="../BracketView.py" line="345"/>
         <source>Changes made here aren&apos;t sent to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="349"/>
+        <location filename="../BracketView.py" line="358"/>
         <source>Winner</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="351"/>
+        <location filename="../BracketView.py" line="360"/>
         <source>By score</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="352"/>
+        <location filename="../BracketView.py" line="361"/>
         <source>Top player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="353"/>
+        <location filename="../BracketView.py" line="362"/>
         <source>Bottom player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="63"/>
-        <location filename="../BracketView.py" line="357"/>
+        <location filename="../BracketView.py" line="366"/>
         <source>Finished</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="365"/>
-        <location filename="../BracketView.py" line="750"/>
+        <location filename="../BracketView.py" line="374"/>
+        <location filename="../BracketView.py" line="736"/>
         <source>Clear result</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="707"/>
+        <location filename="../BracketView.py" line="693"/>
         <source>Focus the layout on this round</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="711"/>
+        <location filename="../BracketView.py" line="697"/>
         <source>Unselect this round</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="713"/>
+        <location filename="../BracketView.py" line="699"/>
         <source>Select this round</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="720"/>
+        <location filename="../BracketView.py" line="706"/>
         <source>Edit...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="723"/>
+        <location filename="../BracketView.py" line="709"/>
         <source>Focus the layout on this set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="727"/>
+        <location filename="../BracketView.py" line="713"/>
         <source>Unselect this set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="729"/>
+        <location filename="../BracketView.py" line="715"/>
         <source>Select this set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="735"/>
+        <location filename="../BracketView.py" line="721"/>
         <source>Focus the layout on {0}&apos;s run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="742"/>
+        <location filename="../BracketView.py" line="728"/>
         <source>Top player won</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="743"/>
+        <location filename="../BracketView.py" line="729"/>
         <source>Bottom player won</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="755"/>
+        <location filename="../BracketView.py" line="741"/>
         <source>Use the bracket&apos;s players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="768"/>
+        <location filename="../BracketView.py" line="678"/>
         <source>Round name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="769"/>
+        <location filename="../BracketView.py" line="679"/>
         <source>Name (leave empty for the default one):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="368"/>
+        <location filename="../PlayerDBWindow.py" line="370"/>
         <source>{0} players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="371"/>
+        <location filename="../PlayerDBWindow.py" line="373"/>
         <source>{0} of {1} players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="413"/>
+        <location filename="../PlayerDBWindow.py" line="418"/>
         <source>Delete {0} from the player database?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="417"/>
+        <location filename="../PlayerDBWindow.py" line="422"/>
         <source>Delete {0} players from the player database?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="420"/>
+        <location filename="../PlayerDBWindow.py" line="425"/>
         <source>Delete players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="433"/>
+        <location filename="../PlayerDBWindow.py" line="441"/>
         <source>All files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="442"/>
+        <location filename="../PlayerDBWindow.py" line="450"/>
         <source>Imported {0} players.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="536"/>
-        <location filename="../PlayerMediaTabs.py" line="645"/>
+        <location filename="../PlayerDBWindow.py" line="638"/>
+        <location filename="../PlayerMediaTabs.py" line="755"/>
         <source>Unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="537"/>
+        <location filename="../PlayerDBWindow.py" line="639"/>
         <source>Discard the changes made to this player?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="583"/>
+        <location filename="../PlayerDBWindow.py" line="569"/>
         <source>Characters ({0})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="587"/>
+        <location filename="../PlayerDBWindow.py" line="573"/>
         <source>Select a game to edit the player&apos;s characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="637"/>
+        <location filename="../PlayerDBWindow.py" line="650"/>
         <source>The player needs a tag.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="644"/>
+        <location filename="../PlayerDBWindow.py" line="657"/>
         <source>There is already a player called {0}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="680"/>
+        <location filename="../PlayerDBWindow.py" line="693"/>
         <source>Seeds come with the entrants when an event is loaded. Seeds set here replace them on the scoreboards, and are kept until a different event is loaded. With no event loaded, players can be seeded by hand.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="692"/>
+        <location filename="../PlayerDBWindow.py" line="705"/>
         <source>Player tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="702"/>
+        <location filename="../PlayerDBWindow.py" line="715"/>
         <source>Set seed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="714"/>
+        <location filename="../PlayerDBWindow.py" line="727"/>
         <source>Only seeded players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="749"/>
+        <location filename="../PlayerDBWindow.py" line="762"/>
         <source>Use imported seed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="752"/>
+        <location filename="../PlayerDBWindow.py" line="765"/>
         <source>Drop the seeds set by hand for the selected players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="757"/>
+        <location filename="../PlayerDBWindow.py" line="770"/>
         <source>Clear seeds set by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="785"/>
+        <location filename="../PlayerDBWindow.py" line="801"/>
         <source>Imported seed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="809"/>
-        <location filename="../PlayerMediaTabs.py" line="371"/>
+        <location filename="../PlayerDBWindow.py" line="825"/>
+        <location filename="../PlayerMediaTabs.py" line="373"/>
         <source>Not in the player database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="826"/>
+        <location filename="../PlayerDBWindow.py" line="842"/>
         <source>Set by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="835"/>
+        <location filename="../PlayerDBWindow.py" line="851"/>
         <source>{0} seeded players, {1} set by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="883"/>
+        <location filename="../PlayerDBWindow.py" line="902"/>
         <source>Clear seeds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="884"/>
+        <location filename="../PlayerDBWindow.py" line="903"/>
         <source>Drop all {0} seeds set by hand?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="898"/>
+        <location filename="../PlayerDBWindow.py" line="917"/>
         <source>Player Database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="924"/>
+        <location filename="../PlayerDBWindow.py" line="943"/>
         <location filename="../PlayerMediaTabs.py" line="35"/>
         <source>Player media</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="931"/>
+        <location filename="../PlayerDBWindow.py" line="950"/>
         <location filename="../PlayerMediaTabs.py" line="221"/>
         <source>Sponsor logos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="938"/>
+        <location filename="../PlayerDBWindow.py" line="957"/>
         <source>Team logos</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2337,17 +2336,17 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="95"/>
         <location filename="../StreamQueueWidget.py" line="195"/>
         <location filename="../DisplayOptions.py" line="71"/>
-        <location filename="../PlayerDBWindow.py" line="910"/>
+        <location filename="../PlayerDBWindow.py" line="929"/>
         <location filename="../TeamBattleWidget.py" line="158"/>
         <location filename="../TeamBattleWidget.py" line="220"/>
-        <location filename="../BracketWidget.py" line="258"/>
-        <location filename="../BracketWidget.py" line="411"/>
+        <location filename="../BracketWidget.py" line="261"/>
+        <location filename="../BracketWidget.py" line="413"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerDBWindow.py" line="917"/>
-        <location filename="../BracketWidget.py" line="465"/>
+        <location filename="../PlayerDBWindow.py" line="936"/>
+        <location filename="../BracketWidget.py" line="467"/>
         <source>Seeds</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2412,255 +2411,255 @@ p, li { white-space: pre-wrap; }
         <translation>Grupo {0}</translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="131"/>
+        <location filename="../GameReportWidget.py" line="134"/>
         <source>Report set to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="133"/>
+        <location filename="../GameReportWidget.py" line="136"/>
         <source>Sends the set&apos;s result and its games to start.gg, ending the set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="139"/>
+        <location filename="../GameReportWidget.py" line="142"/>
         <source>Retry</source>
         <translation type="unfinished">Tentar novamente</translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="142"/>
+        <location filename="../GameReportWidget.py" line="145"/>
         <source>Send games now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="144"/>
+        <location filename="../GameReportWidget.py" line="147"/>
         <source>Sends the games played so far to start.gg without ending the set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="151"/>
+        <location filename="../GameReportWidget.py" line="154"/>
         <source>Check token</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="153"/>
+        <location filename="../GameReportWidget.py" line="156"/>
         <source>Checks the start.gg API token set in Settings &gt; API Keys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="159"/>
-        <location filename="../GameReportWidget.py" line="686"/>
+        <location filename="../GameReportWidget.py" line="162"/>
+        <location filename="../GameReportWidget.py" line="444"/>
         <source>Clear games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="162"/>
+        <location filename="../GameReportWidget.py" line="165"/>
         <source>Reset on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="164"/>
+        <location filename="../GameReportWidget.py" line="167"/>
         <source>Resets the set on start.gg, so it can be reported again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="203"/>
-        <location filename="../GameReportWidget.py" line="194"/>
+        <location filename="../PlayerListWidget.py" line="245"/>
+        <location filename="../GameReportWidget.py" line="199"/>
         <source>Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="198"/>
-        <location filename="../GameReportWidget.py" line="589"/>
+        <location filename="../GameReportWidget.py" line="203"/>
+        <location filename="../GameReportWidget.py" line="617"/>
         <source>Team 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="202"/>
-        <location filename="../GameReportWidget.py" line="592"/>
+        <location filename="../GameReportWidget.py" line="207"/>
+        <location filename="../GameReportWidget.py" line="620"/>
         <source>Team 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GamesTracker.py" line="190"/>
-        <location filename="../GamesTracker.py" line="191"/>
-        <location filename="../GameReportWidget.py" line="351"/>
+        <location filename="../GamesTracker.py" line="199"/>
+        <location filename="../GamesTracker.py" line="200"/>
+        <location filename="../GameReportWidget.py" line="359"/>
         <source>Won by {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GamesTracker.py" line="192"/>
-        <location filename="../GameReportWidget.py" line="274"/>
-        <location filename="../GameReportWidget.py" line="353"/>
+        <location filename="../GamesTracker.py" line="201"/>
+        <location filename="../GameReportWidget.py" line="279"/>
+        <location filename="../GameReportWidget.py" line="361"/>
         <source>Draw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GamesTracker.py" line="193"/>
-        <location filename="../GameReportWidget.py" line="355"/>
+        <location filename="../GamesTracker.py" line="202"/>
+        <location filename="../GameReportWidget.py" line="363"/>
         <source>Not played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GamesTracker.py" line="201"/>
+        <location filename="../GamesTracker.py" line="210"/>
         <source>Open in the Games window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../GamesTracker.py" line="34"/>
-        <location filename="../GameReportWidget.py" line="300"/>
+        <location filename="../GameReportWidget.py" line="305"/>
         <source>Team {0}</source>
         <translation>Equipe {0}</translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="360"/>
+        <location filename="../GameReportWidget.py" line="368"/>
         <source>Stage: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="372"/>
+        <location filename="../GameReportWidget.py" line="380"/>
         <source>Click to edit, right-click to set the winner</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="529"/>
-        <location filename="../GameReportWidget.py" line="647"/>
+        <location filename="../GameReportWidget.py" line="557"/>
+        <location filename="../GameReportWidget.py" line="675"/>
         <source>Set a start.gg API token in Settings &gt; API Keys to report sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="533"/>
+        <location filename="../GameReportWidget.py" line="561"/>
         <source>Load a set from start.gg to report it</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="535"/>
+        <location filename="../GameReportWidget.py" line="563"/>
         <source>This set&apos;s bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="539"/>
+        <location filename="../GameReportWidget.py" line="567"/>
         <source>Waiting for the set&apos;s players from start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="576"/>
-        <location filename="../GameReportWidget.py" line="582"/>
-        <location filename="../GameReportWidget.py" line="596"/>
+        <location filename="../GameReportWidget.py" line="604"/>
+        <location filename="../GameReportWidget.py" line="610"/>
+        <location filename="../GameReportWidget.py" line="624"/>
         <source>Report set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="583"/>
+        <location filename="../GameReportWidget.py" line="611"/>
         <source>The set has no winner yet: the score is tied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="597"/>
+        <location filename="../GameReportWidget.py" line="625"/>
         <source>Report {0} {1} - {2} {3} to start.gg?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="601"/>
+        <location filename="../GameReportWidget.py" line="629"/>
         <source>{0} game(s) with their characters and stages will be sent.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="616"/>
-        <location filename="../GameReportWidget.py" line="620"/>
+        <location filename="../GameReportWidget.py" line="644"/>
+        <location filename="../GameReportWidget.py" line="648"/>
         <source>Reset set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="621"/>
+        <location filename="../GameReportWidget.py" line="649"/>
         <source>Reset this set on start.gg? Its result and games there are cleared (sets that depend on it too). The games here are kept.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="646"/>
-        <location filename="../GameReportWidget.py" line="662"/>
-        <location filename="../GameReportWidget.py" line="675"/>
+        <location filename="../GameReportWidget.py" line="674"/>
+        <location filename="../GameReportWidget.py" line="690"/>
+        <location filename="../GameReportWidget.py" line="703"/>
         <source>start.gg API token</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="663"/>
+        <location filename="../GameReportWidget.py" line="691"/>
         <source>The token works. It belongs to {0}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="667"/>
+        <location filename="../GameReportWidget.py" line="695"/>
         <source>Sets can only be reported if this account is an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="676"/>
+        <location filename="../GameReportWidget.py" line="704"/>
         <source>The token doesn&apos;t work: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="687"/>
+        <location filename="../GameReportWidget.py" line="445"/>
         <source>Clear the results, stages and characters of every game?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="710"/>
+        <location filename="../GameReportWidget.py" line="722"/>
         <source>No set loaded from start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="713"/>
+        <location filename="../GameReportWidget.py" line="725"/>
         <source>start.gg set {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="720"/>
+        <location filename="../GameReportWidget.py" line="732"/>
         <source>Waiting to send...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="721"/>
+        <location filename="../GameReportWidget.py" line="733"/>
         <source>Sending to start.gg...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="722"/>
+        <location filename="../GameReportWidget.py" line="734"/>
         <source>Games sent to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="723"/>
+        <location filename="../GameReportWidget.py" line="735"/>
         <source>Reported to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="724"/>
+        <location filename="../GameReportWidget.py" line="736"/>
         <source>Couldn&apos;t reach start.gg.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="725"/>
+        <location filename="../GameReportWidget.py" line="737"/>
         <source>start.gg error:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="741"/>
+        <location filename="../GameReportWidget.py" line="753"/>
         <source>This set is finished on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="743"/>
+        <location filename="../GameReportWidget.py" line="755"/>
         <source>Games are sent when the set is reported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerListSlotWidget.py" line="43"/>
-        <location filename="../BracketView.py" line="305"/>
+        <location filename="../BracketView.py" line="314"/>
         <source>Score</source>
         <translation>Placar</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="404"/>
-        <location filename="../GameReportWidget.py" line="196"/>
+        <location filename="../HyperDrive.py" line="408"/>
+        <location filename="../GameReportWidget.py" line="201"/>
         <source>Stage</source>
         <translation>Stage</translation>
     </message>
@@ -2677,7 +2676,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../CommentaryWidget.py" line="75"/>
         <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../PlayerDBWindow.py" line="218"/>
-        <location filename="../PlayerDBWindow.py" line="311"/>
+        <location filename="../PlayerDBWindow.py" line="313"/>
         <location filename="../ScoreboardWidget.py" line="201"/>
         <source>Real Name</source>
         <translation>Nome Real</translation>
@@ -2688,7 +2687,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="223"/>
-        <location filename="../PlayerListWidget.py" line="209"/>
+        <location filename="../PlayerListWidget.py" line="251"/>
         <source>Twitter</source>
         <translation>Twitter</translation>
     </message>
@@ -2696,11 +2695,11 @@ p, li { white-space: pre-wrap; }
         <location filename="../ScoreboardPlayerWidget.py" line="83"/>
         <location filename="../CommentaryWidget.py" line="81"/>
         <location filename="../DisplayOptions.py" line="20"/>
-        <location filename="../PlayerDBWindow.py" line="700"/>
-        <location filename="../PlayerDBWindow.py" line="786"/>
-        <location filename="../PlayerListWidget.py" line="205"/>
+        <location filename="../PlayerDBWindow.py" line="713"/>
+        <location filename="../PlayerDBWindow.py" line="802"/>
+        <location filename="../PlayerListWidget.py" line="247"/>
         <location filename="../ScoreboardWidget.py" line="207"/>
-        <location filename="../BracketWidget.py" line="1055"/>
+        <location filename="../BracketWidget.py" line="1067"/>
         <source>Seed</source>
         <translation>Seed</translation>
     </message>
@@ -2724,7 +2723,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../CommentaryWidget.py" line="77"/>
         <location filename="../DisplayOptions.py" line="16"/>
-        <location filename="../PlayerDBWindow.py" line="314"/>
+        <location filename="../PlayerDBWindow.py" line="316"/>
         <location filename="../ScoreboardWidget.py" line="203"/>
         <location filename="../TeamBattleWidget.py" line="224"/>
         <location filename="../SocialsWidget.py" line="36"/>
@@ -2734,7 +2733,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../CommentaryWidget.py" line="88"/>
         <location filename="../DisplayOptions.py" line="27"/>
-        <location filename="../PlayerListWidget.py" line="207"/>
+        <location filename="../PlayerListWidget.py" line="249"/>
         <location filename="../ScoreboardWidget.py" line="214"/>
         <location filename="../TeamBattleWidget.py" line="159"/>
         <location filename="../TeamBattleWidget.py" line="233"/>
@@ -2745,8 +2744,8 @@ p, li { white-space: pre-wrap; }
         <location filename="../CommentaryWidget.py" line="89"/>
         <location filename="../DisplayOptions.py" line="28"/>
         <location filename="../PlayerDBWindow.py" line="221"/>
-        <location filename="../PlayerDBWindow.py" line="312"/>
-        <location filename="../PlayerListWidget.py" line="210"/>
+        <location filename="../PlayerDBWindow.py" line="314"/>
+        <location filename="../PlayerListWidget.py" line="252"/>
         <location filename="../ScoreboardWidget.py" line="215"/>
         <location filename="../TeamBattleWidget.py" line="234"/>
         <source>Pronouns</source>
@@ -2765,7 +2764,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../ScoreboardWidget.py" line="264"/>
-        <location filename="../ScoreboardWidget.py" line="727"/>
+        <location filename="../ScoreboardWidget.py" line="644"/>
         <source>Load set</source>
         <translation>Carregar set</translation>
     </message>
@@ -2817,25 +2816,25 @@ p, li { white-space: pre-wrap; }
         <translation type="obsolete">Final, Semifinal da Repescagem, etc</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="976"/>
+        <location filename="../ScoreboardWidget.py" line="968"/>
         <source>Clear All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="977"/>
+        <location filename="../ScoreboardWidget.py" line="969"/>
         <source>Clear the players, scores, phase and match of this scoreboard, and unlink the loaded set?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="185"/>
-        <location filename="../HyperDrive.py" line="223"/>
-        <location filename="../HyperDrive.py" line="760"/>
-        <location filename="../HyperDrive.py" line="1196"/>
+        <location filename="../HyperDrive.py" line="186"/>
+        <location filename="../HyperDrive.py" line="224"/>
+        <location filename="../HyperDrive.py" line="764"/>
+        <location filename="../HyperDrive.py" line="1201"/>
         <source>Warning</source>
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="720"/>
+        <location filename="../ScoreboardWidget.py" line="637"/>
         <source>Load set from {0}</source>
         <translation>Carregar set do {0}</translation>
     </message>
@@ -2869,7 +2868,7 @@ p, li { white-space: pre-wrap; }
         <translation>beta</translation>
     </message>
     <message>
-        <location filename="../GameReportWidget.py" line="218"/>
+        <location filename="../GameReportWidget.py" line="223"/>
         <source>Game {0}</source>
         <translation>Jogo {0}</translation>
     </message>
@@ -2894,17 +2893,17 @@ p, li { white-space: pre-wrap; }
         <translation>O post foi enviado com sucesso para a conta {0}</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1046"/>
+        <location filename="../ScoreboardWidget.py" line="1056"/>
         <source>Auto update (Set)</source>
         <translation>Atualização automática (Set)</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1049"/>
+        <location filename="../ScoreboardWidget.py" line="1059"/>
         <source>Auto update (Stream [{0}])</source>
         <translation>Atualização automática (Stream [{0}])</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1055"/>
+        <location filename="../ScoreboardWidget.py" line="1065"/>
         <source>Auto update (Station [{0}])</source>
         <translation>Atualização automática (Estação [{0}])</translation>
     </message>
@@ -2913,8 +2912,8 @@ p, li { white-space: pre-wrap; }
         <translation>Atualização automática (Usuário)</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1060"/>
-        <location filename="../BracketWidget.py" line="219"/>
+        <location filename="../ScoreboardWidget.py" line="1070"/>
+        <location filename="../BracketWidget.py" line="222"/>
         <source>Auto update</source>
         <translation>Atualização automática</translation>
     </message>
@@ -2961,30 +2960,30 @@ p, li { white-space: pre-wrap; }
         <translation>Fase Final</translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="97"/>
+        <location filename="../TournamentInfoWidget.py" line="100"/>
         <source>Open Image</source>
         <translation>Abrir Imagem</translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="99"/>
+        <location filename="../TournamentInfoWidget.py" line="102"/>
         <source>Image Files</source>
         <translation>Arquivos de Imagem</translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="145"/>
-        <location filename="../TournamentInfoWidget.py" line="146"/>
-        <location filename="../TournamentDataManager.py" line="87"/>
-        <location filename="../Settings/TournamentTermsSettings.py" line="205"/>
+        <location filename="../TournamentInfoWidget.py" line="213"/>
+        <location filename="../TournamentInfoWidget.py" line="214"/>
+        <location filename="../TournamentDataManager.py" line="120"/>
+        <location filename="../Settings/TournamentTermsSettings.py" line="214"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="203"/>
+        <location filename="../TournamentInfoWidget.py" line="200"/>
         <source>The tournament URL could not be loaded.</source>
         <translation>A URL do torneio não pôde ser carregada.</translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="205"/>
+        <location filename="../TournamentInfoWidget.py" line="202"/>
         <source>Make sure that your tournament URL is correctly formatted and points to an existing event, and try again.</source>
         <translation>Certifique-se de que a URL está no formato correto e que o evento existe.</translation>
     </message>
@@ -2993,7 +2992,7 @@ p, li { white-space: pre-wrap; }
         <translation>Arquivo de países</translation>
     </message>
     <message>
-        <location filename="../Helpers/CountryHelper.py" line="167"/>
+        <location filename="../Helpers/CountryHelper.py" line="152"/>
         <source>Custom Flags</source>
         <translation>Bandeiras customizadas</translation>
     </message>
@@ -3004,7 +3003,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../SelectStationWindow.py" line="76"/>
-        <location filename="../BracketWidget.py" line="406"/>
+        <location filename="../BracketWidget.py" line="408"/>
         <source>Type</source>
         <translation>Tipo</translation>
     </message>
@@ -3031,12 +3030,12 @@ p, li { white-space: pre-wrap; }
         <translation type="obsolete">Eliminado</translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="187"/>
+        <location filename="../TeamPlayerWidget.py" line="381"/>
         <source>STOCKS/LIVES</source>
         <translation>STOCKS/VIDAS</translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="189"/>
+        <location filename="../TeamPlayerWidget.py" line="383"/>
         <source>GAMES WON</source>
         <translation>JOGOS GANHOS</translation>
     </message>
@@ -3060,49 +3059,49 @@ p, li { white-space: pre-wrap; }
         <translation>Fechar</translation>
     </message>
     <message>
-        <location filename="../Helpers/DownloadHelper.py" line="249"/>
-        <location filename="../Helpers/DownloadHelper.py" line="316"/>
+        <location filename="../Helpers/DownloadHelper.py" line="252"/>
+        <location filename="../Helpers/DownloadHelper.py" line="314"/>
         <source>Downloading {0}</source>
         <translation>Baixando {0}</translation>
     </message>
     <message>
-        <location filename="../Helpers/DownloadHelper.py" line="276"/>
+        <location filename="../Helpers/DownloadHelper.py" line="279"/>
         <source>Finishing up {0} download...</source>
         <translation>Concluindo download de {0}...</translation>
     </message>
     <message>
-        <location filename="../GameAssetManager.py" line="225"/>
-        <location filename="../GameAssetManager.py" line="271"/>
-        <location filename="../GameAssetManager.py" line="422"/>
-        <location filename="../GameAssetManager.py" line="916"/>
-        <location filename="../GameAssetManager.py" line="939"/>
-        <location filename="../HyperDrive.py" line="964"/>
+        <location filename="../GameAssetManager.py" line="156"/>
+        <location filename="../GameAssetManager.py" line="202"/>
+        <location filename="../GameAssetManager.py" line="383"/>
+        <location filename="../GameAssetManager.py" line="1314"/>
+        <location filename="../GameAssetManager.py" line="1337"/>
+        <location filename="../HyperDrive.py" line="968"/>
         <source>Invalid JSON file</source>
         <translation>Arquivo JSON inválido</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="448"/>
+        <location filename="../BracketWidget.py" line="450"/>
         <source>Pair next round</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="450"/>
+        <location filename="../BracketWidget.py" line="452"/>
         <source>Pairs the next round from the current standings, avoiding rematches. Every set of the last round has to be finished first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="457"/>
+        <location filename="../BracketWidget.py" line="459"/>
         <source>Remove last round</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1054"/>
+        <location filename="../BracketWidget.py" line="1066"/>
         <source>Rank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="400"/>
-        <location filename="../BracketWidget.py" line="1056"/>
+        <location filename="../BracketWidget.py" line="402"/>
+        <location filename="../BracketWidget.py" line="1068"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3123,320 +3122,320 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../BracketWidget.py" line="69"/>
-        <location filename="../BracketWidget.py" line="268"/>
+        <location filename="../BracketWidget.py" line="271"/>
         <source>Phases and players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="165"/>
+        <location filename="../BracketWidget.py" line="168"/>
         <source>New channel: shows a phase on its own, e.g. on another screen. Right-click a tab to rename or remove it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="183"/>
+        <location filename="../BracketWidget.py" line="186"/>
         <source>Reload the phases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="199"/>
+        <location filename="../BracketWidget.py" line="202"/>
         <source>Phase Group</source>
         <translation type="unfinished">Grupo</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="201"/>
+        <location filename="../BracketWidget.py" line="204"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="253"/>
+        <location filename="../BracketWidget.py" line="256"/>
         <source>Phases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="283"/>
+        <location filename="../BracketWidget.py" line="286"/>
         <source>Only show the top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="298"/>
+        <location filename="../BracketWidget.py" line="301"/>
         <source>Clear manual changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="300"/>
+        <location filename="../BracketWidget.py" line="303"/>
         <source>Puts back the players the bracket gives each set, undoing players placed by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="308"/>
+        <location filename="../BracketWidget.py" line="311"/>
         <source>Fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="386"/>
+        <location filename="../BracketWidget.py" line="388"/>
         <source>New phase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="235"/>
-        <location filename="../StreamQueueWidget.py" line="453"/>
+        <location filename="../StreamQueueWidget.py" line="476"/>
         <location filename="../PlayerMediaTabs.py" line="214"/>
-        <location filename="../BracketWidget.py" line="389"/>
+        <location filename="../BracketWidget.py" line="391"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="416"/>
+        <location filename="../BracketWidget.py" line="418"/>
         <source>How many of the seeds start on the losers side (e.g. players coming from pools they didn&apos;t win). They&apos;re the last seeds.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="422"/>
+        <location filename="../BracketWidget.py" line="424"/>
         <source>Starting in losers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="426"/>
+        <location filename="../BracketWidget.py" line="428"/>
         <source>Grand final reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="430"/>
+        <location filename="../BracketWidget.py" line="432"/>
         <source>3rd place match</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="435"/>
+        <location filename="../BracketWidget.py" line="437"/>
         <source>How many players go on to another phase instead of playing to a champion. Double elimination sends half from each side.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="441"/>
+        <location filename="../BracketWidget.py" line="443"/>
         <source>Players going on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="463"/>
+        <location filename="../BracketWidget.py" line="465"/>
         <source>Swiss rounds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="482"/>
+        <location filename="../BracketWidget.py" line="484"/>
         <source>Move the seed up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="486"/>
+        <location filename="../BracketWidget.py" line="488"/>
         <source>Move the seed down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="489"/>
+        <location filename="../BracketWidget.py" line="491"/>
         <source>Take from phases...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="491"/>
+        <location filename="../BracketWidget.py" line="493"/>
         <source>Seeds this phase with the top players of other phases, spread out so players from the same pool don&apos;t meet early</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="498"/>
+        <location filename="../BracketWidget.py" line="500"/>
         <source>Player list order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="500"/>
+        <location filename="../BracketWidget.py" line="502"/>
         <source>Seeds this phase with the player list, in its order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="505"/>
-        <location filename="../BracketWidget.py" line="981"/>
+        <location filename="../BracketWidget.py" line="507"/>
+        <location filename="../BracketWidget.py" line="991"/>
         <source>Rebuild bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="507"/>
+        <location filename="../BracketWidget.py" line="509"/>
         <source>Builds the bracket again from the seeds, clearing its results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="515"/>
+        <location filename="../BracketWidget.py" line="517"/>
         <source>Loaded from start.gg: results come from start.gg. Changes made here only affect what&apos;s shown on stream.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="617"/>
+        <location filename="../BracketWidget.py" line="621"/>
         <source>Phase {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="637"/>
+        <location filename="../BracketWidget.py" line="641"/>
         <source>These channels show it too, and will show another phase: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="641"/>
+        <location filename="../BracketWidget.py" line="645"/>
         <source>Remove phase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1109"/>
+        <location filename="../BracketWidget.py" line="1123"/>
         <source>Layouts show this channel with ?channel={0} in their URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1113"/>
+        <location filename="../BracketWidget.py" line="1127"/>
         <source>Layouts without ?channel= in their URL show this channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1568"/>
-        <location filename="../BracketWidget.py" line="1720"/>
+        <location filename="../BracketWidget.py" line="1517"/>
+        <location filename="../BracketWidget.py" line="1750"/>
         <source>{0}: its players, from start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="632"/>
+        <location filename="../BracketWidget.py" line="636"/>
         <source>Remove {0}? Its results will be lost.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="172"/>
-        <location filename="../BracketView.py" line="320"/>
-        <location filename="../BracketView.py" line="325"/>
-        <location filename="../BracketWidget.py" line="749"/>
+        <location filename="../BracketView.py" line="168"/>
+        <location filename="../BracketView.py" line="329"/>
+        <location filename="../BracketView.py" line="334"/>
+        <location filename="../BracketWidget.py" line="764"/>
         <source>Bye</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="768"/>
+        <location filename="../BracketWidget.py" line="783"/>
         <source>{0}: going on {1}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="772"/>
+        <location filename="../BracketWidget.py" line="787"/>
         <source>{0}: {1}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="797"/>
+        <location filename="../BracketWidget.py" line="812"/>
         <source>L{0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="860"/>
-        <location filename="../BracketWidget.py" line="866"/>
+        <location filename="../BracketWidget.py" line="875"/>
+        <location filename="../BracketWidget.py" line="881"/>
         <source>Take from phases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="861"/>
+        <location filename="../BracketWidget.py" line="876"/>
         <source>Add other phases (e.g. pools) first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="869"/>
+        <location filename="../BracketWidget.py" line="884"/>
         <source>Phases to take players from:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="878"/>
+        <location filename="../BracketWidget.py" line="893"/>
         <source>Players from each phase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="885"/>
+        <location filename="../BracketWidget.py" line="900"/>
         <source>Players after the first place of each phase start in losers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="982"/>
+        <location filename="../BracketWidget.py" line="992"/>
         <source>This builds {0} again and clears its results. Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="203"/>
-        <location filename="../BracketWidget.py" line="1057"/>
+        <location filename="../BracketView.py" line="199"/>
+        <location filename="../BracketWidget.py" line="1069"/>
         <source>W</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="205"/>
-        <location filename="../BracketWidget.py" line="1058"/>
+        <location filename="../BracketView.py" line="201"/>
+        <location filename="../BracketWidget.py" line="1070"/>
         <source>L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1059"/>
+        <location filename="../BracketWidget.py" line="1071"/>
         <source>D</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1060"/>
+        <location filename="../BracketWidget.py" line="1072"/>
         <source>Points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1470"/>
+        <location filename="../BracketWidget.py" line="1633"/>
         <source>Waiting for a loaded bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1478"/>
+        <location filename="../BracketWidget.py" line="1641"/>
         <source>Next update in {0}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="749"/>
-        <location filename="../StreamQueueWidget.py" line="764"/>
-        <location filename="../BracketWidget.py" line="1557"/>
+        <location filename="../StreamQueueWidget.py" line="781"/>
+        <location filename="../StreamQueueWidget.py" line="796"/>
+        <location filename="../BracketWidget.py" line="1506"/>
         <source>start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1061"/>
+        <location filename="../BracketWidget.py" line="1073"/>
         <source>Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="204"/>
+        <location filename="../BracketWidget.py" line="207"/>
         <source>Load the phase group, its players and its sets into the phases, and show it on this channel. Loading it again reloads it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="213"/>
+        <location filename="../BracketWidget.py" line="216"/>
         <source>Update only the set results of the loaded phase groups, without reloading their players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="221"/>
+        <location filename="../BracketWidget.py" line="224"/>
         <source>Update the set results of the loaded phase groups periodically. The interval can be changed in Settings &gt; General.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="272"/>
+        <location filename="../BracketWidget.py" line="275"/>
         <source>Show or hide the window to edit the phases and the player lists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="285"/>
+        <location filename="../BracketWidget.py" line="288"/>
         <source>Only the sets of players that can still finish in the top N are sent to this channel&apos;s layouts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1062"/>
+        <location filename="../BracketWidget.py" line="1074"/>
         <source>Game diff.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1065"/>
+        <location filename="../BracketWidget.py" line="1077"/>
         <source>Buchholz</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="636"/>
+        <location filename="../BracketView.py" line="652"/>
         <source>Bye: {0}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3468,7 +3467,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="87"/>
-        <location filename="../DisplayControls.py" line="185"/>
+        <location filename="../DisplayControls.py" line="194"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3484,7 +3483,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="151"/>
-        <location filename="../BracketFocusBar.py" line="265"/>
+        <location filename="../BracketFocusBar.py" line="273"/>
         <source>{0} sets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3515,8 +3514,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="224"/>
-        <location filename="../StreamQueueWidget.py" line="393"/>
-        <location filename="../StreamQueueWidget.py" line="445"/>
+        <location filename="../StreamQueueWidget.py" line="448"/>
+        <location filename="../StreamQueueWidget.py" line="468"/>
         <source>Load into scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3561,221 +3560,221 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="278"/>
-        <location filename="../CharacterPicker.py" line="441"/>
-        <location filename="../CharacterPicker.py" line="467"/>
+        <location filename="../StreamQueueWidget.py" line="292"/>
+        <location filename="../CharacterPicker.py" line="494"/>
+        <location filename="../CharacterPicker.py" line="533"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="309"/>
+        <location filename="../StreamQueueWidget.py" line="323"/>
         <source>Added here, not in start.gg&apos;s queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="315"/>
+        <location filename="../StreamQueueWidget.py" line="329"/>
         <source>On stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="368"/>
+        <location filename="../StreamQueueWidget.py" line="385"/>
         <source>Reset queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="369"/>
+        <location filename="../StreamQueueWidget.py" line="386"/>
         <source>Undo the changes made to {0}&apos;s queue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="416"/>
+        <location filename="../StreamQueueWidget.py" line="407"/>
         <source>Add custom set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="422"/>
+        <location filename="../StreamQueueWidget.py" line="413"/>
         <source>Player/Team 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="423"/>
+        <location filename="../StreamQueueWidget.py" line="414"/>
         <source>Player/Team 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="447"/>
+        <location filename="../StreamQueueWidget.py" line="470"/>
         <source>Move to the top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="473"/>
+        <location filename="../StreamQueueWidget.py" line="488"/>
         <source>On start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="477"/>
+        <location filename="../StreamQueueWidget.py" line="492"/>
         <source>Its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="482"/>
+        <location filename="../StreamQueueWidget.py" line="497"/>
         <source>Call the set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="487"/>
+        <location filename="../StreamQueueWidget.py" line="502"/>
         <source>Assign to {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="495"/>
+        <location filename="../StreamQueueWidget.py" line="510"/>
         <source>start.gg has no stream named {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="497"/>
+        <location filename="../StreamQueueWidget.py" line="512"/>
         <source>Assign to station</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="499"/>
+        <location filename="../StreamQueueWidget.py" line="514"/>
         <source>Station {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="512"/>
+        <location filename="../StreamQueueWidget.py" line="527"/>
         <source>Update the streams and stations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="545"/>
+        <location filename="../StreamQueueWidget.py" line="560"/>
         <source>Update the queues now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="548"/>
+        <location filename="../StreamQueueWidget.py" line="563"/>
         <source>Update every</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="554"/>
+        <location filename="../StreamQueueWidget.py" line="569"/>
         <location filename="../BracketFocusBar.py" line="112"/>
         <source> s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="564"/>
+        <location filename="../StreamQueueWidget.py" line="579"/>
         <source>After a set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="566"/>
+        <location filename="../StreamQueueWidget.py" line="581"/>
         <source>Do nothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="568"/>
+        <location filename="../StreamQueueWidget.py" line="583"/>
         <source>Ask to load the next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="571"/>
+        <location filename="../StreamQueueWidget.py" line="586"/>
         <source>Load the next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="574"/>
+        <location filename="../StreamQueueWidget.py" line="589"/>
         <source>What happens when the set on a stream&apos;s scoreboard is over (reported, or finished on start.gg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="588"/>
+        <location filename="../StreamQueueWidget.py" line="603"/>
         <source>Add start.gg&apos;s streams automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="593"/>
+        <location filename="../StreamQueueWidget.py" line="608"/>
         <source>Add stream...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="604"/>
+        <location filename="../StreamQueueWidget.py" line="619"/>
         <source>Add a stream by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="610"/>
+        <location filename="../StreamQueueWidget.py" line="625"/>
         <source>No streams yet. Streams in start.gg&apos;s stream queue show up here, or add one with +.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="713"/>
+        <location filename="../StreamQueueWidget.py" line="743"/>
         <source>Updated {0}s ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="715"/>
-        <location filename="../BracketWidget.py" line="1473"/>
+        <location filename="../StreamQueueWidget.py" line="745"/>
+        <location filename="../BracketWidget.py" line="1636"/>
         <source>Updating...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="750"/>
+        <location filename="../StreamQueueWidget.py" line="782"/>
         <source>Set a start.gg API token in Settings &gt; API Keys first, from an account that&apos;s an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="765"/>
+        <location filename="../StreamQueueWidget.py" line="797"/>
         <source>start.gg refused it: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="814"/>
+        <location filename="../StreamQueueWidget.py" line="848"/>
         <source>Remove stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="815"/>
+        <location filename="../StreamQueueWidget.py" line="849"/>
         <source>Remove {0}? start.gg&apos;s streams can be added back with +.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="828"/>
+        <location filename="../StreamQueueWidget.py" line="862"/>
         <source>Add stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="829"/>
+        <location filename="../StreamQueueWidget.py" line="863"/>
         <source>Stream name (e.g. the Twitch channel). A stream in start.gg&apos;s stream queue gets its queue.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="915"/>
+        <location filename="../StreamQueueWidget.py" line="941"/>
         <source>Next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="916"/>
+        <location filename="../StreamQueueWidget.py" line="942"/>
         <source>Load {0} into {1}?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="158"/>
+        <location filename="../StartGGReporter.py" line="164"/>
         <source>This set can&apos;t be reported: its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="225"/>
+        <location filename="../StartGGReporter.py" line="231"/>
         <source>Set reset on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="242"/>
+        <location filename="../StartGGReporter.py" line="248"/>
         <source>{0} Retrying in {1}s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="275"/>
+        <location filename="../StartGGReporter.py" line="284"/>
         <source>This set can&apos;t be changed: its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3790,18 +3789,18 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1135"/>
+        <location filename="../BracketWidget.py" line="1149"/>
         <source>New channel...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1137"/>
+        <location filename="../BracketWidget.py" line="1151"/>
         <source>Rename channel...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1140"/>
-        <location filename="../BracketFocusBar.py" line="184"/>
+        <location filename="../BracketWidget.py" line="1154"/>
+        <location filename="../BracketFocusBar.py" line="186"/>
         <source>Remove channel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3871,67 +3870,67 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="151"/>
+        <location filename="../BracketFocusBar.py" line="153"/>
         <source>Name (layouts show it with ?channel=&lt;name&gt; in their URL):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="159"/>
+        <location filename="../BracketFocusBar.py" line="168"/>
         <source>New channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="167"/>
+        <location filename="../BracketFocusBar.py" line="176"/>
         <source>Rename channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="174"/>
+        <location filename="../BracketFocusBar.py" line="163"/>
         <source>Channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="185"/>
+        <location filename="../BracketFocusBar.py" line="187"/>
         <source>Remove the channel &quot;{0}&quot;? Layouts showing it will show nothing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="175"/>
+        <location filename="../BracketFocusBar.py" line="164"/>
         <source>There&apos;s already a channel named &quot;{0}&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="215"/>
+        <location filename="../BracketFocusBar.py" line="223"/>
         <source>Focus selected ({0})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="217"/>
+        <location filename="../BracketFocusBar.py" line="225"/>
         <source>Focus selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="229"/>
+        <location filename="../BracketFocusBar.py" line="237"/>
         <source>Player&apos;s run...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="253"/>
+        <location filename="../BracketFocusBar.py" line="261"/>
         <source>Showing the whole bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="255"/>
+        <location filename="../BracketFocusBar.py" line="263"/>
         <source>Scoreboard {0}&apos;s set isn&apos;t in this bracket: showing the whole bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="259"/>
+        <location filename="../BracketFocusBar.py" line="267"/>
         <source>Tour {0}/{1}: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="263"/>
+        <location filename="../BracketFocusBar.py" line="271"/>
         <source>Showing: {0}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3988,13 +3987,13 @@ Drop an image here.</source>
     </message>
     <message>
         <location filename="../PlayerMediaTabs.py" line="257"/>
-        <location filename="../PlayerMediaTabs.py" line="806"/>
+        <location filename="../PlayerMediaTabs.py" line="815"/>
         <source>Rename...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerMediaTabs.py" line="264"/>
-        <location filename="../PlayerMediaTabs.py" line="813"/>
+        <location filename="../PlayerMediaTabs.py" line="822"/>
         <source>Open folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4004,214 +4003,214 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="373"/>
+        <location filename="../PlayerMediaTabs.py" line="375"/>
         <source>Has custom data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="405"/>
+        <location filename="../PlayerMediaTabs.py" line="407"/>
         <source>Type a tag, or pick someone on the left.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="407"/>
+        <location filename="../PlayerMediaTabs.py" line="409"/>
         <source>From {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="411"/>
+        <location filename="../PlayerMediaTabs.py" line="413"/>
         <source>Will be saved as {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="415"/>
+        <location filename="../PlayerMediaTabs.py" line="417"/>
         <source>Looked for with the sponsor first ({0}), then the tag alone ({1}), so it works with any sponsor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="441"/>
+        <location filename="../PlayerMediaTabs.py" line="443"/>
         <source>No sponsor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="444"/>
+        <location filename="../PlayerMediaTabs.py" line="446"/>
         <source>Manage every logo in the Sponsor logos tab.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="448"/>
+        <location filename="../PlayerMediaTabs.py" line="450"/>
         <source>No logo for {0}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="452"/>
+        <location filename="../PlayerMediaTabs.py" line="454"/>
         <source>Set the logo of {0}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="461"/>
+        <location filename="../PlayerMediaTabs.py" line="463"/>
         <source>Files in {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="465"/>
+        <location filename="../PlayerMediaTabs.py" line="467"/>
         <source>No files yet. They will be saved in {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="469"/>
+        <location filename="../PlayerMediaTabs.py" line="471"/>
         <source>Custom data isn&apos;t sent to the layouts: it&apos;s turned off in Settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="481"/>
+        <location filename="../PlayerMediaTabs.py" line="485"/>
         <source>Choose an avatar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="515"/>
+        <location filename="../PlayerMediaTabs.py" line="519"/>
         <source>Choose the logo of {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="602"/>
+        <location filename="../PlayerMediaTabs.py" line="608"/>
         <source>Layouts get its path: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="611"/>
+        <location filename="../PlayerMediaTabs.py" line="721"/>
         <source>Not saved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="622"/>
+        <location filename="../PlayerMediaTabs.py" line="732"/>
         <source>Not valid JSON: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="635"/>
+        <location filename="../PlayerMediaTabs.py" line="745"/>
         <source>Saved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="646"/>
+        <location filename="../PlayerMediaTabs.py" line="756"/>
         <source>Save the changes to {0}?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="664"/>
+        <location filename="../PlayerMediaTabs.py" line="616"/>
         <source>File name. Layouts get it by its name without the extension.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="674"/>
+        <location filename="../PlayerMediaTabs.py" line="626"/>
         <source>New text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="681"/>
-        <location filename="../PlayerMediaTabs.py" line="733"/>
+        <location filename="../PlayerMediaTabs.py" line="633"/>
+        <location filename="../PlayerMediaTabs.py" line="685"/>
         <source>{0} already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="692"/>
+        <location filename="../PlayerMediaTabs.py" line="644"/>
         <source>Add files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="725"/>
+        <location filename="../PlayerMediaTabs.py" line="677"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="752"/>
-        <location filename="../PlayerMediaTabs.py" line="917"/>
+        <location filename="../PlayerMediaTabs.py" line="704"/>
+        <location filename="../PlayerMediaTabs.py" line="932"/>
         <source>Delete {0}?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="776"/>
+        <location filename="../PlayerMediaTabs.py" line="785"/>
         <source>Search...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="803"/>
+        <location filename="../PlayerMediaTabs.py" line="812"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="835"/>
+        <location filename="../PlayerMediaTabs.py" line="847"/>
         <source>{0} logos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="852"/>
+        <location filename="../PlayerMediaTabs.py" line="867"/>
         <source>Name, as typed in HyperDrive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="859"/>
+        <location filename="../PlayerMediaTabs.py" line="874"/>
         <source>Add logos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="868"/>
+        <location filename="../PlayerMediaTabs.py" line="883"/>
         <source>Add logo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="890"/>
+        <location filename="../PlayerMediaTabs.py" line="905"/>
         <source>Rename logo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="915"/>
+        <location filename="../PlayerMediaTabs.py" line="930"/>
         <source>Delete {0} logos?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="931"/>
+        <location filename="../PlayerMediaTabs.py" line="946"/>
         <source>A player gets the logo of the sponsor typed for them, e.g. HD. With more than one sponsor (HD | GG), the logo of all of them if there is one, otherwise each one&apos;s. Drop images here to add them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="944"/>
+        <location filename="../PlayerMediaTabs.py" line="959"/>
         <source>A team on the scoreboard gets the logo named after its team name. Drop images here to add them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CharacterPicker.py" line="280"/>
+        <location filename="../CharacterPicker.py" line="301"/>
         <source>Back to the characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CharacterPicker.py" line="309"/>
+        <location filename="../CharacterPicker.py" line="330"/>
         <source>Mains</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CharacterPicker.py" line="310"/>
+        <location filename="../CharacterPicker.py" line="331"/>
         <source>Recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CharacterPicker.py" line="311"/>
+        <location filename="../CharacterPicker.py" line="332"/>
         <source>All characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CharacterPicker.py" line="390"/>
+        <location filename="../CharacterPicker.py" line="434"/>
         <source>Search characters...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CharacterPicker.py" line="407"/>
+        <location filename="../CharacterPicker.py" line="451"/>
         <source>Search skins...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CharacterPicker.py" line="419"/>
+        <location filename="../CharacterPicker.py" line="463"/>
         <source>Search variants...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4221,7 +4220,7 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SocialsWidget.py" line="186"/>
+        <location filename="../SocialsWidget.py" line="195"/>
         <source>Other socials (Twitch, YouTube, Instagram...)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4246,17 +4245,17 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ColorPicker.py" line="193"/>
+        <location filename="../ColorPicker.py" line="196"/>
         <source>Right-click to remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ColorPicker.py" line="204"/>
+        <location filename="../ColorPicker.py" line="207"/>
         <source>Save the current color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Helpers/PronounHelper.py" line="125"/>
+        <location filename="../Helpers/PronounHelper.py" line="131"/>
         <source>Show all pronouns</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4451,7 +4450,7 @@ Drop an image here.</source>
 <context>
     <name>layout_themes</name>
     <message>
-        <location filename="../HyperDrive.py" line="639"/>
+        <location filename="../HyperDrive.py" line="643"/>
         <source>Layout themes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4461,120 +4460,120 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="126"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="129"/>
         <source>Layout default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="160"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="163"/>
         <source>Layout Themes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="174"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="177"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="178"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="181"/>
         <source>The theme the layouts use. Changes are saved and sent to the layouts as you make them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="186"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="189"/>
         <source>New theme...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="189"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="192"/>
         <source>Starts a new theme from the one in use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="193"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="196"/>
         <source>Import...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="196"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="199"/>
         <source>Export...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="198"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="201"/>
         <source>Saves the theme in use to a file you can share</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="204"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="207"/>
         <source>Rename...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="207"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="210"/>
         <source>Delete</source>
         <translation type="unfinished">Deletar</translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="223"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="226"/>
         <source>The default theme can&apos;t be changed. Create a new theme to customize it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="338"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="353"/>
         <source>Theme name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="349"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="364"/>
         <source>New theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="351"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="366"/>
         <source>{0} (custom)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="371"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="386"/>
         <source>Rename theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="385"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="400"/>
         <source>Delete theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="386"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="401"/>
         <source>Delete the theme &quot;{0}&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="399"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="411"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="417"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="429"/>
         <source>Import theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="401"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="429"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="419"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="447"/>
         <source>HyperDrive layout theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="412"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="430"/>
         <source>This file isn&apos;t a HyperDrive layout theme.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="427"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="441"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="445"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="459"/>
         <source>Export theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="442"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="460"/>
         <source>The theme could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4589,12 +4588,12 @@ Drop an image here.</source>
 <context>
     <name>punctuation</name>
     <message>
-        <location filename="../HyperDrive.py" line="1285"/>
+        <location filename="../HyperDrive.py" line="1290"/>
         <source>[</source>
         <translation>[</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1287"/>
+        <location filename="../HyperDrive.py" line="1292"/>
         <source>]</source>
         <translation>]</translation>
     </message>
@@ -4609,7 +4608,7 @@ Drop an image here.</source>
         <translation>)</translation>
     </message>
     <message>
-        <location filename="../Helpers/DownloadHelper.py" line="317"/>
+        <location filename="../Helpers/DownloadHelper.py" line="315"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -4684,7 +4683,7 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="258"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="261"/>
         <location filename="../Settings/SettingsWidget.py" line="39"/>
         <source>Default</source>
         <translation>Padrão</translation>
@@ -4733,69 +4732,69 @@ Drop an image here.</source>
 <context>
     <name>settings.appearance</name>
     <message>
-        <location filename="../Theme.py" line="87"/>
+        <location filename="../Theme.py" line="90"/>
         <source>Background</source>
         <translation type="unfinished">Plano de Fundo</translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="88"/>
+        <location filename="../Theme.py" line="91"/>
         <source>Panels and inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="89"/>
+        <location filename="../Theme.py" line="92"/>
         <source>Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="90"/>
+        <location filename="../Theme.py" line="93"/>
         <source>Borders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="91"/>
+        <location filename="../Theme.py" line="94"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="92"/>
+        <location filename="../Theme.py" line="95"/>
         <source>Secondary text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="93"/>
+        <location filename="../Theme.py" line="96"/>
         <source>Accent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="99"/>
+        <location filename="../Theme.py" line="102"/>
         <source>Compact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="100"/>
+        <location filename="../Theme.py" line="103"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="101"/>
+        <location filename="../Theme.py" line="104"/>
         <source>Comfortable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="119"/>
-        <location filename="../Settings/AppearanceSettings.py" line="250"/>
+        <location filename="../Theme.py" line="122"/>
+        <location filename="../Settings/AppearanceSettings.py" line="253"/>
         <source>Dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="121"/>
-        <location filename="../Settings/AppearanceSettings.py" line="252"/>
+        <location filename="../Theme.py" line="124"/>
+        <location filename="../Settings/AppearanceSettings.py" line="255"/>
         <source>Light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="443"/>
+        <location filename="../Theme.py" line="458"/>
         <source>Custom theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4861,7 +4860,7 @@ Drop an image here.</source>
     </message>
     <message>
         <location filename="../Settings/AppearanceSettings.py" line="155"/>
-        <location filename="../Settings/AppearanceSettings.py" line="346"/>
+        <location filename="../Settings/AppearanceSettings.py" line="360"/>
         <source>Reset all colors</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4896,75 +4895,75 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="255"/>
+        <location filename="../Settings/AppearanceSettings.py" line="258"/>
         <source>Follow system</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="280"/>
+        <location filename="../Settings/AppearanceSettings.py" line="283"/>
         <source>Customize {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="347"/>
+        <location filename="../Settings/AppearanceSettings.py" line="361"/>
         <source>Reset every color of &quot;{0}&quot; to default?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="384"/>
+        <location filename="../Settings/AppearanceSettings.py" line="396"/>
         <source>Theme name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="395"/>
+        <location filename="../Settings/AppearanceSettings.py" line="407"/>
         <source>New custom theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="397"/>
+        <location filename="../Settings/AppearanceSettings.py" line="409"/>
         <source>{0} (custom)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="413"/>
+        <location filename="../Settings/AppearanceSettings.py" line="425"/>
         <source>Rename theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="426"/>
+        <location filename="../Settings/AppearanceSettings.py" line="438"/>
         <source>Delete theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="427"/>
+        <location filename="../Settings/AppearanceSettings.py" line="439"/>
         <source>Delete the theme &quot;{0}&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="442"/>
-        <location filename="../Settings/AppearanceSettings.py" line="454"/>
+        <location filename="../Settings/AppearanceSettings.py" line="457"/>
+        <location filename="../Settings/AppearanceSettings.py" line="469"/>
         <source>Import theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="444"/>
-        <location filename="../Settings/AppearanceSettings.py" line="471"/>
+        <location filename="../Settings/AppearanceSettings.py" line="459"/>
+        <location filename="../Settings/AppearanceSettings.py" line="486"/>
         <source>HyperDrive theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="455"/>
+        <location filename="../Settings/AppearanceSettings.py" line="470"/>
         <source>This file isn&apos;t a HyperDrive theme.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="469"/>
-        <location filename="../Settings/AppearanceSettings.py" line="483"/>
+        <location filename="../Settings/AppearanceSettings.py" line="484"/>
+        <location filename="../Settings/AppearanceSettings.py" line="498"/>
         <source>Export theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="484"/>
+        <location filename="../Settings/AppearanceSettings.py" line="499"/>
         <source>The theme could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5450,33 +5449,33 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/TournamentTermsSettings.py" line="153"/>
+        <location filename="../Settings/TournamentTermsSettings.py" line="159"/>
         <source>Rename the match and phase names HyperDrive uses in the scoreboard dropdowns and for sets loaded from start.gg. Leave a custom name empty to use the default. {0} is replaced with a number or letter, like the round number.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/TournamentTermsSettings.py" line="167"/>
+        <location filename="../Settings/TournamentTermsSettings.py" line="173"/>
         <source>Match names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/TournamentTermsSettings.py" line="168"/>
+        <location filename="../Settings/TournamentTermsSettings.py" line="174"/>
         <source>Phase names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/TournamentTermsSettings.py" line="180"/>
-        <location filename="../Settings/TournamentTermsSettings.py" line="214"/>
+        <location filename="../Settings/TournamentTermsSettings.py" line="186"/>
+        <location filename="../Settings/TournamentTermsSettings.py" line="223"/>
         <source>Reset all to default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/TournamentTermsSettings.py" line="206"/>
+        <location filename="../Settings/TournamentTermsSettings.py" line="215"/>
         <source>The match and phase names couldn&apos;t be saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/TournamentTermsSettings.py" line="215"/>
+        <location filename="../Settings/TournamentTermsSettings.py" line="224"/>
         <source>Remove all of your custom match and phase names?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5560,7 +5559,7 @@ Drop an image here.</source>
 <context>
     <name>tips</name>
     <message>
-        <location filename="../Helpers/AltTextHelper.py" line="68"/>
+        <location filename="../Helpers/AltTextHelper.py" line="71"/>
         <source>Descriptive text (also known as Alt text) describes images for blind and low-vision users, and helps give context around images to everyone. As such, we highly recommend adding it to your image uploads on your websites and social media posts.</source>
         <translation>Texto alternativo (Alt text) descreve imagens para usuários com deficiência visual, e ajuda a dar contexto para imagens para todos. Assim, recomendamos fortemente o seu uso para uploads de imagens em sites e posts em redes sociais.</translation>
     </message>
@@ -5568,17 +5567,17 @@ Drop an image here.</source>
 <context>
     <name>updater</name>
     <message>
-        <location filename="../HyperDrive.py" line="228"/>
+        <location filename="../HyperDrive.py" line="229"/>
         <source>Error while backing up the layout folder:</source>
         <translation>Erro ao fazer backup da pasta layout:</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="235"/>
+        <location filename="../HyperDrive.py" line="236"/>
         <source>Retry</source>
         <translation>Tentar novamente</translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="237"/>
+        <location filename="../HyperDrive.py" line="238"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
@@ -5586,48 +5585,48 @@ Drop an image here.</source>
 <context>
     <name>wiki</name>
     <message>
-        <location filename="../WikiWindow.py" line="42"/>
-        <location filename="../WikiWindow.py" line="196"/>
+        <location filename="../WikiWindow.py" line="39"/>
+        <location filename="../WikiWindow.py" line="242"/>
         <source>HyperDrive Guide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="57"/>
+        <location filename="../WikiWindow.py" line="54"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="63"/>
+        <location filename="../WikiWindow.py" line="60"/>
         <source>Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="68"/>
+        <location filename="../WikiWindow.py" line="65"/>
         <source>Home</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="73"/>
+        <location filename="../WikiWindow.py" line="70"/>
         <source>Search the guide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="167"/>
+        <location filename="../WikiWindow.py" line="213"/>
         <source>The page {0} doesn&apos;t exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="245"/>
+        <location filename="../WikiWindow.py" line="328"/>
         <source>No pages match your search.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="261"/>
+        <location filename="../WikiWindow.py" line="297"/>
         <source>Opens it in HyperDrive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="294"/>
+        <location filename="../WikiWindow.py" line="184"/>
         <source>This version of HyperDrive can&apos;t open {0}.</source>
         <translation type="unfinished"></translation>
     </message>
