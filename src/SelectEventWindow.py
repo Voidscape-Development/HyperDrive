@@ -302,13 +302,9 @@ class SelectEventWindow(QDialog):
 
         self.resize(600, 500)
 
-    def eventFilter(self, obj, event):
-        if obj is self.eventList and event.type() == QEvent.KeyPress:
-            if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-                self.LoadSelectedEvent()
-                return True
-        return super().eventFilter(obj, event)
-
+    # =====================================================
+    # EVENT LIST
+    # =====================================================
     def Load(self, parsed, parryApiKey=None):
         # An event link's event is selected once the list loads
         self.selectedEventUrl = parsed.get("eventUrl")
@@ -393,6 +389,9 @@ class SelectEventWindow(QDialog):
             if visible:
                 self.eventList.setCurrentItem(visible[0])
 
+    # =====================================================
+    # PICKING AN EVENT
+    # =====================================================
     def LoadSelectedEvent(self):
         item = self.eventList.currentItem()
         if item is None or item.isHidden():
@@ -400,3 +399,10 @@ class SelectEventWindow(QDialog):
         event = item.data(Qt.ItemDataRole.UserRole)
         self.accept()
         self.onEventSelected(event.get("url"))
+
+    def eventFilter(self, obj, event):
+        if obj is self.eventList and event.type() == QEvent.KeyPress:
+            if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+                self.LoadSelectedEvent()
+                return True
+        return super().eventFilter(obj, event)

@@ -52,6 +52,19 @@ class TournamentDataManager(QObject):
 
         self.setLoadingWorker = None
 
+    # =====================================================
+    # SETUP
+    # =====================================================
+    def UiMounted(self):
+        if SettingsManager.Get("TOURNAMENT_URL"):
+            TournamentDataManager.instance.SetTournament(
+                SettingsManager.Get("TOURNAMENT_URL"), initialLoading=True
+            )
+            TournamentDataManager.instance.signals.twitch_username_updated.emit()
+
+    def GetProvider(self):
+        return self.provider
+
     def GameChanged(self, videogame):
         StateManager.Set("provider_videogame", {"id": videogame})
         self.SetGameFromProvider()
@@ -68,6 +81,9 @@ class TournamentDataManager(QObject):
         else:
             logger.error("Unsupported provider...")
 
+    # =====================================================
+    # TOURNAMENT
+    # =====================================================
     @Slot(str, bool)
     @Slot(str)
     def SetTournament(self, url, initialLoading=False):
@@ -218,16 +234,6 @@ class TournamentDataManager(QObject):
             parsed, SettingsManager.Get("api_keys.parrygg")
         )
 
-    def RepullEntrants(self):
-        # For entrants who registered after the event was loaded. Players
-        # already pulled are updated, not removed.
-        if self.provider is None:
-            return
-        provider = self.provider
-        # parry.gg pulls them on the calling thread, so keep it off the UI
-        worker = Worker(lambda progress_callback=None, cancel_event=None: provider.GetEntrants())
-        self.threadPool.start(worker)
-
     def SetTwitchUsername(self, window):
         input_dialog = QInputDialog(window)
         input_dialog.setWindowTitle(QApplication.translate("app", "Set Twitch username"))
@@ -248,6 +254,19 @@ class TournamentDataManager(QObject):
         )
         self.threadPool.start(worker)
 
+    def RepullEntrants(self):
+        # For entrants who registered after the event was loaded. Players
+        # already pulled are updated, not removed.
+        if self.provider is None:
+            return
+        provider = self.provider
+        # parry.gg pulls them on the calling thread, so keep it off the UI
+        worker = Worker(lambda progress_callback=None, cancel_event=None: provider.GetEntrants())
+        self.threadPool.start(worker)
+
+    # =====================================================
+    # PHASES AND BRACKETS
+    # =====================================================
     def GetTournamentPhases(self):
         worker = Worker(self.provider.GetTournamentPhases)
         worker.signals.result.connect(
@@ -285,6 +304,9 @@ class TournamentDataManager(QObject):
             worker.signals.finished.connect(onFinished)
         self.threadPool.start(worker)
 
+    # =====================================================
+    # SETS
+    # =====================================================
     def LoadSets(self, showFinished):
         if self.setLoadingWorker:
             # If there was a previous set loading worker,
@@ -309,6 +331,25 @@ class TournamentDataManager(QObject):
         self.setLoadingWorker = worker
         self.threadPool.start(worker)
 
+    def GetMatch(self, mainWindow, setId, overwrite=True, no_mains=False, on_finished=None):
+        if self.provider is None:
+            if on_finished:
+                on_finished()
+            return
+        worker = Worker(self.provider.GetMatch, **{"setId": setId})
+        worker.signals.result.connect(
+            lambda data: [
+                data.update({"overwrite": overwrite, "no_mains": no_mains}),
+                mainWindow.signals.UpdateSetData.emit(data),
+            ]
+        )
+        if on_finished:
+            worker.signals.finished.connect(on_finished)
+        self.threadPool.start(worker)
+
+    # =====================================================
+    # STREAMS AND STATIONS
+    # =====================================================
     def LoadStations(self):
         worker = Worker(self.provider.GetStations)
         worker.signals.result.connect(
@@ -374,22 +415,9 @@ class TournamentDataManager(QObject):
         worker.signals.result.connect(lambda sets: mainWindow.signals.StationSetsLoaded.emit(sets))
         self.threadPool.start(worker)
 
-    def GetMatch(self, mainWindow, setId, overwrite=True, no_mains=False, on_finished=None):
-        if self.provider is None:
-            if on_finished:
-                on_finished()
-            return
-        worker = Worker(self.provider.GetMatch, **{"setId": setId})
-        worker.signals.result.connect(
-            lambda data: [
-                data.update({"overwrite": overwrite, "no_mains": no_mains}),
-                mainWindow.signals.UpdateSetData.emit(data),
-            ]
-        )
-        if on_finished:
-            worker.signals.finished.connect(on_finished)
-        self.threadPool.start(worker)
-
+    # =====================================================
+    # SET HISTORY
+    # =====================================================
     def GetRecentSets(self, callback, id1, id2, videogame):
         worker = Worker(
             self.provider.GetRecentSets,
@@ -401,15 +429,6 @@ class TournamentDataManager(QObject):
                 "videogame": videogame,
             },
         )
-        self.threadPool.start(worker)
-
-    def GetStandings(self, playerNumber, callback, on_progress=None, on_finished=None):
-        worker = Worker(self.provider.GetStandings, **{"playerNumber": playerNumber})
-        worker.signals.result.connect(lambda data: [callback.emit(data)])
-        if on_progress:
-            worker.signals.progress.connect(on_progress)
-        if on_finished:
-            worker.signals.finished.connect(on_finished)
         self.threadPool.start(worker)
 
     def GetLastSets(self, callback, playerId, playerNumber):
@@ -442,15 +461,17 @@ class TournamentDataManager(QObject):
             worker.signals.finished.connect(on_finished)
         self.threadPool.start(worker)
 
-    def UiMounted(self):
-        if SettingsManager.Get("TOURNAMENT_URL"):
-            TournamentDataManager.instance.SetTournament(
-                SettingsManager.Get("TOURNAMENT_URL"), initialLoading=True
-            )
-            TournamentDataManager.instance.signals.twitch_username_updated.emit()
-
-    def GetProvider(self):
-        return self.provider
+    # =====================================================
+    # STANDINGS
+    # =====================================================
+    def GetStandings(self, playerNumber, callback, on_progress=None, on_finished=None):
+        worker = Worker(self.provider.GetStandings, **{"playerNumber": playerNumber})
+        worker.signals.result.connect(lambda data: [callback.emit(data)])
+        if on_progress:
+            worker.signals.progress.connect(on_progress)
+        if on_finished:
+            worker.signals.finished.connect(on_finished)
+        self.threadPool.start(worker)
 
 
 TournamentDataManager.instance = TournamentDataManager()

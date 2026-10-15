@@ -82,6 +82,9 @@ _BUILTIN_COLORS = {
 }
 
 
+# =====================================================
+# THEME DATA
+# =====================================================
 def ColorLabels():
     return {
         "window": QApplication.translate("settings.appearance", "Background"),
@@ -166,6 +169,9 @@ def NormalizeTheme(data, name=None):
     return theme
 
 
+# =====================================================
+# THEME FILES
+# =====================================================
 def ExportTheme(theme, path):
     data = {"hyperdrive_theme": THEME_FILE_VERSION, **NormalizeTheme(theme)}
     with open(path, "w", encoding="utf-8") as f:
@@ -186,6 +192,9 @@ def ImportTheme(path):
     return NormalizeTheme(data, name)
 
 
+# =====================================================
+# ICONS
+# =====================================================
 _ICONS = {
     "chevron-down": '<path d="M6 9l6 6 6-6" fill="none" stroke="{color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
     "chevron-up": '<path d="M6 15l6-6 6 6" fill="none" stroke="{color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -217,8 +226,14 @@ def ThemeIcon(name, color):
 # player card has a dozen), and working out and tinting an icon is done
 # pixel by pixel. The tint color is in the key, so theme changes still show.
 _ICON_SOURCES = {}
+
+
 _ICON_KINDS = {}
+
+
 _TINTED_PIXMAPS = {}
+
+
 _TINTED_PIXMAPS_MAX = 512
 
 
@@ -239,9 +254,28 @@ class ThemedIconEngine(QIconEngine):
             self.source = _ICON_SOURCES[path] = QIcon(path)
         self.kind = _ICON_KINDS.get(path)
 
+    # =====================================================
+    # QT ICON ENGINE
+    # =====================================================
     def clone(self):
         return ThemedIconEngine(self.path, self.badge)
 
+    def scaledPixmap(self, size, mode, state, scale):
+        return self._Pixmap(size, mode, state, scale)
+
+    def pixmap(self, size, mode, state):
+        return self._Pixmap(size, mode, state, 1.0)
+
+    def paint(self, painter, rect, mode, state):
+        scale = painter.device().devicePixelRatioF() if painter.device() else 1.0
+        painter.drawPixmap(rect, self._Pixmap(rect.size(), mode, state, scale))
+
+    def actualSize(self, size, mode, state):
+        return self.source.actualSize(size, mode, state)
+
+    # =====================================================
+    # TINTING
+    # =====================================================
     def _Kind(self):
         # "outlined" (white glyph, black outline), "solid" (one dark color)
         # or "color" (leave alone), from a small render of the icon
@@ -276,12 +310,6 @@ class ThemedIconEngine(QIconEngine):
         if state == QIcon.State.On:
             return colors["accentText"]
         return colors["text"]
-
-    def scaledPixmap(self, size, mode, state, scale):
-        return self._Pixmap(size, mode, state, scale)
-
-    def pixmap(self, size, mode, state):
-        return self._Pixmap(size, mode, state, 1.0)
 
     def _Pixmap(self, size, mode, state, scale):
         if self._Kind() == "color":
@@ -327,13 +355,6 @@ class ThemedIconEngine(QIconEngine):
         pixmap.setDevicePixelRatio(scale)
         return pixmap
 
-    def paint(self, painter, rect, mode, state):
-        scale = painter.device().devicePixelRatioF() if painter.device() else 1.0
-        painter.drawPixmap(rect, self._Pixmap(rect.size(), mode, state, scale))
-
-    def actualSize(self, size, mode, state):
-        return self.source.actualSize(size, mode, state)
-
 
 def ThemedIcon(path, badge=None):
     """An icon from assets/icons that follows the theme's colors. badge is
@@ -375,6 +396,9 @@ def SetLabelIcon(label, path, name):
     label.setAccessibleName(name)
 
 
+# =====================================================
+# UI SCALE
+# =====================================================
 def ApplyUIScale():
     # Qt only reads the scale factor when the application is created, so this
     # runs before that and a change takes effect on the next start. A scale
@@ -389,25 +413,16 @@ def ApplyUIScale():
         os.environ["QT_SCALE_FACTOR"] = str(scale / 100)
 
 
+# =====================================================
+# APPLYING THEMES
+# =====================================================
 class Theme:
     _systemSignalConnected = False
     _defaultFont = None
 
-    @staticmethod
-    def Mode():
-        """The theme the user picked: dark, light, system or custom:<name>."""
-        mode = SettingsManager.Get("appearance.theme", None)
-        if mode in (THEME_DARK, THEME_LIGHT, THEME_SYSTEM):
-            return mode
-        if (
-            isinstance(mode, str)
-            and mode.startswith(CUSTOM_PREFIX)
-            and mode[len(CUSTOM_PREFIX) :] in Theme.CustomThemes()
-        ):
-            return mode
-        # Before the Appearance settings, light mode was a menu toggle
-        return THEME_LIGHT if SettingsManager.Get("light_mode", False) else DEFAULT_THEME
-
+    # =====================================================
+    # CUSTOM THEMES
+    # =====================================================
     @staticmethod
     def CustomThemeName():
         mode = Theme.Mode()
@@ -448,6 +463,24 @@ class Theme:
         while f"{name} ({i})" in existing:
             i += 1
         return f"{name} ({i})"
+
+    # =====================================================
+    # CURRENT THEME
+    # =====================================================
+    @staticmethod
+    def Mode():
+        """The theme the user picked: dark, light, system or custom:<name>."""
+        mode = SettingsManager.Get("appearance.theme", None)
+        if mode in (THEME_DARK, THEME_LIGHT, THEME_SYSTEM):
+            return mode
+        if (
+            isinstance(mode, str)
+            and mode.startswith(CUSTOM_PREFIX)
+            and mode[len(CUSTOM_PREFIX) :] in Theme.CustomThemes()
+        ):
+            return mode
+        # Before the Appearance settings, light mode was a menu toggle
+        return THEME_LIGHT if SettingsManager.Get("light_mode", False) else DEFAULT_THEME
 
     @staticmethod
     def SystemIsDark():
@@ -493,6 +526,9 @@ class Theme:
     def Radius():
         return Theme.Current()["radius"]
 
+    # =====================================================
+    # APPLYING
+    # =====================================================
     @staticmethod
     def Apply():
         app = QApplication.instance()

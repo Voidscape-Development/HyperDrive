@@ -80,6 +80,9 @@ class TournamentInfoWidget(QDockWidget):
 
         self.UpdateIcon()
 
+    # =====================================================
+    # ICON
+    # =====================================================
     def UpdateIcon(self):
         try:
             # Load icon
@@ -139,15 +142,9 @@ class TournamentInfoWidget(QDockWidget):
 
         self.UpdateIcon()
 
-    def DisplayErrorMessage(self, message):
-        msgBox = QMessageBox()
-        msgBox.setWindowIcon(QIcon("assets/icons/icon.png"))
-        msgBox.setWindowTitle(QApplication.translate("app", "Error"))
-        msgBox.setText(QApplication.translate("app", "Error"))
-        msgBox.setInformativeText(message)
-        msgBox.setIcon(QMessageBox.Critical)
-        msgBox.exec()
-
+    # =====================================================
+    # TOURNAMENT DATA
+    # =====================================================
     def UpdateData(self, data):
         logger.info("Tournament Data: " + str(data))
 
@@ -209,3 +206,12 @@ class TournamentInfoWidget(QDockWidget):
                 )
                 self.DisplayErrorMessage(error_message)
                 break
+
+    def DisplayErrorMessage(self, message):
+        msgBox = QMessageBox()
+        msgBox.setWindowIcon(QIcon("assets/icons/icon.png"))
+        msgBox.setWindowTitle(QApplication.translate("app", "Error"))
+        msgBox.setText(QApplication.translate("app", "Error"))
+        msgBox.setInformativeText(message)
+        msgBox.setIcon(QMessageBox.Critical)
+        msgBox.exec()

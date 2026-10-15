@@ -34,6 +34,9 @@ APP_LINK_PREFIX = APP_SCHEME + "open/"
 PAGE_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
+# =====================================================
+# TEXT HELPERS
+# =====================================================
 def Normalize(text: str) -> str:
     """Lowercase and without accents, for searching"""
     nfkd = unicodedata.normalize("NFKD", text)
@@ -76,6 +79,9 @@ def PlainText(source: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+# =====================================================
+# LINKS
+# =====================================================
 class _LinkRewriter(Treeprocessor):
     """Points links between pages at where the page is shown, and turns links
     into the app into plain text on the web, where they can't work"""
@@ -117,6 +123,9 @@ class _LinkExtension(Extension):
         md.treeprocessors.register(_LinkRewriter(md, self.web), "wiki_links", 5)
 
 
+# =====================================================
+# PAGES
+# =====================================================
 class Page:
     def __init__(self, name: str, path: str, source: str):
         self.name = name
@@ -164,6 +173,9 @@ class Wiki:
     sections: list[dict] = []
     pages: dict[str, Page] = {}
 
+    # =====================================================
+    # LOADING
+    # =====================================================
     def Load(language: str | None = None):
         """Reads the pages, in language (e.g. "fr" or "pt-BR") where they're
         translated"""
@@ -220,6 +232,9 @@ class Wiki:
         if not Wiki.pages:
             Wiki.Load(Wiki.language)
 
+    # =====================================================
+    # PAGES
+    # =====================================================
     def Get(name: str) -> Page | None:
         Wiki.EnsureLoaded()
         return Wiki.pages.get(name)
@@ -247,6 +262,9 @@ class Wiki:
         )
         return md.convert(page.source)
 
+    # =====================================================
+    # SEARCH
+    # =====================================================
     def Search(query: str, limit=50, snippetWidth=160) -> list[tuple[Page, str]]:
         """The pages with every word of the query, best match first, with the
         text around the match"""
@@ -260,6 +278,9 @@ class Wiki:
         return [(p, p.Snippet(words, snippetWidth)) for _, p in scored[:limit]]
 
 
+# =====================================================
+# WEB PAGES
+# =====================================================
 # The guide's web page, at /wiki on the web server
 WEB_STYLE = """
 :root { color-scheme: light dark; --bg: #f2f3f7; --surface: #ffffff; --raised: #e7e9f0;
