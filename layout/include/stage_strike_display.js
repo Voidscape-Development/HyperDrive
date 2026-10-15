@@ -10,6 +10,9 @@
 (() => {
   const body = (cls) => document.body.classList.contains(cls);
 
+  // -------------------------------------------------------------------
+  // What the stage strike shows
+
   // Team names and colors, in the order the stage strike widget uses for
   // strikedBy / currPlayer (reversed when swapped)
   function teams(s) {
@@ -100,6 +103,9 @@
     };
   }
 
+  // -------------------------------------------------------------------
+  // Markup
+
   const image = (stage) => (stage.path ? `url('${HD.asset(stage.path)}')` : "none");
   const stageName = (stage) => stage.display_name || stage.name || stage.codename;
   const neutralColor = "var(--ssd-neutral)";
@@ -154,6 +160,9 @@
       <div class="by_label">${label}</div>
       <div class="by_name fit"><div class="text">${name}</div></div>
     </div>`;
+
+  // -------------------------------------------------------------------
+  // The layouts
 
   HD.layouts.stageStrike = {
     // column.html: the bans, then the pick, as lines

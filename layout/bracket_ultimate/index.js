@@ -5,6 +5,10 @@
 // their rounds and standings instead.
 // Page option online_picture: players' online avatars on their icons
 // instead of their character.
+
+// ---------------------------------------------------------------------
+// Sizes and state
+
 const MIDDLE_SPACE = 100;
 
 // What's drawn: the bracket in rounds (1, 2... winners, then the grand
@@ -20,6 +24,9 @@ let loseL = [];
 let lastSignature = null;
 let firstUpdate = true;
 
+// ---------------------------------------------------------------------
+// Helpers
+
 const roundsWhere = (test) => Object.fromEntries(Object.entries(bracket).filter(([key]) => test(parseInt(key))));
 const roundNumbers = () => Object.keys(bracket).map((r) => parseInt(r));
 const center = (el) => [el.offset().left + el.outerWidth() / 2, el.offset().top + el.outerHeight() / 2];
@@ -31,6 +38,9 @@ function nextPow2(v) {
   while ((v >>= 1)) p <<= 1;
   return p;
 }
+
+// ---------------------------------------------------------------------
+// Lines
 
 // Line colors, from the layout theme when it sets them
 const lineColor = (color) =>
@@ -77,6 +87,9 @@ function animateLine(element) {
 
 // Darkens elements, for when a player is out
 const darken = (tl, el) => tl.fromTo(el, { filter: "brightness(1)" }, { duration: 0.5, filter: "brightness(0.7)" }, 0);
+
+// ---------------------------------------------------------------------
+// Building the bracket
 
 const iconHtml = (id) => HD.html`
   <div class="bracket_icon bracket_icon_p${id}">
@@ -417,6 +430,9 @@ function buildIconTimelines() {
   });
 }
 
+// ---------------------------------------------------------------------
+// Players and icons
+
 // A team's name: the player's (with sponsor), or the team's, or its
 // players' with slashes
 function teamName(team, sponsor) {
@@ -593,6 +609,9 @@ function updateIcons(s) {
   });
 }
 
+// ---------------------------------------------------------------------
+// Fitting the page
+
 // Fits the sets in the height there is
 function resize() {
   const biggest = Math.max(...Object.values(bracket).map((r) => _.size(r.sets)));
@@ -605,6 +624,9 @@ function resize() {
   root.css("--score-size", size * 0.7);
   root.css("--flag-height", size * 0.6);
 }
+
+// ---------------------------------------------------------------------
+// The layout
 
 HD.layout({
   subscribe: ["bracket", "score", "game", "tournamentInfo", "commentary"],

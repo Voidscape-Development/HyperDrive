@@ -8,6 +8,9 @@
 // queue, with auto_update "station"), the stream linked to the scoreboard,
 // settings.default_stream, or every stream.
 (() => {
+  // -------------------------------------------------------------------
+  // Queues and sets
+
   // The queues to show, { all (every stream), queues: [[stream name,
   // queue]] }, the name null for a station's queue
   function streamQueues(s) {
@@ -50,6 +53,9 @@
       .slice(0, count);
   }
 
+  // -------------------------------------------------------------------
+  // Markup
+
   // A set: both sides around the VS, the phase, match and station
   const setRow = (c, set, i) => {
     const side = (t) => {
@@ -90,6 +96,9 @@
         ${side(2)}
       </div>`;
   };
+
+  // -------------------------------------------------------------------
+  // The layout
 
   HD.layouts.streamQueue = {
     // streamQueue: older HyperDrive versions' name for stream_queue

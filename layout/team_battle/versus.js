@@ -1,5 +1,9 @@
 // Versus splash: the two teams facing off, with big names and logos, and
 // their rosters below as character portraits
+
+// ---------------------------------------------------------------------
+// Markup
+
 const teamSide = (t) => HD.html`
   <div class="vs_team t${t}">
     <div class="vs_logo logo"></div>
@@ -21,6 +25,9 @@ const portrait = (_p, i) => HD.html`
     <div class="x_mark"></div>
   </div>`;
 
+// ---------------------------------------------------------------------
+// Cards
+
 // The same card width on both sides, as wide as fits
 function sizeCards(teams) {
   const most = Math.max(teams[0].players.length, teams[1].players.length, 1);
@@ -30,6 +37,9 @@ function sizeCards(teams) {
   rosters.style.setProperty("--card-w", `${width}px`);
   rosters.style.setProperty("--card-gap", `${gap}px`);
 }
+
+// ---------------------------------------------------------------------
+// The layout
 
 HD.layout({
   subscribe: ["team_battle", "score", "game", "tournamentInfo", "commentary"],

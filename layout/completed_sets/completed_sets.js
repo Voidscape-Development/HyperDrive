@@ -27,6 +27,9 @@ const CS = {
     },
   },
 
+  // -------------------------------------------------------------------
+  // Sets
+
   // The values of an object keyed "1", "2"..., in order, without empty ones
   values: (object) =>
     Object.entries(object || {})
@@ -54,6 +57,9 @@ const CS = {
       .toggle(s.settings.display.title !== false);
     $(".cs-container").toggleClass("cs-empty", sets.length === 0);
   },
+
+  // -------------------------------------------------------------------
+  // Markup
 
   flags(player, display) {
     const country = display.country_flag && _.get(player, "country.asset");

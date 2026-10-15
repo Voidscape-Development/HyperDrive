@@ -5,6 +5,10 @@
 // The avatar page option shows players' avatars instead of character art:
 // HD.page({ avatar: "online" }) (their online avatar) or "player" (the one
 // set in HyperDrive).
+
+// ---------------------------------------------------------------------
+// Building blocks
+
 const VS = {
   // Character options that slide each side's art in from its edge
   slide: (way) => ({
@@ -73,6 +77,9 @@ const VS = {
     return bestOf > 0 && Math.max(a, b) >= Math.ceil(bestOf / 2) ? a + b : a + b + 1;
   },
 };
+
+// ---------------------------------------------------------------------
+// The standard versus screen
 
 // The standard versus screen. options: slide(way) (the character art's
 // in and out), stage (VS.stage's), teamName(t) (a doubles team's name)

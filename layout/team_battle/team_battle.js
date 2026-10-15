@@ -8,6 +8,9 @@
 const TB = {
   DEFAULT_COLORS: { 1: "#fe3636", 2: "#2e89ff" },
 
+  // -------------------------------------------------------------------
+  // Teams and players
+
   isStock: () => HD.settings.mode !== "FIRST_TO",
 
   firstCharacter: (player) =>
@@ -63,6 +66,9 @@ const TB = {
 
   teams: (data) => [TB.team(data, 1), TB.team(data, 2)],
 
+  // -------------------------------------------------------------------
+  // Colors and text
+
   // Team colors as --t1-color and --t2-color
   applyColors(teams) {
     const root = document.documentElement.style;
@@ -80,6 +86,9 @@ const TB = {
     const max = Math.max(teams[0].max, teams[1].max);
     return TB.isStock() ? `${max} ${max === 1 ? "Stock" : "Stocks"} each` : `First to ${max}`;
   },
+
+  // -------------------------------------------------------------------
+  // Markup
 
   // A pip per stock (Stock Pool, with the character's stock icon) or per
   // game to win (First To). Lit: stocks left, or games won.

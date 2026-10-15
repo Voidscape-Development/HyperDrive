@@ -10,6 +10,9 @@ var HDBracket = {
   // Value standing for a bye in the rounds shape (any id past the players)
   BYE_ID: 99999,
 
+  // -------------------------------------------------------------------
+  // Focus channels
+
   // A focus channel's name as the app keeps it: no dots or extra spaces.
   // Empty if there's none.
   ChannelName(name) {
@@ -50,6 +53,9 @@ var HDBracket = {
     };
   },
 
+  // -------------------------------------------------------------------
+  // The bracket's shape
+
   IsPool(bracket) {
     return HDBracket.POOL_TYPES.includes(_.get(bracket, "type"));
   },
@@ -85,41 +91,6 @@ var HDBracket = {
       _.get(data, "bracket.phase"),
       _.get(data, "bracket.phaseGroup"),
     ]);
-  },
-
-  // hidden: not shown. displayed: shown. done: shown, and its line to the
-  // next set drawn. With expand, every set that can be is shown.
-  SetState(set, expand) {
-    if (!set) return "hidden";
-    if (set.isReset && set.resetNeeded === false) return "hidden";
-    const known = set.players.filter((p) => p.id).length;
-    if (expand) return "done";
-    if (known == 0) return "hidden";
-    return set.completed ? "done" : "displayed";
-  },
-
-  // 0 or 1 for the slot that won, "draw", or null
-  Winner(set) {
-    if (!set) return null;
-    if (set.winner === 0 || set.winner === 1 || set.winner === "draw") return set.winner;
-    return null;
-  },
-
-  ScoreText(set, slot) {
-    const score = set.score ? set.score[slot] : null;
-    if (score == null) return "";
-    if (score == -1) return "DQ";
-    const started = set.completed || set.score.some((s) => s > 0);
-    return started ? String(score) : "";
-  },
-
-  // A team's display name: its player (with sponsor), its name, or its
-  // players' names
-  TeamName(team) {
-    if (!team) return "";
-    const players = Object.values(team.player || {}).filter((p) => p && p.name);
-    if (players.length == 1) return HD.html`<span class="sponsor">${players[0].team}</span> ${players[0].name}`;
-    return team.name || players.map((p) => p.name).join(" / ");
   },
 
   // The bracket in the shape older layouts were made for:
@@ -225,6 +196,104 @@ var HDBracket = {
 
     return rounds;
   },
+
+  // -------------------------------------------------------------------
+  // Sets
+
+  // hidden: not shown. displayed: shown. done: shown, and its line to the
+  // next set drawn. With expand, every set that can be is shown.
+  SetState(set, expand) {
+    if (!set) return "hidden";
+    if (set.isReset && set.resetNeeded === false) return "hidden";
+    const known = set.players.filter((p) => p.id).length;
+    if (expand) return "done";
+    if (known == 0) return "hidden";
+    return set.completed ? "done" : "displayed";
+  },
+
+  // 0 or 1 for the slot that won, "draw", or null
+  Winner(set) {
+    if (!set) return null;
+    if (set.winner === 0 || set.winner === 1 || set.winner === "draw") return set.winner;
+    return null;
+  },
+
+  ScoreText(set, slot) {
+    const score = set.score ? set.score[slot] : null;
+    if (score == null) return "";
+    if (score == -1) return "DQ";
+    const started = set.completed || set.score.some((s) => s > 0);
+    return started ? String(score) : "";
+  },
+
+  // A team's display name: its player (with sponsor), its name, or its
+  // players' names
+  TeamName(team) {
+    if (!team) return "";
+    const players = Object.values(team.player || {}).filter((p) => p && p.name);
+    if (players.length == 1) return HD.html`<span class="sponsor">${players[0].team}</span> ${players[0].name}`;
+    return team.name || players.map((p) => p.name).join(" / ");
+  },
+
+  // A set's player slot (0 or 1), for UpdateSet() to fill
+  PlayerSlotHtml: (slot) => HD.html`
+    <div class="slot_p_${slot} player container" data-slot="${slot}">
+      <div class="icon avatar"></div>
+      <div class="icon online_avatar"></div>
+      <div class="seed"></div>
+      <div class="name_twitter"><div class="name"></div></div>
+      <div class="sponsor_icon"></div>
+      <div class="flags"><div class="flagcountry"></div><div class="flagstate"></div></div>
+      <div class="character_container"></div>
+      <div class="score"></div>
+    </div>`,
+
+  // Fills a set's element (made with PlayerSlotHtml()): its identifier, and
+  // each slot's player (or where they come from), score and result
+  UpdateSet(s, element, set, data) {
+    const players = _.get(data, "bracket.players.slot", {});
+    const winner = HDBracket.Winner(set);
+    HD.set(element.find(".set_identifier"), set.identifier);
+
+    [0, 1].forEach((n) => {
+      const row = element.find(`.slot_p_${n}`);
+      const slot = set.players[n];
+      const team = slot && slot.id ? players[slot.id] : null;
+      HD.set(row.find(".score"), HDBracket.ScoreText(set, n));
+      row
+        .toggleClass("won", winner === n)
+        .toggleClass("lost", winner === 1 - n)
+        .toggleClass("draw", winner === "draw");
+      row.toggleClass("pending", !!(slot && slot.pending)).toggleClass("empty", !team);
+
+      const singles = team && _.size(team.player) === 1;
+      const player = (singles && team.player[1]) || {};
+      const asset = (path) => HD.asset(_.get(player, path));
+      HD.set(
+        row.find(".name"),
+        team
+          ? HDBracket.TeamName(team)
+          : slot && slot.pending && slot.source && HD.html`<span class="pending_source">${slot.source}</span>`,
+      );
+      HD.set(row.find(".seed"), team && slot.seed ? String(slot.seed) : "");
+      HD.set(row.find(".flagcountry"), HD.img(asset("country.asset"), "class='flag'"));
+      HD.set(row.find(".flagstate"), HD.img(asset("state.asset"), "class='flag'"));
+      HD.set(row.find(".sponsor_icon"), HD.img(asset("sponsor_logo"), "class='sponsor_icon'"));
+      HD.set(row.find(".avatar"), HD.img(asset("avatar"), "class='avatar'"));
+      HD.set(row.find(".online_avatar"), HD.img(player.online_avatar, "class='online_avatar'"));
+      if (!team) {
+        HD.set(row.find(".character_container"), "");
+        return;
+      }
+      s.characters(row.find(".character_container"), {
+        source: `${data.bracket.playersPath || "bracket.players"}.slot.${slot.id}`,
+        slice_character: singles ? undefined : [0, 1],
+      });
+    });
+  },
+
+  // -------------------------------------------------------------------
+  // Standings and pools
 
   // The pool's standings, or an elimination bracket's results, as a table
   StandingsHtml(data) {
@@ -402,63 +471,6 @@ var HDBracket = {
         }
       }
     }
-  },
-
-  // A set's player slot (0 or 1), for UpdateSet() to fill
-  PlayerSlotHtml: (slot) => HD.html`
-    <div class="slot_p_${slot} player container" data-slot="${slot}">
-      <div class="icon avatar"></div>
-      <div class="icon online_avatar"></div>
-      <div class="seed"></div>
-      <div class="name_twitter"><div class="name"></div></div>
-      <div class="sponsor_icon"></div>
-      <div class="flags"><div class="flagcountry"></div><div class="flagstate"></div></div>
-      <div class="character_container"></div>
-      <div class="score"></div>
-    </div>`,
-
-  // Fills a set's element (made with PlayerSlotHtml()): its identifier, and
-  // each slot's player (or where they come from), score and result
-  UpdateSet(s, element, set, data) {
-    const players = _.get(data, "bracket.players.slot", {});
-    const winner = HDBracket.Winner(set);
-    HD.set(element.find(".set_identifier"), set.identifier);
-
-    [0, 1].forEach((n) => {
-      const row = element.find(`.slot_p_${n}`);
-      const slot = set.players[n];
-      const team = slot && slot.id ? players[slot.id] : null;
-      HD.set(row.find(".score"), HDBracket.ScoreText(set, n));
-      row
-        .toggleClass("won", winner === n)
-        .toggleClass("lost", winner === 1 - n)
-        .toggleClass("draw", winner === "draw");
-      row.toggleClass("pending", !!(slot && slot.pending)).toggleClass("empty", !team);
-
-      const singles = team && _.size(team.player) === 1;
-      const player = (singles && team.player[1]) || {};
-      const asset = (path) => HD.asset(_.get(player, path));
-      HD.set(
-        row.find(".name"),
-        team
-          ? HDBracket.TeamName(team)
-          : slot && slot.pending && slot.source && HD.html`<span class="pending_source">${slot.source}</span>`,
-      );
-      HD.set(row.find(".seed"), team && slot.seed ? String(slot.seed) : "");
-      HD.set(row.find(".flagcountry"), HD.img(asset("country.asset"), "class='flag'"));
-      HD.set(row.find(".flagstate"), HD.img(asset("state.asset"), "class='flag'"));
-      HD.set(row.find(".sponsor_icon"), HD.img(asset("sponsor_logo"), "class='sponsor_icon'"));
-      HD.set(row.find(".avatar"), HD.img(asset("avatar"), "class='avatar'"));
-      HD.set(row.find(".online_avatar"), HD.img(player.online_avatar, "class='online_avatar'"));
-      if (!team) {
-        HD.set(row.find(".character_container"), "");
-        return;
-      }
-      s.characters(row.find(".character_container"), {
-        source: `${data.bracket.playersPath || "bracket.players"}.slot.${slot.id}`,
-        slice_character: singles ? undefined : [0, 1],
-      });
-    });
   },
 
   // Who sits out each pool round: {"pool:1": "A, B"}
