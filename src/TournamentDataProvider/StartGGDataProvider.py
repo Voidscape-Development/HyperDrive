@@ -4,7 +4,7 @@ import threading
 import time
 import traceback
 from collections import Counter, deque
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 from http.cookiejar import DefaultCookiePolicy
 
 import orjson
@@ -669,21 +669,25 @@ class StartGGDataProvider(TournamentDataProvider):
         try:
             result = {}
 
-            fetchOld = Worker(
-                self._GetMatchTasks,
-                **{"progress_callback": None, "cancel_event": None, "setId": setId},
-            )
-            fetchNew = Worker(
-                self._GetMatchNewApi,
-                **{"progress_callback": None, "cancel_event": None, "setId": setId},
-            )
-            self.threadpool.start(fetchOld)
-            self.threadpool.start(fetchNew)
+            # Both APIs at once. One that takes too long counts as {}, and
+            # isn't waited for; one that failed as None.
+            executor = ThreadPoolExecutor(max_workers=2)
+            args = {"progress_callback": None, "cancel_event": None, "setId": setId}
+            fetchOld = executor.submit(self._GetMatchTasks, **args)
+            fetchNew = executor.submit(self._GetMatchNewApi, **args)
+            done, _ = wait([fetchOld, fetchNew], timeout=self._request_timeout_secs)
+            executor.shutdown(wait=False)
 
-            Worker.wait_for_all([fetchOld, fetchNew], self._request_timeout_secs)
+            def outcome(fetch):
+                if fetch not in done:
+                    return {}
+                if fetch.exception() is not None:
+                    logger.error("".join(traceback.format_exception(fetch.exception())))
+                    return None
+                return fetch.result()
 
-            result.update({"new": fetchNew.result if fetchNew.completed else {}})
-            result.update({"old": fetchOld.result if fetchOld.completed else {}})
+            result.update({"new": outcome(fetchNew)})
+            result.update({"old": outcome(fetchOld)})
 
             # logger.debug(result)
 

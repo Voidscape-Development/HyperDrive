@@ -8,6 +8,7 @@
 import html
 import os
 import sys
+import time
 import types
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -254,6 +255,25 @@ def TestGameChanged():
         Providers.PROVIDERS[:] = [StartGGDataProvider, ParryGGDataProvider]
 
 
+def TestGetMatchDoesNotWaitForASlowApi():
+    """start.gg's GetMatch asks both its APIs at once; one too slow is
+    left out rather than waited for"""
+    provider = StartGGDataProvider("https://www.start.gg/tournament/t/event/e", None, None)
+    provider._request_timeout_secs = 0.3
+
+    def slow(setId, progress_callback, cancel_event):
+        time.sleep(2)
+        return {"from": "old"}
+
+    provider._GetMatchTasks = slow
+    provider._GetMatchNewApi = lambda setId, progress_callback, cancel_event: {"id": setId}
+    start = time.monotonic()
+    result = provider.GetMatch("123")
+    took = time.monotonic() - start
+    assert took < 1.5, f"waited {took:.1f}s for the slow API"
+    assert result.get("id") == "123" and "from" not in result, result
+
+
 if __name__ == "__main__":
     for test in [
         TestProviderClassFor,
@@ -261,6 +281,7 @@ if __name__ == "__main__":
         TestLoadingAnEvent,
         TestGameFromProvider,
         TestGameChanged,
+        TestGetMatchDoesNotWaitForASlowApi,
     ]:
         test()
         print(f"{test.__name__}: OK")
