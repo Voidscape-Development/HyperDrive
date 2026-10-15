@@ -209,12 +209,7 @@ def SetUpApp(stages=()):
 # PROVIDERS
 # =====================================================
 def NewProvider(url):
-    provider = StartGGDataProvider(url, SyncPool(), FakeManager())
-    # The mains of entrants are fetched in background threads, which would
-    # race the test. The scenario calls GetUserMains itself instead.
-    provider._QueueMainsFetch = lambda *a, **k: None
-    provider._PrewarmMains = lambda *a, **k: None
-    return provider
+    return StartGGDataProvider(url, SyncPool(), FakeManager())
 
 
 def ReplayProvider(recording):
@@ -359,14 +354,13 @@ def RunScenario(provider, added):
             requestTime=0,
         )
 
-    # Entrants go to the player database
-    eventSlug = provider.url.split("start.gg/")[1]
-    Call(out, "entrants_result", provider.GetEntrantsWorker, eventSlug, ULTIMATE_ID, None, None)
-    out["entrants_added"] = sorted(added, key=lambda p: json.dumps(p, sort_keys=True))
+    # Entrants, for the player database
+    entrants = Call({}, "entrants", provider.FetchEntrants)
+    out["entrants_added"] = sorted(entrants, key=lambda p: json.dumps(p, sort_keys=True))
 
     # The mains of the top two seeds, by their start.gg user
     seeded = sorted(
-        (p for p in added if p.get("startgg_user_slug")), key=lambda p: p.get("seed") or 0
+        (p for p in entrants if p.get("startgg_user_slug")), key=lambda p: p.get("seed") or 0
     )
     out["user_mains"] = {}
     for slug in [p["startgg_user_slug"] for p in seeded[:2]]:

@@ -1,3 +1,4 @@
+import threading
 import time
 
 from loguru import logger
@@ -7,6 +8,8 @@ from qtpy.QtWidgets import *
 
 from .GameAssetManager import GameAssetManager
 from .Helpers.VersionHelper import get_supported_providers
+from .PlayerDB import PlayerDB
+from .PlayerMains import PlayerMains
 from .SelectEventWindow import SelectEventWindow
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
@@ -50,6 +53,9 @@ class TournamentDataManager(QObject):
         GameAssetManager.instance.signals.onLoadAssets.connect(self.SetGameFromProvider)
 
         self.setLoadingWorker = None
+        # Background mains fetching for the provider, see MainsFor
+        self._mains = None
+        self._mainsLock = threading.Lock()
 
     # =====================================================
     # SETUP
@@ -138,7 +144,7 @@ class TournamentDataManager(QObject):
             self.GetTournamentData(initialLoading=initialLoading)
             self.GetTournamentPhases()
 
-            TournamentDataManager.instance.provider.GetEntrants()
+            self.LoadEntrants()
             TournamentDataManager.instance.signals.tournament_changed.emit()
         else:
             TournamentDataManager.instance.signals.tournament_data_updated.emit({})
@@ -247,12 +253,58 @@ class TournamentDataManager(QObject):
     def RepullEntrants(self):
         # For entrants who registered after the event was loaded. Players
         # already pulled are updated, not removed.
-        if self.provider is None:
-            return
+        self.LoadEntrants()
+
+    # =====================================================
+    # ENTRANTS AND PLAYERS
+    # =====================================================
+    def LoadEntrants(self):
+        """Adds the event's entrants to the player database, in the
+        background, then fetches their mains ahead of time"""
         provider = self.provider
-        # parry.gg pulls them on the calling thread, so keep it off the UI
-        worker = Worker(lambda progress_callback=None, cancel_event=None: provider.GetEntrants())
-        self.threadPool.start(worker)
+        if provider is None:
+            return
+
+        def load(progress_callback=None, cancel_event=None):
+            players = provider.FetchEntrants(progress_callback, cancel_event)
+            PlayerDB.AddPlayers(players)
+            # The entrants query doesn't carry each player's last set (that
+            # blew start.gg's complexity cap), so mains are filled in the
+            # background instead of the scoreboard fetching them one by one
+            mains = self.MainsFor(provider)
+            if mains is not None and players:
+                mains.Prewarm(players)
+
+        self.threadPool.start(Worker(load))
+
+    def MainsFor(self, provider):
+        """The background mains fetching for the provider, None if it has
+        none (SUPPORTS_MAINS_PREFETCH)"""
+        if not provider.SUPPORTS_MAINS_PREFETCH:
+            return None
+        with self._mainsLock:
+            if self._mains is None or self._mains.provider is not provider:
+                self._mains = PlayerMains(
+                    provider,
+                    isCurrent=lambda: self.provider is provider,
+                    onUpdated=self.signals.player_mains_updated.emit,
+                )
+            return self._mains
+
+    def EnrichPlayer(self, playerData, blocking=True):
+        """Fills in what the provider can add to a player loaded on a
+        scoreboard (their mains). Without blocking, only what it already
+        has: the rest is fetched in the background, and
+        signals.player_mains_updated says when it's there."""
+        provider = self.provider
+        if provider is None:
+            return playerData
+        playerData = provider.EnrichPlayerData(playerData, blocking=blocking) or playerData
+        if not blocking and not playerData.get("mains"):
+            mains = self.MainsFor(provider)
+            if mains is not None:
+                mains.Queue(playerData)
+        return playerData
 
     # =====================================================
     # PHASES AND BRACKETS

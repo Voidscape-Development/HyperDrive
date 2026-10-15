@@ -588,11 +588,8 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
             # Bulk loads (e.g. a whole bracket) pass enrichBlocking=False so
             # a cache miss is fetched in the background instead of making a
             # network request per player on the UI thread.
-            provider = (
-                TournamentDataManager.instance.provider if TournamentDataManager.instance else None
-            )
-            if provider is not None:
-                data = provider.EnrichPlayerData(data, blocking=enrichBlocking) or data
+            if TournamentDataManager.instance:
+                data = TournamentDataManager.instance.EnrichPlayer(data, blocking=enrichBlocking)
 
             name = self.findChild(QWidget, "name")
             if data.get("gamerTag") and data.get("gamerTag") != name.text():

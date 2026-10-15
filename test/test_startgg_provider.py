@@ -96,7 +96,6 @@ CONTRACT = {
     "history_sets_1": R.HistorySets,
     "history_sets_2": R.HistorySets,
     "recent_sets": R.RecentSets,
-    "entrants_result": NONE,
     "entrants_added": list[R.Entrant],
     # {user slug: {game codename: [[character name], ...]}}
     "user_mains": dict[str, dict[str, list]],
@@ -254,6 +253,9 @@ def main():
     added = H.SetUpApp(H.StagesIn([r["response"] for r in recording["requests"]]))
     provider = H.ReplayProvider(recording)
     out = H.RunScenario(provider, added)
+    # Providers only fetch: the manager saves players (LoadEntrants)
+    if added:
+        failures.append(f"the provider wrote {len(added)} players to the player database")
 
     for check in (lambda: CheckBehavior(provider, out), lambda: CheckContract(out)):
         try:

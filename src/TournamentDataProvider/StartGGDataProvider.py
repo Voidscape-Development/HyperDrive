@@ -3,7 +3,7 @@ import re
 import threading
 import time
 import traceback
-from collections import Counter, deque
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 from http.cookiejar import DefaultCookiePolicy
 
@@ -24,7 +24,6 @@ from ..Helpers.SeedPerformance import EventBracketType
 from ..PlayerDB import PlayerDB
 from ..PlayerDBModels import MakeTag
 from ..SettingsManager import SettingsManager
-from ..Workers import Worker
 from .TournamentDataProvider import TournamentDataProvider
 
 
@@ -77,6 +76,7 @@ class StartGGDataProvider(TournamentDataProvider):
     SUPPORTS_STATS = True
     SUPPORTS_COMPLETED_SETS = True
     SUPPORTS_SET_ACTIONS = True
+    SUPPORTS_MAINS_PREFETCH = True
 
     CompletedSetsQuery = None
     EntrantsQuery = None
@@ -121,23 +121,14 @@ class StartGGDataProvider(TournamentDataProvider):
     _recent_sets_events_per_request = 4
     _recent_sets_sets_per_request = 20
 
-    # Spacing between pre-warm requests, keeping well under start.gg's
-    # 80 requests/minute so interactive queries still have room.
-    _prewarm_interval_secs = 1.5
-
     # The fields that come from the local player DB instead of start.gg with
     # the general.local_player_data setting: the set queries leave them out
     LOCAL_PROFILE_FIELDS = ["twitter", "socials", "pronoun", "country_code", "state_code"]
 
     def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
         super().__init__(url, threadpool, dataManager)
+        # {MainsKey: mains}, see FetchMains
         self._mains_cache = {}
-        # Players whose mains a bulk load (e.g. the bracket) needs, fetched
-        # one by one in the background instead of on the UI thread
-        self._mainsQueue = deque()
-        self._mainsQueued = set()
-        self._mainsQueueLock = threading.Lock()
-        self._mainsQueueThread = None
         # {start.gg user id: profile fields}, for players looked up because
         # they weren't in the local DB (see FillFromLocalDB)
         self._profile_cache = {}
@@ -2285,16 +2276,6 @@ class StartGGDataProvider(TournamentDataProvider):
     # =====================================================
     # ENTRANTS AND PLAYERS
     # =====================================================
-    def GetEntrants(self):
-        worker = Worker(
-            self.GetEntrantsWorker,
-            **{
-                "gameId": GameAssetManager.instance.selectedGame.get("smashgg_game_id"),
-                "eventSlug": self.url.split("start.gg/")[1],
-            },
-        )
-        self.threadpool.start(worker)
-
     def _FetchEntrantsPage(self, eventSlug, page):
         return self.QueryRequests(
             "https://www.start.gg/api/-/gql",
@@ -2309,8 +2290,10 @@ class StartGGDataProvider(TournamentDataProvider):
             },
         )
 
-    def GetEntrantsWorker(self, eventSlug, gameId, progress_callback, cancel_event):
+    def FetchEntrants(self, progress_callback=None, cancel_event=None):
+        players = []
         try:
+            eventSlug = self.url.split("start.gg/")[1]
             logger.info("Starting Entrant Import")
             firstPage = self._FetchEntrantsPage(eventSlug, 1)
             totalPages = deep_get(firstPage, "data.event.entrants.pageInfo.totalPages", 0)
@@ -2330,9 +2313,8 @@ class StartGGDataProvider(TournamentDataProvider):
                     )
 
             if cancel_event is not None and cancel_event.is_set():
-                return
+                return []
 
-            players = []
             for data in pages:
                 for team in deep_get(data, "data.event.entrants.nodes", []) or []:
                     seed = team.get("initialSeedNum", 0)
@@ -2343,20 +2325,9 @@ class StartGGDataProvider(TournamentDataProvider):
                         players.append(playerData)
 
             logger.info(f"Entrants processed: {len(players)}")
-            PlayerDB.AddPlayers(players)
-
-            # The entrants query no longer carries each player's last set
-            # (that sub-selection blew StartGG's complexity cap and forced
-            # tiny pages), so fill mains in the background instead of making
-            # the scoreboard fetch them one by one while it holds its locks.
-            threading.Thread(
-                target=self._PrewarmMains,
-                args=(players, gameId),
-                name="StartGGMainsPrewarm",
-                daemon=True,
-            ).start()
         except Exception as e:
             logger.error(traceback.format_exc())
+        return players
 
     def ProcessEntrantData(entrant, setData=[]):
         player = entrant.get("player")
@@ -2560,27 +2531,19 @@ class StartGGDataProvider(TournamentDataProvider):
         # lookup (it single-handedly pushed StartGG's GraphQL complexity
         # budget over the 1000-object cap on larger brackets), so mains are
         # fetched here per-player instead, same as ParryGGDataProvider does
-        # for linked accounts.
+        # for linked accounts. Without blocking, only cached ones (the
+        # manager fetches the others in the background, see PlayerMains.py).
         if not playerData or playerData.get("mains"):
             return playerData
-        slug = playerData.get("startgg_user_slug")
-        if not slug:
+        key = self.MainsKey(playerData)
+        if key is None:
             return playerData
-        selected = GameAssetManager.instance.selectedGame or {}
-        videogameId = selected.get("smashgg_game_id")
-        if not videogameId:
-            return playerData
-        key = (slug, videogameId)
-        if key in self._mains_cache:
+        if self.IsMainsCached(key):
             mains = self._mains_cache[key]
         elif not blocking:
-            self._QueueMainsFetch(playerData, videogameId)
             return playerData
         else:
-            mains = self._FetchUserMains(slug, videogameId)
-            # A failed lookup isn't cached, so it gets retried next load
-            if mains is not None:
-                self._mains_cache[key] = mains
+            mains = self.FetchMains(key)
         if mains:
             playerData["mains"] = mains
         return playerData
@@ -2588,161 +2551,31 @@ class StartGGDataProvider(TournamentDataProvider):
     # =====================================================
     # PLAYER MAINS
     # =====================================================
-    def _PrewarmMains(self, players, videogameId):
-        try:
-            selected = GameAssetManager.instance.selectedGame or {}
-            gameCodename = selected.get("codename")
-            if not videogameId or not gameCodename:
-                return
-
-            todo = []
-            for player in players:
-                slug = player.get("startgg_user_slug")
-                if not slug or (slug, videogameId) in self._mains_cache:
-                    continue
-                tag = (
-                    player.get("prefix") + " " + player.get("gamerTag")
-                    if player.get("prefix")
-                    else player.get("gamerTag")
-                )
-                dbMains = (PlayerDB.database.get(tag) or {}).get("mains") or {}
-                if isinstance(dbMains, str):
-                    dbMains = orjson.loads(dbMains)
-                if dbMains.get(gameCodename):
-                    continue
-                todo.append((slug, player))
-
-            logger.info(f"Pre-warming start.gg mains for {len(todo)} players")
-
-            found = []
-            for slug, player in todo:
-                # Players a bulk load is waiting on go first; both loops
-                # share the same request budget
-                while self._mainsQueue:
-                    time.sleep(self._prewarm_interval_secs)
-
-                # Stop if the user switched tournament or game meanwhile
-                if getattr(self.dataManager, "provider", self) is not self:
-                    break
-                if (GameAssetManager.instance.selectedGame or {}).get(
-                    "smashgg_game_id"
-                ) != videogameId:
-                    break
-                if (slug, videogameId) in self._mains_cache:
-                    continue
-
-                mains = self._FetchUserMains(slug, videogameId)
-                if mains is not None:
-                    self._mains_cache[(slug, videogameId)] = mains
-                if mains:
-                    found.append(
-                        {
-                            "prefix": player.get("prefix"),
-                            "gamerTag": player.get("gamerTag"),
-                            "mains": {g: [list(m) for m in ms] for g, ms in mains.items()},
-                        }
-                    )
-                # Save in batches so progress survives a closed app
-                if len(found) >= 25:
-                    PlayerDB.AddPlayers(found)
-                    found = []
-                time.sleep(self._prewarm_interval_secs)
-
-            if found:
-                PlayerDB.AddPlayers(found)
-            logger.info("start.gg mains pre-warm finished")
-        except Exception:
-            logger.error(traceback.format_exc())
-
-    def GetCachedMains(self, playerData):
+    def MainsKey(self, playerData):
+        """What a player's mains are cached by: their start.gg user and the
+        game, None if either is unknown"""
         slug = (playerData or {}).get("startgg_user_slug")
         videogameId = (GameAssetManager.instance.selectedGame or {}).get("smashgg_game_id")
         if not slug or not videogameId:
             return None
-        return self._mains_cache.get((slug, videogameId))
+        return (slug, videogameId)
 
-    def _QueueMainsFetch(self, player, videogameId):
-        slug = player.get("startgg_user_slug")
-        key = (slug, videogameId)
+    def IsMainsCached(self, key):
+        return key in self._mains_cache
 
-        # Players that already have mains saved for this game don't need them
-        gameCodename = (GameAssetManager.instance.selectedGame or {}).get("codename")
-        tag = (
-            player.get("prefix") + " " + player.get("gamerTag")
-            if player.get("prefix")
-            else player.get("gamerTag")
-        )
-        try:
-            dbMains = (PlayerDB.database.get(tag) or {}).get("mains") or {}
-            if isinstance(dbMains, str):
-                dbMains = orjson.loads(dbMains)
-            if gameCodename and dbMains.get(gameCodename):
-                return
-        except Exception:
-            pass
+    def FetchMains(self, key):
+        """A player's mains (by MainsKey), cached for the event. None if the
+        request failed: that isn't cached, so it's retried next time."""
+        if key in self._mains_cache:
+            return self._mains_cache[key]
+        mains = self._FetchUserMains(*key)
+        if mains is not None:
+            self._mains_cache[key] = mains
+        return mains
 
-        with self._mainsQueueLock:
-            if key in self._mainsQueued:
-                return
-            self._mainsQueued.add(key)
-            self._mainsQueue.append(
-                (
-                    key,
-                    {
-                        "prefix": player.get("prefix"),
-                        "gamerTag": player.get("gamerTag"),
-                    },
-                )
-            )
-
-            if self._mainsQueueThread is None:
-                self._mainsQueueThread = threading.Thread(
-                    target=self._MainsQueueWorker, name="StartGGMainsQueue", daemon=True
-                )
-                self._mainsQueueThread.start()
-
-    def _MainsQueueWorker(self):
-        found = []
-        fetched = 0
-        while True:
-            with self._mainsQueueLock:
-                if not self._mainsQueue:
-                    self._mainsQueueThread = None
-                    break
-                key, player = self._mainsQueue.popleft()
-
-            try:
-                slug, videogameId = key
-                if key not in self._mains_cache:
-                    mains = self._FetchUserMains(slug, videogameId)
-                    if mains is not None:
-                        self._mains_cache[key] = mains
-                    if mains:
-                        found.append(
-                            {
-                                "prefix": player.get("prefix"),
-                                "gamerTag": player.get("gamerTag"),
-                                "mains": {g: [list(m) for m in ms] for g, ms in mains.items()},
-                            }
-                        )
-                    fetched += 1
-                    time.sleep(self._prewarm_interval_secs)
-            except Exception:
-                logger.error(traceback.format_exc())
-            finally:
-                with self._mainsQueueLock:
-                    self._mainsQueued.discard(key)
-
-            # Let whoever is waiting on these pick them up in batches
-            if fetched >= 8 or not self._mainsQueue:
-                fetched = 0
-                try:
-                    if found:
-                        PlayerDB.AddPlayers(found)
-                        found = []
-                    self.dataManager.signals.player_mains_updated.emit()
-                except Exception:
-                    logger.error(traceback.format_exc())
+    def GetCachedMains(self, playerData):
+        key = self.MainsKey(playerData)
+        return self._mains_cache.get(key) if key else None
 
     def GetUserMains(self, slug, videogameId):
         # Per-user mains lookup (no other code path fetches mains for a

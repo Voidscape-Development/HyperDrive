@@ -40,7 +40,6 @@ from ..Helpers import CompletedSetsHelper
 from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.SeedPerformance import EventBracketType
-from ..PlayerDB import PlayerDB
 from .StartGGDataProvider import StartGGDataProvider
 from .TournamentDataProvider import TournamentDataProvider
 
@@ -1834,7 +1833,7 @@ class ParryGGDataProvider(TournamentDataProvider):
     # =====================================================
     # ENTRANTS AND PLAYERS
     # =====================================================
-    def GetEntrants(self):
+    def FetchEntrants(self, progress_callback=None, cancel_event=None):
         self._setup_service("Event")
 
         players = []
@@ -1850,7 +1849,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             )
 
             logger.info(
-                f"GetEntrants: parry returned {len(get_event_entrants_response.event_entrants)} entrants"
+                f"FetchEntrants: parry returned {len(get_event_entrants_response.event_entrants)} entrants"
             )
 
             for entrant in get_event_entrants_response.event_entrants:
@@ -1880,8 +1879,8 @@ class ParryGGDataProvider(TournamentDataProvider):
         except Exception as e:
             logger.error(f"Error processing entrants: {traceback.format_exc()}")
 
-        logger.info(f"GetEntrants: adding {len(players)} players to PlayerDB")
-        PlayerDB.AddPlayers(players)
+        logger.info(f"FetchEntrants: {len(players)} players")
+        return players
 
     def EnrichPlayerData(self, playerData, blocking=True):
         # Lazy mains fill from a linked start.gg account. Fires once per

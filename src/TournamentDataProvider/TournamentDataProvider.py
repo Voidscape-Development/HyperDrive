@@ -64,6 +64,9 @@ class TournamentDataProvider(QObject):
     # Calling a set, or assigning it to a stream or a station, on the
     # provider (StartGGReporter.RunAction)
     SUPPORTS_SET_ACTIONS = False
+    # MainsKey, IsMainsCached and FetchMains, for the manager to fetch
+    # players' mains in the background (PlayerMains.py)
+    SUPPORTS_MAINS_PREFETCH = False
 
     def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
         super().__init__(None)
@@ -264,19 +267,31 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # ENTRANTS AND PLAYERS
     # =====================================================
-    def GetEntrants(self) -> None:
-        """Adds the event's entrants to the player database, in the
-        background"""
-        pass
+    def FetchEntrants(self, progress_callback=None, cancel_event=None) -> list[dict]:
+        """The event's entrants, as PlayerDB.AddPlayers takes players"""
+        return []
 
     def EnrichPlayerData(self, playerData, blocking=True):
         # Hook for providers to lazily fill in fields when a player is
-        # loaded into a slot (called from ScoreboardPlayerWidget.SetData
-        # post-DB-merge). Default no-op; ParryGG overrides to fetch mains
+        # loaded into a slot (called through TournamentDataManager.EnrichPlayer
+        # from ScoreboardPlayerWidget.SetData, post-DB-merge). Default no-op; ParryGG overrides to fetch mains
         # from a linked start.gg account. With blocking=False, providers
         # must not do network requests here (it runs on the UI thread);
         # they should only use what they already have cached.
         return playerData
+
+    def MainsKey(self, playerData):
+        """What the player's mains are cached by, None if they can't be
+        looked up (SUPPORTS_MAINS_PREFETCH)"""
+        return None
+
+    def IsMainsCached(self, key) -> bool:
+        return False
+
+    def FetchMains(self, key) -> dict | None:
+        """The player's mains by MainsKey, {game codename: [[character],
+        ...]}, cached. None if the request failed."""
+        return None
 
     def GetCachedMains(self, playerData):
         # Mains EnrichPlayerData would add for this player without doing a
