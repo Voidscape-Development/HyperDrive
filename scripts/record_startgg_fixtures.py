@@ -156,10 +156,10 @@ class Anonymizer:
 # RECORDING
 # =====================================================
 def main():
-    added = H.SetUpApp()
-    provider = H.RecordingProvider(EVENT)
+    context = H.SetUpApp()
+    provider = H.RecordingProvider(EVENT, context)
     provider.url = provider.GetRealEventURL(EVENT)
-    out = H.RunScenario(provider, added)
+    out = H.RunScenario(provider)
     recorded = list(provider.recorded.values())
     print(f"{len(recorded)} requests recorded")
 

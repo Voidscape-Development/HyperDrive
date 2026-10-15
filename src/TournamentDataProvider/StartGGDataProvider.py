@@ -11,16 +11,14 @@ import requests.adapters
 from loguru import logger
 from qtpy.QtCore import QT_TRANSLATE_NOOP
 
-from ..GameAssetManager import GameAssetManager
 from ..Helpers import CompletedSetsHelper, SocialsHelper
 from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.DictHelper import deep_clone, deep_get
 from ..Helpers.LocaleHelper import LocaleHelper
 from ..Helpers.SeedPerformance import EventBracketType
-from ..PlayerDB import PlayerDB
 from ..PlayerDBModels import MakeTag
-from ..SettingsManager import SettingsManager
+from .ProviderContext import AppContext
 from .StartGGClient import ReadQuery, StartGGClient
 from .TournamentDataProvider import TournamentDataProvider
 
@@ -100,8 +98,8 @@ class StartGGDataProvider(TournamentDataProvider):
     # the general.local_player_data setting: the set queries leave them out
     LOCAL_PROFILE_FIELDS = ["twitter", "socials", "pronoun", "country_code", "state_code"]
 
-    def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
-        super().__init__(url, threadpool, dataManager)
+    def __init__(self, url, threadpool, dataManager, api_key=None, context=None) -> None:
+        super().__init__(url, threadpool, dataManager, context=context)
         self.client = StartGGClient()
         # {MainsKey: mains}, see FetchMains
         self._mains_cache = {}
@@ -431,7 +429,9 @@ class StartGGDataProvider(TournamentDataProvider):
                     for entrant in participants:
                         team["players"].append(
                             StartGGDataProvider.ProcessEntrantData(
-                                entrant, deep_get(seed, "entrant.paginatedSets.nodes")
+                                entrant,
+                                deep_get(seed, "entrant.paginatedSets.nodes"),
+                                gameAssets=self.context.games,
                             )
                         )
 
@@ -825,7 +825,9 @@ class StartGGDataProvider(TournamentDataProvider):
                 str(deep_get(p1, "entrant.id")) if deep_get(p1, "entrant.id") is not None else None,
                 str(deep_get(p2, "entrant.id")) if deep_get(p2, "entrant.id") is not None else None,
             ]
-            setData["games"] = StartGGDataProvider.ParseSetGames(_set, setData["entrant_ids"])
+            setData["games"] = StartGGDataProvider.ParseSetGames(
+                _set, setData["entrant_ids"], gameAssets=self.context.games
+            )
 
             players = [[], []]
 
@@ -926,10 +928,11 @@ class StartGGDataProvider(TournamentDataProvider):
             return {}
 
     @staticmethod
-    def ParseSetGames(_set, entrantIds):
+    def ParseSetGames(_set, entrantIds, gameAssets=None):
         """The set's games reported on start.gg, in slot order: [{"winner":
         slot or None, "stage": codename, "characters": [[slot 0's], [slot
         1's]]}]."""
+        gameAssets = gameAssets if gameAssets is not None else AppContext().games
         games = []
         for game in sorted(_set.get("games") or [], key=lambda g: g.get("orderNum") or 0):
             winner = None
@@ -938,7 +941,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
             stage = None
             if deep_get(game, "stage.id") is not None:
-                found = GameAssetManager.instance.GetStageFromStartGGId(deep_get(game, "stage.id"))
+                found = gameAssets.GetStageFromStartGGId(deep_get(game, "stage.id"))
                 if found:
                     stage = found[1].get("codename")
 
@@ -947,9 +950,7 @@ class StartGGDataProvider(TournamentDataProvider):
                 entrantId = str(deep_get(selection, "entrant.id"))
                 if entrantId not in entrantIds or selection.get("selectionValue") is None:
                     continue
-                character = GameAssetManager.instance.GetCharacterFromStartGGId(
-                    selection.get("selectionValue")
-                )
+                character = gameAssets.GetCharacterFromStartGGId(selection.get("selectionValue"))
                 if character:
                     characters[entrantIds.index(entrantId)].append(character[0])
 
@@ -1058,9 +1059,9 @@ class StartGGDataProvider(TournamentDataProvider):
 
                         for stageCode in stageCodes:
                             stages.append(
-                                GameAssetManager.instance.GetStageFromStartGGId(int(stageCode))[
-                                    1
-                                ].get("codename")
+                                self.context.games.GetStageFromStartGGId(int(stageCode))[1].get(
+                                    "codename"
+                                )
                             )
 
                         if str(entrantId) == entrant1Id:
@@ -1075,7 +1076,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
                 if base.get("strikeList"):
                     for stage_code, entrant in base.get("strikeList").items():
-                        stage = GameAssetManager.instance.GetStageFromStartGGId(int(stage_code))
+                        stage = self.context.games.GetStageFromStartGGId(int(stage_code))
 
                         if stage:
                             codename = stage[1].get("codename")
@@ -1096,7 +1097,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         for stage_code in base.get("banList"):
                             if stage_code == None:
                                 continue
-                            stage = GameAssetManager.instance.GetStageFromStartGGId(int(stage_code))
+                            stage = self.context.games.GetStageFromStartGGId(int(stage_code))
                             if stage:
                                 codename = stage[1].get("codename")
                                 strikedBy[banPlayer].append(codename)
@@ -1128,20 +1129,20 @@ class StartGGDataProvider(TournamentDataProvider):
         try:
             allStagesFinal = []
             for st in allStages:
-                stage = GameAssetManager.instance.GetStageFromStartGGId(st)
+                stage = self.context.games.GetStageFromStartGGId(st)
                 if stage:
                     allStagesFinal.append(stage[1])
 
             striked = []
             if strikedStages is not None:
                 for stage in strikedStages:
-                    stage = GameAssetManager.instance.GetStageFromStartGGId(stage)
+                    stage = self.context.games.GetStageFromStartGGId(stage)
                     if stage:
                         striked.append(stage[1].get("codename"))
 
             selected = ""
             if selectedStage is not None:
-                selectedStage = GameAssetManager.instance.GetStageFromStartGGId(int(selectedStage))
+                selectedStage = self.context.games.GetStageFromStartGGId(int(selectedStage))
                 if selectedStage:
                     selected = selectedStage[1].get("codename")
 
@@ -1176,7 +1177,7 @@ class StartGGDataProvider(TournamentDataProvider):
         for i, entrantChars in enumerate(selectedChars):
             for char in entrantChars:
                 entrants[i].append(
-                    {"mains": [GameAssetManager.instance.GetCharacterFromStartGGId(char)[0], 0]}
+                    {"mains": [self.context.games.GetCharacterFromStartGGId(char)[0], 0]}
                 )
 
         # If we don't have mains from the selection data, fallback to the characterIds attribute
@@ -1189,7 +1190,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         entrants[i] = [
                             {
                                 "mains": [
-                                    GameAssetManager.instance.GetCharacterFromStartGGId(char)[0],
+                                    self.context.games.GetCharacterFromStartGGId(char)[0],
                                     0,
                                 ]
                             }
@@ -1276,7 +1277,9 @@ class StartGGDataProvider(TournamentDataProvider):
                 # TODO : pull the state data
 
                 for playerIndex, participant in enumerate(entrant.get("participants", [])):
-                    playerData = StartGGDataProvider.ProcessEntrantData(participant)
+                    playerData = StartGGDataProvider.ProcessEntrantData(
+                        participant, gameAssets=self.context.games
+                    )
                     if self.UseLocalPlayerData():
                         self.FillFromLocalDB(playerData)
                     playerName = playerData.get("gamerTag", "")
@@ -1655,12 +1658,12 @@ class StartGGDataProvider(TournamentDataProvider):
                     for idx, (char_id, _) in enumerate(
                         chars_by_entrant.get(entrant_id, Counter()).most_common(), 1
                     ):
-                        char = GameAssetManager.instance.GetCharacterFromStartGGId(char_id)
+                        char = self.context.games.GetCharacterFromStartGGId(char_id)
                         if not char:
                             continue
                         _key, char_info = char
                         codename = char_info.get("codename", _key)
-                        assets = GameAssetManager.instance.GetCharacterAssets(codename, 0)
+                        assets = self.context.games.GetCharacterAssets(codename, 0)
                         result[str(idx)] = {
                             "name": char_info.get("display_name", codename),
                             "codename": codename,
@@ -1774,7 +1777,7 @@ class StartGGDataProvider(TournamentDataProvider):
                             if len(participants) != 1:
                                 continue
                             participantId = participants[0].get("id")
-                        char = GameAssetManager.instance.GetCharacterFromStartGGId(
+                        char = self.context.games.GetCharacterFromStartGGId(
                             selection.get("selectionValue")
                         )
                         if char:
@@ -1829,7 +1832,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
                 set_data.append(set)
 
-            return CompletedSetsHelper.Finish(set_data)
+            return CompletedSetsHelper.Finish(set_data, self.context)
         except Exception as e:
             logger.error(traceback.format_exc())
             return []
@@ -2142,12 +2145,12 @@ class StartGGDataProvider(TournamentDataProvider):
                 for idx, (char_id, _) in enumerate(
                     chars_by_entrant.get(eid, Counter()).most_common(), 1
                 ):
-                    char = GameAssetManager.instance.GetCharacterFromStartGGId(char_id)
+                    char = self.context.games.GetCharacterFromStartGGId(char_id)
                     if not char:
                         continue
                     _key, char_info = char
                     codename = char_info.get("codename", _key)
-                    assets = GameAssetManager.instance.GetCharacterAssets(codename, 0)
+                    assets = self.context.games.GetCharacterAssets(codename, 0)
                     result[str(idx)] = {
                         "name": char_info.get("display_name", codename),
                         "codename": codename,
@@ -2221,7 +2224,9 @@ class StartGGDataProvider(TournamentDataProvider):
                 for team in deep_get(data, "data.event.entrants.nodes", []) or []:
                     seed = team.get("initialSeedNum", 0)
                     for entrant in team.get("participants", []) or []:
-                        playerData = StartGGDataProvider.ProcessEntrantData(entrant)
+                        playerData = StartGGDataProvider.ProcessEntrantData(
+                            entrant, gameAssets=self.context.games
+                        )
                         playerData["seed"] = seed
                         self.player_seeds[playerData["id"][0]] = seed
                         players.append(playerData)
@@ -2231,7 +2236,8 @@ class StartGGDataProvider(TournamentDataProvider):
             logger.error(traceback.format_exc())
         return players
 
-    def ProcessEntrantData(entrant, setData=[]):
+    def ProcessEntrantData(entrant, setData=[], gameAssets=None):
+        gameAssets = gameAssets if gameAssets is not None else AppContext().games
         player = entrant.get("player")
         user = entrant.get("user")
 
@@ -2314,13 +2320,13 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData["state_code"] = stateCode
 
             if playerData.get("startggMains"):
-                if GameAssetManager.instance.selectedGame:
-                    gameCodename = GameAssetManager.instance.selectedGame.get("codename")
+                if gameAssets.selectedGame:
+                    gameCodename = gameAssets.selectedGame.get("codename")
 
                     mains = []
 
                     for sggmain in playerData.get("startggMains"):
-                        main = GameAssetManager.instance.GetCharacterFromStartGGId(sggmain[0])
+                        main = gameAssets.GetCharacterFromStartGGId(sggmain[0])
                         if main:
                             mains.append([main[0]])
 
@@ -2332,9 +2338,8 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return playerData
 
-    @staticmethod
-    def UseLocalPlayerData():
-        return bool(SettingsManager.Get("general.local_player_data", False))
+    def UseLocalPlayerData(self):
+        return self.context.UseLocalPlayerData()
 
     def FillFromLocalDB(self, playerData):
         """Fills playerData's profile fields (LOCAL_PROFILE_FIELDS) from the
@@ -2344,7 +2349,7 @@ class StartGGDataProvider(TournamentDataProvider):
         if not tag:
             return playerData
 
-        saved = PlayerDB.GetPlayer(tag)
+        saved = self.context.GetSavedPlayer(tag)
         if saved is not None:
             for field in StartGGDataProvider.LOCAL_PROFILE_FIELDS:
                 if saved.get(field) and not playerData.get(field):
@@ -2356,7 +2361,7 @@ class StartGGDataProvider(TournamentDataProvider):
         profile = self.GetUserProfile(userId) if userId else None
         if profile:
             playerData.update(profile)
-            PlayerDB.AddPlayers(
+            self.context.SavePlayers(
                 [
                     {
                         "prefix": playerData.get("prefix"),
@@ -2388,7 +2393,9 @@ class StartGGDataProvider(TournamentDataProvider):
             # A failed request isn't cached, so it's tried again next time
             return None if not data or data.get("errors") else {}
 
-        parsed = StartGGDataProvider.ProcessEntrantData({"player": {}, "user": user})
+        parsed = StartGGDataProvider.ProcessEntrantData(
+            {"player": {}, "user": user}, gameAssets=self.context.games
+        )
         profile = {
             field: parsed[field]
             for field in StartGGDataProvider.LOCAL_PROFILE_FIELDS
@@ -2457,7 +2464,7 @@ class StartGGDataProvider(TournamentDataProvider):
         """What a player's mains are cached by: their start.gg user and the
         game, None if either is unknown"""
         slug = (playerData or {}).get("startgg_user_slug")
-        videogameId = (GameAssetManager.instance.selectedGame or {}).get("smashgg_game_id")
+        videogameId = (self.context.games.selectedGame or {}).get("smashgg_game_id")
         if not slug or not videogameId:
             return None
         return (slug, videogameId)
@@ -2510,15 +2517,18 @@ class StartGGDataProvider(TournamentDataProvider):
         if not player:
             return {}
         startgg_mains = (
-            StartGGDataProvider.ProcessEntrantData({"player": player}).get("startggMains") or []
+            StartGGDataProvider.ProcessEntrantData(
+                {"player": player}, gameAssets=self.context.games
+            ).get("startggMains")
+            or []
         )
-        selected = GameAssetManager.instance.selectedGame or {}
+        selected = self.context.games.selectedGame or {}
         gameCodename = selected.get("codename")
         if not gameCodename:
             return {}
         mains = []
         for sggmain in startgg_mains:
-            mapped = GameAssetManager.instance.GetCharacterFromStartGGId(sggmain[0])
+            mapped = self.context.games.GetCharacterFromStartGGId(sggmain[0])
             if mapped:
                 mains.append([mapped[0]])
         return {gameCodename: mains} if mains else {}
@@ -2604,7 +2614,9 @@ class StartGGDataProvider(TournamentDataProvider):
                 sets = deep_get(standing, "entrant.paginatedSets.nodes")
                 seed = deep_get(standing, "entrant.initialSeedNum")
                 for entrant in participants:
-                    playerData = StartGGDataProvider.ProcessEntrantData(entrant, sets)
+                    playerData = StartGGDataProvider.ProcessEntrantData(
+                        entrant, sets, gameAssets=self.context.games
+                    )
                     if isinstance(seed, int):
                         playerData["seed"] = seed
                     team["players"].append(playerData)

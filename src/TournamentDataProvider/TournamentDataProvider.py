@@ -6,6 +6,7 @@ import requests
 from loguru import logger
 from qtpy.QtCore import QObject
 
+from .ProviderContext import AppContext
 from .ResultTypes import (
     CompletedSet,
     FutureSet,
@@ -68,8 +69,11 @@ class TournamentDataProvider(QObject):
     # players' mains in the background (PlayerMains.py)
     SUPPORTS_MAINS_PREFETCH = False
 
-    def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
+    def __init__(self, url, threadpool, dataManager, api_key=None, context=None) -> None:
         super().__init__(None)
+
+        # What it needs from the app (ProviderContext.py)
+        self.context = context or AppContext()
 
         self.name = self.NAME
         self.url = url

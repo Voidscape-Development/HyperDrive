@@ -79,15 +79,20 @@ def FinishSets(sets, location, character):
 # =====================================================
 # LOOKUPS IN THE APP'S DATA
 # =====================================================
-def Location(prefix, gamertag, country_code, state_code):
-    """The provider's location, or the local player database's when the
-    provider has no country for the player."""
-    from ..PlayerDB import PlayerDB
+def Location(prefix, gamertag, country_code, state_code, getSavedPlayer=None):
+    """The provider's location, or the local player database's
+    (getSavedPlayer(tag), PlayerDB.GetPlayer by default) when the provider
+    has no country for the player."""
     from ..PlayerDBModels import MakeTag
     from .CountryHelper import CountryHelper
 
+    if getSavedPlayer is None:
+        from ..PlayerDB import PlayerDB
+
+        getSavedPlayer = PlayerDB.GetPlayer
+
     if not country_code:
-        saved = PlayerDB.GetPlayer(MakeTag(prefix, gamertag)) or {}
+        saved = getSavedPlayer(MakeTag(prefix, gamertag)) or {}
         country_code = saved.get("country_code")
         state_code = saved.get("state_code")
 
@@ -105,10 +110,15 @@ def Location(prefix, gamertag, country_code, state_code):
     return country, state
 
 
-def Character(key):
-    from ..GameAssetManager import GameAssetManager
+def Character(key, games=None):
+    """A character of the loaded game (games, GameAssetManager.instance by
+    default) by its key, as the layouts get it"""
+    if games is None:
+        from ..GameAssetManager import GameAssetManager
 
-    info = (GameAssetManager.instance.characters or {}).get(key)
+        games = GameAssetManager.instance
+
+    info = (games.characters or {}).get(key)
     if not info:
         return None
     codename = info.get("codename", key)
@@ -116,9 +126,17 @@ def Character(key):
         "name": info.get("display_name", codename),
         "en_name": key,
         "codename": codename,
-        "assets": GameAssetManager.instance.GetCharacterAssets(codename, 0),
+        "assets": games.GetCharacterAssets(codename, 0),
     }
 
 
-def Finish(sets):
-    return FinishSets(sets, Location, Character)
+def Finish(sets, context=None):
+    """context: the provider's (ProviderContext), for the loaded game and
+    the local player database; the app's without one"""
+    if context is None:
+        return FinishSets(sets, Location, Character)
+    return FinishSets(
+        sets,
+        lambda *where: Location(*where, getSavedPlayer=context.GetSavedPlayer),
+        lambda key: Character(key, context.games),
+    )

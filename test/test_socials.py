@@ -49,6 +49,7 @@ assetModule.GameAssetManager = FakeAssetManager
 sys.modules["src.GameAssetManager"] = assetModule
 
 # Loads the locale and country files from the repository
+from src.TournamentDataProvider.ProviderContext import AppContext
 from src.TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
 
 # Files are written to ./user_data, so work in a scratch directory
@@ -223,6 +224,7 @@ def TestButton():
 
 def Provider(profiles):
     provider = StartGGDataProvider.__new__(StartGGDataProvider)
+    provider.context = AppContext()
     provider._profile_cache = {}
     provider._profileLock = __import__("threading").Lock()
     provider.asked = []

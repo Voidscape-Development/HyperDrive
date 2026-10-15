@@ -1,6 +1,6 @@
 # Runs StartGGDataProvider against recorded start.gg responses, for
 # test_startgg_provider.py, and records them (scripts/record_startgg_fixtures.py).
-# The app around the provider is replaced with small stand-ins: a made-up
+# The app around the provider is a stand-in context (FakeContext): a made-up
 # Super Smash Bros. Ultimate game with start.gg's real character ids, an empty
 # player database and default settings, so the results don't depend on the
 # machine the tests run on.
@@ -38,8 +38,7 @@ app = QApplication.instance() or QApplication(sys.argv)
 
 from src.GameAssetManager import GameAssetManager
 from src.Helpers.LocaleHelper import LocaleHelper
-from src.PlayerDB import PlayerDB
-from src.SettingsManager import SettingsManager
+from src.TournamentDataProvider.ProviderContext import ProviderContext
 from src.TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
 
 
@@ -184,39 +183,53 @@ class Callback:
         self.value = value
 
 
-def SetUpApp(stages=()):
-    """Default settings, English round names, an empty player database and
-    the made-up game. Returns the players the provider adds to the DB."""
-    SettingsManager.Get = staticmethod(lambda key, default=None: default)
+class FakeContext(ProviderContext):
+    """The app as the provider sees it: the made-up game, default settings
+    (no local player data) and an empty player database, keeping what the
+    provider saves to it"""
 
+    def __init__(self, stages=()):
+        self._games = FakeGame(stages)
+        self.saved = []
+
+    @property
+    def games(self):
+        return self._games
+
+    def UseLocalPlayerData(self):
+        return False
+
+    def GetSavedPlayer(self, tag):
+        return None
+
+    def SavePlayers(self, players):
+        self.saved.extend(players)
+
+
+def SetUpApp(stages=()):
+    """English round names, and the app as the provider sees it (a
+    FakeContext with the made-up game)"""
     with open(
         os.path.join(ROOT, "src", "i18n", "tournament_term", "en.json"), encoding="utf-8"
     ) as f:
         terms = json.load(f)
     LocaleHelper.matchNames = dict(terms["match"])
     LocaleHelper.phaseNames = dict(terms["phase"])
-
-    added = []
-    PlayerDB.database = {}
-    PlayerDB.AddPlayers = staticmethod(lambda players, *a, **k: added.extend(players))
-    PlayerDB.GetPlayer = staticmethod(lambda tag: None)
-
-    GameAssetManager.instance = FakeGame(stages)
-    return added
+    return FakeContext(stages)
 
 
 # =====================================================
 # PROVIDERS
 # =====================================================
-def NewProvider(url):
-    return StartGGDataProvider(url, SyncPool(), FakeManager())
+def NewProvider(url, context):
+    return StartGGDataProvider(url, SyncPool(), FakeManager(), context=context)
 
 
-def ReplayProvider(recording):
+def ReplayProvider(recording, context):
     """A provider answering from the recording. Requests it doesn't have are
     kept in provider.misses (and answered with {}, like a failed request)."""
     responses = {r["key"]: r["response"] for r in recording["requests"]}
-    provider = NewProvider(recording["event"])
+    provider = NewProvider(recording["event"], context)
     provider.misses = []
 
     def query(url=None, type=None, headers=None, jsonParams=None, params=None, **kwargs):
@@ -230,10 +243,10 @@ def ReplayProvider(recording):
     return provider
 
 
-def RecordingProvider(url):
+def RecordingProvider(url, context):
     """A provider querying start.gg for real, keeping every request and its
     response in provider.recorded."""
-    provider = NewProvider(url)
+    provider = NewProvider(url, context)
     provider.recorded = {}
     real = provider.QueryRequests
 
@@ -275,7 +288,7 @@ def WithCallback(fn, **kwargs):
     return callback.value
 
 
-def RunScenario(provider, added):
+def RunScenario(provider):
     out = {}
     Call(out, "tournament_data", provider.GetTournamentData)
     Call(out, "icon_url", provider.GetIconURL)

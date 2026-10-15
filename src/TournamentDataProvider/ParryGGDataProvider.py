@@ -35,7 +35,6 @@ from parrygg.services.user_service_pb2 import *
 from parrygg.services.user_service_pb2_grpc import UserServiceStub
 from qtpy.QtCore import QT_TRANSLATE_NOOP
 
-from ..GameAssetManager import GameAssetManager
 from ..Helpers import CompletedSetsHelper
 from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
@@ -136,8 +135,8 @@ class ParryGGDataProvider(TournamentDataProvider):
     _startgg_mains_cache = None  # dict[parry_user_id -> mains dict or {}]
     _startgg_subquery = None  # lazy StartGGDataProvider for cross-platform fallback queries
 
-    def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
-        super().__init__(url, threadpool, dataManager)
+    def __init__(self, url, threadpool, dataManager, api_key=None, context=None) -> None:
+        super().__init__(url, threadpool, dataManager, context=context)
         self._initialized = False
 
         if api_key:
@@ -396,6 +395,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                 "start.gg/",
                 self.threadpool,
                 self.dataManager,
+                context=self.context,
             )
         return self._startgg_subquery
 
@@ -472,7 +472,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         link_2 = self._get_linked_startgg_account(parry_user_id_2)
         if not link_1 or not link_2:
             return []
-        videogame_id = GameAssetManager.instance.selectedGame.get("smashgg_game_id")
+        videogame_id = self.context.games.selectedGame.get("smashgg_game_id")
         if not videogame_id:
             return []
         pid_1 = self._resolve_startgg_player_id(link_1["slug"])
@@ -508,7 +508,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         if not link:
             self._startgg_mains_cache[parry_user_id] = {}
             return {}
-        selected = GameAssetManager.instance.selectedGame or {}
+        selected = self.context.games.selectedGame or {}
         videogame_id = selected.get("smashgg_game_id")
         if not videogame_id:
             return {}  # don't cache — game may change
@@ -621,16 +621,14 @@ class ParryGGDataProvider(TournamentDataProvider):
                     # per-game shape.
                     char_tuple = None
                     for character in participant.characters:
-                        char_tuple = GameAssetManager.instance.GetCharacterFromParryGGSlug(
-                            character.slug
-                        )
+                        char_tuple = self.context.games.GetCharacterFromParryGGSlug(character.slug)
                         if char_tuple:
                             break
                     if slugs and char_tuple is None:
                         logger.debug(
                             f"  game {match_game.index} slot {slot.slot} user {participant.user_id}: "
                             f"parry slug(s) {slugs} did NOT resolve to any character with a matching "
-                            f"'parrygg_slug' in game '{GameAssetManager.instance.selectedGame.get('codename')}'"
+                            f"'parrygg_slug' in game '{self.context.games.selectedGame.get('codename')}'"
                         )
                     else:
                         logger.debug(
@@ -1466,7 +1464,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             for slot in match_game.slots:
                 for participant in slot.participants:
                     for character in participant.characters:
-                        char = GameAssetManager.instance.GetCharacterFromParryGGSlug(character.slug)
+                        char = self.context.games.GetCharacterFromParryGGSlug(character.slug)
                         if char:
                             AddCharacterKey(characters.setdefault(participant.user_id, []), char[0])
 
@@ -1606,7 +1604,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             sets.sort(key=lambda s: s.get("ended_at", 0), reverse=True)
             sets = sets[:10]
             logger.info(f"GetCompletedSets: -> {len(sets)} sets")
-            return CompletedSetsHelper.Finish(sets)
+            return CompletedSetsHelper.Finish(sets, self.context)
         except Exception as e:
             logger.error(f"Error in GetCompletedSets: {traceback.format_exc()}")
             return []

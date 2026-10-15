@@ -274,6 +274,39 @@ def TestGetMatchDoesNotWaitForASlowApi():
     assert result.get("id") == "123" and "from" not in result, result
 
 
+def TestAppContext():
+    """The app's context is its game, setting and player database"""
+    from src.PlayerDB import PlayerDB
+    from src.TournamentDataProvider.ProviderContext import AppContext
+
+    context = AppContext()
+    games = FakeGames()
+    GameAssetManager.instance = games
+    assert context.games is games
+
+    settings = {"general.local_player_data": True}
+    SettingsManager.Get = staticmethod(lambda key, default=None: settings.get(key, default))
+    assert context.UseLocalPlayerData() is True
+    settings.clear()
+    assert context.UseLocalPlayerData() is False
+
+    saved = []
+    getPlayer, addPlayers = PlayerDB.GetPlayer, PlayerDB.AddPlayers
+    PlayerDB.GetPlayer = staticmethod(lambda tag: {"gamerTag": tag})
+    PlayerDB.AddPlayers = staticmethod(lambda players, *a, **k: saved.extend(players))
+    try:
+        assert context.GetSavedPlayer("T") == {"gamerTag": "T"}
+        context.SavePlayers([{"gamerTag": "A"}])
+        assert saved == [{"gamerTag": "A"}]
+    finally:
+        PlayerDB.GetPlayer, PlayerDB.AddPlayers = getPlayer, addPlayers
+
+    # Providers get it unless they're given another
+    assert isinstance(StartGGDataProvider("https://www.start.gg/t", None, None).context, AppContext)
+    other = AppContext()
+    assert StartGGDataProvider("https://www.start.gg/t", None, None, context=other).context is other
+
+
 if __name__ == "__main__":
     for test in [
         TestProviderClassFor,
@@ -282,6 +315,7 @@ if __name__ == "__main__":
         TestGameFromProvider,
         TestGameChanged,
         TestGetMatchDoesNotWaitForASlowApi,
+        TestAppContext,
     ]:
         test()
         print(f"{test.__name__}: OK")

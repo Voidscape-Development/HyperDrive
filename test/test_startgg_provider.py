@@ -250,12 +250,12 @@ def CheckExpected(out, update):
 def main():
     update = "--update" in sys.argv
     recording = H.LoadRecording()
-    added = H.SetUpApp(H.StagesIn([r["response"] for r in recording["requests"]]))
-    provider = H.ReplayProvider(recording)
-    out = H.RunScenario(provider, added)
+    context = H.SetUpApp(H.StagesIn([r["response"] for r in recording["requests"]]))
+    provider = H.ReplayProvider(recording, context)
+    out = H.RunScenario(provider)
     # Providers only fetch: the manager saves players (LoadEntrants)
-    if added:
-        failures.append(f"the provider wrote {len(added)} players to the player database")
+    if context.saved:
+        failures.append(f"the provider saved {len(context.saved)} players")
 
     for check in (lambda: CheckBehavior(provider, out), lambda: CheckContract(out)):
         try:
