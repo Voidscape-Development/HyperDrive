@@ -53,6 +53,9 @@ export abstract class HyperDriveAction<T extends JsonObject> extends SingletonAc
 		registered.add(this as unknown as HyperDriveAction<JsonObject>);
 	}
 
+	// -------------------------------------------------------------------
+	// What each action provides
+
 	/** The key's image */
 	protected abstract key(settings: T, state: State, t: Translate): Look;
 
@@ -78,6 +81,9 @@ export abstract class HyperDriveAction<T extends JsonObject> extends SingletonAc
 		return undefined;
 	}
 
+	// -------------------------------------------------------------------
+	// Commands and settings
+
 	/** Runs a HyperDrive command; an alert on the key or dial if it fails. */
 	protected async run(action: KeyAction<T> | DialAction<T>, request: Request, showOk = false): Promise<boolean> {
 		const result = await hyperdrive.command(request.path, { method: request.method, body: request.body });
@@ -99,6 +105,9 @@ export abstract class HyperDriveAction<T extends JsonObject> extends SingletonAc
 		await action.setSettings(settings);
 		await this.#draw(action.id);
 	}
+
+	// -------------------------------------------------------------------
+	// Drawing
 
 	/** Draws every visible key and dial of this action again. */
 	redraw(): void {

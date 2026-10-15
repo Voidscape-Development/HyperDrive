@@ -20,6 +20,9 @@ export type Look = {
 	offline?: boolean;
 };
 
+// ---------------------------------------------------------------------------
+// Parts of an image
+
 function colors(look: Look): { fg: string; muted: string } {
 	return look.state === "off" ? { fg: THEME.off, muted: THEME.off } : { fg: THEME.gold, muted: THEME.muted };
 }
@@ -51,6 +54,9 @@ function offlineBadge(size: number, x: number, y: number): string {
 		icon("offline", x, y, size, "#ffffff")
 	);
 }
+
+// ---------------------------------------------------------------------------
+// Keys
 
 /** A 144x144 key image. */
 export function renderKey(look: Look): string {
@@ -86,6 +92,9 @@ export function renderKey(look: Look): string {
 	}
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${body}</svg>`;
 }
+
+// ---------------------------------------------------------------------------
+// Touch strips
 
 export type StripLook = Look & {
 	/** A gauge along the bottom, e.g. stocks left */
@@ -125,6 +134,9 @@ export function renderStrip(look: StripLook): string {
 	}
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${body}</svg>`;
 }
+
+// ---------------------------------------------------------------------------
+// Data URLs
 
 export const keyImage = (look: Look): string => svgDataUrl(renderKey(look));
 export const stripImage = (look: StripLook): string => svgDataUrl(renderStrip(look));
