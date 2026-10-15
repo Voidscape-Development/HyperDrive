@@ -107,6 +107,7 @@ class AssetDownloader(QObject):
             worker.signals.progress.connect(AssetDownloader.instance.DownloadAssetsProgress)
             worker.signals.finished.connect(AssetDownloader.instance.DownloadAssetsFinished)
             worker.signals.error.connect(AssetDownloader.instance.DownloadAssetsFailed)
+            AssetDownloader.instance.downloadDialogue.canceled.connect(worker.cancel_event.set)
             AssetDownloader.instance.threadpool.start(worker)
 
         AssetDownloader.instance.signals.AssetUpdates.connect(f)
@@ -407,6 +408,7 @@ class AssetDownloader(QObject):
             worker.signals.progress.connect(self.DownloadAssetsProgress)
             worker.signals.finished.connect(self.DownloadAssetsFinished)
             worker.signals.error.connect(self.DownloadAssetsFailed)
+            self.downloadDialogue.canceled.connect(worker.cancel_event.set)
             self.threadpool.start(worker)
 
         btOk.clicked.connect(lambda: DownloadStart())
@@ -497,7 +499,9 @@ class AssetDownloader(QObject):
                         downloaded += len(chunk)
                         downloadFile.write(chunk)
 
-                        if self.downloadDialogue.wasCanceled():
+                        # Set by the dialog's Cancel button, without reading
+                        # the dialog from this thread
+                        if cancel_event.is_set():
                             return
 
                         progress_callback(downloaded, totalSize)
