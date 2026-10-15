@@ -33,6 +33,7 @@ from src.StateManager import StateManager
 
 class FakeProvider:
     name = "StartGG"
+    SUPPORTS_STATS = True
     url = "https://www.start.gg/tournament/t/event/e"
 
     def __init__(self):
@@ -138,7 +139,7 @@ def TestDoublesAndMissingIds():
     assert ("last_sets", 11) in provider.calls
 
     # Not a provider with stats
-    provider.name = "Challonge"
+    provider.SUPPORTS_STATS = False
     assert CommentaryPreview.Preview([[AZURE], [MARLOWE]])["stats"] is False
 
     # Garbage in

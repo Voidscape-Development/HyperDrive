@@ -1418,7 +1418,7 @@ class BracketWidget(QDockWidget):
     def UpdatePhaseGroups(self):
         self.phaseGroupSelection.clear()
         provider = TournamentDataManager.instance.provider
-        supported = getattr(provider, "SUPPORTS_BRACKETS", False)
+        supported = provider is not None and provider.SUPPORTS_BRACKETS
         for phaseGroup in (self.phaseSelection.currentData() or {}).get("groups", []):
             self.phaseGroupSelection.addItem(phaseGroup.get("name"), phaseGroup)
             if not supported or phaseGroup.get("bracketType") not in BRACKET_TYPES:

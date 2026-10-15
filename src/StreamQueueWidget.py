@@ -482,7 +482,7 @@ class StreamQueueTab(QWidget):
         start.gg (with the API token of Settings > API Keys)."""
         setId = self.SelectedSetId()
         provider = TournamentDataManager.instance.provider
-        if setId is None or provider is None or provider.name != "StartGG":
+        if setId is None or provider is None or not provider.SUPPORTS_SET_ACTIONS:
             return
         menu.addSeparator()
         startgg = menu.addMenu(QApplication.translate("app", "On start.gg"))

@@ -52,7 +52,7 @@ class StatsUtil:
             len(self.scoreboard.team1playerWidgets) == 1
             and TournamentDataManager.instance
             and TournamentDataManager.instance.provider
-            and TournamentDataManager.instance.provider.name in ("StartGG", "ParryGG")
+            and TournamentDataManager.instance.provider.SUPPORTS_STATS
         ):
             p1id = StateManager.Get(f"score.{self.scoreboardNumber}.team.1.player.1.id")
             p2id = StateManager.Get(f"score.{self.scoreboardNumber}.team.2.player.1.id")
@@ -154,7 +154,7 @@ class StatsUtil:
             len(self.scoreboard.team1playerWidgets) == 1
             and TournamentDataManager.instance
             and TournamentDataManager.instance.provider
-            and TournamentDataManager.instance.provider.name in ("StartGG", "ParryGG")
+            and TournamentDataManager.instance.provider.SUPPORTS_STATS
         ):
             p1id = StateManager.Get(f"score.{self.scoreboardNumber}.team.1.player.1.id")
             if p1id:
@@ -173,7 +173,7 @@ class StatsUtil:
             len(self.scoreboard.team1playerWidgets) == 1
             and TournamentDataManager.instance
             and TournamentDataManager.instance.provider
-            and TournamentDataManager.instance.provider.name in ("StartGG", "ParryGG")
+            and TournamentDataManager.instance.provider.SUPPORTS_STATS
         ):
             p2id = StateManager.Get(f"score.{self.scoreboardNumber}.team.2.player.1.id")
             if p2id:

@@ -10,8 +10,7 @@ from .Helpers.VersionHelper import get_supported_providers
 from .SelectEventWindow import SelectEventWindow
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .TournamentDataProvider.ParryGGDataProvider import ParryGGDataProvider
-from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
+from .TournamentDataProvider.Providers import ProviderClassFor
 from .TournamentDataProvider.TournamentDataProvider import TournamentDataProvider
 from .TournamentDataProvider.TournamentEventLookup import ParseTournamentLink
 from .Workers import Worker
@@ -74,57 +73,64 @@ class TournamentDataManager(QObject):
         if not self.provider or not self.provider.videogame:
             return
 
-        if "start.gg" in self.provider.url:
-            GameAssetManager.instance.SetGameFromStartGGId(self.provider.videogame)
-        elif "parry.gg" in self.provider.url:
-            GameAssetManager.instance.SetGameFromIGDBId(self.provider.videogame)
+        # The provider's videogame ids are start.gg's or IGDB's
+        setGame = {
+            "startgg": GameAssetManager.instance.SetGameFromStartGGId,
+            "igdb": GameAssetManager.instance.SetGameFromIGDBId,
+        }.get(self.provider.GAME_ID_KIND)
+        if setGame:
+            setGame(self.provider.videogame)
         else:
             logger.error("Unsupported provider...")
 
     # =====================================================
     # TOURNAMENT
     # =====================================================
+    def CreateProvider(self, url):
+        """A provider for the event link, None if there's none for it or it
+        can't be made (its API key isn't set)"""
+        providerClass = ProviderClassFor(url)
+        if providerClass is None:
+            logger.error("Unsupported provider...")
+            return None
+
+        apiKey = None
+        if providerClass.API_KEY_SETTING:
+            apiKey = SettingsManager.Get(providerClass.API_KEY_SETTING)
+            if not apiKey:
+                logger.error(f"{providerClass.NAME} API key not set")
+                self.ShowApiKeyMissing(providerClass)
+                return None
+
+        try:
+            return providerClass(url, self.threadPool, self, apiKey)
+        except Exception as e:
+            logger.error(f"Failed to initialize {providerClass.NAME} provider: {e}")
+            return None
+
+    def ShowApiKeyMissing(self, providerClass):
+        url = providerClass.API_KEY_URL
+        messagebox = QMessageBox()
+        messagebox.setWindowTitle(QApplication.translate("app", "Error"))
+        messagebox.setTextFormat(Qt.RichText)
+        messagebox.setText(
+            QApplication.translate("app", providerClass.API_KEY_MISSING)
+            + "<br><br>"
+            + QApplication.translate("app", "API keys can be created at: ")
+            + f'<a href="{url}">{url.split("://")[-1]}</a>'
+        )
+        messagebox.exec()
+
     @Slot(str, bool)
     @Slot(str)
     def SetTournament(self, url, initialLoading=False):
         if self.provider and self.provider.url == url:
             return
 
-        if url is not None and "start.gg" in url:
-            TournamentDataManager.instance.provider = StartGGDataProvider(
-                url, self.threadPool, self
-            )
-            url = TournamentDataManager.instance.provider.GetRealEventURL(url)
-        elif url is not None and "parry.gg" in url:
-            if not SettingsManager.Get("api_keys.parrygg"):
-                logger.error("ParryGG API key not set")
-
-                messagebox = QMessageBox()
-                messagebox.setWindowTitle(QApplication.translate("app", "Error"))
-                messagebox.setTextFormat(Qt.RichText)
-                messagebox.setText(
-                    QApplication.translate(
-                        "app",
-                        "Parry.gg API key has not been set. Please configure it in Settings > API Keys.",
-                    )
-                    + "<br><br>"
-                    + QApplication.translate("app", "API keys can be created at: ")
-                    + '<a href="https://parry.gg/api-keys">parry.gg/api-keys</a>'
-                )
-                messagebox.exec()
-
-                TournamentDataManager.instance.provider = None
-            else:
-                try:
-                    TournamentDataManager.instance.provider = ParryGGDataProvider(
-                        url, self.threadPool, self, SettingsManager.Get("api_keys.parrygg")
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to initialize ParryGG provider: {e}")
-                    TournamentDataManager.instance.provider = None
-        else:
-            logger.error("Unsupported provider...")
-            TournamentDataManager.instance.provider = None
+        TournamentDataManager.instance.provider = self.CreateProvider(url)
+        if self.provider is not None:
+            # A start.gg admin link becomes its event's link
+            url = self.provider.GetRealEventURL(url)
 
         SettingsManager.Set("TOURNAMENT_URL", url)
 
@@ -134,8 +140,6 @@ class TournamentDataManager(QObject):
 
             TournamentDataManager.instance.provider.GetEntrants()
             TournamentDataManager.instance.signals.tournament_changed.emit()
-
-            # TournamentDataManager.instance.SetGameFromProvider()
         else:
             TournamentDataManager.instance.signals.tournament_data_updated.emit({})
             TournamentDataManager.instance.signals.tournament_phases_updated.emit([])
@@ -143,33 +147,9 @@ class TournamentDataManager(QObject):
             GameAssetManager.instance.LoadGameAssets(0)
 
     def SetTournamentSignal(self, url, initialLoading=False):
-        if self.provider and self.provider.url == url:
-            return
-
-        if url is not None and "start.gg" in url:
-            TournamentDataManager.instance.provider = StartGGDataProvider(
-                url, self.threadPool, self
-            )
-        elif url is not None and "parry.gg" in url:
-            TournamentDataManager.instance.provider = ParryGGDataProvider(
-                url, self.threadPool, self
-            )
-        else:
-            logger.error("Unsupported provider...")
-            TournamentDataManager.instance.provider = None
-
-        SettingsManager.Set("TOURNAMENT_URL", url)
-
-        if self.provider is not None:
-            self.GetTournamentData(initialLoading=initialLoading)
-            self.GetTournamentPhases()
-
-            TournamentDataManager.instance.provider.GetEntrants()
-            TournamentDataManager.instance.signals.tournament_changed.emit()
-        else:
-            TournamentDataManager.instance.signals.tournament_data_updated.emit({})
-            TournamentDataManager.instance.signals.tournament_phases_updated.emit([])
-            TournamentDataManager.instance.signals.tournament_changed.emit()
+        # An event loaded from the web server (/load-tournament), like one
+        # loaded here
+        self.SetTournament(url, initialLoading)
 
     def SetStartggEventSlug(self, mainWindow):
         inp = QDialog(mainWindow)

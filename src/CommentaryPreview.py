@@ -11,9 +11,6 @@ from .StateManager import StateManager
 from .StatsUtil import StatsUtil
 from .TournamentDataManager import TournamentDataManager
 
-# Providers that can look up a player's sets and past events
-STATS_PROVIDERS = ("StartGG", "ParryGG")
-
 
 class _Result:
     """Stands in for the Qt signal the providers' stats functions emit their
@@ -51,7 +48,7 @@ class CommentaryPreview:
         provider = (
             TournamentDataManager.instance.provider if TournamentDataManager.instance else None
         )
-        stats = provider is not None and provider.name in STATS_PROVIDERS
+        stats = provider is not None and provider.SUPPORTS_STATS
         singles = len(teams) == 2 and all(len(team) == 1 for team in teams)
 
         result = {

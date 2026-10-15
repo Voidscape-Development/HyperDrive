@@ -160,6 +160,7 @@ from .StateManager import StateManager
 from .StreamQueueWidget import StreamQueueWidget
 from .TeamBattleWidget import TeamBattleWidget
 from .TournamentDataManager import TournamentDataManager
+from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
 from .TournamentInfoWidget import TournamentInfoWidget
 from .TwitchPredictions import TwitchPredictionsHook
 from .Wiki import GETTING_STARTED_PAGE, Wiki
@@ -1090,15 +1091,12 @@ class Window(QMainWindow):
     # =====================================================
     # COMPLETED SETS
     # =====================================================
-    def _CompletedSetsProviderName(self):
-        provider = (
-            TournamentDataManager.instance.provider if TournamentDataManager.instance else None
-        )
-        return provider.name if provider else None
+    def _CompletedSetsProvider(self):
+        return TournamentDataManager.instance.provider if TournamentDataManager.instance else None
 
     def _CompletedSetsSupported(self):
-        # Both providers implement GetCompletedSets
-        return self._CompletedSetsProviderName() in ("StartGG", "ParryGG")
+        provider = self._CompletedSetsProvider()
+        return provider is not None and provider.SUPPORTS_COMPLETED_SETS
 
     def PullCompletedSets(self, done):
         if not self._CompletedSetsSupported():
@@ -1145,25 +1143,18 @@ class Window(QMainWindow):
     # TOURNAMENT BUTTONS
     # =====================================================
     def UpdateLastSetsButton(self):
-        provider_name = self._CompletedSetsProviderName()
-
         self.btPullCompletedSets.setEnabled(self._CompletedSetsSupported())
 
-        if provider_name == "StartGG":
-            self.btPullCompletedSets.setText(
-                QApplication.translate("app", "Pull Latest Completed Sets from StartGG")
-            )
-            self.btPullCompletedSets.setIcon(ThemedIcon("./assets/icons/startgg.svg"))
-        elif provider_name == "ParryGG":
-            self.btPullCompletedSets.setText(
-                QApplication.translate("app", "Pull Latest Completed Sets from ParryGG")
-            )
-            self.btPullCompletedSets.setIcon(QIcon("./assets/icons/parrygg.png"))
-        else:
-            self.btPullCompletedSets.setText(
-                QApplication.translate("app", "Pull Latest Completed Sets from StartGG")
-            )
-            self.btPullCompletedSets.setIcon(ThemedIcon("./assets/icons/startgg.svg"))
+        # start.gg's text and icon until an event is loaded
+        provider = self._CompletedSetsProvider()
+        if provider is None or not provider.COMPLETED_SETS_BUTTON:
+            provider = StartGGDataProvider
+        self.btPullCompletedSets.setText(
+            QApplication.translate("app", provider.COMPLETED_SETS_BUTTON)
+        )
+        self.btPullCompletedSets.setIcon(
+            ThemedIcon(provider.ICON) if provider.ICON_THEMED else QIcon(provider.ICON)
+        )
 
     def UpdateTournamentButtons(self):
         # Both need an event loaded

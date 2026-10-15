@@ -33,6 +33,7 @@ from parrygg.services.tournament_service_pb2 import *
 from parrygg.services.tournament_service_pb2_grpc import TournamentServiceStub
 from parrygg.services.user_service_pb2 import *
 from parrygg.services.user_service_pb2_grpc import UserServiceStub
+from qtpy.QtCore import QT_TRANSLATE_NOOP
 
 from ..GameAssetManager import GameAssetManager
 from ..Helpers import CompletedSetsHelper
@@ -90,6 +91,19 @@ class _CapturingCallback:
 
 
 class ParryGGDataProvider(TournamentDataProvider):
+    NAME = "ParryGG"
+    HOST = "parry.gg"
+    API_KEY_SETTING = "api_keys.parrygg"
+    API_KEY_MISSING = QT_TRANSLATE_NOOP(
+        "app", "Parry.gg API key has not been set. Please configure it in Settings > API Keys."
+    )
+    API_KEY_URL = "https://parry.gg/api-keys"
+    GAME_ID_KIND = "igdb"
+    ICON = "./assets/icons/parrygg.png"
+    COMPLETED_SETS_BUTTON = QT_TRANSLATE_NOOP("app", "Pull Latest Completed Sets from ParryGG")
+
+    SUPPORTS_STATS = True
+    SUPPORTS_COMPLETED_SETS = True
     # GetTournamentPhaseGroup returns "poolSets", for round robin pools
     SUPPORTS_POOL_SETS = True
 
@@ -125,7 +139,6 @@ class ParryGGDataProvider(TournamentDataProvider):
 
     def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
         super().__init__(url, threadpool, dataManager)
-        self.name = "ParryGG"
         self._initialized = False
 
         if api_key:

@@ -11,6 +11,7 @@ import orjson
 import requests
 import requests.adapters
 from loguru import logger
+from qtpy.QtCore import QT_TRANSLATE_NOOP
 
 from ..GameAssetManager import GameAssetManager
 from ..Helpers import CompletedSetsHelper, SocialsHelper
@@ -63,9 +64,19 @@ _sessionMethods = {requests.get: "GET", requests.post: "POST"}
 
 
 class StartGGDataProvider(TournamentDataProvider):
+    NAME = "StartGG"
+    HOST = "start.gg"
+    GAME_ID_KIND = "startgg"
+    ICON = "./assets/icons/startgg.svg"
+    ICON_THEMED = True
+    COMPLETED_SETS_BUTTON = QT_TRANSLATE_NOOP("app", "Pull Latest Completed Sets from StartGG")
+
     # GetTournamentPhaseGroup returns the phase group's sets and how they
     # connect, which the bracket widget builds every bracket type from
     SUPPORTS_BRACKETS = True
+    SUPPORTS_STATS = True
+    SUPPORTS_COMPLETED_SETS = True
+    SUPPORTS_SET_ACTIONS = True
 
     CompletedSetsQuery = None
     EntrantsQuery = None
@@ -118,9 +129,8 @@ class StartGGDataProvider(TournamentDataProvider):
     # the general.local_player_data setting: the set queries leave them out
     LOCAL_PROFILE_FIELDS = ["twitter", "socials", "pronoun", "country_code", "state_code"]
 
-    def __init__(self, url, threadpool, dataManager) -> None:
+    def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
         super().__init__(url, threadpool, dataManager)
-        self.name = "StartGG"
         self._mains_cache = {}
         # Players whose mains a bulk load (e.g. the bracket) needs, fetched
         # one by one in the background instead of on the UI thread

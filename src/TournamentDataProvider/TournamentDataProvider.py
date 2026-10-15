@@ -29,10 +29,46 @@ class TournamentDataProvider(QObject):
     them. Methods taking a callback emit their result to it (callback.emit)
     instead of returning it."""
 
-    def __init__(self, url, threadpool, dataManager) -> None:
+    # =====================================================
+    # WHAT THE PROVIDER IS
+    # =====================================================
+    # Its name, as provider.name has it
+    NAME = ""
+    # Event links on this host are for this provider (see Providers.py)
+    HOST = None
+    # The setting with the API key it needs, None if it needs none
+    API_KEY_SETTING = None
+    # Shown when that key isn't set (translated in the "app" context), with
+    # where keys are made
+    API_KEY_MISSING = None
+    API_KEY_URL = None
+    # What its videogame ids are: "startgg" or "igdb" (see
+    # TournamentDataManager.SetGameFromProvider)
+    GAME_ID_KIND = None
+    # Its icon in assets/icons, and whether it follows the theme's colors
+    ICON = None
+    ICON_THEMED = False
+    # The completed sets button's text (translated in the "app" context)
+    COMPLETED_SETS_BUTTON = None
+
+    # =====================================================
+    # WHAT THE PROVIDER CAN DO
+    # =====================================================
+    # GetTournamentPhaseGroup gives sets and how they connect, for the
+    # bracket widget
+    SUPPORTS_BRACKETS = False
+    # Players' stats: GetLastSets, GetPlayerHistoryStandings, GetRecentSets
+    SUPPORTS_STATS = False
+    # GetCompletedSets
+    SUPPORTS_COMPLETED_SETS = False
+    # Calling a set, or assigning it to a stream or a station, on the
+    # provider (StartGGReporter.RunAction)
+    SUPPORTS_SET_ACTIONS = False
+
+    def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
         super().__init__(None)
 
-        self.name = ""
+        self.name = self.NAME
         self.url = url
         self.entrants = []
         self.tournamentData = {}
@@ -43,6 +79,12 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # TOURNAMENT
     # =====================================================
+    def GetRealEventURL(self, url) -> str:
+        """The event's URL to keep, from the one given (which may be a short
+        or admin link)"""
+        self.url = url
+        return url
+
     def GetIconURL(self) -> str | None:
         """The tournament's icon"""
         pass
