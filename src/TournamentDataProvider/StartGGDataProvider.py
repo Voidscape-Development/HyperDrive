@@ -1,11 +1,9 @@
 import os
 import re
 import threading
-import time
 import traceback
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait
-from http.cookiejar import DefaultCookiePolicy
 
 import orjson
 import requests
@@ -18,28 +16,13 @@ from ..Helpers import CompletedSetsHelper, SocialsHelper
 from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.DictHelper import deep_clone, deep_get
-from ..Helpers.DirHelper import ResolvePath
 from ..Helpers.LocaleHelper import LocaleHelper
 from ..Helpers.SeedPerformance import EventBracketType
 from ..PlayerDB import PlayerDB
 from ..PlayerDBModels import MakeTag
 from ..SettingsManager import SettingsManager
+from .StartGGClient import ReadQuery, StartGGClient
 from .TournamentDataProvider import TournamentDataProvider
-
-
-def _CreateSession():
-    # Shared by every start.gg request so the HTTPS connection is kept alive,
-    # instead of a new TCP + TLS handshake for every query.
-    session = requests.Session()
-    adapter = requests.adapters.HTTPAdapter(pool_connections=4, pool_maxsize=16)
-    session.mount("https://", adapter)
-    session.mount("http://", adapter)
-    # Like the plain requests.get/post calls this replaced, don't keep cookies
-    session.cookies.set_policy(DefaultCookiePolicy(allowed_domains=[]))
-    return session
-
-
-_session = _CreateSession()
 
 
 def LeagueSlug(link):
@@ -57,9 +40,6 @@ def ImageUrl(images, imageType):
         (i.get("url") for i in images or [] if i and i.get("type") == imageType and i.get("url")),
         "",
     )
-
-
-_sessionMethods = {requests.get: "GET", requests.post: "POST"}
 
 
 class StartGGDataProvider(TournamentDataProvider):
@@ -105,11 +85,6 @@ class StartGGDataProvider(TournamentDataProvider):
 
     player_seeds = {}
 
-    # Status codes worth trying again: rate limiting and server-side errors.
-    # Anything else (bad query, auth, not found) fails the same way every time.
-    _retryStatusCodes = {429, 500, 502, 503, 504}
-    _maxRetryDelaySecs = 8.0
-
     # Each player's events are listed 250 a request, up to 4 requests
     _recent_sets_events_per_page = 250
     _recent_sets_max_event_pages = 4
@@ -127,6 +102,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
     def __init__(self, url, threadpool, dataManager, api_key=None) -> None:
         super().__init__(url, threadpool, dataManager)
+        self.client = StartGGClient()
         # {MainsKey: mains}, see FetchMains
         self._mains_cache = {}
         # {start.gg user id: profile fields}, for players looked up because
@@ -149,87 +125,13 @@ class StartGGDataProvider(TournamentDataProvider):
         retries=5,
         timeout=None,
     ):
-        try:
-            data = None
-            headers = dict(headers or {})
-            headers.update(
-                {
-                    "client-version": "20",
-                    "Content-Type": "application/json",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
-                }
-            )
-            method = _sessionMethods.get(type)
-            send = (
-                (lambda url, **kwargs: _session.request(method, url, **kwargs)) if method else type
-            )
-            for attempt in range(retries + 1):
-                lastAttempt = attempt == retries
-                try:
-                    data = send(
-                        url,
-                        timeout=timeout or self._request_timeout_secs,
-                        headers=headers,
-                        json=jsonParams,
-                        params=params,
-                    )
-                except requests.exceptions.ConnectionError as e:
-                    # Dropped/refused connections are usually transient.
-                    # Timeouts aren't retried: each one already waited a while.
-                    if lastAttempt or isinstance(e, requests.exceptions.Timeout):
-                        raise
-                    time.sleep(min(0.5 * 2**attempt, self._maxRetryDelaySecs))
-                    continue
-
-                if (
-                    data.status_code == 200
-                    or data.status_code not in self._retryStatusCodes
-                    or lastAttempt
-                ):
-                    break
-
-                delay = min(0.5 * 2**attempt, self._maxRetryDelaySecs)
-                retryAfter = data.headers.get("Retry-After")
-                if retryAfter:
-                    try:
-                        delay = min(float(retryAfter), self._maxRetryDelaySecs * 2)
-                    except ValueError:
-                        pass
-                logger.warning(
-                    f"start.gg {(jsonParams or {}).get('operationName', url)} returned {data.status_code}, retrying in {delay}s"
-                )
-                time.sleep(delay)
-
-            if data.status_code != 200:
-                logger.warning(
-                    f"start.gg {(jsonParams or {}).get('operationName', url)} returned {data.status_code}"
-                )
-            data = orjson.loads(data.text)
-            # GraphQL errors (e.g. the complexity cap) come back as a 200,
-            # so they'd otherwise look like an empty result
-            if isinstance(data, dict) and data.get("errors"):
-                logger.warning(
-                    f"start.gg {(jsonParams or {}).get('operationName', url)} returned errors: {data.get('errors')}"
-                )
-            return data
-        except Exception as e:
-            # `type` is the request-method parameter here, not the builtin
-            logger.error(f"{e.__class__.__name__}: {e}")
-            return {}
+        """See StartGGClient.Request"""
+        return self.client.Request(
+            url, type, headers, jsonParams, params, retries, timeout or self._request_timeout_secs
+        )
 
     def _FetchAllPages(self, fetchPage, totalPagesPath, cancel_event=None):
-        # Page 1 tells us how many pages there are; the rest are fetched in
-        # parallel instead of one after another. Results stay in page order.
-        first = fetchPage(1)
-        pages = [first]
-        totalPages = deep_get(first, totalPagesPath, 1) or 1
-
-        if totalPages > 1 and (cancel_event is None or not cancel_event.is_set()):
-            # Keep the worker count low so start.gg doesn't start rate limiting us
-            with ThreadPoolExecutor(max_workers=4) as executor:
-                pages.extend(executor.map(fetchPage, range(2, totalPages + 1)))
-
-        return pages
+        return StartGGClient.FetchAllPages(fetchPage, totalPagesPath, cancel_event)
 
     # =====================================================
     # TOURNAMENT
@@ -2714,40 +2616,28 @@ class StartGGDataProvider(TournamentDataProvider):
             return []
 
 
-sggTdpDir = ResolvePath("src/TournamentDataProvider")
-
-
-def readQueryFile(tdpdir, filename):
-    with open(f"{tdpdir}/StartGG{filename}Query.txt") as f:
-        return f.read()
-
-
-StartGGDataProvider.CompletedSetsQuery = readQueryFile(sggTdpDir, "CompletedSets")
-StartGGDataProvider.EntrantsQuery = readQueryFile(sggTdpDir, "Entrants")
-StartGGDataProvider.FutureSetQuery = readQueryFile(sggTdpDir, "FutureSet")
-StartGGDataProvider.HistorySetsQuery = readQueryFile(sggTdpDir, "PlayerTournamentHistory")
-StartGGDataProvider.LastSetsQuery = readQueryFile(sggTdpDir, "PlayerLastSets")
-StartGGDataProvider.RecentSetsQuery = readQueryFile(sggTdpDir, "RecentSets")
-StartGGDataProvider.RecentSetsPlayersQuery = readQueryFile(sggTdpDir, "RecentSetsPlayers")
-StartGGDataProvider.RecentSetsDetailsQuery = readQueryFile(sggTdpDir, "RecentSetsDetails")
-StartGGDataProvider.SetQuery = readQueryFile(sggTdpDir, "Set")
-StartGGDataProvider.SetsQuery = readQueryFile(sggTdpDir, "Sets")
-StartGGDataProvider.StationsQuery = readQueryFile(sggTdpDir, "Stations")
-StartGGDataProvider.StationSetsQuery = readQueryFile(sggTdpDir, "StationSets")
-StartGGDataProvider.StreamQueueQuery = readQueryFile(sggTdpDir, "StreamQueue")
-StartGGDataProvider.StreamSetsQuery = readQueryFile(sggTdpDir, "StreamSets")
-StartGGDataProvider.TournamentDataQuery = readQueryFile(sggTdpDir, "TournamentData")
-StartGGDataProvider.TournamentPhasesQuery = readQueryFile(sggTdpDir, "TournamentPhases")
-StartGGDataProvider.TournamentPhaseGroupSeedsQuery = readQueryFile(
-    sggTdpDir, "TournamentPhaseGroupSeeds"
-)
-StartGGDataProvider.TournamentPhaseGroupSetsQuery = readQueryFile(
-    sggTdpDir, "TournamentPhaseGroupSets"
-)
-StartGGDataProvider.TournamentStandingsQuery = readQueryFile(sggTdpDir, "TournamentStandings")
-StartGGDataProvider.UserSetQuery = readQueryFile(sggTdpDir, "UserSet")
-StartGGDataProvider.UserMainsQuery = readQueryFile(sggTdpDir, "UserMains")
-StartGGDataProvider.UserProfileQuery = readQueryFile(sggTdpDir, "UserProfile")
-StartGGDataProvider.TournamentSlugQuery = readQueryFile(sggTdpDir, "TournamentSlug")
-StartGGDataProvider.StreamsStationsQuery = readQueryFile(sggTdpDir, "StreamsStations")
-StartGGDataProvider.SetDurationsQuery = readQueryFile(sggTdpDir, "SetDurations")
+StartGGDataProvider.CompletedSetsQuery = ReadQuery("CompletedSets")
+StartGGDataProvider.EntrantsQuery = ReadQuery("Entrants")
+StartGGDataProvider.FutureSetQuery = ReadQuery("FutureSet")
+StartGGDataProvider.HistorySetsQuery = ReadQuery("PlayerTournamentHistory")
+StartGGDataProvider.LastSetsQuery = ReadQuery("PlayerLastSets")
+StartGGDataProvider.RecentSetsQuery = ReadQuery("RecentSets")
+StartGGDataProvider.RecentSetsPlayersQuery = ReadQuery("RecentSetsPlayers")
+StartGGDataProvider.RecentSetsDetailsQuery = ReadQuery("RecentSetsDetails")
+StartGGDataProvider.SetQuery = ReadQuery("Set")
+StartGGDataProvider.SetsQuery = ReadQuery("Sets")
+StartGGDataProvider.StationsQuery = ReadQuery("Stations")
+StartGGDataProvider.StationSetsQuery = ReadQuery("StationSets")
+StartGGDataProvider.StreamQueueQuery = ReadQuery("StreamQueue")
+StartGGDataProvider.StreamSetsQuery = ReadQuery("StreamSets")
+StartGGDataProvider.TournamentDataQuery = ReadQuery("TournamentData")
+StartGGDataProvider.TournamentPhasesQuery = ReadQuery("TournamentPhases")
+StartGGDataProvider.TournamentPhaseGroupSeedsQuery = ReadQuery("TournamentPhaseGroupSeeds")
+StartGGDataProvider.TournamentPhaseGroupSetsQuery = ReadQuery("TournamentPhaseGroupSets")
+StartGGDataProvider.TournamentStandingsQuery = ReadQuery("TournamentStandings")
+StartGGDataProvider.UserSetQuery = ReadQuery("UserSet")
+StartGGDataProvider.UserMainsQuery = ReadQuery("UserMains")
+StartGGDataProvider.UserProfileQuery = ReadQuery("UserProfile")
+StartGGDataProvider.TournamentSlugQuery = ReadQuery("TournamentSlug")
+StartGGDataProvider.StreamsStationsQuery = ReadQuery("StreamsStations")
+StartGGDataProvider.SetDurationsQuery = ReadQuery("SetDurations")
