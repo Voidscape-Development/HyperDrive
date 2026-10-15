@@ -1,9 +1,7 @@
 # Checks StartGGDataProvider against recorded start.gg responses (made with
 # scripts/record_startgg_fixtures.py, anonymized), offline:
-# - Contract: every method's result has the keys and types the app uses.
-#   These are what the provider promises today, including where methods
-#   disagree with each other (a player's tag is gamerTag in sets, name in
-#   future sets and gamertag in completed sets).
+# - Contract: every method's result has the shape its type in
+#   src/TournamentDataProvider/ResultTypes.py says, all the way down.
 # - Behavior: things the recorded event has, like DQs, stages and a grand
 #   final reset, come through.
 # - Expected results: every result is the same as in
@@ -14,304 +12,160 @@
 import json
 import os
 import sys
+from types import UnionType
+from typing import Union, get_args, get_origin, get_type_hints, is_typeddict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import startgg_harness as H
 
+from src.TournamentDataProvider import ResultTypes as R
+
 EXPECTED = os.path.join(H.FIXTURE_DIR, "expected.json")
-
 NONE = type(None)
-INT_OR_NONE = (int, NONE)
-STR_OR_NONE = (str, NONE)
 
-
-class Optional:
-    """A key that's only there when there's a value for it"""
-
-    def __init__(self, types):
-        self.types = types
+failures = []
 
 
 # =====================================================
 # CONTRACT
 # =====================================================
-# {key: type or (types)}: the keys a result must have, with their types
-TOURNAMENT_DATA = {
-    "tournamentName": str,
-    "eventName": str,
-    "numEntrants": int,
-    "startAt": int,
-    "endAt": int,
-    "eventStartAt": int,
-    "address": str,
-    "logo": str,
-    "banner": str,
-    "shortLink": str,
-}
-PHASE = {"id": int, "name": str, "groups": list}
-PHASE_GROUP_ITEM = {"id": int, "name": str, "bracketType": str}
-BRACKET_SET = {
-    "id": str,
-    "identifier": str,
-    "name": str,
-    "round": int,
-    "score": list,
-    "finished": bool,
-    "winnerSlot": INT_OR_NONE,
-    "slots": list,
-}
-BRACKET_SLOT = {
-    "prereqType": str,
-    "prereqId": STR_OR_NONE,
-    "entrantId": STR_OR_NONE,
-    "player": INT_OR_NONE,
-    "placement": INT_OR_NONE,
-}
-BRACKET_SET_RESULT = {
-    "id": str,
-    "score": list,
-    "finished": bool,
-    "winnerSlot": INT_OR_NONE,
-    "slots": list,
-}
-PLAYER = {
-    "gamerTag": str,
-    "prefix": STR_OR_NONE,
-    "name": STR_OR_NONE,
-    "id": list,
-    "socials": dict,
-    "avatar": Optional(str),
-    "twitter": Optional(str),
-    "pronoun": Optional(str),
-    "state_code": Optional(str),
-}
-SET_LIST_ITEM = {
-    "id": int,
-    "round": int,
-    "round_name": str,
-    "tournament_phase": str,
-    "bracket_type": str,
-    "state": int,
-    "p1_name": str,
-    "p2_name": str,
-    "team1score": int,
-    "team2score": int,
-    "entrants": list,
-    "entrant_ids": list,
-    "games": list,
-    "isPools": bool,
-    "station": (int, str),
-    "stream": STR_OR_NONE,
-}
-SET = {
-    **SET_LIST_ITEM,
-    "station": str,
-    "p1_seed": int,
-    "p2_seed": int,
-    "isOnline": bool,
-    "has_selection_data": Optional(bool),
-    "team1losers": bool,
-    "team2losers": bool,
-    "bestOf": INT_OR_NONE,
-    "ruleset": dict,
-    "stage_strike": dict,
-    "strikedBy": list,
-    "currPlayer": int,
-}
-SET_PLAYER = {**PLAYER, "seed": int, "mains": Optional(list), "city": Optional(str)}
-GAME = {"winner": INT_OR_NONE, "stage": STR_OR_NONE, "characters": list}
-FUTURE_SET = {
-    "id": int,
-    "match": str,
-    "phase": str,
-    "event": str,
-    "best_of": int,
-    "best_of_text": str,
-    "state": int,
-    "station": INT_OR_NONE,
-    "isCurrentEvent": bool,
-    "team": dict,
-}
-FUTURE_TEAM = {"teamName": str, "seed": INT_OR_NONE, "losers": bool, "player": dict}
-FUTURE_PLAYER = {
-    "name": str,
-    "team": STR_OR_NONE,
-    "mergedName": str,
-    "real_name": STR_OR_NONE,
-    "id": list,
-    "twitter": str,
-    "pronoun": str,
-    "socials": dict,
-    "country": dict,
-    "state": dict,
-    "online_avatar": str,
-}
-STATION = {"id": int, "identifier": (int, str), "type": str, "stream": str}
-COMPLETED_SET = {
-    "phase_id": str,
-    "phase_name": str,
-    "round_name": str,
-    "bracket_type": str,
-    "winner_score": int,
-    "loser_score": int,
-    "winner_seed": INT_OR_NONE,
-    "loser_seed": INT_OR_NONE,
-    "winner_team_name": str,
-    "loser_team_name": str,
-    "winner_team": dict,
-    "loser_team": dict,
-    "upset_factor": int,
-}
-COMPLETED_PLAYER = {
-    "gamertag": str,
-    "sponsor": str,
-    "country": dict,
-    "state": dict,
-    "characters": dict,
-}
-SET_DURATION = {
-    "id": int,
-    "startedAt": INT_OR_NONE,
-    "completedAt": INT_OR_NONE,
-    "totalGames": INT_OR_NONE,
-    "dq": bool,
-}
-STANDING = {"wins": int, "losses": int, "winPercentage": str, "players": list}
-STANDING_PLAYER = {**PLAYER, "seed": int, "mains": dict, "startggMains": list}
-LAST_SET = {
-    "phase_id": str,
-    "phase_name": str,
-    "round_name": str,
-    "player1_name": str,
-    "player1_team": str,
-    "player1_score": int,
-    "player1_seed": INT_OR_NONE,
-    "player2_name": str,
-    "player2_team": STR_OR_NONE,
-    "player2_score": int,
-    "player2_seed": INT_OR_NONE,
-    "player_char": dict,
-    "oponent_char": dict,
-}
-HISTORY_SET = {
-    "placement": int,
-    "seed": INT_OR_NONE,
-    "entrants": int,
-    "event_name": str,
-    "tournament_name": str,
-    "tournament_picture": str,
-    "event_date": int,
-    "bracket_type": str,
-}
-RECENT_SET = {
-    "id": int,
-    "tournament": str,
-    "event": str,
-    "phase_id": str,
-    "phase_name": str,
-    "round": str,
-    "score": list,
-    "winner": int,
-    "online": bool,
-    "timestamp": int,
-    "p1_char": dict,
-    "p2_char": dict,
-}
-ENTRANT = {**PLAYER, "seed": int, "startgg_user_slug": str}
-
-failures = []
+def Conforms(value, tp, path, errors):
+    """Adds to errors where value doesn't have the shape tp (a ResultTypes
+    TypedDict, list[...], dict[str, ...], a union or a plain type) says.
+    Keys a TypedDict doesn't list are allowed."""
+    origin = get_origin(tp)
+    if tp is NONE:
+        if value is not None:
+            errors.append(f"{path}: {value!r}, expected None")
+    elif origin in (Union, UnionType):
+        for option in get_args(tp):
+            found = []
+            Conforms(value, option, path, found)
+            if not found:
+                return
+        errors.append(f"{path}: {type(value).__name__} matches none of {tp}")
+    elif is_typeddict(tp):
+        if not isinstance(value, dict):
+            errors.append(f"{path}: {type(value).__name__}, expected {tp.__name__}")
+            return
+        for key in sorted(tp.__required_keys__ - value.keys()):
+            errors.append(f"{path}: no {key} ({tp.__name__})")
+        for key, keyType in get_type_hints(tp).items():
+            if key in value:
+                Conforms(value[key], keyType, f"{path}.{key}", errors)
+    elif origin is list:
+        if not isinstance(value, list):
+            errors.append(f"{path}: {type(value).__name__}, expected a list")
+            return
+        (itemType,) = get_args(tp)
+        for i, item in enumerate(value):
+            Conforms(item, itemType, f"{path}[{i}]", errors)
+    elif origin is dict:
+        if not isinstance(value, dict):
+            errors.append(f"{path}: {type(value).__name__}, expected a dict")
+            return
+        _, valueType = get_args(tp)
+        for key, item in value.items():
+            Conforms(item, valueType, f"{path}.{key}", errors)
+    elif tp is int and isinstance(value, bool) or not isinstance(value, tp):
+        errors.append(f"{path}: {type(value).__name__} {value!r:.40}, expected {tp.__name__}")
 
 
-def Check(name, value, shape):
-    if not isinstance(value, dict):
-        failures.append(f"{name}: expected an object, got {type(value).__name__}")
-        return
-    for key, types in shape.items():
-        optional = isinstance(types, Optional)
-        types = types.types if optional else types
-        if key not in value:
-            if not optional:
-                failures.append(f"{name}: no {key}")
-        elif not isinstance(value[key], types):
-            failures.append(f"{name}.{key}: {type(value[key]).__name__}, expected {types}")
+# What each result of the scenario is
+CONTRACT = {
+    "tournament_data": R.TournamentData,
+    "icon_url": str,
+    "streams_and_stations": R.StreamsAndStations,
+    "phases": list[R.Phase],
+    "phase_group": R.PhaseGroup,
+    "phase_group_sets": R.PhaseGroupSets,
+    "matches_open": list[R.SetListItem],
+    "matches_all": list[R.SetListItem],
+    "match": dict[str, R.Set],
+    "future_match": dict[str, R.FutureSet],
+    "future_matches_list": dict[str, R.FutureSet | None],
+    "stations": list[R.Station],
+    "stream_queue": dict[str, dict[str, R.FutureSet]],
+    "stream_match": dict[str, R.FutureSet | None],
+    "station_matches": dict[str, list[dict]],
+    "completed_sets": list[R.CompletedSet],
+    "set_durations": list[R.SetDuration],
+    "standings": list[R.Standing],
+    "last_sets_1": R.LastSets,
+    "last_sets_2": R.LastSets,
+    "history_sets_1": R.HistorySets,
+    "history_sets_2": R.HistorySets,
+    "recent_sets": R.RecentSets,
+    "entrants_result": NONE,
+    "entrants_added": list[R.Entrant],
+    # {user slug: {game codename: [[character name], ...]}}
+    "user_mains": dict[str, dict[str, list]],
+}
+
+# Results the recorded event has some of: a contract check of an empty list
+# would pass whatever the items' shape
+NOT_EMPTY = [
+    "phases",
+    "phase_group.sets",
+    "phase_group.entrants",
+    "matches_all",
+    "match",
+    "future_match",
+    "future_matches_list",
+    "stations",
+    "streams_and_stations.streams",
+    "completed_sets",
+    "set_durations",
+    "standings",
+    "last_sets_1.last_sets",
+    "history_sets_1.history_sets",
+    "recent_sets.sets",
+    "entrants_added",
+    "user_mains",
+]
 
 
-def CheckAll(name, values, shape, atLeast=1):
-    values = list(values)
-    if len(values) < atLeast:
-        failures.append(f"{name}: {len(values)} results, expected at least {atLeast}")
-    for i, value in enumerate(values):
-        Check(f"{name}[{i}]", value, shape)
+def CheckChecker():
+    """Conforms() finds what it should, so passing contract checks mean
+    something"""
+    player = {"name": "A", "team": None, "mergedName": "A", "real_name": None, "id": [1, 2]}
+    player.update(twitter="", pronoun="", socials={}, country={}, state={}, online_avatar="")
+    team = {"teamName": "A", "seed": 1, "losers": False, "player": {"1": player}}
+    good = {"id": 1, "match": "", "phase": "", "event": "", "best_of": 3, "best_of_text": ""}
+    good.update(state=1, station=None, isCurrentEvent=True, team={"1": team})
+    noName = json.loads(json.dumps(good))
+    del noName["team"]["1"]["player"]["1"]["name"]
+    cases = [
+        (good, R.FutureSet, False),
+        (noName, R.FutureSet, "no name"),
+        (dict(good, best_of=True), R.FutureSet, "best_of: bool"),
+        (dict(good, station="1"), R.FutureSet, "matches none"),
+        ([good, None], list[R.FutureSet], "[1]"),
+        ({"1": None}, dict[str, R.FutureSet | None], False),
+        (None, NONE, False),
+        (0, NONE, "expected None"),
+    ]
+    for value, tp, expected in cases:
+        errors = []
+        Conforms(value, tp, "case", errors)
+        if bool(errors) != bool(expected) or (expected and expected not in " ".join(errors)):
+            failures.append(f"contract checker: expected {expected!r} for {tp}, got {errors}")
 
 
 def CheckContract(out):
-    Check("tournament_data", out["tournament_data"], TOURNAMENT_DATA)
-    if not isinstance(out["icon_url"], str) or not out["icon_url"].startswith("https://"):
-        failures.append(f"icon_url: {out['icon_url']!r}")
-
-    CheckAll("phases", out["phases"], PHASE)
-    CheckAll("phases.groups", [g for p in out["phases"] for g in p["groups"]], PHASE_GROUP_ITEM)
-    group = out["phase_group"]
-    CheckAll("phase_group.sets", group["sets"], BRACKET_SET)
-    CheckAll("phase_group.slots", [s for x in group["sets"] for s in x["slots"]], BRACKET_SLOT)
-    CheckAll("phase_group.players", [p for e in group["entrants"] for p in e["players"]], PLAYER)
-    CheckAll("phase_group_sets", out["phase_group_sets"]["sets"], BRACKET_SET_RESULT)
-
-    CheckAll("matches_all", out["matches_all"], SET_LIST_ITEM)
-    if out["matches_open"] != []:
-        failures.append("matches_open: the event is over, expected no open sets")
-    matches = list(out["match"].values())
-    CheckAll("match", matches, SET)
-    CheckAll("match.players", [p for m in matches for e in m["entrants"] for p in e], SET_PLAYER)
-    CheckAll("match.games", [g for m in matches for g in m["games"]], GAME)
-
-    futures = list(out["future_match"].values())
-    CheckAll("future_match", futures, FUTURE_SET)
-    CheckAll("future_match.team", [t for f in futures for t in f["team"].values()], FUTURE_TEAM)
-    CheckAll(
-        "future_match.player",
-        [p for f in futures for t in f["team"].values() for p in t["player"].values()],
-        FUTURE_PLAYER,
-    )
-    CheckAll("future_matches_list", out["future_matches_list"].values(), FUTURE_SET)
-
-    CheckAll("stations", out["stations"], STATION)
-    streams = out["streams_and_stations"]
-    CheckAll("streams_and_stations.streams", streams["streams"], {"id": int, "name": str})
-    CheckAll(
-        "streams_and_stations.stations",
-        streams["stations"],
-        {"id": int, "number": int, "stream": str},
-    )
-
-    CheckAll("completed_sets", out["completed_sets"], COMPLETED_SET)
-    CheckAll(
-        "completed_sets.players",
-        [p for c in out["completed_sets"] for p in c["winner_team"].values()],
-        COMPLETED_PLAYER,
-    )
-    CheckAll("set_durations", out["set_durations"], SET_DURATION)
-    CheckAll("standings", out["standings"], STANDING)
-    CheckAll(
-        "standings.players", [p for t in out["standings"] for p in t["players"]], STANDING_PLAYER
-    )
-
-    for n in (1, 2):
-        Check(f"last_sets_{n}", out[f"last_sets_{n}"], {"playerNumber": str, "last_sets": list})
-        CheckAll(f"last_sets_{n}.sets", out[f"last_sets_{n}"]["last_sets"], LAST_SET)
-        Check(
-            f"history_sets_{n}",
-            out[f"history_sets_{n}"],
-            {"playerNumber": str, "history_sets": list},
-        )
-        CheckAll(f"history_sets_{n}.sets", out[f"history_sets_{n}"]["history_sets"], HISTORY_SET)
-    Check("recent_sets", out["recent_sets"], {"sets": list, "request_time": int})
-    CheckAll("recent_sets.sets", out["recent_sets"]["sets"], RECENT_SET)
-
-    CheckAll("entrants_added", out["entrants_added"], ENTRANT)
-    for slug, mains in out["user_mains"].items():
-        if not mains.get("ssbu"):
-            failures.append(f"user_mains[{slug}]: no Ultimate mains")
+    CheckChecker()
+    missing = sorted(CONTRACT.keys() ^ out.keys())
+    if missing:
+        failures.append(f"results without a contract, or missing: {missing}")
+    for name, tp in CONTRACT.items():
+        if name in out:
+            Conforms(out[name], tp, name, failures)
+    for path in NOT_EMPTY:
+        value = out
+        for key in path.split("."):
+            value = value.get(key) if isinstance(value, dict) else None
+        if not value:
+            failures.append(f"{path}: empty, expected some")
 
 
 # =====================================================

@@ -6,8 +6,29 @@ import requests
 from loguru import logger
 from qtpy.QtCore import QObject
 
+from .ResultTypes import (
+    CompletedSet,
+    FutureSet,
+    Phase,
+    PhaseGroup,
+    PhaseGroupSets,
+    Set,
+    SetDuration,
+    SetListItem,
+    Standing,
+    Station,
+    StreamsAndStations,
+    TournamentData,
+)
+
 
 class TournamentDataProvider(QObject):
+    """What every tournament data provider (start.gg, parry.gg) can be asked.
+    The results' shapes are in ResultTypes.py. Methods taking
+    progress_callback and cancel_event run in a Worker thread, which passes
+    them. Methods taking a callback emit their result to it (callback.emit)
+    instead of returning it."""
+
     def __init__(self, url, threadpool, dataManager) -> None:
         super().__init__(None)
 
@@ -22,29 +43,29 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # TOURNAMENT
     # =====================================================
-    def GetIconURL(self):
+    def GetIconURL(self) -> str | None:
+        """The tournament's icon"""
         pass
 
-    def GetTournamentData(self, progress_callback=None, cancel_event=None):
+    def GetTournamentData(self, progress_callback=None, cancel_event=None) -> TournamentData:
         pass
 
     # =====================================================
     # PHASES AND BRACKETS
     # =====================================================
-    def GetTournamentPhases(self, progress_callback=None, cancel_event=None):
+    def GetTournamentPhases(self, progress_callback=None, cancel_event=None) -> list[Phase]:
         pass
 
-    def GetTournamentPhaseGroup(self, id, progress_callback=None, cancel_event=None):
+    def GetTournamentPhaseGroup(self, id, progress_callback=None, cancel_event=None) -> PhaseGroup:
+        """The phase group's entrants (by seed) and its sets"""
         pass
 
     def GetTournamentPhaseGroupSets(
-        self, id, graph=False, progress_callback=None, cancel_event=None
-    ):
-        # Just the set results of a phase group, to refresh an already loaded
-        # bracket without reloading its entrants. Returns {"graph": {"sets":
-        # [{"id", "score", "finished", "winnerSlot"}, ...]}} when graph is
-        # True and the provider can, else the same "sets" as
-        # GetTournamentPhaseGroup. By default that's all it can do.
+        self, id, progress_callback=None, cancel_event=None
+    ) -> PhaseGroupSets:
+        """Just the results of the phase group's sets, to refresh a bracket
+        already loaded without loading its entrants again. By default, the
+        whole phase group, whose sets have the results too."""
         return self.GetTournamentPhaseGroup(
             id, progress_callback=progress_callback, cancel_event=cancel_event
         )
@@ -52,32 +73,45 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # SETS
     # =====================================================
-    def GetMatch(self, setId, progress_callback=None, cancel_event=None):
+    def GetMatch(self, setId, progress_callback=None, cancel_event=None) -> Set:
+        """A set, to load into a scoreboard"""
         pass
 
-    def GetMatches(self, getFinished=False, progress_callback=None, cancel_event=None):
+    def GetMatches(
+        self, getFinished=False, progress_callback=None, cancel_event=None
+    ) -> list[SetListItem]:
+        """The event's sets to pick one from: the ones not finished, or all"""
         pass
 
     # =====================================================
     # FUTURE SETS
     # =====================================================
-    def GetFutureMatch(self, progrss_callback=None):
+    def GetFutureMatch(self, matchId, progress_callback=None, cancel_event=None) -> FutureSet:
+        """A set in a queue, {} if it can't be found"""
         pass
 
-    # give me a list of objects that contain a "id" property
-    def GetFutureMatchesList(self, sets: object, progress_callback=None, cancel_event=None):
+    def GetFutureMatchesList(
+        self, setsId: list[dict], progress_callback=None, cancel_event=None
+    ) -> dict[str, FutureSet | None]:
+        """GetFutureMatch of each set ({"id": ...}), as {"1": set, "2": ...}
+        in the same order, None for a set that couldn't be fetched"""
         pass
 
     # =====================================================
     # STREAMS AND STATIONS
     # =====================================================
-    def GetStations(self, progress_callback=None, cancel_event=None):
+    def GetStations(self, progress_callback=None, cancel_event=None) -> list[Station]:
+        """The stations and streams sets can be loaded from"""
         pass
 
-    def GetStreamQueue(self, streamName=None, progress_callback=None, cancel_event=None):
+    def GetStreamQueue(
+        self, progress_callback=None, cancel_event=None
+    ) -> dict[str, dict[str, FutureSet]]:
+        """Each stream's queue: {stream name: {"1": set, "2": ...}}"""
         pass
 
-    def GetStreamMatchId(self, station):
+    def GetStreamMatchId(self, station) -> FutureSet | None:
+        """The set on a stream (or a station's slot) now, None if none"""
         # ``station`` is the dict produced by GetStations, but for backward
         # compatibility implementations should also accept a bare identifier
         # string (the legacy form). Providers without per-capacity slots may
@@ -87,11 +121,15 @@ class TournamentDataProvider(QObject):
     def GetStationMatchId(self, stationId):
         pass
 
-    def GetStationMatchsId(self, stationId):
+    def GetStationMatchsId(self, stationId) -> list[dict]:
+        """A station's sets, as the provider gives them (each with an
+        "id"). The first one is loaded, the others go in its queue."""
         pass
 
     # What only some providers can do. None means the provider can't.
-    def GetStreamsAndStations(self, progress_callback=None, cancel_event=None):
+    def GetStreamsAndStations(
+        self, progress_callback=None, cancel_event=None
+    ) -> StreamsAndStations | None:
         return None
 
     def ConvertStreamUrl(self, stream):
@@ -149,25 +187,41 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # SET HISTORY
     # =====================================================
-    def GetRecentSets(self, id1, id2, videogame, callback):
+    def GetRecentSets(
+        self, id1, id2, videogame, callback, requestTime, progress_callback, cancel_event
+    ) -> None:
+        """Emits the sets the two players (ids as in Player.id) played
+        against each other: a RecentSets"""
         pass
 
-    def GetLastSets(self, playerId, playerNumber):
+    def GetLastSets(
+        self, playerID, playerNumber, callback, progress_callback, cancel_event
+    ) -> None:
+        """Emits the player's last sets in the event: a LastSets"""
         pass
 
-    def GetCompletedSets(self):
+    def GetCompletedSets(self, progress_callback, cancel_event) -> list[CompletedSet]:
+        """The event's last completed sets, most recent first"""
         pass
 
-    def GetPlayerHistoryStandings(self, playerId, playerNumber, gameType):
+    def GetPlayerHistoryStandings(
+        self, playerID, playerNumber, gameType, callback, progress_callback, cancel_event
+    ) -> None:
+        """Emits the player's placements in past events: a HistorySets"""
         pass
 
-    def GetSetDurations(self, count=40, progress_callback=None, cancel_event=None):
+    def GetSetDurations(
+        self, count=40, progress_callback=None, cancel_event=None
+    ) -> list[SetDuration] | None:
+        """The event's last completed sets, for how long sets take"""
         return None
 
     # =====================================================
     # ENTRANTS AND PLAYERS
     # =====================================================
-    def GetEntrants(self):
+    def GetEntrants(self) -> None:
+        """Adds the event's entrants to the player database, in the
+        background"""
         pass
 
     def EnrichPlayerData(self, playerData, blocking=True):
@@ -187,5 +241,6 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # STANDINGS
     # =====================================================
-    def GetStandings(self, playerNumber):
+    def GetStandings(self, playerNumber, progress_callback, cancel_event) -> list[Standing]:
+        """The event's top playerNumber, in placement order"""
         pass
