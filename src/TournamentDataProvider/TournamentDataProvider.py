@@ -19,21 +19,58 @@ class TournamentDataProvider(QObject):
         self.videogame = None
         self.dataManager = dataManager
 
+    # =====================================================
+    # TOURNAMENT
+    # =====================================================
     def GetIconURL(self):
-        pass
-
-    def GetEntrants(self):
         pass
 
     def GetTournamentData(self, progress_callback=None, cancel_event=None):
         pass
 
+    # =====================================================
+    # PHASES AND BRACKETS
+    # =====================================================
+    def GetTournamentPhases(self, progress_callback=None, cancel_event=None):
+        pass
+
+    def GetTournamentPhaseGroup(self, id, progress_callback=None, cancel_event=None):
+        pass
+
+    def GetTournamentPhaseGroupSets(
+        self, id, graph=False, progress_callback=None, cancel_event=None
+    ):
+        # Just the set results of a phase group, to refresh an already loaded
+        # bracket without reloading its entrants. Returns {"graph": {"sets":
+        # [{"id", "score", "finished", "winnerSlot"}, ...]}} when graph is
+        # True and the provider can, else the same "sets" as
+        # GetTournamentPhaseGroup. By default that's all it can do.
+        return self.GetTournamentPhaseGroup(
+            id, progress_callback=progress_callback, cancel_event=cancel_event
+        )
+
+    # =====================================================
+    # SETS
+    # =====================================================
     def GetMatch(self, setId, progress_callback=None, cancel_event=None):
         pass
 
     def GetMatches(self, getFinished=False, progress_callback=None, cancel_event=None):
         pass
 
+    # =====================================================
+    # FUTURE SETS
+    # =====================================================
+    def GetFutureMatch(self, progrss_callback=None):
+        pass
+
+    # give me a list of objects that contain a "id" property
+    def GetFutureMatchesList(self, sets: object, progress_callback=None, cancel_event=None):
+        pass
+
+    # =====================================================
+    # STREAMS AND STATIONS
+    # =====================================================
     def GetStations(self, progress_callback=None, cancel_event=None):
         pass
 
@@ -53,66 +90,8 @@ class TournamentDataProvider(QObject):
     def GetStationMatchsId(self, stationId):
         pass
 
-    def GetRecentSets(self, id1, id2, videogame, callback):
-        pass
-
-    def GetLastSets(self, playerId, playerNumber):
-        pass
-
-    def GetCompletedSets(self):
-        pass
-
-    def GetPlayerHistoryStandings(self, playerId, playerNumber, gameType):
-        pass
-
-    def GetTournamentPhases(self, progress_callback=None, cancel_event=None):
-        pass
-
-    def GetTournamentPhaseGroup(self, id, progress_callback=None, cancel_event=None):
-        pass
-
-    def GetTournamentPhaseGroupSets(
-        self, id, graph=False, progress_callback=None, cancel_event=None
-    ):
-        # Just the set results of a phase group, to refresh an already loaded
-        # bracket without reloading its entrants. Returns {"graph": {"sets":
-        # [{"id", "score", "finished", "winnerSlot"}, ...]}} when graph is
-        # True and the provider can, else the same "sets" as
-        # GetTournamentPhaseGroup. By default that's all it can do.
-        return self.GetTournamentPhaseGroup(
-            id, progress_callback=progress_callback, cancel_event=cancel_event
-        )
-
-    def GetStandings(self, playerNumber):
-        pass
-
-    def GetFutureMatch(self, progrss_callback=None):
-        pass
-
-    # give me a list of objects that contain a "id" property
-    def GetFutureMatchesList(self, sets: object, progress_callback=None, cancel_event=None):
-        pass
-
     # What only some providers can do. None means the provider can't.
-
     def GetStreamsAndStations(self, progress_callback=None, cancel_event=None):
-        return None
-
-    def GetSetDurations(self, count=40, progress_callback=None, cancel_event=None):
-        return None
-
-    def EnrichPlayerData(self, playerData, blocking=True):
-        # Hook for providers to lazily fill in fields when a player is
-        # loaded into a slot (called from ScoreboardPlayerWidget.SetData
-        # post-DB-merge). Default no-op; ParryGG overrides to fetch mains
-        # from a linked start.gg account. With blocking=False, providers
-        # must not do network requests here (it runs on the UI thread);
-        # they should only use what they already have cached.
-        return playerData
-
-    def GetCachedMains(self, playerData):
-        # Mains EnrichPlayerData would add for this player without doing a
-        # request, or None if it doesn't have them (yet).
         return None
 
     def ConvertStreamUrl(self, stream):
@@ -166,3 +145,47 @@ class TournamentDataProvider(QObject):
                                 stream = f"YouTube: {stream}"
                                 break
         return stream
+
+    # =====================================================
+    # SET HISTORY
+    # =====================================================
+    def GetRecentSets(self, id1, id2, videogame, callback):
+        pass
+
+    def GetLastSets(self, playerId, playerNumber):
+        pass
+
+    def GetCompletedSets(self):
+        pass
+
+    def GetPlayerHistoryStandings(self, playerId, playerNumber, gameType):
+        pass
+
+    def GetSetDurations(self, count=40, progress_callback=None, cancel_event=None):
+        return None
+
+    # =====================================================
+    # ENTRANTS AND PLAYERS
+    # =====================================================
+    def GetEntrants(self):
+        pass
+
+    def EnrichPlayerData(self, playerData, blocking=True):
+        # Hook for providers to lazily fill in fields when a player is
+        # loaded into a slot (called from ScoreboardPlayerWidget.SetData
+        # post-DB-merge). Default no-op; ParryGG overrides to fetch mains
+        # from a linked start.gg account. With blocking=False, providers
+        # must not do network requests here (it runs on the UI thread);
+        # they should only use what they already have cached.
+        return playerData
+
+    def GetCachedMains(self, playerData):
+        # Mains EnrichPlayerData would add for this player without doing a
+        # request, or None if it doesn't have them (yet).
+        return None
+
+    # =====================================================
+    # STANDINGS
+    # =====================================================
+    def GetStandings(self, playerNumber):
+        pass

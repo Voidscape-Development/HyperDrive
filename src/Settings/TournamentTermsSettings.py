@@ -67,6 +67,9 @@ class TermsEditor(QWidget):
         buttons.addStretch()
         layout.addLayout(buttons)
 
+    # =====================================================
+    # FILLING
+    # =====================================================
     def Fill(self, terms: dict):
         self.updating = True
         try:
@@ -105,6 +108,9 @@ class TermsEditor(QWidget):
     def Extras(self) -> list:
         return [self.extraList.item(i).text() for i in range(self.extraList.count())]
 
+    # =====================================================
+    # EDITING
+    # =====================================================
     def ItemChanged(self, item=None):
         if not self.updating:
             self.changed.emit()
@@ -185,6 +191,9 @@ class TournamentTermsSettings(QWidget):
 
         self.Fill(LocaleHelper.customTerms or LocaleHelper.LoadCustomTerms())
 
+    # =====================================================
+    # TERMS
+    # =====================================================
     def Fill(self, terms: dict):
         terms = LocaleHelper.NormalizeCustomTerms(terms)
         for editor in self.editors.values():
@@ -221,6 +230,9 @@ class TournamentTermsSettings(QWidget):
             self.Fill({})
             self.Save()
 
+    # =====================================================
+    # EVENTS
+    # =====================================================
     def hideEvent(self, event):
         # Save edits still waiting on the timer when the window closes
         if self.saveTimer.isActive():

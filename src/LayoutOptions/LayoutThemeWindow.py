@@ -59,10 +59,9 @@ class FillEditor(QWidget):
 
         self.UpdateEnabled()
 
-    def UpdateEnabled(self):
-        self.color2.setEnabled(self.gradient.isChecked())
-        self.direction.setEnabled(self.gradient.isChecked())
-
+    # =====================================================
+    # VALUE
+    # =====================================================
     def Value(self):
         return {
             "color": self.color.color(),
@@ -81,6 +80,10 @@ class FillEditor(QWidget):
         for w in (self.color, self.color2, self.gradient, self.direction):
             w.blockSignals(False)
         self.UpdateEnabled()
+
+    def UpdateEnabled(self):
+        self.color2.setEnabled(self.gradient.isChecked())
+        self.direction.setEnabled(self.gradient.isChecked())
 
 
 class FieldEditor:
@@ -271,6 +274,9 @@ class LayoutThemeWindow(QDialog):
 
         self.Refresh()
 
+    # =====================================================
+    # REFRESHING
+    # =====================================================
     def Refresh(self):
         # Fills the controls in from the saved themes
         self.updating = True
@@ -299,6 +305,23 @@ class LayoutThemeWindow(QDialog):
             resetButton.setEnabled(not builtin)
         self.updating = False
 
+    # =====================================================
+    # THEME SELECTION
+    # =====================================================
+    def ThemeSelected(self, index):
+        if self.updating:
+            return
+        self.SaveEdits()
+        LayoutThemes.SetActive(self.themeSelect.currentData())
+        self.Refresh()
+
+    def SelectTheme(self, name):
+        LayoutThemes.SetActive(name)
+        self.Refresh()
+
+    # =====================================================
+    # EDITING FIELDS
+    # =====================================================
     def Edited(self, sectionKey, field):
         if self.updating or self.editing is None:
             return
@@ -320,17 +343,9 @@ class LayoutThemeWindow(QDialog):
             return
         LayoutThemes.SaveTheme(self.editing)
 
-    def ThemeSelected(self, index):
-        if self.updating:
-            return
-        self.SaveEdits()
-        LayoutThemes.SetActive(self.themeSelect.currentData())
-        self.Refresh()
-
-    def SelectTheme(self, name):
-        LayoutThemes.SetActive(name)
-        self.Refresh()
-
+    # =====================================================
+    # MANAGING THEMES
+    # =====================================================
     def AskName(self, title, name):
         name, ok = QInputDialog.getText(
             self,
@@ -392,6 +407,9 @@ class LayoutThemeWindow(QDialog):
         LayoutThemes.DeleteTheme(name)
         self.Refresh()
 
+    # =====================================================
+    # IMPORT AND EXPORT
+    # =====================================================
     def Import(self):
         self.SaveEdits()
         path, _ = QFileDialog.getOpenFileName(
@@ -443,6 +461,9 @@ class LayoutThemeWindow(QDialog):
                 + f"\n\n{e}",
             )
 
+    # =====================================================
+    # EVENTS
+    # =====================================================
     def closeEvent(self, event):
         self.SaveEdits()
         super().closeEvent(event)

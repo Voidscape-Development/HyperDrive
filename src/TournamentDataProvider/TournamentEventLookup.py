@@ -51,6 +51,9 @@ class TournamentLookupError(Exception):
         self.code = code
 
 
+# =====================================================
+# PARSING LINKS
+# =====================================================
 def NormalizeEventURL(url):
     # Turns any supported event URL into the form the providers load
     if "start.gg" in url:
@@ -167,6 +170,9 @@ def IsSameEvent(url, otherUrl):
     return bool(url) and bool(otherUrl) and EventSlug(url) == EventSlug(otherUrl)
 
 
+# =====================================================
+# FETCHING EVENTS
+# =====================================================
 def FetchTournamentEvents(parsed, parryApiKey=None):
     """Lists the events of a tournament ParseTournamentInput found.
 
@@ -205,6 +211,9 @@ def _ReadQuery(name):
         return f.read()
 
 
+# =====================================================
+# START.GG
+# =====================================================
 def _StartGGShortLinkSlug(shortSlug):
     # A short link (start.gg/gx2) redirects to the tournament's page.
     # The API also takes some short slugs as a tournament slug, but not all
@@ -290,6 +299,9 @@ def MapStartGGTournament(tournament):
     }
 
 
+# =====================================================
+# PARRY.GG
+# =====================================================
 def _FetchParryGG(slug, apiKey):
     import grpc
     from parrygg.services.tournament_service_pb2 import GetTournamentRequest

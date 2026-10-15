@@ -94,6 +94,30 @@ class StartGGDataProvider(TournamentDataProvider):
 
     player_seeds = {}
 
+    # Status codes worth trying again: rate limiting and server-side errors.
+    # Anything else (bad query, auth, not found) fails the same way every time.
+    _retryStatusCodes = {429, 500, 502, 503, 504}
+    _maxRetryDelaySecs = 8.0
+
+    # Each player's events are listed 250 a request, up to 4 requests
+    _recent_sets_events_per_page = 250
+    _recent_sets_max_event_pages = 4
+    # Sets are looked for in the 30 most recent events both players entered
+    _recent_sets_max_shared_events = 30
+    # Batch sizes keeping each request under start.gg's complexity cap of
+    # 1000 objects: a set costs ~8 when only its players are asked for and
+    # ~30 with its details
+    _recent_sets_events_per_request = 4
+    _recent_sets_sets_per_request = 20
+
+    # Spacing between pre-warm requests, keeping well under start.gg's
+    # 80 requests/minute so interactive queries still have room.
+    _prewarm_interval_secs = 1.5
+
+    # The fields that come from the local player DB instead of start.gg with
+    # the general.local_player_data setting: the set queries leave them out
+    LOCAL_PROFILE_FIELDS = ["twitter", "socials", "pronoun", "country_code", "state_code"]
+
     def __init__(self, url, threadpool, dataManager) -> None:
         super().__init__(url, threadpool, dataManager)
         self.name = "StartGG"
@@ -109,11 +133,9 @@ class StartGGDataProvider(TournamentDataProvider):
         self._profile_cache = {}
         self._profileLock = threading.Lock()
 
-    # Status codes worth trying again: rate limiting and server-side errors.
-    # Anything else (bad query, auth, not found) fails the same way every time.
-    _retryStatusCodes = {429, 500, 502, 503, 504}
-    _maxRetryDelaySecs = 8.0
-
+    # =====================================================
+    # REQUESTS
+    # =====================================================
     # Queries the provided URL, retrying (with backoff) while start.gg is rate
     # limiting us or having server trouble
     def QueryRequests(
@@ -194,6 +216,23 @@ class StartGGDataProvider(TournamentDataProvider):
             logger.error(f"{e.__class__.__name__}: {e}")
             return {}
 
+    def _FetchAllPages(self, fetchPage, totalPagesPath, cancel_event=None):
+        # Page 1 tells us how many pages there are; the rest are fetched in
+        # parallel instead of one after another. Results stay in page order.
+        first = fetchPage(1)
+        pages = [first]
+        totalPages = deep_get(first, totalPagesPath, 1) or 1
+
+        if totalPages > 1 and (cancel_event is None or not cancel_event.is_set()):
+            # Keep the worker count low so start.gg doesn't start rate limiting us
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                pages.extend(executor.map(fetchPage, range(2, totalPages + 1)))
+
+        return pages
+
+    # =====================================================
+    # TOURNAMENT
+    # =====================================================
     def GetTournamentData(self, progress_callback=None, cancel_event=None):
         finalData = {}
 
@@ -265,6 +304,33 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return url
 
+    def GetRealEventURL(self, url):
+        matches = re.match(".*start.gg/admin/tournament/[^/]*/brackets/([^/]*)", url)
+        if matches:
+            try:
+                data = self.QueryRequests(
+                    "https://www.start.gg/api/-/gql",
+                    type=requests.post,
+                    jsonParams={
+                        "operationName": "TournamentSlugQuery",
+                        "variables": {"id": matches.group(1)},
+                        "query": StartGGDataProvider.TournamentSlugQuery,
+                    },
+                )
+
+                slug = deep_get(data, "data.event.slug", None)
+                url = "https://www.start.gg/" + slug
+            except:
+                logger.error(traceback.format_exc())
+        self.url = url
+        return url
+
+    def _EventSlug(self):
+        return self.url.split("start.gg/")[1]
+
+    # =====================================================
+    # PHASES AND BRACKETS
+    # =====================================================
     def GetTournamentPhases(self, progress_callback=None, cancel_event=None):
         phases = []
 
@@ -300,20 +366,6 @@ class StartGGDataProvider(TournamentDataProvider):
             logger.error(traceback.format_exc())
 
         return phases
-
-    def _FetchAllPages(self, fetchPage, totalPagesPath, cancel_event=None):
-        # Page 1 tells us how many pages there are; the rest are fetched in
-        # parallel instead of one after another. Results stay in page order.
-        first = fetchPage(1)
-        pages = [first]
-        totalPages = deep_get(first, totalPagesPath, 1) or 1
-
-        if totalPages > 1 and (cancel_event is None or not cancel_event.is_set()):
-            # Keep the worker count low so start.gg doesn't start rate limiting us
-            with ThreadPoolExecutor(max_workers=4) as executor:
-                pages.extend(executor.map(fetchPage, range(2, totalPages + 1)))
-
-        return pages
 
     def _FetchPhaseGroupSeeds(self, id, progress_callback=None, cancel_event=None):
         def fetchPage(page):
@@ -598,6 +650,9 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return graphSets
 
+    # =====================================================
+    # SETS
+    # =====================================================
     def GetMatch(self, setId, progress_callback=None, cancel_event=None):
         finalResult = None
 
@@ -759,71 +814,9 @@ class StartGGDataProvider(TournamentDataProvider):
             logger.error(traceback.format_exc())
             return final_data
 
-    def GetStations(self, progress_callback=None, cancel_event=None):
-        try:
-            logger.info("Get stations")
-
-            final_data = []
-
-            logger.info("Fetching stations")
-
-            data = self.QueryRequests(
-                "https://www.start.gg/api/-/gql",
-                type=requests.post,
-                jsonParams={
-                    "operationName": "Stations",
-                    "variables": {
-                        "eventSlug": self.url.split("start.gg/")[1],
-                    },
-                    "query": StartGGDataProvider.StationsQuery,
-                },
-            )
-
-            stations = deep_get(data, "data.event.stations.nodes", [])
-            queues = deep_get(data, "data.event.tournament.streamQueue", [])
-
-            if stations is not None:
-                for station in stations:
-                    stream = ""
-
-                    if queues is not None:
-                        stream = next(
-                            (
-                                deep_get(s, "stream.streamName", None)
-                                for s in queues
-                                if str(deep_get(s, "stream.id", None))
-                                == str(station.get("streamId"))
-                            ),
-                            "",
-                        )
-
-                    final_data.append(
-                        {
-                            "id": station.get("id"),
-                            "identifier": station.get("number"),
-                            "type": "station",
-                            "stream": stream,
-                        }
-                    )
-
-            if queues is not None:
-                for queue in queues:
-                    if queue.get("stream") is not None:
-                        stream = queue.get("stream")
-                        final_data.append(
-                            {
-                                "id": stream.get("id"),
-                                "identifier": stream.get("streamName"),
-                                "type": "stream",
-                            }
-                        )
-
-            return final_data
-        except Exception as e:
-            logger.error(traceback.format_exc())
-            return final_data
-        return []
-
+    # =====================================================
+    # PARSING SETS
+    # =====================================================
     def TranslateRoundName(name: str):
         if name == None:
             return ""
@@ -1327,6 +1320,9 @@ class StartGGDataProvider(TournamentDataProvider):
             "loserProgression": sets.get("lProgressingName", None),
         }
 
+    # =====================================================
+    # FUTURE SETS
+    # =====================================================
     def ProcessFutureSet(self, _set, eventSlug):
         phase_name = deep_get(_set, "phaseGroup.phase.name")
         if deep_get(_set, "phaseGroup.phase.groupCount") > 1:
@@ -1415,6 +1411,123 @@ class StartGGDataProvider(TournamentDataProvider):
 
                 setData["team"][str(teamIndex + 1)] = teamData
         return setData
+
+    def GetFutureMatch(self, matchId, progress_callback=None, cancel_event=None):
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "FutureSetQuery",
+                "variables": {"id": matchId, "profile": not self.UseLocalPlayerData()},
+                "query": StartGGDataProvider.FutureSetQuery,
+            },
+        )
+
+        data = deep_get(data, "data.set", None)
+
+        if not data:
+            return {}
+
+        data = self.ProcessFutureSet(data, self.url.split("start.gg/")[1])
+
+        return data
+
+    def GetMatchAndInsertInList(self, setId, list, i, progress_callback, cancel_event):
+        set = self.GetFutureMatch(setId, None)
+
+        if set:
+            list[i] = set
+
+    def GetFutureMatchesList(self, setsId, progress_callback, cancel_event):
+        sets = []
+        pool = self.getStationMatchesThreadPool
+        i = 0
+        workers = []
+        for set in setsId:
+            sets.append(None)
+            worker = Worker(
+                self.GetMatchAndInsertInList, **{"setId": set.get("id"), "list": sets, "i": i}
+            )
+            workers.append(worker)
+            pool.start(worker)
+
+            i += 1
+
+        Worker.wait_for_all(workers, self._request_timeout_secs)
+
+        sets_ = {}
+        for index, set in enumerate(sets):
+            sets_[str(index + 1)] = set
+
+        return sets_
+
+    # =====================================================
+    # STREAMS AND STATIONS
+    # =====================================================
+    def GetStations(self, progress_callback=None, cancel_event=None):
+        try:
+            logger.info("Get stations")
+
+            final_data = []
+
+            logger.info("Fetching stations")
+
+            data = self.QueryRequests(
+                "https://www.start.gg/api/-/gql",
+                type=requests.post,
+                jsonParams={
+                    "operationName": "Stations",
+                    "variables": {
+                        "eventSlug": self.url.split("start.gg/")[1],
+                    },
+                    "query": StartGGDataProvider.StationsQuery,
+                },
+            )
+
+            stations = deep_get(data, "data.event.stations.nodes", [])
+            queues = deep_get(data, "data.event.tournament.streamQueue", [])
+
+            if stations is not None:
+                for station in stations:
+                    stream = ""
+
+                    if queues is not None:
+                        stream = next(
+                            (
+                                deep_get(s, "stream.streamName", None)
+                                for s in queues
+                                if str(deep_get(s, "stream.id", None))
+                                == str(station.get("streamId"))
+                            ),
+                            "",
+                        )
+
+                    final_data.append(
+                        {
+                            "id": station.get("id"),
+                            "identifier": station.get("number"),
+                            "type": "station",
+                            "stream": stream,
+                        }
+                    )
+
+            if queues is not None:
+                for queue in queues:
+                    if queue.get("stream") is not None:
+                        stream = queue.get("stream")
+                        final_data.append(
+                            {
+                                "id": stream.get("id"),
+                                "identifier": stream.get("streamName"),
+                                "type": "stream",
+                            }
+                        )
+
+            return final_data
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            return final_data
+        return []
 
     def GetStreamQueue(self, progress_callback=None, cancel_event=None):
         try:
@@ -1544,16 +1657,40 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return sets[0] if len(sets) > 0 else None
 
-    def GetEntrants(self):
-        worker = Worker(
-            self.GetEntrantsWorker,
-            **{
-                "gameId": GameAssetManager.instance.selectedGame.get("smashgg_game_id"),
-                "eventSlug": self.url.split("start.gg/")[1],
+    def GetStreamsAndStations(self, progress_callback=None, cancel_event=None):
+        """The tournament's streams and the event's stations, with the ids
+        start.gg's assignStream / assignStation take: {"streams": [{id,
+        name}], "stations": [{id, number, stream}]}."""
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "StreamsStationsQuery",
+                "variables": {"eventSlug": self._EventSlug()},
+                "query": StartGGDataProvider.StreamsStationsQuery,
             },
         )
-        self.threadpool.start(worker)
+        streams = [
+            {"id": s.get("id"), "name": s.get("streamName") or ""}
+            for s in deep_get(data, "data.event.tournament.streams", []) or []
+            if s and s.get("id") is not None and s.get("enabled") is not False
+        ]
+        streamNames = {str(s["id"]): s["name"] for s in streams}
+        stations = [
+            {
+                "id": s.get("id"),
+                "number": s.get("number"),
+                "stream": streamNames.get(str(s.get("streamId")), ""),
+            }
+            for s in deep_get(data, "data.event.stations.nodes", []) or []
+            if s and s.get("id") is not None and s.get("enabled") is not False
+        ]
+        stations.sort(key=lambda s: s.get("number") or 0)
+        return {"streams": streams, "stations": stations}
 
+    # =====================================================
+    # SET HISTORY
+    # =====================================================
     def GetLastSets(self, playerID, playerNumber, callback, progress_callback, cancel_event):
         try:
             data = self.QueryRequests(
@@ -1858,16 +1995,29 @@ class StartGGDataProvider(TournamentDataProvider):
         except Exception as e:
             callback.emit({"playerNumber": playerNumber, "history_sets": []})
 
-    # Each player's events are listed 250 a request, up to 4 requests
-    _recent_sets_events_per_page = 250
-    _recent_sets_max_event_pages = 4
-    # Sets are looked for in the 30 most recent events both players entered
-    _recent_sets_max_shared_events = 30
-    # Batch sizes keeping each request under start.gg's complexity cap of
-    # 1000 objects: a set costs ~8 when only its players are asked for and
-    # ~30 with its details
-    _recent_sets_events_per_request = 4
-    _recent_sets_sets_per_request = 20
+    def GetSetDurations(self, count=40, progress_callback=None, cancel_event=None):
+        """The event's last completed sets, for how long sets take:
+        [{id, startedAt, completedAt, totalGames, dq}]."""
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "SetDurationsQuery",
+                "variables": {"eventSlug": self._EventSlug(), "perPage": count},
+                "query": StartGGDataProvider.SetDurationsQuery,
+            },
+        )
+        return [
+            {
+                "id": s.get("id"),
+                "startedAt": s.get("startedAt"),
+                "completedAt": s.get("completedAt"),
+                "totalGames": s.get("totalGames"),
+                "dq": -1 in (s.get("entrant1Score"), s.get("entrant2Score")),
+            }
+            for s in deep_get(data, "data.event.sets.nodes", []) or []
+            if s
+        ]
 
     def GetRecentSets(
         self, id1, id2, videogame, callback, requestTime, progress_callback, cancel_event
@@ -2129,6 +2279,19 @@ class StartGGDataProvider(TournamentDataProvider):
             logger.error(traceback.format_exc())
             return None
 
+    # =====================================================
+    # ENTRANTS AND PLAYERS
+    # =====================================================
+    def GetEntrants(self):
+        worker = Worker(
+            self.GetEntrantsWorker,
+            **{
+                "gameId": GameAssetManager.instance.selectedGame.get("smashgg_game_id"),
+                "eventSlug": self.url.split("start.gg/")[1],
+            },
+        )
+        self.threadpool.start(worker)
+
     def _FetchEntrantsPage(self, eventSlug, page):
         return self.QueryRequests(
             "https://www.start.gg/api/-/gql",
@@ -2191,175 +2354,6 @@ class StartGGDataProvider(TournamentDataProvider):
             ).start()
         except Exception as e:
             logger.error(traceback.format_exc())
-
-    # Spacing between pre-warm requests, keeping well under start.gg's
-    # 80 requests/minute so interactive queries still have room.
-    _prewarm_interval_secs = 1.5
-
-    def _PrewarmMains(self, players, videogameId):
-        try:
-            selected = GameAssetManager.instance.selectedGame or {}
-            gameCodename = selected.get("codename")
-            if not videogameId or not gameCodename:
-                return
-
-            todo = []
-            for player in players:
-                slug = player.get("startgg_user_slug")
-                if not slug or (slug, videogameId) in self._mains_cache:
-                    continue
-                tag = (
-                    player.get("prefix") + " " + player.get("gamerTag")
-                    if player.get("prefix")
-                    else player.get("gamerTag")
-                )
-                dbMains = (PlayerDB.database.get(tag) or {}).get("mains") or {}
-                if isinstance(dbMains, str):
-                    dbMains = orjson.loads(dbMains)
-                if dbMains.get(gameCodename):
-                    continue
-                todo.append((slug, player))
-
-            logger.info(f"Pre-warming start.gg mains for {len(todo)} players")
-
-            found = []
-            for slug, player in todo:
-                # Players a bulk load is waiting on go first; both loops
-                # share the same request budget
-                while self._mainsQueue:
-                    time.sleep(self._prewarm_interval_secs)
-
-                # Stop if the user switched tournament or game meanwhile
-                if getattr(self.dataManager, "provider", self) is not self:
-                    break
-                if (GameAssetManager.instance.selectedGame or {}).get(
-                    "smashgg_game_id"
-                ) != videogameId:
-                    break
-                if (slug, videogameId) in self._mains_cache:
-                    continue
-
-                mains = self._FetchUserMains(slug, videogameId)
-                if mains is not None:
-                    self._mains_cache[(slug, videogameId)] = mains
-                if mains:
-                    found.append(
-                        {
-                            "prefix": player.get("prefix"),
-                            "gamerTag": player.get("gamerTag"),
-                            "mains": {g: [list(m) for m in ms] for g, ms in mains.items()},
-                        }
-                    )
-                # Save in batches so progress survives a closed app
-                if len(found) >= 25:
-                    PlayerDB.AddPlayers(found)
-                    found = []
-                time.sleep(self._prewarm_interval_secs)
-
-            if found:
-                PlayerDB.AddPlayers(found)
-            logger.info("start.gg mains pre-warm finished")
-        except Exception:
-            logger.error(traceback.format_exc())
-
-    # The fields that come from the local player DB instead of start.gg with
-    # the general.local_player_data setting: the set queries leave them out
-    LOCAL_PROFILE_FIELDS = ["twitter", "socials", "pronoun", "country_code", "state_code"]
-
-    @staticmethod
-    def UseLocalPlayerData():
-        return bool(SettingsManager.Get("general.local_player_data", False))
-
-    def FillFromLocalDB(self, playerData):
-        """Fills playerData's profile fields (LOCAL_PROFILE_FIELDS) from the
-        local player DB. A player not in it yet is looked up on start.gg
-        once and saved to it, so the next sets find them there."""
-        tag = MakeTag(playerData.get("prefix"), playerData.get("gamerTag"))
-        if not tag:
-            return playerData
-
-        saved = PlayerDB.GetPlayer(tag)
-        if saved is not None:
-            for field in StartGGDataProvider.LOCAL_PROFILE_FIELDS:
-                if saved.get(field) and not playerData.get(field):
-                    playerData[field] = saved[field]
-            return playerData
-
-        ids = playerData.get("id") or []
-        userId = ids[1] if len(ids) > 1 else None
-        profile = self.GetUserProfile(userId) if userId else None
-        if profile:
-            playerData.update(profile)
-            PlayerDB.AddPlayers(
-                [
-                    {
-                        "prefix": playerData.get("prefix"),
-                        "gamerTag": playerData.get("gamerTag"),
-                        **deep_clone(profile),
-                    }
-                ]
-            )
-        return playerData
-
-    def GetUserProfile(self, userId):
-        """The LOCAL_PROFILE_FIELDS of a start.gg user, {} when they have
-        none, or None when the request failed. Kept for the session."""
-        with self._profileLock:
-            if userId in self._profile_cache:
-                return self._profile_cache[userId]
-
-        data = self.QueryRequests(
-            "https://www.start.gg/api/-/gql",
-            type=requests.post,
-            jsonParams={
-                "operationName": "UserProfileQuery",
-                "variables": {"id": userId},
-                "query": StartGGDataProvider.UserProfileQuery,
-            },
-        )
-        user = deep_get(data, "data.user")
-        if not user:
-            # A failed request isn't cached, so it's tried again next time
-            return None if not data or data.get("errors") else {}
-
-        parsed = StartGGDataProvider.ProcessEntrantData({"player": {}, "user": user})
-        profile = {
-            field: parsed[field]
-            for field in StartGGDataProvider.LOCAL_PROFILE_FIELDS
-            if parsed.get(field)
-        }
-        with self._profileLock:
-            self._profile_cache[userId] = profile
-        return profile
-
-    @staticmethod
-    def ParseUserSocials(user, playerData):
-        """Sets playerData's socials (and twitter) from the start.gg user's
-        linked accounts. Only the accounts the user has are set, so ones
-        typed in by hand are kept when merged with the local DB."""
-        socials = SocialsHelper.FromStartGG(user.get("authorizations"))
-        if socials:
-            playerData["socials"] = socials
-            if socials.get("twitter"):
-                playerData["twitter"] = socials["twitter"]
-
-    def LocationCodes(location):
-        """(country_code, state_code) of a start.gg user location, the state
-        found from the city when it isn't given."""
-        if not location:
-            return None, None
-        countryCode = next(
-            (
-                country.get("code")
-                for country in CountryHelper.countries.values()
-                if location.get("country") and location.get("country") == country.get("en_name")
-            ),
-            None,
-        )
-        stateCode = location.get("state")
-        if not stateCode and location.get("city"):
-            stateCode = CountryHelper.FindState(countryCode, location.get("city"))
-        return countryCode, stateCode or None
 
     def ProcessEntrantData(entrant, setData=[]):
         player = entrant.get("player")
@@ -2462,6 +2456,101 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return playerData
 
+    @staticmethod
+    def UseLocalPlayerData():
+        return bool(SettingsManager.Get("general.local_player_data", False))
+
+    def FillFromLocalDB(self, playerData):
+        """Fills playerData's profile fields (LOCAL_PROFILE_FIELDS) from the
+        local player DB. A player not in it yet is looked up on start.gg
+        once and saved to it, so the next sets find them there."""
+        tag = MakeTag(playerData.get("prefix"), playerData.get("gamerTag"))
+        if not tag:
+            return playerData
+
+        saved = PlayerDB.GetPlayer(tag)
+        if saved is not None:
+            for field in StartGGDataProvider.LOCAL_PROFILE_FIELDS:
+                if saved.get(field) and not playerData.get(field):
+                    playerData[field] = saved[field]
+            return playerData
+
+        ids = playerData.get("id") or []
+        userId = ids[1] if len(ids) > 1 else None
+        profile = self.GetUserProfile(userId) if userId else None
+        if profile:
+            playerData.update(profile)
+            PlayerDB.AddPlayers(
+                [
+                    {
+                        "prefix": playerData.get("prefix"),
+                        "gamerTag": playerData.get("gamerTag"),
+                        **deep_clone(profile),
+                    }
+                ]
+            )
+        return playerData
+
+    def GetUserProfile(self, userId):
+        """The LOCAL_PROFILE_FIELDS of a start.gg user, {} when they have
+        none, or None when the request failed. Kept for the session."""
+        with self._profileLock:
+            if userId in self._profile_cache:
+                return self._profile_cache[userId]
+
+        data = self.QueryRequests(
+            "https://www.start.gg/api/-/gql",
+            type=requests.post,
+            jsonParams={
+                "operationName": "UserProfileQuery",
+                "variables": {"id": userId},
+                "query": StartGGDataProvider.UserProfileQuery,
+            },
+        )
+        user = deep_get(data, "data.user")
+        if not user:
+            # A failed request isn't cached, so it's tried again next time
+            return None if not data or data.get("errors") else {}
+
+        parsed = StartGGDataProvider.ProcessEntrantData({"player": {}, "user": user})
+        profile = {
+            field: parsed[field]
+            for field in StartGGDataProvider.LOCAL_PROFILE_FIELDS
+            if parsed.get(field)
+        }
+        with self._profileLock:
+            self._profile_cache[userId] = profile
+        return profile
+
+    @staticmethod
+    def ParseUserSocials(user, playerData):
+        """Sets playerData's socials (and twitter) from the start.gg user's
+        linked accounts. Only the accounts the user has are set, so ones
+        typed in by hand are kept when merged with the local DB."""
+        socials = SocialsHelper.FromStartGG(user.get("authorizations"))
+        if socials:
+            playerData["socials"] = socials
+            if socials.get("twitter"):
+                playerData["twitter"] = socials["twitter"]
+
+    def LocationCodes(location):
+        """(country_code, state_code) of a start.gg user location, the state
+        found from the city when it isn't given."""
+        if not location:
+            return None, None
+        countryCode = next(
+            (
+                country.get("code")
+                for country in CountryHelper.countries.values()
+                if location.get("country") and location.get("country") == country.get("en_name")
+            ),
+            None,
+        )
+        stateCode = location.get("state")
+        if not stateCode and location.get("city"):
+            stateCode = CountryHelper.FindState(countryCode, location.get("city"))
+        return countryCode, stateCode or None
+
     def EnrichPlayerData(self, playerData, blocking=True):
         # Lazy mains fill for entrants loaded via GetTournamentPhaseGroup.
         # That query no longer embeds the per-entrant sets->games->selections
@@ -2492,6 +2581,75 @@ class StartGGDataProvider(TournamentDataProvider):
         if mains:
             playerData["mains"] = mains
         return playerData
+
+    # =====================================================
+    # PLAYER MAINS
+    # =====================================================
+    def _PrewarmMains(self, players, videogameId):
+        try:
+            selected = GameAssetManager.instance.selectedGame or {}
+            gameCodename = selected.get("codename")
+            if not videogameId or not gameCodename:
+                return
+
+            todo = []
+            for player in players:
+                slug = player.get("startgg_user_slug")
+                if not slug or (slug, videogameId) in self._mains_cache:
+                    continue
+                tag = (
+                    player.get("prefix") + " " + player.get("gamerTag")
+                    if player.get("prefix")
+                    else player.get("gamerTag")
+                )
+                dbMains = (PlayerDB.database.get(tag) or {}).get("mains") or {}
+                if isinstance(dbMains, str):
+                    dbMains = orjson.loads(dbMains)
+                if dbMains.get(gameCodename):
+                    continue
+                todo.append((slug, player))
+
+            logger.info(f"Pre-warming start.gg mains for {len(todo)} players")
+
+            found = []
+            for slug, player in todo:
+                # Players a bulk load is waiting on go first; both loops
+                # share the same request budget
+                while self._mainsQueue:
+                    time.sleep(self._prewarm_interval_secs)
+
+                # Stop if the user switched tournament or game meanwhile
+                if getattr(self.dataManager, "provider", self) is not self:
+                    break
+                if (GameAssetManager.instance.selectedGame or {}).get(
+                    "smashgg_game_id"
+                ) != videogameId:
+                    break
+                if (slug, videogameId) in self._mains_cache:
+                    continue
+
+                mains = self._FetchUserMains(slug, videogameId)
+                if mains is not None:
+                    self._mains_cache[(slug, videogameId)] = mains
+                if mains:
+                    found.append(
+                        {
+                            "prefix": player.get("prefix"),
+                            "gamerTag": player.get("gamerTag"),
+                            "mains": {g: [list(m) for m in ms] for g, ms in mains.items()},
+                        }
+                    )
+                # Save in batches so progress survives a closed app
+                if len(found) >= 25:
+                    PlayerDB.AddPlayers(found)
+                    found = []
+                time.sleep(self._prewarm_interval_secs)
+
+            if found:
+                PlayerDB.AddPlayers(found)
+            logger.info("start.gg mains pre-warm finished")
+        except Exception:
+            logger.error(traceback.format_exc())
 
     def GetCachedMains(self, playerData):
         slug = (playerData or {}).get("startgg_user_slug")
@@ -2627,6 +2785,9 @@ class StartGGDataProvider(TournamentDataProvider):
                 mains.append([mapped[0]])
         return {gameCodename: mains} if mains else {}
 
+    # =====================================================
+    # STANDINGS
+    # =====================================================
     def GetStandings(self, playerNumber, progress_callback, cancel_event):
         try:
             eventSlug = self.url.split("start.gg/")[1]
@@ -2715,134 +2876,6 @@ class StartGGDataProvider(TournamentDataProvider):
         except Exception as e:
             logger.error(traceback.format_exc())
             return []
-
-    def GetFutureMatch(self, matchId, progress_callback=None, cancel_event=None):
-        data = self.QueryRequests(
-            "https://www.start.gg/api/-/gql",
-            type=requests.post,
-            jsonParams={
-                "operationName": "FutureSetQuery",
-                "variables": {"id": matchId, "profile": not self.UseLocalPlayerData()},
-                "query": StartGGDataProvider.FutureSetQuery,
-            },
-        )
-
-        data = deep_get(data, "data.set", None)
-
-        if not data:
-            return {}
-
-        data = self.ProcessFutureSet(data, self.url.split("start.gg/")[1])
-
-        return data
-
-    def GetMatchAndInsertInList(self, setId, list, i, progress_callback, cancel_event):
-        set = self.GetFutureMatch(setId, None)
-
-        if set:
-            list[i] = set
-
-    def GetFutureMatchesList(self, setsId, progress_callback, cancel_event):
-        sets = []
-        pool = self.getStationMatchesThreadPool
-        i = 0
-        workers = []
-        for set in setsId:
-            sets.append(None)
-            worker = Worker(
-                self.GetMatchAndInsertInList, **{"setId": set.get("id"), "list": sets, "i": i}
-            )
-            workers.append(worker)
-            pool.start(worker)
-
-            i += 1
-
-        Worker.wait_for_all(workers, self._request_timeout_secs)
-
-        sets_ = {}
-        for index, set in enumerate(sets):
-            sets_[str(index + 1)] = set
-
-        return sets_
-
-    def _EventSlug(self):
-        return self.url.split("start.gg/")[1]
-
-    def GetStreamsAndStations(self, progress_callback=None, cancel_event=None):
-        """The tournament's streams and the event's stations, with the ids
-        start.gg's assignStream / assignStation take: {"streams": [{id,
-        name}], "stations": [{id, number, stream}]}."""
-        data = self.QueryRequests(
-            "https://www.start.gg/api/-/gql",
-            type=requests.post,
-            jsonParams={
-                "operationName": "StreamsStationsQuery",
-                "variables": {"eventSlug": self._EventSlug()},
-                "query": StartGGDataProvider.StreamsStationsQuery,
-            },
-        )
-        streams = [
-            {"id": s.get("id"), "name": s.get("streamName") or ""}
-            for s in deep_get(data, "data.event.tournament.streams", []) or []
-            if s and s.get("id") is not None and s.get("enabled") is not False
-        ]
-        streamNames = {str(s["id"]): s["name"] for s in streams}
-        stations = [
-            {
-                "id": s.get("id"),
-                "number": s.get("number"),
-                "stream": streamNames.get(str(s.get("streamId")), ""),
-            }
-            for s in deep_get(data, "data.event.stations.nodes", []) or []
-            if s and s.get("id") is not None and s.get("enabled") is not False
-        ]
-        stations.sort(key=lambda s: s.get("number") or 0)
-        return {"streams": streams, "stations": stations}
-
-    def GetSetDurations(self, count=40, progress_callback=None, cancel_event=None):
-        """The event's last completed sets, for how long sets take:
-        [{id, startedAt, completedAt, totalGames, dq}]."""
-        data = self.QueryRequests(
-            "https://www.start.gg/api/-/gql",
-            type=requests.post,
-            jsonParams={
-                "operationName": "SetDurationsQuery",
-                "variables": {"eventSlug": self._EventSlug(), "perPage": count},
-                "query": StartGGDataProvider.SetDurationsQuery,
-            },
-        )
-        return [
-            {
-                "id": s.get("id"),
-                "startedAt": s.get("startedAt"),
-                "completedAt": s.get("completedAt"),
-                "totalGames": s.get("totalGames"),
-                "dq": -1 in (s.get("entrant1Score"), s.get("entrant2Score")),
-            }
-            for s in deep_get(data, "data.event.sets.nodes", []) or []
-            if s
-        ]
-
-    def GetRealEventURL(self, url):
-        matches = re.match(".*start.gg/admin/tournament/[^/]*/brackets/([^/]*)", url)
-        if matches:
-            try:
-                data = self.QueryRequests(
-                    "https://www.start.gg/api/-/gql",
-                    type=requests.post,
-                    jsonParams={
-                        "operationName": "TournamentSlugQuery",
-                        "variables": {"id": matches.group(1)},
-                        "query": StartGGDataProvider.TournamentSlugQuery,
-                    },
-                )
-
-                slug = deep_get(data, "data.event.slug", None)
-                url = "https://www.start.gg/" + slug
-            except:
-                logger.error(traceback.format_exc())
-        self.url = url
-        return url
 
 
 sggTdpDir = ResolvePath("src/TournamentDataProvider")
