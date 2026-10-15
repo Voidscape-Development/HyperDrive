@@ -229,6 +229,9 @@ class DownloadDialog(QDialog):
         self.setLayout(layout)
         self.resize(400, self.sizeHint().height())
 
+    # =====================================================
+    # PROGRESS SIGNALS
+    # =====================================================
     @Slot(int, int)
     def on_progress(self, num, total):
         self._samples.append(_DlTimingSample(num, datetime.datetime.now()))
@@ -281,14 +284,9 @@ class DownloadDialog(QDialog):
     def on_error(self):
         self._errored = True
 
-    @Slot()
-    def on_cancel_clicked(self):
-        # logger.info("dl dialog cancel clicked")
-        if self._cancel_event:
-            self._cancel_event.set()
-        self.hide()
-        self._cancel_button.setEnabled(False)
-
+    # =====================================================
+    # RUNNING THE DIALOG
+    # =====================================================
     def exec(
         self,
     ):
@@ -329,3 +327,11 @@ class DownloadDialog(QDialog):
         self._cancel_button.clicked.connect(self.on_cancel_clicked)
 
         super().exec()
+
+    @Slot()
+    def on_cancel_clicked(self):
+        # logger.info("dl dialog cancel clicked")
+        if self._cancel_event:
+            self._cancel_event.set()
+        self.hide()
+        self._cancel_button.setEnabled(False)

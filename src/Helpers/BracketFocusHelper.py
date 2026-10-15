@@ -23,6 +23,9 @@ MIN_INTERVAL = 2
 MAX_INTERVAL = 300
 
 
+# =====================================================
+# NORMALIZING REQUESTS
+# =====================================================
 def NormalizeChannelName(name):
     """A channel's name as it's kept: its key in bracket.focus and the
     layouts' ?channel=, so without dots (they separate state keys) or extra
@@ -89,6 +92,9 @@ def WithoutPicks(request, sets=(), rounds=()):
     return {"mode": mode, "sets": keptSets, "rounds": keptRounds}
 
 
+# =====================================================
+# BRACKET LOOKUPS
+# =====================================================
 def Columns(bracket):
     """Every column of the bracket, in tour order."""
     sides = (bracket or {}).get("sides") or {}
@@ -157,6 +163,9 @@ def TeamNames(team):
     return names
 
 
+# =====================================================
+# FOLLOW AND TOUR MODES
+# =====================================================
 def FollowSet(bracket, score):
     """The set of the bracket a scoreboard (score.N) shows: the one with its
     start.gg set id, else the one between its two teams (an unfinished one
@@ -209,6 +218,9 @@ def TourSteps(bracket):
     return steps
 
 
+# =====================================================
+# RESOLVING A REQUEST
+# =====================================================
 def Resolve(bracket, request, score=None, step=0):
     """What the layouts show for a request: bracket.focus. `sets` are the
     sets to zoom to and highlight (none: the whole bracket), `rounds` the
@@ -258,6 +270,9 @@ def Resolve(bracket, request, score=None, step=0):
     return focus
 
 
+# =====================================================
+# ROUND NAVIGATION
+# =====================================================
 def NextRound(bracket, focus, offset=1):
     """The round after (or before, with a negative offset) the one in
     focus, as a rounds request. From the whole bracket, the first round

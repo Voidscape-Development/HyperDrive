@@ -25,31 +25,16 @@ class CountryHelper(QObject):
     countryModel = None
     signals = CountryHelperSignals()
 
-    def __init__(self) -> None:
-        super().__init__()
-
-    def remove_accents_lower(input_str):
-        nfkd_form = unicodedata.normalize("NFKD", input_str)
-        return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
-
-    def GetBasicCountryInfo(country_code):
-        if country_code not in CountryHelper.countries:
-            return {}
-
-        return {
-            "name": CountryHelper.countries[country_code]["name"],
-            "display_name": CountryHelper.countries[country_code]["display_name"],
-            "en_name": CountryHelper.countries[country_code]["en_name"],
-            "code": CountryHelper.countries[country_code]["code"],
-            "latitude": CountryHelper.countries[country_code]["latitude"],
-            "longitude": CountryHelper.countries[country_code]["longitude"],
-            "asset": f"./assets/country_flag/{country_code.lower()}.svg",
-        }
-
     # Generated from the countries+states+cities database by
     # scripts/gen_countries.py, which keeps only what HyperDrive uses of it
     COUNTRIES_FILE = "./assets/countries.json"
 
+    def __init__(self) -> None:
+        super().__init__()
+
+    # =====================================================
+    # LOADING
+    # =====================================================
     def ReadCountriesFile():
         """The countries with their states, and the cities as
         {country: {city: state}}, for finding a city's state"""
@@ -189,6 +174,23 @@ class CountryHelper(QObject):
         except:
             logger.error(traceback.format_exc())
 
+    # =====================================================
+    # LOOKUPS
+    # =====================================================
+    def GetBasicCountryInfo(country_code):
+        if country_code not in CountryHelper.countries:
+            return {}
+
+        return {
+            "name": CountryHelper.countries[country_code]["name"],
+            "display_name": CountryHelper.countries[country_code]["display_name"],
+            "en_name": CountryHelper.countries[country_code]["en_name"],
+            "code": CountryHelper.countries[country_code]["code"],
+            "latitude": CountryHelper.countries[country_code]["latitude"],
+            "longitude": CountryHelper.countries[country_code]["longitude"],
+            "asset": f"./assets/country_flag/{country_code.lower()}.svg",
+        }
+
     def FindState(countryCode, city):
         # State explicit?
         # Normalize parts of city string
@@ -262,6 +264,10 @@ class CountryHelper(QObject):
             return None
 
         return state.cities
+
+    def remove_accents_lower(input_str):
+        nfkd_form = unicodedata.normalize("NFKD", input_str)
+        return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
 
 
 CountryHelper.instance = CountryHelper()

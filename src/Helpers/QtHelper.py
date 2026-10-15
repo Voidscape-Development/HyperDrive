@@ -16,6 +16,9 @@ except ValueError:
     _STRICT_THREAD_ASSERT = 0
 
 
+# =====================================================
+# GUI THREAD DISPATCH
+# =====================================================
 def invokeSlot(meth, *args):
     """
     This will invoke a QObject's slot using the auto connection type, in the same
@@ -143,6 +146,9 @@ def gui_thread_sync(fn):
     return wrapper
 
 
+# =====================================================
+# GUI THREAD CHECKS
+# =====================================================
 _app = None
 
 
@@ -181,6 +187,9 @@ def assert_gui_thread(fn=None):
         return _assert()
 
 
+# =====================================================
+# FOCUS
+# =====================================================
 class _FirstFocusFilter(QObject):
     def __init__(self, widgets, callback):
         super().__init__(widgets[0])

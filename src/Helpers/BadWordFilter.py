@@ -65,9 +65,9 @@ class BadWordFilter:
         "t": r"(t|7)",
     }
 
-    def _apply_leet(word: str) -> str:
-        return BadWordFilter._LEET_PATTERN.sub(lambda m: BadWordFilter._LEET_MAP[m.group()], word)
-
+    # =====================================================
+    # WORD LISTS
+    # =====================================================
     def LoadBadWordList():
         import threading
 
@@ -91,6 +91,45 @@ class BadWordFilter:
                 BadWordFilter.patterns[langkey] = trie.build_regex_pattern()
 
         threading.Thread(target=_worker, daemon=True).start()
+
+    def LoadWordList(file):
+        try:
+            if not os.path.exists(f"./user_data/{file}"):
+                with open(f"./user_data/{file}", "w", encoding="utf-8") as f:
+                    f.write("")
+            words = open(f"./user_data/{file}", encoding="utf-8").read().splitlines()
+            return set([remove_accents_lower(w) for w in words if len(w) > 0])
+        except:
+            logger.error(traceback.format_exc())
+
+    def _apply_leet(word: str) -> str:
+        return BadWordFilter._LEET_PATTERN.sub(lambda m: BadWordFilter._LEET_MAP[m.group()], word)
+
+    # =====================================================
+    # CENSORING
+    # =====================================================
+    def Censor(value: dict | str | None, countryCode2: str = None):
+        if SettingsManager.Get("general.profanity_filter", True) != True:
+            return value
+
+        if value == None:
+            return value
+
+        if type(value) == str:
+            value = BadWordFilter.CensorString(value, countryCode2)
+        if isinstance(value, dict):
+            BadWordFilter.CensorDict(value)
+
+        return value
+
+    def CensorDict(dictionary: dict):
+        for key, value in dictionary.items():
+            if isinstance(value, dict):
+                BadWordFilter.CensorDict(value)
+            else:
+                # Modify the leaf value
+                if type(value) == str:
+                    dictionary[key] = BadWordFilter.CensorString(value)
 
     def CensorString(value: str, playerCountry: str = None):
         langTests = set(["common"])
@@ -207,39 +246,6 @@ class BadWordFilter:
             logger.info(f"{value} -> {newString}")
 
         return newString
-
-    def CensorDict(dictionary: dict):
-        for key, value in dictionary.items():
-            if isinstance(value, dict):
-                BadWordFilter.CensorDict(value)
-            else:
-                # Modify the leaf value
-                if type(value) == str:
-                    dictionary[key] = BadWordFilter.CensorString(value)
-
-    def Censor(value: dict | str | None, countryCode2: str = None):
-        if SettingsManager.Get("general.profanity_filter", True) != True:
-            return value
-
-        if value == None:
-            return value
-
-        if type(value) == str:
-            value = BadWordFilter.CensorString(value, countryCode2)
-        if isinstance(value, dict):
-            BadWordFilter.CensorDict(value)
-
-        return value
-
-    def LoadWordList(file):
-        try:
-            if not os.path.exists(f"./user_data/{file}"):
-                with open(f"./user_data/{file}", "w", encoding="utf-8") as f:
-                    f.write("")
-            words = open(f"./user_data/{file}", encoding="utf-8").read().splitlines()
-            return set([remove_accents_lower(w) for w in words if len(w) > 0])
-        except:
-            logger.error(traceback.format_exc())
 
 
 BadWordFilter.LoadBadWordList()

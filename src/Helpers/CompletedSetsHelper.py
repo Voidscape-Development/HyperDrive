@@ -12,6 +12,9 @@ import os
 from .SeedPerformance import DOUBLE_ELIMINATION, SINGLE_ELIMINATION, PlacementRounds
 
 
+# =====================================================
+# UPSET FACTOR
+# =====================================================
 def UpsetFactor(bracket_type, winner_seed, loser_seed):
     """Placement rounds the winner was expected to finish below the loser
     (0 when the better or an equal seed won, or the seeds are unknown).
@@ -31,6 +34,9 @@ def UpsetFactor(bracket_type, winner_seed, loser_seed):
     )
 
 
+# =====================================================
+# FINISHING SETS
+# =====================================================
 def AddCharacterKey(keys, key):
     """Adds a character key to a player's list, keeping first-use order."""
     if key and key not in keys:
@@ -70,6 +76,9 @@ def FinishSets(sets, location, character):
     return sets
 
 
+# =====================================================
+# LOOKUPS IN THE APP'S DATA
+# =====================================================
 def Location(prefix, gamertag, country_code, state_code):
     """The provider's location, or the local player database's when the
     provider has no country for the player."""

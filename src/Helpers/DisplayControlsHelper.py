@@ -20,6 +20,9 @@ MAX_GROUP_NAME = 40
 IGNORED_FOLDERS = ("include",)
 
 
+# =====================================================
+# GROUP NAMES AND ACTIONS
+# =====================================================
 def NormalizeGroupName(name):
     """A group's name as it's kept and matched: lowercase, without commas
     (they separate a layout's groups) or extra spaces. Empty if there's
@@ -42,6 +45,9 @@ def Resolve(action, shown):
     return not shown
 
 
+# =====================================================
+# LAYOUT FOLDERS
+# =====================================================
 def LayoutFolders(root):
     """The layout folders in root: every folder with a page in it, by name
     (the layouts know theirs from their URL, so it's the name, not the
@@ -68,6 +74,9 @@ def MatchFolder(name, folders):
     return None
 
 
+# =====================================================
+# LAYOUT STATE
+# =====================================================
 def BuildState(folders, folderValues, groupValues):
     """What the layouts get in program_state's display: every folder and
     group with whether it's on. Folders never switched are on."""

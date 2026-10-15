@@ -40,6 +40,9 @@ class LocaleHelper(QObject):
     countryToLanguage = {}
     countryToContinent = {}
 
+    # =====================================================
+    # LOCALE AND LANGUAGES
+    # =====================================================
     def LoadLocale():
         settingsProgramLocale = SettingsManager.Get("program_language", None)
         settingsExportLocale = SettingsManager.Get("game_asset_language", None)
@@ -116,6 +119,9 @@ class LocaleHelper(QObject):
     def GetCountryContinent(countryCode2: str):
         return LocaleHelper.countryToContinent.get(countryCode2.upper(), "")
 
+    # =====================================================
+    # ROUND NAMES
+    # =====================================================
     def LoadRoundNames():
         # Load default round names and translation
         try:
@@ -151,6 +157,16 @@ class LocaleHelper(QObject):
 
         LocaleHelper.ApplyCustomTerms(LocaleHelper.LoadCustomTerms())
 
+    def GetRemaps(language: str):
+        for remap, langs in LocaleHelper.remapping.items():
+            if language.replace("-", "_") in langs:
+                logger.info("Loaded remap: " + str(remap))
+                return remap
+        return None
+
+    # =====================================================
+    # CUSTOM TOURNAMENT TERMS
+    # =====================================================
     def NormalizeCustomTerms(terms) -> dict:
         """Returns the user's tournament terms with empty and invalid entries
         removed: {"match": {key: name}, "phase": {key: name},
@@ -208,6 +224,9 @@ class LocaleHelper(QObject):
         LocaleHelper.signals.termsChanged.emit()
         return True
 
+    # =====================================================
+    # PHASE AND MATCH WIDGETS
+    # =====================================================
     def RefreshNamesInWidget(widget, load):
         """Fills a phase or match combo box again with load (LoadPhaseNamesToWidget
         or LoadMatchNamesToWidget), keeping the text it shows"""
@@ -220,13 +239,6 @@ class LocaleHelper(QObject):
             widget.setCurrentText(text)
         finally:
             widget.blockSignals(False)
-
-    def GetRemaps(language: str):
-        for remap, langs in LocaleHelper.remapping.items():
-            if language.replace("-", "_") in langs:
-                logger.info("Loaded remap: " + str(remap))
-                return remap
-        return None
 
     def LoadPhaseNamesToWidget(widget):
         for phaseString in LocaleHelper.customTerms.get("custom_phase", []):
