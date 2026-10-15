@@ -167,6 +167,9 @@ class ColorPicker(QFrame):
         row.addStretch()
         layout.addLayout(row)
 
+    # =====================================================
+    # LAYOUT
+    # =====================================================
     def Title(self, text):
         label = QLabel(text)
         font = label.font()
@@ -207,6 +210,9 @@ class ColorPicker(QFrame):
             n = len(colors)
             self.customGrid.addWidget(add, n // COLUMNS, n % COLUMNS)
 
+    # =====================================================
+    # CUSTOM COLORS
+    # =====================================================
     def AddCustomColor(self):
         if self.current.isValid():
             SaveCustomColors(CustomColors() + [ColorName(self.current, self.alpha)])
@@ -216,6 +222,9 @@ class ColorPicker(QFrame):
         SaveCustomColors([c for c in CustomColors() if c != name])
         self.FillCustomColors()
 
+    # =====================================================
+    # PICKING
+    # =====================================================
     def PickTyped(self):
         text = self.hex.text().strip()
         if text and not text.startswith("#"):

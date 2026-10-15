@@ -86,6 +86,9 @@ class GameReportSignals(QObject):
 
 
 class GameReportWidget(QWidget):
+    # Seconds after sending games during which start.gg's may not have them yet
+    SEND_GRACE_SECS = 15
+
     def __init__(self, scoreboard, *args):
         super().__init__(*args)
         self.scoreboard = scoreboard
@@ -173,8 +176,10 @@ class GameReportWidget(QWidget):
         self.RebuildRows()
         self.UpdateStatus()
 
+    # =====================================================
+    # ROWS
+    # =====================================================
     # Games UI
-
     def PlayersPerTeam(self):
         return max(1, len(getattr(self.scoreboard, "team1playerWidgets", []) or [1]))
 
@@ -334,6 +339,9 @@ class GameReportWidget(QWidget):
         if rect.isValid():
             _RowFlash(container, rect.adjusted(-4, -3, 4, 3))
 
+    # =====================================================
+    # GAMES TRACKER
+    # =====================================================
     def SetWinnerFromTracker(self, index, winner):
         """The scoreboard's games tracker set who won a game."""
         self.report.SetWinner(index, winner)
@@ -374,6 +382,9 @@ class GameReportWidget(QWidget):
         )
         return "<br>".join(lines)
 
+    # =====================================================
+    # EDITING GAMES
+    # =====================================================
     def WinnerClicked(self, index, winner, checked):
         self.report.SetWinner(index, winner if checked else UNDECIDED)
         if checked:
@@ -410,8 +421,41 @@ class GameReportWidget(QWidget):
             self.liveTimer.start()
         self.UpdateStatus()
 
-    # Called by the scoreboard
+    def SetStage(self, index, codename):
+        if index < 0:
+            index = 0
+        if index < len(self.report.games) and self.report.games[index].get("stage") == (
+            codename or None
+        ):
+            return
+        self.report.SetStage(index, codename)
+        self.Edited()
 
+    def ResetAllStages(self):
+        for i in range(len(self.report.games)):
+            self.report.SetStage(i, None)
+        self.Edited()
+
+    def ClearGames(self):
+        if (
+            self.report.HasResults()
+            and QMessageBox.question(
+                self,
+                QApplication.translate("app", "Clear games"),
+                QApplication.translate(
+                    "app", "Clear the results, stages and characters of every game?"
+                ),
+            )
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+        self.report.Reset()
+        self.Edited()
+
+    # =====================================================
+    # SCOREBOARD SYNC
+    # =====================================================
+    # Called by the scoreboard
     def SetBestOf(self, bestOf):
         self.report.SetBestOf(bestOf)
         self.RebuildRows()
@@ -435,20 +479,8 @@ class GameReportWidget(QWidget):
         self.RebuildRows()
         self.Export()
 
-    def SetStage(self, index, codename):
-        if index < 0:
-            index = 0
-        if index < len(self.report.games) and self.report.games[index].get("stage") == (
-            codename or None
-        ):
-            return
-        self.report.SetStage(index, codename)
-        self.Edited()
-
-    def ResetAllStages(self):
-        for i in range(len(self.report.games)):
-            self.report.SetStage(i, None)
-        self.Edited()
+    def Swapped(self):
+        return bool(getattr(self.scoreboard, "teamsSwapped", False))
 
     def CurrentGameIndex(self):
         return self.report.CurrentGameIndex()
@@ -503,9 +535,6 @@ class GameReportWidget(QWidget):
 
         self.UpdateStatus()
 
-    # Seconds after sending games during which start.gg's may not have them yet
-    SEND_GRACE_SECS = 15
-
     def HoldProviderResults(self):
         """start.gg's score and games for the set are behind what's here:
         changes made here are waiting to be sent, being sent, or were just
@@ -518,11 +547,10 @@ class GameReportWidget(QWidget):
             or time.time() - self.lastSent < GameReportWidget.SEND_GRACE_SECS
         )
 
-    def Swapped(self):
-        return bool(getattr(self.scoreboard, "teamsSwapped", False))
-
+    # =====================================================
+    # REPORTING TO START.GG
+    # =====================================================
     # Reporting
-
     def CanSend(self):
         """(True, "") or (False, why not)."""
         if not HasToken():
@@ -678,22 +706,6 @@ class GameReportWidget(QWidget):
 
         StartGGReporter.instance.TestToken(Done)
 
-    def ClearGames(self):
-        if (
-            self.report.HasResults()
-            and QMessageBox.question(
-                self,
-                QApplication.translate("app", "Clear games"),
-                QApplication.translate(
-                    "app", "Clear the results, stages and characters of every game?"
-                ),
-            )
-            != QMessageBox.StandardButton.Yes
-        ):
-            return
-        self.report.Reset()
-        self.Edited()
-
     def ReporterStatusChanged(self, number):
         if number == self.number:
             self.UpdateStatus()
@@ -753,8 +765,10 @@ class GameReportWidget(QWidget):
         self.btReset.setEnabled(ok and not sending)
         self.btRetry.setVisible(state == STATUS_ERROR and self.lastRequest is not None)
 
+    # =====================================================
+    # EXPORTS
+    # =====================================================
     # Layouts
-
     @staticmethod
     def CharacterData(en_name):
         """A character's data for the layouts, like a player's character:

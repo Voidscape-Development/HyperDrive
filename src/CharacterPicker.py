@@ -34,21 +34,16 @@ SKIN_TILE = QSize(112, 112)
 SourceRowRole = Qt.ItemDataRole.UserRole + 1
 
 
+# =====================================================
+# HELPERS
+# =====================================================
 def GameCodename():
     return (GameAssetManager.instance.selectedGame or {}).get("codename")
 
 
-def RecentCharacters():
-    recent = SettingsManager.Get(f"{RECENT_KEY}.{GameCodename()}", []) if GameCodename() else []
-    return [c for c in recent if isinstance(c, str)]
-
-
-def AddRecentCharacter(en_name):
-    game = GameCodename()
-    if not game or not en_name:
-        return
-    recent = [en_name] + [c for c in RecentCharacters() if c != en_name]
-    SettingsManager.Set(f"{RECENT_KEY}.{game}", recent[:RECENT_COUNT])
+def DisplayName(en_name):
+    character = GameAssetManager.instance.characters.get(en_name) or {}
+    return character.get("display_name") or en_name
 
 
 def MainsOf(player):
@@ -68,11 +63,25 @@ def MainsOf(player):
     return names
 
 
-def DisplayName(en_name):
-    character = GameAssetManager.instance.characters.get(en_name) or {}
-    return character.get("display_name") or en_name
+# =====================================================
+# RECENT CHARACTERS
+# =====================================================
+def RecentCharacters():
+    recent = SettingsManager.Get(f"{RECENT_KEY}.{GameCodename()}", []) if GameCodename() else []
+    return [c for c in recent if isinstance(c, str)]
 
 
+def AddRecentCharacter(en_name):
+    game = GameCodename()
+    if not game or not en_name:
+        return
+    recent = [en_name] + [c for c in RecentCharacters() if c != en_name]
+    SettingsManager.Set(f"{RECENT_KEY}.{game}", recent[:RECENT_COUNT])
+
+
+# =====================================================
+# GRID
+# =====================================================
 class _IconCache:
     """The characters' stock icons at the grid's size, made when first
     needed, again when another game is loaded."""
@@ -205,6 +214,9 @@ class _GridView(QListView):
         self.clicked.connect(self.Pick)
         self.activated.connect(self.Pick)
 
+    # =====================================================
+    # TILES
+    # =====================================================
     def SetTiles(self, tiles, iconSize, tileSize):
         """tiles: [(icon, name, source row)]"""
         model = QStandardItemModel(self)
@@ -234,6 +246,9 @@ class _GridView(QListView):
             self.setCurrentIndex(index)
             self.scrollTo(index)
 
+    # =====================================================
+    # SIZE
+    # =====================================================
     def UpdateHeight(self, width=None):
         width = max(1, width or self.viewport().width() or self.width())
         perRow = max(1, width // max(1, self.gridSize().width()))
@@ -244,6 +259,9 @@ class _GridView(QListView):
         super().resizeEvent(event)
         self.UpdateHeight()
 
+    # =====================================================
+    # PICKING
+    # =====================================================
     def Pick(self, index):
         if index.isValid():
             self.picked.emit(index.data(SourceRowRole))
@@ -255,6 +273,9 @@ class _GridView(QListView):
         self.Pick(index)
 
 
+# =====================================================
+# POPUP
+# =====================================================
 class CharacterPickerPopup(QFrame):
     """The grid, opened under a CharacterCombo, SkinCombo or VariantCombo."""
 
@@ -325,8 +346,10 @@ class CharacterPickerPopup(QFrame):
 
         self.setMinimumWidth(COLUMNS * CHARACTER_TILE.width() + 40)
 
+    # =====================================================
+    # OPENING AND CLOSING
+    # =====================================================
     # Opening
-
     def Open(self, step="character", text=""):
         if step == "variant" and self.variantCombo is not None:
             self.ShowVariants()
@@ -377,12 +400,33 @@ class CharacterPickerPopup(QFrame):
             y = above if above >= screen.top() else max(screen.top(), screen.bottom() - height)
         self.move(x, y)
 
-    # Steps
+    def closeEvent(self, event):
+        self.closed.emit()
+        super().closeEvent(event)
 
-    def CurrentCharacterData(self):
-        data = self.characterCombo.currentData()
-        return data if data and data.get("en_name") else None
+    # Keys typed in the search box move in the grid
+    def eventFilter(self, obj, event):
+        if obj is self.search and event.type() == QEvent.Type.KeyPress:
+            key = event.key()
+            view = self.allSection[1]
+            if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+                view.PickCurrent()
+                return True
+            if key in (Qt.Key.Key_Up, Qt.Key.Key_Down, Qt.Key.Key_PageUp, Qt.Key.Key_PageDown):
+                QApplication.sendEvent(view, event)
+                return True
+            if key in (Qt.Key.Key_Left, Qt.Key.Key_Right) and not self.search.text():
+                QApplication.sendEvent(view, event)
+                return True
+            if key == Qt.Key.Key_Backspace and not self.search.text() and self.step == "skin":
+                self.ShowCharacters()
+                self.Place()
+                return True
+        return super().eventFilter(obj, event)
 
+    # =====================================================
+    # PAGES
+    # =====================================================
     def ShowCharacters(self):
         self.step = "character"
         self.backButton.setVisible(False)
@@ -424,31 +468,14 @@ class CharacterPickerPopup(QFrame):
         self.allSection[1].SelectSourceRow(max(0, self.variantCombo.currentIndex()))
         self.search.setFocus()
 
-    def VariantTiles(self, text=""):
-        """[(icon, name, row)] of the variant dropdown's model, matching
-        text; the empty first row is the "None" tile."""
-        model = self.variantCombo.model() if self.variantCombo else None
-        text = text.strip().lower()
-        tiles = []
-        for row in range(model.rowCount() if model else 0):
-            index = model.index(row, 0)
-            data = index.data(Qt.ItemDataRole.UserRole)
-            if not data or not data.get("en_name"):
-                if row == 0 and not text:
-                    tiles.append(
-                        (
-                            ThemedIcon("assets/icons/cancel.svg"),
-                            QApplication.translate("app", "None"),
-                            row,
-                        )
-                    )
-                continue
-            name = data.get("display_name") or data.get("en_name")
-            if text and text not in f"{name} {data.get('en_name')}".lower():
-                continue
-            tiles.append((index.data(Qt.ItemDataRole.DecorationRole), name, row))
-        return tiles
+    # Steps
+    def CurrentCharacterData(self):
+        data = self.characterCombo.currentData()
+        return data if data and data.get("en_name") else None
 
+    # =====================================================
+    # TILES
+    # =====================================================
     def CharacterTiles(self, text=""):
         """[(icon, name, row)] of the character dropdown's model, matching
         text; the empty first row is the "None" tile."""
@@ -476,6 +503,43 @@ class CharacterPickerPopup(QFrame):
             icon = _IconCache.Get(data.get("en_name"), index.data(Qt.ItemDataRole.DecorationRole))
             tiles.append((icon, name, row))
         return tiles, byName
+
+    def SkinTiles(self, text=""):
+        model = self.skinCombo.model() if self.skinCombo else None
+        text = text.strip().lower()
+        tiles = []
+        for row in range(model.rowCount() if model else 0):
+            index = model.index(row, 0)
+            name = str(index.data(Qt.ItemDataRole.DisplayRole) or row)
+            if text and text not in name.lower():
+                continue
+            tiles.append((index.data(Qt.ItemDataRole.DecorationRole), name, row))
+        return tiles
+
+    def VariantTiles(self, text=""):
+        """[(icon, name, row)] of the variant dropdown's model, matching
+        text; the empty first row is the "None" tile."""
+        model = self.variantCombo.model() if self.variantCombo else None
+        text = text.strip().lower()
+        tiles = []
+        for row in range(model.rowCount() if model else 0):
+            index = model.index(row, 0)
+            data = index.data(Qt.ItemDataRole.UserRole)
+            if not data or not data.get("en_name"):
+                if row == 0 and not text:
+                    tiles.append(
+                        (
+                            ThemedIcon("assets/icons/cancel.svg"),
+                            QApplication.translate("app", "None"),
+                            row,
+                        )
+                    )
+                continue
+            name = data.get("display_name") or data.get("en_name")
+            if text and text not in f"{name} {data.get('en_name')}".lower():
+                continue
+            tiles.append((index.data(Qt.ItemDataRole.DecorationRole), name, row))
+        return tiles
 
     def Filter(self, text):
         searching = bool(text.strip())
@@ -519,20 +583,10 @@ class CharacterPickerPopup(QFrame):
             anyShown = anyShown or bool(sectionTiles)
         allLabel.setVisible(anyShown)
 
-    def SkinTiles(self, text=""):
-        model = self.skinCombo.model() if self.skinCombo else None
-        text = text.strip().lower()
-        tiles = []
-        for row in range(model.rowCount() if model else 0):
-            index = model.index(row, 0)
-            name = str(index.data(Qt.ItemDataRole.DisplayRole) or row)
-            if text and text not in name.lower():
-                continue
-            tiles.append((index.data(Qt.ItemDataRole.DecorationRole), name, row))
-        return tiles
-
+    # =====================================================
+    # PICKING
+    # =====================================================
     # Picking
-
     def Picked(self, row):
         if row is None:
             return
@@ -559,32 +613,10 @@ class CharacterPickerPopup(QFrame):
                 self.skinCombo.setCurrentIndex(row)
             self.close()
 
-    def closeEvent(self, event):
-        self.closed.emit()
-        super().closeEvent(event)
 
-    # Keys typed in the search box move in the grid
-
-    def eventFilter(self, obj, event):
-        if obj is self.search and event.type() == QEvent.Type.KeyPress:
-            key = event.key()
-            view = self.allSection[1]
-            if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-                view.PickCurrent()
-                return True
-            if key in (Qt.Key.Key_Up, Qt.Key.Key_Down, Qt.Key.Key_PageUp, Qt.Key.Key_PageDown):
-                QApplication.sendEvent(view, event)
-                return True
-            if key in (Qt.Key.Key_Left, Qt.Key.Key_Right) and not self.search.text():
-                QApplication.sendEvent(view, event)
-                return True
-            if key == Qt.Key.Key_Backspace and not self.search.text() and self.step == "skin":
-                self.ShowCharacters()
-                self.Place()
-                return True
-        return super().eventFilter(obj, event)
-
-
+# =====================================================
+# DROPDOWNS
+# =====================================================
 class CharacterCombo(QComboBox):
     """The character dropdown, opening the grid. mainsProvider, when set,
     returns the en_names shown first as the player's mains."""

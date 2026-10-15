@@ -189,10 +189,12 @@ class ScoreboardStageWidget(QDockWidget):
         self.stagesModel.dataChanged.connect(
             lambda topLeft, bottomRight: self.update_cloned_items()
         )
-
         # TournamentDataManager.instance.signals.tournament_changed.connect()
         # load tournament ruleset
 
+    # =====================================================
+    # STAGE STRIKE LOGIC
+    # =====================================================
     @property
     def stageStrikeLogic(self):
         # Scoreboard 1's, for code from before striking was per scoreboard
@@ -226,6 +228,30 @@ class ScoreboardStageWidget(QDockWidget):
         StateManager.Set(f"score.{number}.ruleset", vars(ruleset))
         self.signals.strike_state_updated.emit(number)
 
+    def SetOwnRuleset(self, checked):
+        target = self.editTarget
+        if target == 0:
+            return
+        if checked:
+            self.customRulesets[target] = copy.deepcopy(self.sharedRuleset)
+        else:
+            self.customRulesets.pop(target, None)
+        self.ApplyRuleset(target)
+        self.UpdateScoreboardSelect()
+        self.SetEditTarget(target)
+
+    def ResetStrike(self):
+        targets = (
+            [self.editTarget]
+            if self.editTarget
+            else ScoreboardManager.instance.GetScoreboardNumbers()
+        )
+        for number in targets:
+            self.GetLogic(number).Initialize()
+
+    # =====================================================
+    # SCOREBOARD TARGETS
+    # =====================================================
     def SetupScoreboardSelect(self):
         row = QHBoxLayout()
 
@@ -299,24 +325,6 @@ class ScoreboardStageWidget(QDockWidget):
         self.editingLabel.setText(text)
         self.UpdateWebappLabel()
 
-    def UpdateWebappLabel(self):
-        base = f"http://{self.GetIP()}:{SettingsManager.Get('general.webserver_port', 5500)}"
-        url = base
-        if self.editTarget:
-            url += f"/stage-strike-app?scoreboard={self.editTarget}"
-        # Character selection only: each team picks once per score (add
-        # &team=1 or &team=2 for one team's page)
-        charactersUrl = f"{base}/character-select?scoreboard={self.editTarget or 1}"
-        self.webappLabel.setText(
-            QApplication.translate("app", "Open {0} in a browser to stage strike.").format(
-                f"<a href='{url}'>{url}</a>"
-            )
-            + "<br>"
-            + QApplication.translate("app", "Open {0} for character selection only.").format(
-                f"<a href='{charactersUrl}'>{charactersUrl}</a>"
-            )
-        )
-
     def SetEditTarget(self, number):
         self.editTarget = int(number)
         index = self.scoreboardSelect.findData(self.editTarget)
@@ -326,27 +334,6 @@ class ScoreboardStageWidget(QDockWidget):
         self.LoadRulesetIntoForm(ruleset)
         self.ValidateRuleset(ruleset)
         self.UpdateTargetWidgets()
-
-    def SetOwnRuleset(self, checked):
-        target = self.editTarget
-        if target == 0:
-            return
-        if checked:
-            self.customRulesets[target] = copy.deepcopy(self.sharedRuleset)
-        else:
-            self.customRulesets.pop(target, None)
-        self.ApplyRuleset(target)
-        self.UpdateScoreboardSelect()
-        self.SetEditTarget(target)
-
-    def ResetStrike(self):
-        targets = (
-            [self.editTarget]
-            if self.editTarget
-            else ScoreboardManager.instance.GetScoreboardNumbers()
-        )
-        for number in targets:
-            self.GetLogic(number).Initialize()
 
     def ScoreboardAdded(self, number):
         self.customRulesets.pop(number, None)
@@ -415,6 +402,27 @@ class ScoreboardStageWidget(QDockWidget):
         for s in counterpickStages:
             self.counterpickModel.appendRow(s.clone())
 
+    # =====================================================
+    # WEB APP
+    # =====================================================
+    def UpdateWebappLabel(self):
+        base = f"http://{self.GetIP()}:{SettingsManager.Get('general.webserver_port', 5500)}"
+        url = base
+        if self.editTarget:
+            url += f"/stage-strike-app?scoreboard={self.editTarget}"
+        # Character selection only: each team picks once per score (add
+        # &team=1 or &team=2 for one team's page)
+        charactersUrl = f"{base}/character-select?scoreboard={self.editTarget or 1}"
+        self.webappLabel.setText(
+            QApplication.translate("app", "Open {0} in a browser to stage strike.").format(
+                f"<a href='{url}'>{url}</a>"
+            )
+            + "<br>"
+            + QApplication.translate("app", "Open {0} for character selection only.").format(
+                f"<a href='{charactersUrl}'>{charactersUrl}</a>"
+            )
+        )
+
     def GetIP(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -426,6 +434,46 @@ class ScoreboardStageWidget(QDockWidget):
         finally:
             s.close()
         return IP
+
+    # =====================================================
+    # EDITING THE RULESET
+    # =====================================================
+    def SetupOptions(self):
+        self.rulesetsBox.clear()
+
+        # Their stages were the previous game's
+        self.customRulesets = {}
+        self.editTarget = 0
+        self.UpdateScoreboardSelect()
+
+        self.ClearRuleset()
+        self.LoadRulesets()
+
+        self.stagesModel = GameAssetManager.instance.stageModel
+        self.stagesModel.dataChanged.connect(
+            lambda topLeft, bottomRight: self.update_cloned_items()
+        )
+        self.stagesModel.sort(0)
+        self.stagesView.setModel(self.stagesModel)
+
+    def UpdateBottomButtons(self):
+        found = next(
+            (
+                ruleset
+                for ruleset in self.userRulesets
+                if ruleset.get("videogame")
+                == GameAssetManager.instance.selectedGame.get("codename")
+                and ruleset.get("name") == self.rulesetName.text()
+            ),
+            None,
+        )
+
+        if found:
+            self.btSave.setText(QApplication.translate("app", "Update"))
+            self.btDelete.setEnabled(True)
+        else:
+            self.btSave.setText(QApplication.translate("app", "Save new"))
+            self.btDelete.setEnabled(False)
 
     def AddStage(self, view: QListView):
         selected = self.stagesView.selectedIndexes()
@@ -457,25 +505,18 @@ class ScoreboardStageWidget(QDockWidget):
             view.model().removeRow(selected[0].row())
             self.ExportCurrentRuleset()
 
-    def UpdateBottomButtons(self):
-        found = next(
-            (
-                ruleset
-                for ruleset in self.userRulesets
-                if ruleset.get("videogame")
-                == GameAssetManager.instance.selectedGame.get("codename")
-                and ruleset.get("name") == self.rulesetName.text()
-            ),
-            None,
-        )
+    def FindStageInModel(self, codename: str):
+        for row in range(self.stagesModel.rowCount()):
+            item = self.stagesModel.item(row)
+            if item.data(Qt.ItemDataRole.UserRole).get("codename") == codename:
+                return item
 
-        if found:
-            self.btSave.setText(QApplication.translate("app", "Update"))
-            self.btDelete.setEnabled(True)
-        else:
-            self.btSave.setText(QApplication.translate("app", "Save new"))
-            self.btDelete.setEnabled(False)
+    def ClearRuleset(self):
+        self.LoadRuleset()
 
+    # =====================================================
+    # SAVED RULESETS
+    # =====================================================
     def SaveRuleset(self):
         found = next(
             (
@@ -511,9 +552,6 @@ class ScoreboardStageWidget(QDockWidget):
             self.userRulesets.remove(found)
             self.SaveRulesetsFile()
 
-    def ClearRuleset(self):
-        self.LoadRuleset()
-
     def SaveRulesetsFile(self):
         try:
             with open("./user_data/rulesets.json", "w", encoding="utf-8") as outfile:
@@ -525,24 +563,6 @@ class ScoreboardStageWidget(QDockWidget):
 
         self.LoadRulesets()
         self.UpdateBottomButtons()
-
-    def SetupOptions(self):
-        self.rulesetsBox.clear()
-
-        # Their stages were the previous game's
-        self.customRulesets = {}
-        self.editTarget = 0
-        self.UpdateScoreboardSelect()
-
-        self.ClearRuleset()
-        self.LoadRulesets()
-
-        self.stagesModel = GameAssetManager.instance.stageModel
-        self.stagesModel.dataChanged.connect(
-            lambda topLeft, bottomRight: self.update_cloned_items()
-        )
-        self.stagesModel.sort(0)
-        self.stagesView.setModel(self.stagesModel)
 
     def LoadRulesets(self):
         rulesetsModel = QStandardItemModel()
@@ -665,12 +685,6 @@ class ScoreboardStageWidget(QDockWidget):
         # Update list
         self.rulesetsBox.setModel(rulesetsModel)
 
-    def FindStageInModel(self, codename: str):
-        for row in range(self.stagesModel.rowCount()):
-            item = self.stagesModel.item(row)
-            if item.data(Qt.ItemDataRole.UserRole).get("codename") == codename:
-                return item
-
     def LoadRuleset(self):
         data = self.rulesetsBox.currentData()
 
@@ -734,50 +748,9 @@ class ScoreboardStageWidget(QDockWidget):
                     self.counterpickModel.appendRow(item.clone())
         self.stagesCounterpick.setModel(self.counterpickModel)
 
-    def ExportCurrentRuleset(self):
-        if self.loadingForm:
-            return
-        try:
-            ruleset = self.GetCurrentRuleset()
-            self.ValidateRuleset(ruleset)
-
-            if self.editTarget in self.customRulesets:
-                self.customRulesets[self.editTarget] = ruleset
-                self.ApplyRuleset(self.editTarget)
-            else:
-                self.sharedRuleset = ruleset
-                StateManager.Set("score.ruleset", vars(ruleset))
-                for number in ScoreboardManager.instance.GetScoreboardNumbers():
-                    if number not in self.customRulesets:
-                        self.ApplyRuleset(number)
-        except:
-            logger.error(traceback.format_exc())
-
-    def ValidateRuleset(self, ruleset: Ruleset):
-        issues = []
-
-        # Validate bans
-        if len(ruleset.neutralStages) > 0:
-            if sum(ruleset.strikeOrder) != len(ruleset.neutralStages) - 1:
-                remaining = (len(ruleset.neutralStages) - 1) - sum(ruleset.strikeOrder)
-                issues.append(
-                    QApplication.translate(
-                        "app",
-                        "Number striked stages does not match the number of neutral stages. Should strike {0} more stage(s).",
-                    ).format(remaining)
-                )
-
-        # Add errors
-        for error in ruleset.errors:
-            issues.append(error)
-
-        if len(issues) == 0:
-            validText = QApplication.translate("app", "The current ruleset is valid!")
-            self.labelValidation.setText(f"<span style='color: green'>{validText}</span>")
-        else:
-            issuesText = "\n".join(issues)
-            self.labelValidation.setText(f'<span style="color: red">{issuesText}</span>')
-
+    # =====================================================
+    # CURRENT RULESET
+    # =====================================================
     def GetCurrentRuleset(self, forSaving=False):
         ruleset = Ruleset()
 
@@ -848,6 +821,53 @@ class ScoreboardStageWidget(QDockWidget):
 
         return ruleset
 
+    def ValidateRuleset(self, ruleset: Ruleset):
+        issues = []
+
+        # Validate bans
+        if len(ruleset.neutralStages) > 0:
+            if sum(ruleset.strikeOrder) != len(ruleset.neutralStages) - 1:
+                remaining = (len(ruleset.neutralStages) - 1) - sum(ruleset.strikeOrder)
+                issues.append(
+                    QApplication.translate(
+                        "app",
+                        "Number striked stages does not match the number of neutral stages. Should strike {0} more stage(s).",
+                    ).format(remaining)
+                )
+
+        # Add errors
+        for error in ruleset.errors:
+            issues.append(error)
+
+        if len(issues) == 0:
+            validText = QApplication.translate("app", "The current ruleset is valid!")
+            self.labelValidation.setText(f"<span style='color: green'>{validText}</span>")
+        else:
+            issuesText = "\n".join(issues)
+            self.labelValidation.setText(f'<span style="color: red">{issuesText}</span>')
+
+    def ExportCurrentRuleset(self):
+        if self.loadingForm:
+            return
+        try:
+            ruleset = self.GetCurrentRuleset()
+            self.ValidateRuleset(ruleset)
+
+            if self.editTarget in self.customRulesets:
+                self.customRulesets[self.editTarget] = ruleset
+                self.ApplyRuleset(self.editTarget)
+            else:
+                self.sharedRuleset = ruleset
+                StateManager.Set("score.ruleset", vars(ruleset))
+                for number in ScoreboardManager.instance.GetScoreboardNumbers():
+                    if number not in self.customRulesets:
+                        self.ApplyRuleset(number)
+        except:
+            logger.error(traceback.format_exc())
+
+    # =====================================================
+    # START.GG RULESETS
+    # =====================================================
     def QueryRequests(self, url=None, type=None, headers=None, jsonParams=None, params=None):
         # Retrying forever without a pause hammered start.gg and kept this
         # thread spinning for the whole session when it was down or rate

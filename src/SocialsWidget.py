@@ -91,6 +91,9 @@ class SocialsButton(QToolButton):
         twitterEdit.editingFinished.connect(self.Changed)
         self.UpdateText()
 
+    # =====================================================
+    # PLACING THE BUTTON
+    # =====================================================
     @staticmethod
     def Attach(twitterEdit: QLineEdit):
         """Creates a button and places it right of twitterEdit, wherever that
@@ -137,6 +140,9 @@ class SocialsButton(QToolButton):
                 return found
         return None
 
+    # =====================================================
+    # SOCIALS
+    # =====================================================
     def Socials(self):
         """Every social, Twitter first."""
         socials = {"twitter": self.twitterEdit.text()}
@@ -162,6 +168,9 @@ class SocialsButton(QToolButton):
     def Clear(self):
         self.SetOthers({})
 
+    # =====================================================
+    # EDITING
+    # =====================================================
     def Edit(self):
         dialog = SocialsDialog(self.Socials(), self.window())
         if dialog.exec() != QDialog.DialogCode.Accepted:

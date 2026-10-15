@@ -39,6 +39,9 @@ class GamesTracker(QWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
+    # =====================================================
+    # GAMES
+    # =====================================================
     def SetGames(self, games, current):
         self.games = list(games or [])
         self.current = current
@@ -50,8 +53,10 @@ class GamesTracker(QWidget):
         self.colors = [QColor(color1), QColor(color2)]
         self.update()
 
+    # =====================================================
+    # LAYOUT
+    # =====================================================
     # Layout: rows of squares, centered, wrapping when narrow
-
     def PerRow(self, width=None):
         width = width if width is not None else self.width()
         return max(1, (width + GAP) // (SQUARE + GAP))
@@ -99,8 +104,10 @@ class GamesTracker(QWidget):
                 return i
         return -1
 
+    # =====================================================
+    # PAINTING
+    # =====================================================
     # Drawing
-
     @staticmethod
     def TextColorOn(color):
         luminance = 0.299 * color.redF() + 0.587 * color.greenF() + 0.114 * color.blueF()
@@ -158,8 +165,10 @@ class GamesTracker(QWidget):
             painter.setPen(textColor)
             painter.drawText(square, Qt.AlignmentFlag.AlignCenter, str(i + 1))
 
+    # =====================================================
+    # MOUSE EVENTS
+    # =====================================================
     # Mouse
-
     def mouseMoveEvent(self, event):
         index = self.IndexAt(event.position().toPoint())
         if index != self.hovered:

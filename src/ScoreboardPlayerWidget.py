@@ -219,222 +219,77 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
 
         self.pronoun_completer = PronounHelper.SetupField(self.findChild(QLineEdit, "pronoun"))
 
-    def OpenMedia(self):
-        # Imported here: the window imports the widgets' modules
-        from .PlayerDBWindow import PlayerDBWindow
-
-        if PlayerDBWindow.instance is not None:
-            PlayerDBWindow.instance.OpenMedia(
-                self.findChild(QLineEdit, "team").text().strip(),
-                self.findChild(QLineEdit, "name").text().strip(),
-            )
-
     def deleteLater(self):
         self._deleted = True
         super().deleteLater()
 
-    def ExportSocials(self):
-        StateManager.Set(f"{self.path}.socials", self.socialsButton.Socials())
-        self.instanceSignals.dataChanged.emit()
-
-    def ComboBoxIndexChanged(self, element: QComboBox):
-        StateManager.Set(f"{self.path}.{element.objectName()}", element.currentData())
-        self.instanceSignals.dataChanged.emit()
-
-    def CharactersChanged(self, includeMains=False):
-        if self._deleted:
-            logger.warning(
-                f"CharactersChanged called on deleted ScoreboardPlayerWidget for {self.path}"
+    # =====================================================
+    # SETUP
+    # =====================================================
+    def SetupAutocomplete(self):
+        if PlayerDB.model:
+            self.findChild(QLineEdit, "name").setCompleter(CustomPlayerCompleter(PlayerDB.model))
+            self.findChild(QLineEdit, "name").completer().activated[QModelIndex].connect(
+                lambda x: self.SetData(x.data(Qt.ItemDataRole.UserRole)) if x is not None else None,
+                Qt.QueuedConnection,
             )
-            return
+            self.findChild(QLineEdit, "name").completer().setCaseSensitivity(
+                Qt.CaseSensitivity.CaseInsensitive
+            )
+            self.findChild(QLineEdit, "name").completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            self.findChild(QLineEdit, "name").completer().setModel(PlayerDB.model)
 
-        with self.dataLock:
-            characters = {}
+            self.ManageSavePlayerToDBText()
 
-            for i, (element, character, color, variant) in enumerate(self.character_elements):
-                data = character.currentData()
-
-                if data == None:
-                    data = {}
-
-                if character.currentData() == None:
-                    data = {"name": character.currentText()}
-
-                if color.currentData() and color.currentData().get("name", ""):
-                    data["name"] = color.currentData().get("name", "")
-
-                if color.currentData() and color.currentData().get("en_name", ""):
-                    data["en_name"] = color.currentData().get("en_name", "")
-
-                if color.currentData() and character.currentData():
-                    data["assets"] = color.currentData().get("assets", {})
-
-                if data.get("assets") == None:
-                    data["assets"] = {}
-
-                data["skin"] = color.currentIndex()
-                if variant.currentData():
-                    data["variant"] = variant.currentData()
-                else:
-                    data["variant"] = {}
-
-                characters[i + 1] = data
-
-            StateManager.Set(f"{self.path}.character", characters)
-
-            if includeMains:
-                StateManager.Set(f"{self.path}.mains", characters)
-
-    def SetLosers(self, value):
-        with self.dataLock:
-            self.losers = value
-            self.ExportMergedName()
-
-    def NameChanged(self):
-        with self.dataLock:
-            team = self.findChild(QLineEdit, "team").text()
-            name = self.findChild(QLineEdit, "name").text()
-            merged = team + " " + name
-
-            if merged != self.lastExportedName:
-                self.ExportMergedName()
-                self.ExportPlayerImages()
-                self.ExportPlayerId()
-
-            self.lastExportedName = merged
-
-    def ExportMergedName(self):
-        with self.dataLock:
-            team = self.findChild(QLineEdit, "team").text()
-            name = self.findChild(QLineEdit, "name").text()
-            merged = ""
-            nameOnlyMerged = ""
-
-            if team != "":
-                merged += team + " | "
-
-            merged += name
-            nameOnlyMerged += name
-
-            if self.losers:
-                merged += " [L]"
-                nameOnlyMerged += " [L]"
-
-            StateManager.Set(f"{self.path}.mergedName", merged)
-            StateManager.Set(f"{self.path}.mergedOnlyName", nameOnlyMerged)
-
-    def ExportPlayerId(self, id=None):
-        with self.dataLock:
-            if StateManager.Get(f"{self.path}.id") != id:
-                StateManager.Set(f"{self.path}.id", id)
-                # While swapping the id goes through intermediate values;
-                # SwapWith emits once for the final one instead
-                if not self._swapping:
-                    self.EmitPlayerIdChanged()
-
-    def EmitPlayerIdChanged(self):
-        # Each of these starts start.gg requests for the player's stats
-        if "score" in self.path:
-            self.instanceSignals.playerId_changed.emit()
-            if "team.1" in self.path:
-                self.instanceSignals.player1Id_changed.emit()
-            else:
-                self.instanceSignals.player2Id_changed.emit()
-
-    def ExportPlayerCity(self, city=None):
-        with self.dataLock:
-            if StateManager.Get(f"{self.path}.city") != city:
-                StateManager.Set(f"{self.path}.city", city)
-
-    def SwapWith(self, other: "ScoreboardPlayerWidget", emitIdChanged=True):
-        """Swap this player's data with other's.
-
-        With emitIdChanged=False the playerId signals aren't emitted for the
-        new ids, for callers that move the player stats themselves instead of
-        fetching them again.
-        """
-        if self == other:
-            logger.info("Swapping player with themselves")
-            return
-        oldIds = [StateManager.Get(f"{w.path}.id") for w in [self, other]]
+    def LoadCountries(self):
         try:
-            StateManager.BlockSaving()
-            self._swapping = True
-            other._swapping = True
-            with self.dataLock:
-                with other.dataLock:
-                    tmpData = []
+            if CountryHelper.countryModel == None:
+                CountryHelper.LoadCountries()
 
-                    # Save state
-                    for w in [self, other]:
-                        data = {}
-                        for widget in w.findChildren(QWidget):
-                            # Unnamed widgets (e.g. the line edits inside
-                            # editable combo boxes) can't be found again by
-                            # name, and loading them would hit another widget
-                            if not widget.objectName():
-                                continue
-                            if type(widget) == QLineEdit:
-                                data[widget.objectName()] = widget.text()
-                            if isinstance(widget, QComboBox):
-                                data[widget.objectName()] = widget.currentIndex()
-                            if type(widget) == QPlainTextEdit:
-                                data[widget.objectName()] = widget.toPlainText()
-                            if type(widget) == QCheckBox:
-                                data[widget.objectName()] = widget.isChecked()
-                        data["online_avatar"] = StateManager.Get(f"{w.path}.online_avatar")
-                        data["id"] = StateManager.Get(f"{w.path}.id")
-                        data["seed"] = StateManager.Get(f"{w.path}.seed")
-                        data["wins"] = StateManager.Get(f"{w.path}.wins")
-                        data["losses"] = StateManager.Get(f"{w.path}.losses")
-                        data["winPercentage"] = StateManager.Get(f"{w.path}.winPercentage")
-                        data["city"] = StateManager.Get(f"{w.path}.city")
-                        data["_socials"] = w.socialsButton.Others()
-                        tmpData.append(data)
+            countryCompleter = QCompleter(CountryHelper.countryModel)
 
-                    # Load state
-                    for i, w in enumerate([other, self]):
-                        lineEdits = []
-                        for objName in tmpData[i]:
-                            widget = w.findChild(QWidget, objName)
-                            if widget:
-                                if type(widget) == QLineEdit:
-                                    widget.setText(tmpData[i][objName])
-                                    lineEdits.append(widget)
-                                if isinstance(widget, QComboBox):
-                                    widget.setCurrentIndex(tmpData[i][objName])
-                                if type(widget) == QPlainTextEdit:
-                                    widget.setPlainText(tmpData[i][objName])
-                                if type(widget) == QCheckBox:
-                                    widget.setChecked(tmpData[i][objName])
-                        # Only once every field is set, so the name/team
-                        # handlers run on the final name instead of a mix of
-                        # both players' (each run exports images, sponsors...)
-                        for widget in lineEdits:
-                            widget.editingFinished.emit()
-                        w.ExportPlayerId(tmpData[i]["id"])
-                        StateManager.Set(f"{w.path}.online_avatar", tmpData[i]["online_avatar"])
-                        StateManager.Set(f"{w.path}.seed", tmpData[i]["seed"])
-                        StateManager.Set(f"{w.path}.wins", tmpData[i]["wins"])
-                        StateManager.Set(f"{w.path}.losses", tmpData[i]["losses"])
-                        StateManager.Set(f"{w.path}.winPercentage", tmpData[i]["winPercentage"])
-                        StateManager.Set(f"{w.path}.city", tmpData[i]["city"])
-                        w.socialsButton.SetOthers(tmpData[i]["_socials"])
-        finally:
-            self._swapping = False
-            other._swapping = False
-            StateManager.ReleaseSaving()
+            country: QComboBox = self.findChild(QComboBox, "country")
+            country.setCompleter(countryCompleter)
+            country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            country.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            country.completer().setCompletionMode(QCompleter.PopupCompletion)
+            country.setModel(CountryHelper.countryModel)
+            country.setFont(QFont(country.font().family(), 9))
+            country.lineEdit().setFont(QFont(country.font().family(), 9))
 
-        if emitIdChanged:
-            for w, oldId in zip([self, other], oldIds):
-                if StateManager.Get(f"{w.path}.id") != oldId:
-                    w.EmitPlayerIdChanged()
+            country.currentIndexChanged.connect(self.LoadStates)
 
-    def SetIndex(self, index: int, team: int):
-        # Neither players nor commentators show a title
-        self.findChild(QWidget, "title").setVisible(False)
-        self.index = index
-        self.teamNumber = team
+            state: QComboBox = self.findChild(QComboBox, "state")
+            state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            state.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
+            state.completer().setCompletionMode(QCompleter.PopupCompletion)
+            state.setFont(QFont(state.font().family(), 9))
+            state.lineEdit().setFont(QFont(state.font().family(), 9))
+
+            # The dropdowns' lists are only created once a field is used, as
+            # every player card has these and creating them adds up
+            for combo in (country, state):
+                OnFirstFocus(
+                    [combo, combo.lineEdit()],
+                    lambda combo=combo: [
+                        combo.view().setMinimumWidth(60),
+                        combo.completer().popup().setMinimumWidth(300),
+                    ],
+                )
+
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            exit()
+
+    def ReloadCharacters(self):
+        self.UpdateVariantsShown()
+        for c in self.character_elements:
+            c[1].setModel(GameAssetManager.instance.characterModel)
+            c[1].setIconSize(QSize(24, 24))
+            c[1].setFixedHeight(32)
+            c[3].setModel(GameAssetManager.instance.variantModel)
 
     def SetCharactersPerPlayer(self, number):
         # logger.info(f"ScoreboardPlayerWidget#SetCharactersPerPlayer({number})")
@@ -534,6 +389,19 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
 
         self.CharactersChanged(includeMains=True)
 
+    def UpdateVariantsShown(self):
+        # The variant dropdowns only show for games with variants; the skin
+        # dropdowns take their room otherwise. Uses the rows kept in
+        # character_elements: searching the card's children for them was
+        # slow with many cards (every card does this when a game loads)
+        hasVariants = len(GameAssetManager.instance.variants) > 0
+        for _, _, color, variant in self.character_elements:
+            variant.setVisible(hasVariants)
+            color.setMaximumWidth(120 if hasVariants else 210)
+
+    # =====================================================
+    # DISPLAY
+    # =====================================================
     def SetElementVisible(self, name, visible):
         """Shows or hides one of the fields from the display options"""
         self.displayElements.add(name)
@@ -573,81 +441,112 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
         for button in self.bottomButtons:
             button.setVisible(self.detailsShown)
 
-    def LoadCountries(self):
+    def OpenMedia(self):
+        # Imported here: the window imports the widgets' modules
+        from .PlayerDBWindow import PlayerDBWindow
+
+        if PlayerDBWindow.instance is not None:
+            PlayerDBWindow.instance.OpenMedia(
+                self.findChild(QLineEdit, "team").text().strip(),
+                self.findChild(QLineEdit, "name").text().strip(),
+            )
+
+    # =====================================================
+    # PLAYER POSITION
+    # =====================================================
+    def SetIndex(self, index: int, team: int):
+        # Neither players nor commentators show a title
+        self.findChild(QWidget, "title").setVisible(False)
+        self.index = index
+        self.teamNumber = team
+
+    def SwapWith(self, other: "ScoreboardPlayerWidget", emitIdChanged=True):
+        """Swap this player's data with other's.
+
+        With emitIdChanged=False the playerId signals aren't emitted for the
+        new ids, for callers that move the player stats themselves instead of
+        fetching them again.
+        """
+        if self == other:
+            logger.info("Swapping player with themselves")
+            return
+        oldIds = [StateManager.Get(f"{w.path}.id") for w in [self, other]]
         try:
-            if CountryHelper.countryModel == None:
-                CountryHelper.LoadCountries()
+            StateManager.BlockSaving()
+            self._swapping = True
+            other._swapping = True
+            with self.dataLock:
+                with other.dataLock:
+                    tmpData = []
 
-            countryCompleter = QCompleter(CountryHelper.countryModel)
+                    # Save state
+                    for w in [self, other]:
+                        data = {}
+                        for widget in w.findChildren(QWidget):
+                            # Unnamed widgets (e.g. the line edits inside
+                            # editable combo boxes) can't be found again by
+                            # name, and loading them would hit another widget
+                            if not widget.objectName():
+                                continue
+                            if type(widget) == QLineEdit:
+                                data[widget.objectName()] = widget.text()
+                            if isinstance(widget, QComboBox):
+                                data[widget.objectName()] = widget.currentIndex()
+                            if type(widget) == QPlainTextEdit:
+                                data[widget.objectName()] = widget.toPlainText()
+                            if type(widget) == QCheckBox:
+                                data[widget.objectName()] = widget.isChecked()
+                        data["online_avatar"] = StateManager.Get(f"{w.path}.online_avatar")
+                        data["id"] = StateManager.Get(f"{w.path}.id")
+                        data["seed"] = StateManager.Get(f"{w.path}.seed")
+                        data["wins"] = StateManager.Get(f"{w.path}.wins")
+                        data["losses"] = StateManager.Get(f"{w.path}.losses")
+                        data["winPercentage"] = StateManager.Get(f"{w.path}.winPercentage")
+                        data["city"] = StateManager.Get(f"{w.path}.city")
+                        data["_socials"] = w.socialsButton.Others()
+                        tmpData.append(data)
 
-            country: QComboBox = self.findChild(QComboBox, "country")
-            country.setCompleter(countryCompleter)
-            country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            country.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-            country.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            country.completer().setCompletionMode(QCompleter.PopupCompletion)
-            country.setModel(CountryHelper.countryModel)
-            country.setFont(QFont(country.font().family(), 9))
-            country.lineEdit().setFont(QFont(country.font().family(), 9))
+                    # Load state
+                    for i, w in enumerate([other, self]):
+                        lineEdits = []
+                        for objName in tmpData[i]:
+                            widget = w.findChild(QWidget, objName)
+                            if widget:
+                                if type(widget) == QLineEdit:
+                                    widget.setText(tmpData[i][objName])
+                                    lineEdits.append(widget)
+                                if isinstance(widget, QComboBox):
+                                    widget.setCurrentIndex(tmpData[i][objName])
+                                if type(widget) == QPlainTextEdit:
+                                    widget.setPlainText(tmpData[i][objName])
+                                if type(widget) == QCheckBox:
+                                    widget.setChecked(tmpData[i][objName])
+                        # Only once every field is set, so the name/team
+                        # handlers run on the final name instead of a mix of
+                        # both players' (each run exports images, sponsors...)
+                        for widget in lineEdits:
+                            widget.editingFinished.emit()
+                        w.ExportPlayerId(tmpData[i]["id"])
+                        StateManager.Set(f"{w.path}.online_avatar", tmpData[i]["online_avatar"])
+                        StateManager.Set(f"{w.path}.seed", tmpData[i]["seed"])
+                        StateManager.Set(f"{w.path}.wins", tmpData[i]["wins"])
+                        StateManager.Set(f"{w.path}.losses", tmpData[i]["losses"])
+                        StateManager.Set(f"{w.path}.winPercentage", tmpData[i]["winPercentage"])
+                        StateManager.Set(f"{w.path}.city", tmpData[i]["city"])
+                        w.socialsButton.SetOthers(tmpData[i]["_socials"])
+        finally:
+            self._swapping = False
+            other._swapping = False
+            StateManager.ReleaseSaving()
 
-            country.currentIndexChanged.connect(self.LoadStates)
+        if emitIdChanged:
+            for w, oldId in zip([self, other], oldIds):
+                if StateManager.Get(f"{w.path}.id") != oldId:
+                    w.EmitPlayerIdChanged()
 
-            state: QComboBox = self.findChild(QComboBox, "state")
-            state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            state.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-            state.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            state.completer().setCompletionMode(QCompleter.PopupCompletion)
-            state.setFont(QFont(state.font().family(), 9))
-            state.lineEdit().setFont(QFont(state.font().family(), 9))
-
-            # The dropdowns' lists are only created once a field is used, as
-            # every player card has these and creating them adds up
-            for combo in (country, state):
-                OnFirstFocus(
-                    [combo, combo.lineEdit()],
-                    lambda combo=combo: [
-                        combo.view().setMinimumWidth(60),
-                        combo.completer().popup().setMinimumWidth(300),
-                    ],
-                )
-
-        except Exception as e:
-            logger.error(traceback.format_exc())
-            exit()
-
-    def UpdateVariantsShown(self):
-        # The variant dropdowns only show for games with variants; the skin
-        # dropdowns take their room otherwise. Uses the rows kept in
-        # character_elements: searching the card's children for them was
-        # slow with many cards (every card does this when a game loads)
-        hasVariants = len(GameAssetManager.instance.variants) > 0
-        for _, _, color, variant in self.character_elements:
-            variant.setVisible(hasVariants)
-            color.setMaximumWidth(120 if hasVariants else 210)
-
-    def ReloadCharacters(self):
-        self.UpdateVariantsShown()
-        for c in self.character_elements:
-            c[1].setModel(GameAssetManager.instance.characterModel)
-            c[1].setIconSize(QSize(24, 24))
-            c[1].setFixedHeight(32)
-            c[3].setModel(GameAssetManager.instance.variantModel)
-
-    def SetupAutocomplete(self):
-        if PlayerDB.model:
-            self.findChild(QLineEdit, "name").setCompleter(CustomPlayerCompleter(PlayerDB.model))
-            self.findChild(QLineEdit, "name").completer().activated[QModelIndex].connect(
-                lambda x: self.SetData(x.data(Qt.ItemDataRole.UserRole)) if x is not None else None,
-                Qt.QueuedConnection,
-            )
-            self.findChild(QLineEdit, "name").completer().setCaseSensitivity(
-                Qt.CaseSensitivity.CaseInsensitive
-            )
-            self.findChild(QLineEdit, "name").completer().setFilterMode(Qt.MatchFlag.MatchContains)
-            self.findChild(QLineEdit, "name").completer().setModel(PlayerDB.model)
-
-            self.ManageSavePlayerToDBText()
-
+    # =====================================================
+    # PLAYER DATA
+    # =====================================================
     def SetData(self, data, dontLoadFromDB=False, clear=True, no_mains=False, enrichBlocking=True):
         self.dataLock.acquire()
 
@@ -872,6 +771,11 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
             StateManager.ReleaseSaving()
             self.dataLock.release()
 
+    def SetLosers(self, value):
+        with self.dataLock:
+            self.losers = value
+            self.ExportMergedName()
+
     def SeedOverrideChanged(self, tag):
         # Updates the seed shown when the seed editor changes this player's
         currentTag = self.GetCurrentPlayerTag()
@@ -883,6 +787,49 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
             return
         self.findChild(QSpinBox, "seed").setValue(seed or 0)
 
+    def Clear(self, no_mains=False):
+        with StateManager.SaveBlock():
+            self.DoClear(no_mains=no_mains)
+
+    def DoClear(self, no_mains=False):
+        with self.dataLock:
+            for c in self.findChildren(QLineEdit):
+                if c.objectName() != "" and c.objectName() != "qt_spinbox_lineedit":
+                    if c.text() != "":
+                        c.setText("")
+                        c.editingFinished.emit()
+
+            for c in self.findChildren(QSpinBox):
+                c.setValue(0)
+                c.lineEdit().editingFinished.emit()
+
+            for c in self.findChildren(QPlainTextEdit):
+                if c.toPlainText() != "":
+                    c.clear()
+                    c.textChanged.emit()
+
+            for c in self.findChildren(QComboBox):
+                if no_mains:
+                    for charelem in self.character_elements:
+                        for i in range(len(charelem)):
+                            if charelem[i] == c:
+                                break
+                        else:
+                            c.setCurrentIndex(0)
+                        continue  # only executed if the inner loop DID break
+                else:
+                    c.setCurrentIndex(0)
+
+            self.socialsButton.Clear()
+
+        StateManager.Unset(f"{self.path}.online_avatar")
+        StateManager.Unset(f"{self.path}.wins")
+        StateManager.Unset(f"{self.path}.losses")
+        StateManager.Unset(f"{self.path}.winPercentage")
+
+    # =====================================================
+    # PLAYER DATABASE
+    # =====================================================
     def SavePlayerToDB(self):
         tag = self.GetCurrentPlayerTag()
 
@@ -948,42 +895,113 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
         else:
             self.save_bt.setText(QApplication.translate("app", "Save new player"))
 
-    def Clear(self, no_mains=False):
-        with StateManager.SaveBlock():
-            self.DoClear(no_mains=no_mains)
+    # =====================================================
+    # EXPORT CALLS
+    # =====================================================
+    def ExportSocials(self):
+        StateManager.Set(f"{self.path}.socials", self.socialsButton.Socials())
+        self.instanceSignals.dataChanged.emit()
 
-    def DoClear(self, no_mains=False):
+    def ComboBoxIndexChanged(self, element: QComboBox):
+        StateManager.Set(f"{self.path}.{element.objectName()}", element.currentData())
+        self.instanceSignals.dataChanged.emit()
+
+    def CharactersChanged(self, includeMains=False):
+        if self._deleted:
+            logger.warning(
+                f"CharactersChanged called on deleted ScoreboardPlayerWidget for {self.path}"
+            )
+            return
+
         with self.dataLock:
-            for c in self.findChildren(QLineEdit):
-                if c.objectName() != "" and c.objectName() != "qt_spinbox_lineedit":
-                    if c.text() != "":
-                        c.setText("")
-                        c.editingFinished.emit()
+            characters = {}
 
-            for c in self.findChildren(QSpinBox):
-                c.setValue(0)
-                c.lineEdit().editingFinished.emit()
+            for i, (element, character, color, variant) in enumerate(self.character_elements):
+                data = character.currentData()
 
-            for c in self.findChildren(QPlainTextEdit):
-                if c.toPlainText() != "":
-                    c.clear()
-                    c.textChanged.emit()
+                if data == None:
+                    data = {}
 
-            for c in self.findChildren(QComboBox):
-                if no_mains:
-                    for charelem in self.character_elements:
-                        for i in range(len(charelem)):
-                            if charelem[i] == c:
-                                break
-                        else:
-                            c.setCurrentIndex(0)
-                        continue  # only executed if the inner loop DID break
+                if character.currentData() == None:
+                    data = {"name": character.currentText()}
+
+                if color.currentData() and color.currentData().get("name", ""):
+                    data["name"] = color.currentData().get("name", "")
+
+                if color.currentData() and color.currentData().get("en_name", ""):
+                    data["en_name"] = color.currentData().get("en_name", "")
+
+                if color.currentData() and character.currentData():
+                    data["assets"] = color.currentData().get("assets", {})
+
+                if data.get("assets") == None:
+                    data["assets"] = {}
+
+                data["skin"] = color.currentIndex()
+                if variant.currentData():
+                    data["variant"] = variant.currentData()
                 else:
-                    c.setCurrentIndex(0)
+                    data["variant"] = {}
 
-            self.socialsButton.Clear()
+                characters[i + 1] = data
 
-        StateManager.Unset(f"{self.path}.online_avatar")
-        StateManager.Unset(f"{self.path}.wins")
-        StateManager.Unset(f"{self.path}.losses")
-        StateManager.Unset(f"{self.path}.winPercentage")
+            StateManager.Set(f"{self.path}.character", characters)
+
+            if includeMains:
+                StateManager.Set(f"{self.path}.mains", characters)
+
+    def NameChanged(self):
+        with self.dataLock:
+            team = self.findChild(QLineEdit, "team").text()
+            name = self.findChild(QLineEdit, "name").text()
+            merged = team + " " + name
+
+            if merged != self.lastExportedName:
+                self.ExportMergedName()
+                self.ExportPlayerImages()
+                self.ExportPlayerId()
+
+            self.lastExportedName = merged
+
+    def ExportMergedName(self):
+        with self.dataLock:
+            team = self.findChild(QLineEdit, "team").text()
+            name = self.findChild(QLineEdit, "name").text()
+            merged = ""
+            nameOnlyMerged = ""
+
+            if team != "":
+                merged += team + " | "
+
+            merged += name
+            nameOnlyMerged += name
+
+            if self.losers:
+                merged += " [L]"
+                nameOnlyMerged += " [L]"
+
+            StateManager.Set(f"{self.path}.mergedName", merged)
+            StateManager.Set(f"{self.path}.mergedOnlyName", nameOnlyMerged)
+
+    def ExportPlayerId(self, id=None):
+        with self.dataLock:
+            if StateManager.Get(f"{self.path}.id") != id:
+                StateManager.Set(f"{self.path}.id", id)
+                # While swapping the id goes through intermediate values;
+                # SwapWith emits once for the final one instead
+                if not self._swapping:
+                    self.EmitPlayerIdChanged()
+
+    def EmitPlayerIdChanged(self):
+        # Each of these starts start.gg requests for the player's stats
+        if "score" in self.path:
+            self.instanceSignals.playerId_changed.emit()
+            if "team.1" in self.path:
+                self.instanceSignals.player1Id_changed.emit()
+            else:
+                self.instanceSignals.player2Id_changed.emit()
+
+    def ExportPlayerCity(self, city=None):
+        with self.dataLock:
+            if StateManager.Get(f"{self.path}.city") != city:
+                StateManager.Set(f"{self.path}.city", city)

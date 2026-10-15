@@ -40,6 +40,9 @@ class CommentaryPreview:
     _cache: dict[str, tuple[float, object]] = {}
     _lock = threading.Lock()
 
+    # =====================================================
+    # PREVIEW
+    # =====================================================
     def Preview(teams: list) -> dict:
         """teams: the set's two teams, each a list of players as in the stream
         queue ({name, team, id...}). Stats are only looked up for 1v1
@@ -91,6 +94,9 @@ class CommentaryPreview:
 
         return result
 
+    # =====================================================
+    # PLAYER LOOKUPS
+    # =====================================================
     def _Media(player: dict) -> dict:
         # The stream queue's players have their tag as name and sponsor as team
         name = player.get("gamerTag") or player.get("name") or ""
@@ -106,6 +112,9 @@ class CommentaryPreview:
             return playerId
         return None
 
+    # =====================================================
+    # CACHE
+    # =====================================================
     def _Cached(key: str, fetch):
         now = time.time()
         with CommentaryPreview._lock:
@@ -125,6 +134,9 @@ class CommentaryPreview:
     def _Key(*parts) -> str:
         return orjson.dumps(parts).decode()
 
+    # =====================================================
+    # SETS
+    # =====================================================
     def _LastSets(provider, playerId):
         def fetch():
             result = _Result()
