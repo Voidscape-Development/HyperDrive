@@ -76,6 +76,18 @@ def _bracket_type_name(value):
     return _BRACKET_TYPE_NAMES.get(value, "")
 
 
+# A match's state as start.gg's set state (1 waiting, 2 in progress, 3 done),
+# which the set list has (see ResultTypes.SetListItem)
+_STARTGG_SET_STATES = {
+    MatchState.MATCH_STATE_IN_PROGRESS: 2,
+    MatchState.MATCH_STATE_COMPLETED: 3,
+}
+
+
+def _startgg_set_state(value):
+    return _STARTGG_SET_STATES.get(value, 1)
+
+
 class _CapturingCallback:
     # Synchronous adapter for StartGGDataProvider methods that emit results
     # via a Qt-style callback. The StartGG calls we delegate to are
@@ -1152,9 +1164,11 @@ class ParryGGDataProvider(TournamentDataProvider):
                             round_label = self._round_label_for_match(match, rounds_by_key)
                         else:
                             round_label = "Round Robin"
-                        final_data.append(
-                            self._build_match_info(match, seeds, phase, bracket, round_label)
-                        )
+                        info = self._build_match_info(match, seeds, phase, bracket, round_label)
+                        # Only the list gets it: a loaded set with state 3
+                        # counts as over on the scoreboard
+                        info["state"] = _startgg_set_state(match.state)
+                        final_data.append(info)
 
             logger.info(
                 f"GetMatches (bracket traversal): kept {len(final_data)} matches across "

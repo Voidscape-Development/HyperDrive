@@ -279,6 +279,19 @@ def TestGetMatchDoesNotWaitForASlowApi():
     assert result.get("id") == "123" and "from" not in result, result
 
 
+def TestParrySetListStates():
+    """parry.gg's matches get start.gg's set states in the set list"""
+    from parrygg.models.bracket_pb2 import MatchState
+
+    from src.TournamentDataProvider.ParryGGDataProvider import _startgg_set_state
+
+    assert _startgg_set_state(MatchState.MATCH_STATE_UNSPECIFIED) == 1
+    assert _startgg_set_state(MatchState.MATCH_STATE_PENDING) == 1
+    assert _startgg_set_state(MatchState.MATCH_STATE_READY) == 1
+    assert _startgg_set_state(MatchState.MATCH_STATE_IN_PROGRESS) == 2
+    assert _startgg_set_state(MatchState.MATCH_STATE_COMPLETED) == 3
+
+
 def TestAppContext():
     """The app's context is its game, setting and player database"""
     from src.PlayerDB import PlayerDB
@@ -320,6 +333,7 @@ if __name__ == "__main__":
         TestGameFromProvider,
         TestGameChanged,
         TestGetMatchDoesNotWaitForASlowApi,
+        TestParrySetListStates,
         TestAppContext,
     ]:
         test()
