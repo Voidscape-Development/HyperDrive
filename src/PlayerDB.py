@@ -88,12 +88,23 @@ class PlayerDB:
         return SocialsHelper.Normalize(player)
 
     @staticmethod
-    @gui_thread_sync
     def ReloadDB():
         """Loads the players again after the database was edited elsewhere
         (the admin page). Fields that aren't saved are kept."""
+        # Reading the database happens on the calling thread, so a web server
+        # thread doesn't hold up the GUI with it
         try:
             saved = PlayerDB.ReadDB()
+        except Exception:
+            logger.error(traceback.format_exc())
+            return
+        PlayerDB.ApplyReloadedDB(saved)
+
+    @staticmethod
+    @gui_thread_sync
+    def ApplyReloadedDB(saved):
+        """Replaces the players in memory with the ones read by ReloadDB."""
+        try:
             for tag in list(PlayerDB.database.keys()):
                 if tag not in saved:
                     del PlayerDB.database[tag]

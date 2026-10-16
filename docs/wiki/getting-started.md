@@ -9,8 +9,8 @@ At the top of the main window, choose your game in the game dropdown. You can ty
 filter the list.
 
 If your game isn't listed, or it has no character icons, download its assets: open
-[Download assets](hyperdrive://open/download-assets), select the game's asset pack and
-click **Download**. See [Game assets](game-assets.md) for more.
+[Download assets](hyperdrive://open/download-assets), search for the game, tick the asset
+packs you want and click **Download**. See [Game assets](game-assets.md) for more.
 
 ## 2. Load your tournament (optional)
 

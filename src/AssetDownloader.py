@@ -1,30 +1,67 @@
-import os
-import shutil
-import traceback
+import time
 
-import orjson
-import py7zr
-import requests
 from loguru import logger
 from qtpy.QtCore import *
-from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from src.GameAssetManager import GameAssetManager
-from src.Helpers.QtHelper import assert_gui_thread, gui_thread_sync
+from src.Helpers import AssetCatalog
+from src.Helpers.QtHelper import gui_thread_async
 from src.Workers import Worker
 
 from .Theme import ThemedIcon
 
+# A catalog older than this is fetched again when the window opens or the
+# game's assets load
+CATALOG_MAX_AGE = 10 * 60
 
-class IconDelegate(QStyledItemDelegate):
-    def initStyleOption(self, option, index):
-        super().initStyleOption(option, index)
-        option.decorationSize = option.rect.size()
+JOB_QUEUED = "queued"
+JOB_DOWNLOADING = "downloading"
+JOB_UNPACKING = "unpacking"
+JOB_DONE = "done"
+JOB_FAILED = "failed"
+JOB_CANCELLED = "cancelled"
+ACTIVE_STATES = (JOB_QUEUED, JOB_DOWNLOADING, JOB_UNPACKING)
+
+
+class DownloadJob:
+    """One pack to download and install. Jobs run one at a time, in order."""
+
+    def __init__(self, game, pack, gameName, packName, files):
+        self.game = game
+        self.pack = pack
+        self.gameName = gameName
+        self.packName = packName
+        self.files = files
+        self.state = JOB_QUEUED
+        self.total = sum(f["size"] for f in files)
+        self.done = 0
+        # Bytes per second, smoothed
+        self.speed = 0.0
+        self.error = ""
+        self.cancelEvent = None
+        self.cancelRequested = False
+        self._sample = None
+
+    @property
+    def active(self):
+        return self.state in ACTIVE_STATES
+
+    def SecondsLeft(self):
+        if self.speed <= 0:
+            return None
+        return max(0, self.total - self.done) / self.speed
 
 
 class AssetDownloaderSignals(QObject):
+    # {game: [pack info]} of installed packs with a newer version
     AssetUpdates = Signal(dict)
+    # The catalog loaded, failed to load or started loading
+    catalogChanged = Signal()
+    # Jobs added, removed, started or finished
+    jobsChanged = Signal()
+    # A running job's progress
+    jobProgress = Signal(object)
 
 
 class AssetDownloader(QObject):
@@ -33,557 +70,290 @@ class AssetDownloader(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.threadpool = QThreadPool()
+        # Logos are many small requests: kept apart so they never wait on a download
+        self.logoPool = QThreadPool()
+        self.logoPool.setMaxThreadCount(4)
         self.signals = AssetDownloaderSignals()
 
-    # =====================================================
-    # UPDATE CHECKS
-    # =====================================================
+        self.catalog = None
+        self.catalogError = None
+        self.catalogTime = None
+        self.catalogLoading = False
+        # Game logos loaded this session, {game: PNG bytes or None}
+        self.logos = {}
+        # Logos being loaded, {game: [callbacks]}
+        self.logoWaiters = {}
+
+        self.jobs = []
+        self.runningJob = None
+        self.installedSomething = False
+        self.window = None
+
     def UiMounted(self):
         self.iconUpdateAvailable = ThemedIcon("assets/icons/update_available.svg")
         self.iconInstalled = ThemedIcon("assets/icons/installed.svg")
-
-    def CheckAssetUpdates(self, game_codename=None):
-        class AssetUpdatesThread(QThread):
-            def run(self):
-                try:
-                    assets = AssetDownloader.instance.DownloadAssetsFetch()
-
-                    updates = {}
-
-                    for game_code, game in assets.items():
-                        for asset_code, asset in game["assets"].items():
-                            currVersion = str(
-                                GameAssetManager.instance.games.get(game_code, {})
-                                .get("assets", {})
-                                .get(asset_code, {})
-                                .get("version", "")
-                            )
-
-                            if currVersion not in ("", str(asset.get("version"))):
-                                updates.setdefault(game_code, []).append(asset)
-
-                    AssetDownloader.instance.signals.AssetUpdates.emit(updates)
-                except:
-                    logger.error(traceback.format_exc())
-
-        thread = AssetUpdatesThread(self)
-        thread.start()
-
-    @assert_gui_thread
-    def UpdateAllAssets(self):
-        def f(assets):
-            AssetDownloader.instance.signals.AssetUpdates.disconnect(f)
-
-            allFilesToDownload = []
-
-            for game, _assets in assets.items():
-                for asset in _assets:
-                    if "files" not in asset:
-                        logger.warning(
-                            f"Asset entry for game={game!r} missing 'files' key, skipping"
-                        )
-                        continue
-                    filesToDownload = list(asset["files"].values())
-                    for fileToDownload in filesToDownload:
-                        fileToDownload["path"] = (
-                            f"https://github.com/joaorb64/StreamHelperAssets/releases/latest/download/{fileToDownload['name']}"
-                        )
-                        fileToDownload["extractpath"] = f"./user_data/games/{game}"
-                    allFilesToDownload.append(filesToDownload)
-
-            AssetDownloader.instance.downloadDialogue = QProgressDialog(
-                QApplication.translate("app", "Downloading assets"),
-                QApplication.translate("app", "Cancel"),
-                0,
-                100,
-            )
-            AssetDownloader.instance.downloadDialogue.setMinimumWidth(1200)
-            AssetDownloader.instance.downloadDialogue.setWindowModality(
-                Qt.WindowModality.WindowModal
-            )
-            AssetDownloader.instance.downloadDialogue.show()
-            AssetDownloader.instance.downloadDialogue.setFocus()
-            worker = Worker(AssetDownloader.instance.DownloadAssetsWorker, *[allFilesToDownload])
-            worker.signals.progress.connect(AssetDownloader.instance.DownloadAssetsProgress)
-            worker.signals.finished.connect(AssetDownloader.instance.DownloadAssetsFinished)
-            worker.signals.error.connect(AssetDownloader.instance.DownloadAssetsFailed)
-            AssetDownloader.instance.threadpool.start(worker)
-
-        AssetDownloader.instance.signals.AssetUpdates.connect(f)
-        AssetDownloader.instance.CheckAssetUpdates()
+        # Installed versions change when the games are loaded again
+        GameAssetManager.instance.signals.onLoadAssets.connect(self.EmitUpdates)
+        # A download would otherwise hold up quitting until it finished
+        QApplication.instance().aboutToQuit.connect(self.CancelAll)
+        QApplication.instance().aboutToQuit.connect(self.logoPool.clear)
 
     # =====================================================
-    # DOWNLOAD WINDOW
+    # CATALOG
     # =====================================================
-    @assert_gui_thread
-    def DownloadAssets(self, main_window):
-        assets = self.DownloadAssetsFetch()
+    def CatalogIsFresh(self):
+        return (
+            self.catalog is not None
+            and self.catalogTime is not None
+            and time.monotonic() - self.catalogTime < CATALOG_MAX_AGE
+        )
 
-        if assets is None:
+    def LoadCatalog(self, force=False):
+        if self.catalogLoading:
+            return
+        if not force and self.CatalogIsFresh():
+            self.EmitUpdates()
             return
 
-        self.preDownloadDialogue = QDialog()
-        self.preDownloadDialogue.setWindowTitle(QApplication.translate("app", "Download assets"))
+        self.catalogLoading = True
+        self.signals.catalogChanged.emit()
+        worker = Worker(lambda progress_callback, cancel_event: AssetCatalog.FetchCatalog())
+        worker.signals.result.connect(self._CatalogLoaded)
+        worker.signals.error.connect(self._CatalogFailed)
+        self.threadpool.start(worker)
 
-        # We set the dialog to non-modal and do enable/disable semantics manually. This
-        # is because on Mac, a window modal is a weird embedded sheet thing that you
-        # have to close with escape. The previous method of using an ApplicationModal
-        # actually prevents any other modal from being active. (hence the name, it's a
-        # modal blocks out the whole application, rather than just its parent widget)
-        # This causes issues with the download sub-modal that we will want to open later.
-        #
-        # Note that window modality and window flag: dialog are not the same. Window flag
-        # dialog ensures that the window pops up floating and is decorated like a dialog.
-        self.preDownloadDialogue.setWindowModality(Qt.WindowModality.NonModal)
-        self.preDownloadDialogue.setWindowFlags(Qt.WindowType.Dialog)
-        self.preDownloadDialogue.setLayout(QVBoxLayout())
-        self.preDownloadDialogue.resize(1400, 500)
-        self.preDownloadDialogue.finished.connect(lambda: main_window.setEnabled(True))
-        self.preDownloadDialogue.show()
+    def _CatalogLoaded(self, catalog):
+        self.catalog = catalog
+        self.catalogError = None
+        self.catalogTime = time.monotonic()
+        self.catalogLoading = False
+        self.signals.catalogChanged.emit()
+        self.EmitUpdates()
 
-        if main_window is not None:
-            main_window.setEnabled(False)
+    def _CatalogFailed(self, error):
+        _, value, _ = error
+        self.catalogError = str(value)
+        self.catalogLoading = False
+        self.signals.catalogChanged.emit()
 
-        self.select = QComboBox()
-        selectProxy = QSortFilterProxyModel()
-        selectProxy.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        selectProxy.setSourceModel(self.select.model())
-        self.select.model().setParent(selectProxy)
-        selectProxy.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        self.select.setModel(selectProxy)
-        self.select.setEditable(True)
-        self.select.completer().setFilterMode(Qt.MatchFlag.MatchContains)
-        self.select.completer().setCompletionMode(QCompleter.PopupCompletion)
-        self.font_small = QFont("./assets/font/RobotoCondensed.ttf", pointSize=8)
-        self.select.setFont(self.font_small)
-        self.select.setModel(QStandardItemModel())
-        self.preDownloadDialogue.layout().addWidget(self.select)
+    def Updates(self):
+        if self.catalog is None:
+            return []
+        return AssetCatalog.Updates(self.catalog, GameAssetManager.instance.games)
 
-        self.select.setIconSize(QSize(64, 64))
-        self.select.setFixedHeight(32)
-        view = QListView()
-        view.setIconSize(QSize(64, 64))
-        view.setStyleSheet("QListView::item { height: 32px; }")
-        self.select.setView(view)
+    def EmitUpdates(self):
+        updates = {}
+        for game, pack in self.Updates():
+            updates.setdefault(game, []).append(self.catalog[game]["assets"][pack])
+        self.signals.AssetUpdates.emit(updates)
 
-        model = QStandardItemModel()
+    def CheckAssetUpdates(self, game_codename=None):
+        self.LoadCatalog()
 
-        proxyModel = QSortFilterProxyModel()
-        proxyModel.setSourceModel(model)
-        proxyModel.setFilterKeyColumn(-1)
-        proxyModel.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+    def RequestLogo(self, game, onLoaded):
+        """Calls onLoaded(game, bytes or None) with the game's logo. It comes
+        from the disk cache when it can, and is loaded once a session however
+        many times it's asked for."""
+        if game in self.logos:
+            onLoaded(game, self.logos[game])
+            return
+        if game in self.logoWaiters:
+            # Already loading: called back with the others
+            self.logoWaiters[game].append(onLoaded)
+            return
+        self.logoWaiters[game] = [onLoaded]
 
-        def filterList(text):
-            proxyModel.setFilterFixedString(text)
+        def Loaded(data):
+            self.logos[game] = data
+            for callback in self.logoWaiters.pop(game, []):
+                callback(game, data)
 
-        searchBar = QLineEdit()
-        searchBar.setPlaceholderText("Filter...")
-        self.preDownloadDialogue.layout().addWidget(searchBar)
-        searchBar.textEdited.connect(filterList)
-
-        downloadList = QTableView()
-        self.preDownloadDialogue.layout().addWidget(downloadList)
-        downloadList.setSortingEnabled(True)
-        downloadList.setSelectionBehavior(QAbstractItemView.SelectRows)
-        downloadList.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        downloadList.setModel(proxyModel)
-        downloadList.verticalHeader().hide()
-        downloadList.horizontalHeader().setStretchLastSection(True)
-        downloadList.setWordWrap(True)
-        downloadList.resizeColumnsToContents()
-        downloadList.resizeRowsToContents()
-        delegate = IconDelegate(downloadList)
-        downloadList.setItemDelegate(delegate)
-
-        for i, game in enumerate(assets):
-            self.select.addItem(QIcon(), assets[game]["name"], i)
-
-            worker = Worker(self.DownloadGameIcon, *[game], i)
-            worker.signals.result.connect(self.DownloadGameIconComplete)
-            self.threadpool.start(worker)
-
-        self.select.model().sort(0)
-
-        @assert_gui_thread
-        def ReloadGameAssets(index=None):
-            nonlocal self
-
-            index = self.select.currentData()
-
-            if index is None:
-                index = self.select.currentIndex()
-
-            if index < 0 or index >= len(assets):
-                return
-
-            model.clear()
-            header_labels = [
-                "game",
-                "asset_id",
-                "State",
-                "Asset pack name",
-                "Installed version",
-                "Latest version",
-                "Size",
-                "Stage data",
-                "Eyesight data",
-                "Description",
-                "Credits",
-            ]
-
-            header_labels[2] = QApplication.translate("app", "State")
-            header_labels[3] = QApplication.translate("app", "Asset pack name")
-            header_labels[4] = QApplication.translate("app", "Installed version")
-            header_labels[5] = QApplication.translate("app", "Latest version")
-            header_labels[6] = QApplication.translate("app", "Size")
-            header_labels[7] = QApplication.translate("app", "Stage data")
-            header_labels[8] = QApplication.translate("app", "Eyesight data")
-            header_labels[9] = QApplication.translate("app", "Description")
-            header_labels[10] = QApplication.translate("app", "Credits")
-
-            model.setHorizontalHeaderLabels(header_labels)
-            try:
-                if downloadList and not downloadList.isColumnHidden(0):
-                    downloadList.hideColumn(0)
-                downloadList.hideColumn(1)
-            except RuntimeError:
-                pass
-            downloadList.horizontalHeader().setStretchLastSection(True)
-            downloadList.setWordWrap(True)
-            downloadList.resizeColumnsToContents()
-            downloadList.resizeRowsToContents()
-            downloadList.setStyleSheet("QTableView::item { padding: 6px 0px; }")
-
-            key = list(assets.keys())[index]
-
-            hasBaseFiles = (
-                GameAssetManager.instance.games.get(key, {})
-                .get("assets", {})
-                .get("base_files", None)
-                != None
-            )
-
-            sortedKeys = list(assets[key]["assets"].keys())
-            sortedKeys.sort(key=lambda x: chr(0) if x == "base_files" else x)
-
-            for asset in sortedKeys:
-                dlSize = (
-                    "{:.2f}".format(
-                        sum(
-                            [
-                                f.get("size", 0)
-                                for f in list(assets[key]["assets"][asset]["files"].values())
-                            ]
-                        )
-                        / 1024
-                        / 1024
-                    )
-                    + " MB"
-                )
-
-                currVersion = str(
-                    GameAssetManager.instance.games.get(key, {})
-                    .get("assets", {})
-                    .get(asset, {})
-                    .get("version", "")
-                )
-
-                version = str(assets[key]["assets"][asset].get("version"))
-
-                items = [
-                    QStandardItem(key),
-                    QStandardItem(asset),
-                    QStandardItem(),
-                    QStandardItem(assets[key]["assets"][asset].get("name")),
-                    QStandardItem(currVersion),
-                    QStandardItem(version),
-                    QStandardItem(dlSize),
-                    QStandardItem(),
-                    QStandardItem(),
-                    QStandardItem(assets[key]["assets"][asset].get("description")),
-                    QStandardItem(assets[key]["assets"][asset].get("credits")),
-                ]
-
-                items[2].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                items[3].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                items[4].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                items[5].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                items[6].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                items[7].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                items[8].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-                if assets[key]["assets"][asset].get("has_stage_data", False):
-                    items[7].setData(
-                        self.iconInstalled.pixmap(24, 24), Qt.ItemDataRole.DecorationRole
-                    )
-
-                if assets[key]["assets"][asset].get("has_eyesight_data", False):
-                    items[8].setData(
-                        self.iconInstalled.pixmap(24, 24), Qt.ItemDataRole.DecorationRole
-                    )
-
-                model.appendRow(items)
-
-                if not hasBaseFiles and asset != "base_files":
-                    for col in range(model.columnCount()):
-                        item = model.item(model.rowCount() - 1, col)
-                        item.setEnabled(False)
-                        item.setSelectable(False)
-
-                if currVersion == version:
-                    for col in range(model.columnCount()):
-                        items[2].setData(
-                            self.iconInstalled.pixmap(24, 24), Qt.ItemDataRole.DecorationRole
-                        )
-                if currVersion != version and currVersion != "":
-                    for col in range(model.columnCount()):
-                        items[2].setData(
-                            self.iconUpdateAvailable.pixmap(24, 24), Qt.ItemDataRole.DecorationRole
-                        )
-
-            downloadList.horizontalHeader().setStretchLastSection(True)
-            # downloadList.resizeColumnsToContents()
-            downloadList.resizeRowsToContents()
-            downloadList.setColumnWidth(2, 60)
-            downloadList.setColumnWidth(3, 200)
-            downloadList.setColumnWidth(4, 120)
-            downloadList.setColumnWidth(5, 120)
-            downloadList.setColumnWidth(6, 120)
-            downloadList.setColumnWidth(7, 120)
-            downloadList.setColumnWidth(8, 120)
-            downloadList.setColumnWidth(9, 400)
-
-        self.reloadDownloadsList = ReloadGameAssets
-        self.select.activated.connect(ReloadGameAssets)
-        ReloadGameAssets(0)
-
-        GameAssetManager.instance.signals.onLoadAssets.connect(ReloadGameAssets)
-
-        btOk = QPushButton(QApplication.translate("app", "Download"))
-        self.preDownloadDialogue.layout().addWidget(btOk)
-
-        btUpdateAll = QPushButton(QApplication.translate("app", "Update all"))
-        self.preDownloadDialogue.layout().addWidget(btUpdateAll)
-
-        btUpdateAll.clicked.connect(AssetDownloader.UpdateAllAssets)
-
-        @assert_gui_thread
-        def DownloadStart():
-            nonlocal self
-
-            if len(downloadList.selectionModel().selectedRows()) == 0:
-                return
-
-            row = downloadList.selectionModel().selectedRows()[0].row()
-            game = downloadList.model().index(row, 0).data()
-            key = downloadList.model().index(row, 1).data()
-
-            try:
-                filesToDownload = assets[game]["assets"][key]["files"]
-            except KeyError:
-                logger.error(f"Asset data not found for game={game!r} key={key!r}")
-                return
-
-            for f in filesToDownload:
-                filesToDownload[f]["path"] = (
-                    "https://github.com/joaorb64/StreamHelperAssets/releases/latest/download/"
-                    + filesToDownload[f]["name"]
-                )
-                filesToDownload[f]["extractpath"] = "./user_data/games/" + game
-
-            self.downloadDialogue = QProgressDialog(
-                QApplication.translate("app", "Downloading assets"),
-                QApplication.translate("app", "Cancel"),
-                0,
-                100,
-            )
-            self.downloadDialogue.setMinimumWidth(1200)
-            self.downloadDialogue.setWindowModality(Qt.WindowModality.WindowModal)
-            self.downloadDialogue.show()
-            self.downloadDialogue.setAutoClose(False)
-            self.downloadDialogue.setAutoReset(False)
-            self.preDownloadDialogue.setEnabled(False)
-            worker = Worker(self.DownloadAssetsWorker, *[[list(filesToDownload.values())]])
-            worker.signals.progress.connect(self.DownloadAssetsProgress)
-            worker.signals.finished.connect(self.DownloadAssetsFinished)
-            worker.signals.error.connect(self.DownloadAssetsFailed)
-            self.threadpool.start(worker)
-
-        btOk.clicked.connect(lambda: DownloadStart())
-
-    def DownloadAssetsFetch(self):
-        assets = None
-        try:
-            response = requests.get(
-                "https://raw.githubusercontent.com/joaorb64/StreamHelperAssets/main/assets.json"
-            )
-            assets = orjson.loads(response.text)
-        except Exception as e:
-            messagebox = QMessageBox()
-            messagebox.setText(
-                QApplication.translate("app", "Failed to fetch assets from github:") + "\n" + str(e)
-            )
-            messagebox.exec()
-        return assets
-
-    def DownloadGameIcon(self, game_code, index, progress_callback, cancel_event):
-        try:
-            # Try getting logo_small
-            response = requests.get(
-                f"https://raw.githubusercontent.com/joaorb64/StreamHelperAssets/main/games/{game_code}/base_files/logo_small.png"
-            )
-            response.raise_for_status()
-            data = response.content
-            return [index, data]
-        except Exception as e1:
-            logger.error(traceback.format_exc())
-            try:
-                # Try getting logo
-                response = requests.get(
-                    f"https://raw.githubusercontent.com/joaorb64/StreamHelperAssets/main/games/{game_code}/base_files/logo.png"
-                )
-                response.raise_for_status()
-                data = response.content
-                return [index, data]
-            except Exception as e2:
-                # All options failed
-                logger.error(traceback.format_exc())
-                return None
-
-    @assert_gui_thread
-    def DownloadGameIconComplete(self, result):
-        try:
-            if result is not None:
-                pix = QPixmap()
-                pix.loadFromData(result[1], "png")
-                pix = pix.scaledToWidth(64, Qt.TransformationMode.SmoothTransformation)
-                for i in range(self.select.model().rowCount()):
-                    if self.select.model().index(i, 0).data(Qt.ItemDataRole.UserRole) == result[0]:
-                        self.select.setItemIcon(i, QIcon(pix))
-        except Exception as e:
-            logger.error(traceback.format_exc())
-            return None
+        worker = Worker(lambda progress_callback, cancel_event: AssetCatalog.LoadLogo(game))
+        worker.signals.result.connect(Loaded)
+        # Not kept as missing: a later request tries again
+        worker.signals.error.connect(lambda error: self.logoWaiters.pop(game, None))
+        self.logoPool.start(worker)
 
     # =====================================================
-    # DOWNLOAD PROGRESS
+    # WINDOW
     # =====================================================
-    def DownloadAssetsWorker(self, files, progress_callback, cancel_event):
-        totalSize = sum(sum(f["size"] for f in fileList) for fileList in files)
-        downloaded = 0
+    def DownloadAssets(self, main_window):
+        if self.window is None:
+            from src.AssetDownloaderWindow import AssetDownloaderWindow
 
-        logger.info("Files to download:" + str(files))
+            self.window = AssetDownloaderWindow(main_window)
+        self.window.Open()
+        self.LoadCatalog(force=self.catalogError is not None)
 
-        for i, fileList in enumerate(files):
-            for f in fileList:
-                with open("user_data/games/" + f["name"], "wb") as downloadFile:
-                    logger.info("Downloading " + f["name"])
+    # =====================================================
+    # DOWNLOAD QUEUE
+    # =====================================================
+    def ActiveJob(self, game, pack):
+        for job in self.jobs:
+            if job.game == game and job.pack == pack and job.active:
+                return job
+        return None
 
-                    # Queue to slot so we're not modifying the GUI from
-                    # a worker thread.
-                    gui_thread_sync(self.DownloadAssetsSetLabelText)(
-                        QApplication.translate("app", "Downloading {0}... ({1}/{2})").format(
-                            f["name"], i + 1, len(files)
-                        )
-                    )
+    def JustInstalled(self, game, pack):
+        """Installed by a job this session, though the games may not have been
+        loaded again yet to show it."""
+        for job in reversed(self.jobs):
+            if job.game == game and job.pack == pack:
+                return job.state == JOB_DONE
+        return False
 
-                    response = requests.get(f["path"], stream=True)
-                    response.raise_for_status()
+    def Enqueue(self, packs):
+        """Queues [(game, pack)] from the catalog. A game without its base files
+        gets them first, since its other packs need them."""
+        games = GameAssetManager.instance.games
+        toAdd = []
+        for game, pack in packs:
+            if (
+                pack != AssetCatalog.BASE_FILES
+                and not AssetCatalog.HasBaseFiles(games, game)
+                and not self.JustInstalled(game, AssetCatalog.BASE_FILES)
+                and (game, AssetCatalog.BASE_FILES) not in toAdd
+            ):
+                toAdd.append((game, AssetCatalog.BASE_FILES))
+            if (game, pack) not in toAdd:
+                toAdd.append((game, pack))
 
-                    for chunk in response.iter_content(chunk_size=1024 * 1024):
-                        if not chunk:
-                            break
+        # Base files go first, so they're installed before the packs that need them
+        toAdd.sort(key=lambda p: p[1] != AssetCatalog.BASE_FILES)
 
-                        downloaded += len(chunk)
-                        downloadFile.write(chunk)
-
-                        if self.downloadDialogue.wasCanceled():
-                            return
-
-                        progress_callback(downloaded, totalSize)
-                    downloadFile.close()
-
-                    logger.info("Download OK")
-
-            @gui_thread_sync
-            def update_gui():
-                self.DownloadAssetsSetLabelText(
-                    QApplication.translate("app", "Extracting... ({0}/{1})").format(
-                        i + 1, len(files)
-                    )
+        for game, pack in toAdd:
+            if self.ActiveJob(game, pack) is not None:
+                continue
+            info = self.catalog[game]
+            self.jobs.append(
+                DownloadJob(
+                    game,
+                    pack,
+                    info.get("name", game),
+                    # The catalog names base files after the game
+                    QApplication.translate("app", "Base files")
+                    if pack == AssetCatalog.BASE_FILES
+                    else info["assets"][pack].get("name", pack),
+                    AssetCatalog.PackFiles(self.catalog, game, pack),
                 )
-                self.downloadDialogue.setRange(0, 0)
+            )
+        self.signals.jobsChanged.emit()
+        self._StartNext()
 
-            update_gui()
+    def _StartNext(self):
+        if self.runningJob is not None:
+            return
+        job = next((j for j in self.jobs if j.state == JOB_QUEUED), None)
+        if job is None:
+            if self.installedSomething:
+                self.installedSomething = False
+                # Picks up what was installed, then EmitUpdates runs again
+                GameAssetManager.instance.LoadGames()
+            return
 
-            is7z = ".7z" in fileList[0]["name"]
+        job.state = JOB_DOWNLOADING
+        job.done = 0
+        job.speed = 0.0
+        job._sample = None
+        self.runningJob = job
 
-            if len(fileList) > 0:
-                # append in binary mode
-                with open("./user_data/games/merged.7z", "ab") as outfile:
-                    for f in fileList:
-                        # open in binary mode also
-                        with open("./user_data/games/" + f["name"], "rb") as infile:
-                            outfile.write(infile.read())
-                for f in fileList:
-                    os.remove("./user_data/games/" + f["name"])
+        def Run(progress_callback, cancel_event):
+            return AssetCatalog.InstallPack(
+                job.game,
+                job.pack,
+                job.files,
+                progress_callback,
+                cancel_event.is_set,
+                onUnpack=lambda: gui_thread_async(self._JobUnpacking)(job),
+            )
 
-                fileList = [fileList[0]]
-                fileList[0]["name"] = "merged.7z"
+        worker = Worker(Run)
+        job.cancelEvent = worker.cancel_event
+        if job.cancelRequested:
+            job.cancelEvent.set()
+        worker.signals.progress.connect(lambda n, t: self._JobProgress(job, n, t))
+        worker.signals.result.connect(lambda ok: self._JobResult(job, ok))
+        worker.signals.error.connect(lambda error: self._JobFailed(job, error))
+        worker.signals.finished.connect(lambda: self._JobFinished(job))
+        self.threadpool.start(worker)
+        self.signals.jobsChanged.emit()
 
-            if is7z:
-                with py7zr.SevenZipFile(
-                    "./user_data/games/" + fileList[0]["name"], "r"
-                ) as parent_zip:
-                    parent_zip.extractall(f["extractpath"])
+    def _JobProgress(self, job, done, total):
+        job.done = done
+        job.total = total
+        now = time.monotonic()
+        if job._sample is None:
+            job._sample = (now, done)
+        else:
+            then, before = job._sample
+            if now - then >= 0.5:
+                speed = (done - before) / (now - then)
+                job.speed = speed if job.speed == 0 else job.speed * 0.7 + speed * 0.3
+                job._sample = (now, done)
+        self.signals.jobProgress.emit(job)
 
-                for f in fileList:
-                    os.remove("./user_data/games/" + f["name"])
-            else:
-                for f in fileList:
-                    if os.path.isfile(f["extractpath"] + "/" + f["name"]):
-                        os.remove(f["extractpath"] + "/" + f["name"])
-                    shutil.move("./user_data/games/" + f["name"], f["extractpath"])
+    def _JobUnpacking(self, job):
+        if job.state == JOB_DOWNLOADING:
+            job.state = JOB_UNPACKING
+            self.signals.jobsChanged.emit()
 
-            logger.info("Extract OK")
+    def _JobResult(self, job, ok):
+        if ok:
+            job.state = JOB_DONE
+            self.installedSomething = True
+        else:
+            job.state = JOB_CANCELLED
 
-        progress_callback(totalSize, totalSize)
+    def _JobFailed(self, job, error):
+        _, value, _ = error
+        job.state = JOB_FAILED
+        job.error = str(value)
+        logger.error(f"Downloading {job.game}/{job.pack} failed: {value}")
 
-        logger.info("All OK")
+    def _JobFinished(self, job):
+        if job.active:
+            # Neither result nor error arrived: count it as failed, not stuck
+            job.state = JOB_FAILED
+        self.runningJob = None
+        self.signals.jobsChanged.emit()
+        self._StartNext()
 
-    @Slot(str)
-    @assert_gui_thread
-    def DownloadAssetsSetLabelText(self, s):
-        self.downloadDialogue.setLabelText(s)
+    def Cancel(self, job):
+        if job.state == JOB_QUEUED:
+            job.state = JOB_CANCELLED
+        elif job.active:
+            job.cancelRequested = True
+            if job.cancelEvent is not None:
+                job.cancelEvent.set()
+        self.signals.jobsChanged.emit()
 
-    @Slot(int, int)
-    @assert_gui_thread
-    def DownloadAssetsProgress(self, n, t):
-        self.downloadDialogue.setValue(n)
-        self.downloadDialogue.setMaximum(t)
+    def CancelAll(self):
+        for job in list(self.jobs):
+            if job.active:
+                self.Cancel(job)
 
-        if n >= t:
-            self.downloadDialogue.setMaximum(t)
-            self.downloadDialogue.setValue(t)
+    def Retry(self, job):
+        if job.active:
+            return
+        self.jobs.remove(job)
+        job.state = JOB_QUEUED
+        job.error = ""
+        job.done = 0
+        job.cancelRequested = False
+        job.cancelEvent = None
+        self.jobs.append(job)
+        self.signals.jobsChanged.emit()
+        self._StartNext()
 
-    @assert_gui_thread
-    def DownloadAssetsFailed(self, error):
-        _, value, tb = error
-        logger.error(f"Asset download failed: {tb}")
-        self.downloadDialogue.close()
-        if hasattr(self, "preDownloadDialogue"):
-            self.preDownloadDialogue.setEnabled(True)
-            self.preDownloadDialogue.setFocus()
-        messagebox = QMessageBox()
-        messagebox.setText(QApplication.translate("app", "Download failed:") + "\n" + str(value))
-        messagebox.exec()
+    def ClearFinished(self):
+        self.jobs = [j for j in self.jobs if j.active]
+        self.signals.jobsChanged.emit()
 
-    @assert_gui_thread
-    def DownloadAssetsFinished(self):
-        GameAssetManager.instance.LoadGames()
-        AssetDownloader.instance.CheckAssetUpdates()
-        self.downloadDialogue.close()
-        self.preDownloadDialogue.setEnabled(True)
-        self.preDownloadDialogue.setFocus()
+    def RemovePack(self, game, pack):
+        try:
+            AssetCatalog.RemovePack(game, pack)
+        finally:
+            GameAssetManager.instance.LoadGames()
 
 
 AssetDownloader.instance = AssetDownloader()
