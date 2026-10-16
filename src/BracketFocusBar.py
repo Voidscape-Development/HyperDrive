@@ -3,6 +3,10 @@
 # bracket view, a player's run, the set on a scoreboard, or a tour of the
 # rounds. They act on the channel of the widget's current tab; the channels
 # are added, renamed and removed from the tabs.
+#
+# The focus modes are one choice, so they're one segmented control; only the
+# setting of the mode in use (the scoreboard to follow, the tour's interval,
+# ...) is shown next to it. What the layout shows is on the right.
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
@@ -12,59 +16,152 @@ from .BracketView import BracketView
 from .FlowLayout import FlowLayout
 from .Helpers.BracketFocusHelper import *
 from .SettingsManager import SettingsManager
+from .Theme import Theme
+
+
+class ElidedLabel(QLabel):
+    """A label that shortens its text with "…" instead of widening the
+    window. The whole text is its tooltip."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._text = ""
+
+    def SetText(self, text):
+        self._text = text
+        self.setToolTip(text)
+        self._Elide()
+        self.updateGeometry()
+
+    def sizeHint(self):
+        hint = super().sizeHint()
+        margins = self.contentsMargins()
+        width = self.fontMetrics().horizontalAdvance(self._text) + margins.left() + margins.right()
+        return QSize(width + 2, hint.height())
+
+    def minimumSizeHint(self):
+        return QSize(0, super().minimumSizeHint().height())
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._Elide()
+
+    def _Elide(self):
+        margins = self.contentsMargins()
+        width = max(0, self.width() - margins.left() - margins.right())
+        super().setText(
+            self.fontMetrics().elidedText(self._text, Qt.TextElideMode.ElideRight, width)
+        )
 
 
 class BracketFocusBar(QWidget):
-    def __init__(self, view: BracketView, parent=None):
+    # The segments, in order, and the modes each one stands for
+    SEGMENTS = (
+        ("all", (MODE_ALL,)),
+        ("selected", (MODE_SETS,)),
+        ("round", (MODE_ROUNDS,)),
+        ("player", (MODE_PLAYER,)),
+        ("follow", (MODE_FOLLOW,)),
+        ("tour", (MODE_TOUR,)),
+    )
+
+    def __init__(self, view: BracketView, leading=(), parent=None):
+        """leading: groups of widgets shown before the focus controls (the
+        channel's top N)."""
         super().__init__(parent)
         self.view = view
         self.focus = BracketFocus.instance
 
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(12)
+        self.setLayout(row)
+
         # Wraps its controls, so they don't set the window's width
+        controls = QWidget()
         layout = FlowLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
+        controls.setLayout(layout)
+        row.addWidget(controls, 1)
 
-        title = QLabel(QApplication.translate("app", "Layout focus"))
-        font = title.font()
-        font.setBold(True)
-        title.setFont(font)
-        title.setToolTip(
+        for group in leading:
+            layout.addGroup(*group)
+
+        self.title = QLabel(QApplication.translate("app", "Focus"))
+        self.title.setToolTip(
             QApplication.translate(
                 "app",
                 "What the bracket focus layout (layout/bracket_focus) zooms to. Ctrl+click sets and round names to select them.",
             )
         )
 
-        layout.addWidget(title)
+        # The modes
+        self.segments = QWidget()
+        self.segments.setObjectName("focusSegments")
+        segmentsLayout = QHBoxLayout()
+        segmentsLayout.setContentsMargins(2, 2, 2, 2)
+        segmentsLayout.setSpacing(2)
+        self.segments.setLayout(segmentsLayout)
+        self.modeGroup = QButtonGroup(self)
+        self.modeGroup.setExclusive(True)
+        self.modeButtons = {}
+        labels = {
+            "all": (
+                QApplication.translate("app", "Whole"),
+                QApplication.translate("app", "Show the whole bracket"),
+            ),
+            "selected": (
+                QApplication.translate("app", "Selected"),
+                QApplication.translate(
+                    "app",
+                    "Zoom to the sets and rounds selected with Ctrl+click, and highlight them",
+                ),
+            ),
+            "round": (
+                QApplication.translate("app", "Round"),
+                QApplication.translate("app", "Zoom to a round; the arrows step through them"),
+            ),
+            "player": (
+                QApplication.translate("app", "Player"),
+                QApplication.translate("app", "Zoom to every set of a player, and highlight them"),
+            ),
+            "follow": (
+                QApplication.translate("app", "Follow"),
+                QApplication.translate(
+                    "app",
+                    "Keep zooming to the set on a scoreboard: the one with its start.gg set, or between its two players",
+                ),
+            ),
+            "tour": (
+                QApplication.translate("app", "Tour"),
+                QApplication.translate(
+                    "app", "Show the whole bracket, then each round in turn, over and over"
+                ),
+            ),
+        }
+        for key, _modes in self.SEGMENTS:
+            text, tip = labels[key]
+            button = QToolButton()
+            button.setText(text)
+            button.setToolTip(tip)
+            button.setCheckable(True)
+            button.setAutoRaise(True)
+            button.setProperty("segment", True)
+            button.clicked.connect(lambda _checked=False, key=key: self.SegmentClicked(key))
+            self.modeGroup.addButton(button)
+            segmentsLayout.addWidget(button)
+            self.modeButtons[key] = button
+        layout.addGroup(self.title, self.segments)
 
-        self.btAll = QPushButton(QApplication.translate("app", "Whole bracket"))
-        self.btAll.setToolTip(QApplication.translate("app", "Show the whole bracket"))
-        self.btAll.clicked.connect(lambda: self.Ch().ShowAll())
-        layout.addWidget(self.btAll)
-
-        self.btSelected = QPushButton()
-        self.btSelected.setToolTip(
-            QApplication.translate(
-                "app", "Zoom to the sets and rounds selected with Ctrl+click, and highlight them"
-            )
-        )
-        self.btSelected.clicked.connect(self.FocusSelected)
-        layout.addWidget(self.btSelected)
-
-        self.btClearSelection = QPushButton(QApplication.translate("app", "Unselect"))
-        self.btClearSelection.clicked.connect(self.view.ClearSelection)
-        layout.addWidget(self.btClearSelection)
-
-        self.btPrevious = QPushButton("◀")
+        # The setting of the mode in use
+        self.btPrevious = QToolButton()
+        self.btPrevious.setText("◀")
         self.btPrevious.setToolTip(QApplication.translate("app", "Previous round"))
-        self.btPrevious.setMaximumWidth(32)
         self.btPrevious.clicked.connect(lambda: self.Ch().MoveRound(-1))
-        self.btNext = QPushButton("▶")
+        self.btNext = QToolButton()
+        self.btNext.setText("▶")
         self.btNext.setToolTip(QApplication.translate("app", "Next round"))
-        self.btNext.setMaximumWidth(32)
         self.btNext.clicked.connect(lambda: self.Ch().MoveRound(1))
-        layout.addGroup(self.btPrevious, self.btNext)
 
         self.player = QComboBox()
         self.player.setMinimumWidth(140)
@@ -72,19 +169,8 @@ class BracketFocusBar(QWidget):
             QApplication.translate("app", "Zoom to every set of a player, and highlight them")
         )
         self.player.activated.connect(self.PlayerPicked)
-        layout.addWidget(self.player)
 
-        self.btFollow = QPushButton(QApplication.translate("app", "Follow scoreboard"))
-        self.btFollow.setCheckable(True)
-        self.btFollow.setToolTip(
-            QApplication.translate(
-                "app",
-                "Keep zooming to the set on this scoreboard: the one with its start.gg set, or between its two players",
-            )
-        )
-        self.btFollow.clicked.connect(
-            lambda on: self.Ch().Follow(self.scoreboard.value()) if on else self.Ch().ShowAll()
-        )
+        self.scoreboardLabel = QLabel(QApplication.translate("app", "Scoreboard"))
         self.scoreboard = QSpinBox()
         self.scoreboard.setMinimum(1)
         self.scoreboard.setMaximum(99)
@@ -94,18 +180,8 @@ class BracketFocusBar(QWidget):
                 self.Ch().Follow(value) if self.Ch().request.get("mode") == MODE_FOLLOW else None
             )
         )
-        layout.addGroup(self.btFollow, self.scoreboard)
 
-        self.btTour = QPushButton(QApplication.translate("app", "Round tour"))
-        self.btTour.setCheckable(True)
-        self.btTour.setToolTip(
-            QApplication.translate(
-                "app", "Show the whole bracket, then each round in turn, over and over"
-            )
-        )
-        self.btTour.clicked.connect(
-            lambda on: self.Ch().Tour(self.interval.value()) if on else self.Ch().ShowAll()
-        )
+        self.intervalLabel = QLabel(QApplication.translate("app", "Each step"))
         self.interval = QSpinBox()
         self.interval.setMinimum(MIN_INTERVAL)
         self.interval.setMaximum(MAX_INTERVAL)
@@ -119,11 +195,37 @@ class BracketFocusBar(QWidget):
                 self.Ch().Tour(value) if self.Ch().request.get("mode") == MODE_TOUR else None
             )
         )
-        layout.addGroup(self.btTour, self.interval)
+        self.settingsGroup = layout.addGroup(
+            self.btPrevious,
+            self.btNext,
+            self.player,
+            self.scoreboardLabel,
+            self.scoreboard,
+            self.intervalLabel,
+            self.interval,
+        )
 
-        self.status = QLabel()
+        self.btClearSelection = QToolButton()
+        self.btClearSelection.setText(QApplication.translate("app", "Unselect"))
+        self.btClearSelection.setToolTip(
+            QApplication.translate("app", "Unselect the sets and rounds selected with Ctrl+click")
+        )
+        self.btClearSelection.clicked.connect(self.view.ClearSelection)
+        layout.addWidget(self.btClearSelection)
+
+        # What the layout shows, a pill on the right
+        self.statusPill = QFrame()
+        self.statusPill.setObjectName("focusStatus")
+        self.statusPill.setMaximumWidth(320)
+        pillLayout = QHBoxLayout(self.statusPill)
+        pillLayout.setContentsMargins(10, 6, 10, 6)
+        self.status = ElidedLabel()
         self.status.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
-        layout.addWidget(self.status)
+        font = self.status.font()
+        font.setBold(True)
+        self.status.setFont(font)
+        pillLayout.addWidget(self.status)
+        row.addWidget(self.statusPill, 0, Qt.AlignmentFlag.AlignTop)
 
         self.view.signals.selectionChanged.connect(self.UpdateSelection)
         self.view.signals.unselected.connect(self.Unselected)
@@ -135,8 +237,43 @@ class BracketFocusBar(QWidget):
         )
         self.focus.signals.channelsChanged.connect(self.UpdateFocus)
 
+        self.ApplyStyle()
         self.UpdateSelection()
         self.UpdateFocus()
+
+    def ApplyStyle(self):
+        colors = Theme.Colors()
+        c = {k: v.name() for k, v in colors.items()}
+        radius = Theme.Radius()
+        self.title.setStyleSheet(f"color: {c['muted']}; font-weight: bold;")
+        self.segments.setStyleSheet(
+            f"""
+            QWidget#focusSegments {{
+                background: {c["window"]}; border: 1px solid {c["border"]};
+                border-radius: {radius + 1}px;
+            }}
+            QToolButton[segment="true"] {{
+                background: transparent; color: {c["muted"]}; border: 1px solid transparent;
+                border-radius: {max(radius - 1, 2)}px; padding: 3px 8px;
+            }}
+            QToolButton[segment="true"]:hover {{ color: {c["text"]}; background: {c["raised"]}; }}
+            QToolButton[segment="true"]:checked {{
+                color: {c["accentText"]}; background: {c["accentSoft"]};
+                border-color: {c["accent"]}; font-weight: bold;
+            }}
+            QToolButton[segment="true"]:disabled {{ color: {c["disabled"]}; }}
+            """
+        )
+        self.statusPill.setStyleSheet(
+            f"QFrame#focusStatus {{ background: {c['accentSoft']}; border-radius: 14px; }}"
+        )
+        self.status.setStyleSheet(f"color: {c['accentText']}; background: transparent;")
+
+    def changeEvent(self, event):
+        # The theme changed
+        if event.type() == QEvent.Type.PaletteChange:
+            self.ApplyStyle()
+        super().changeEvent(event)
 
     # =====================================================
     # CHANNELS
@@ -194,6 +331,36 @@ class BracketFocusBar(QWidget):
     # =====================================================
     # FOCUS
     # =====================================================
+    def SegmentClicked(self, key):
+        channel = self.Ch()
+        mode = channel.request.get("mode")
+        if key == "all":
+            channel.ShowAll()
+        elif key == "selected":
+            self.FocusSelected()
+        elif key == "round":
+            if mode != MODE_ROUNDS:
+                # The round already in focus, else the first one
+                focus = channel.focus or {}
+                offset = 0 if focus.get("sets") or focus.get("rounds") else 1
+                channel.Set(NextRound(channel.Bracket(), focus, offset))
+        elif key == "player":
+            if mode != MODE_PLAYER:
+                # Pick whose run: the segment shows as on once one is picked
+                self.UpdateFocus()
+                self.settingsGroup.setVisible(True)
+                self.player.setVisible(True)
+                self.player.showPopup()
+                return
+        elif key == "follow":
+            if mode != MODE_FOLLOW:
+                channel.Follow(self.scoreboard.value())
+        elif key == "tour":
+            if mode != MODE_TOUR:
+                channel.Tour(self.interval.value())
+        # The channel's mode decides which segment is on
+        self.UpdateFocus()
+
     def FocusSelected(self):
         self.Ch().FocusSets(
             [id for id in self.view.matchItems if id in self.view.selected],
@@ -213,19 +380,21 @@ class BracketFocusBar(QWidget):
             self.Ch().FocusPlayer(player)
         elif self.Ch().request.get("mode") == MODE_PLAYER:
             self.Ch().ShowAll()
+        self.UpdateFocus()
 
     # =====================================================
     # UPDATING
     # =====================================================
     def UpdateSelection(self):
         count = len(self.view.selected) + len(self.view.selectedRounds)
-        self.btSelected.setText(
-            QApplication.translate("app", "Focus selected ({0})").format(count)
+        selected = self.modeButtons["selected"]
+        selected.setText(
+            QApplication.translate("app", "Selected ({0})").format(count)
             if count
-            else QApplication.translate("app", "Focus selected")
+            else QApplication.translate("app", "Selected")
         )
-        self.btSelected.setEnabled(count > 0)
-        self.btClearSelection.setEnabled(count > 0)
+        selected.setEnabled(count > 0 or self.Ch().request.get("mode") == MODE_SETS)
+        self.btClearSelection.setVisible(count > 0)
 
     def UpdatePlayers(self):
         """The player list, from the sets sent to the layouts."""
@@ -244,11 +413,12 @@ class BracketFocusBar(QWidget):
     def UpdateFocus(self):
         request = self.Ch().request
         focus = self.Ch().focus or {}
-        mode = request.get("mode")
+        mode = request.get("mode") or MODE_ALL
 
-        for button, on in ((self.btFollow, mode == MODE_FOLLOW), (self.btTour, mode == MODE_TOUR)):
+        for key, modes in self.SEGMENTS:
+            button = self.modeButtons[key]
             button.blockSignals(True)
-            button.setChecked(on)
+            button.setChecked(mode in modes)
             button.blockSignals(False)
         for spin, key in ((self.scoreboard, "scoreboard"), (self.interval, "interval")):
             if request.get(key):
@@ -256,6 +426,26 @@ class BracketFocusBar(QWidget):
                 spin.setValue(request.get(key))
                 spin.blockSignals(False)
         self.UpdatePlayers()
+
+        # Only the setting of the mode in use
+        self.btPrevious.setVisible(mode in (MODE_ROUNDS, MODE_TOUR))
+        self.btNext.setVisible(mode in (MODE_ROUNDS, MODE_TOUR))
+        self.btPrevious.setToolTip(
+            QApplication.translate("app", "Previous step")
+            if mode == MODE_TOUR
+            else QApplication.translate("app", "Previous round")
+        )
+        self.btNext.setToolTip(
+            QApplication.translate("app", "Next step")
+            if mode == MODE_TOUR
+            else QApplication.translate("app", "Next round")
+        )
+        self.player.setVisible(mode == MODE_PLAYER)
+        self.scoreboardLabel.setVisible(mode == MODE_FOLLOW)
+        self.scoreboard.setVisible(mode == MODE_FOLLOW)
+        self.intervalLabel.setVisible(mode == MODE_TOUR)
+        self.interval.setVisible(mode == MODE_TOUR)
+        self.settingsGroup.setVisible(mode not in (MODE_ALL, MODE_SETS))
 
         if not focus.get("sets"):
             text = QApplication.translate("app", "Showing the whole bracket")
@@ -272,6 +462,7 @@ class BracketFocusBar(QWidget):
                 focus.get("label")
                 or QApplication.translate("app", "{0} sets").format(len(focus["sets"]))
             )
-        self.status.setText(text)
+        self.status.SetText(text)
 
+        self.UpdateSelection()
         self.view.SetFocused(focus.get("sets"), focus.get("rounds"))

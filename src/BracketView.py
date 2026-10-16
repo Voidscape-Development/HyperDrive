@@ -23,6 +23,8 @@ class BracketViewSignals(QObject):
     focusSets = Signal(list)
     focusRounds = Signal(list)
     focusPlayer = Signal(int)
+    # The view was zoomed in or out
+    zoomChanged = Signal()
 
 
 def SourceText(bracket, source):
@@ -916,6 +918,7 @@ class BracketView(QGraphicsView):
         factor = min(factor, 1.0)
         self.scale(factor, factor)
         self.ensureVisible(QRectF(rect.topLeft(), QSizeF(1, 1)), 0, 0)
+        self.signals.zoomChanged.emit()
 
     def wheelEvent(self, event):
         self.StopAutoFit()
@@ -923,3 +926,22 @@ class BracketView(QGraphicsView):
         current = self.transform().m11()
         if 0.1 < current * factor < 4:
             self.scale(factor, factor)
+            self.signals.zoomChanged.emit()
+
+    def ZoomBy(self, factor):
+        """Zooms in (factor > 1) or out around the middle of the view."""
+        self.StopAutoFit()
+        current = self.transform().m11()
+        factor = max(0.1, min(4, current * factor)) / current
+        anchor = self.transformationAnchor()
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
+        self.scale(factor, factor)
+        self.setTransformationAnchor(anchor)
+        self.signals.zoomChanged.emit()
+
+    def Zoom(self):
+        return self.transform().m11()
+
+    def setTransform(self, *args, **kwargs):
+        super().setTransform(*args, **kwargs)
+        self.signals.zoomChanged.emit()
