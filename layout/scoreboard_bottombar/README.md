@@ -24,7 +24,7 @@ Set them in this folder's `settings.json`, or in the page's URL
 
 | Setting | Default | |
 | - | - | - |
-| `info_layout` | `"spread"` | The bottom bar: `"spread"` (phase left, match centered, best of right), `"center"` (one centered line) or `"chips"` (a centered chip each) |
+| `info_layout` | `"chips"` | The bottom bar: `"chips"` (a centered chip each), `"spread"` (phase left, match centered, best of right) or `"center"` (one centered line) |
 | `show_clock` | `true` | Show the clock under the logo |
 | `clock_24h` | `false` | 24-hour clock (`15:42`) instead of `03:42pm` |
 | `clock_timezone` | `""` | An IANA time zone, e.g. `America/New_York`. Empty uses the computer's |

@@ -77,10 +77,10 @@ HD.layout({
     // A player's characters take turns every this many seconds; 0 shows
     // them side by side
     character_cycle_seconds: 4,
-    // How the bar under it arranges the phase, match and best of: "spread"
-    // (phase left, match centered, best of right), "center" (one centered
-    // line) or "chips" (a centered chip each)
-    info_layout: "spread",
+    // How the bar under it arranges the phase, match and best of: "chips"
+    // (a centered chip each), "spread" (phase left, match centered, best of
+    // right) or "center" (one centered line)
+    info_layout: "chips",
   },
 
   init(settings) {
