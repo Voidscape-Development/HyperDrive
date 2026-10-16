@@ -851,6 +851,7 @@
     </message>
     <message>
         <location filename="../ScoreboardStageWidget.py" line="472"/>
+        <location filename="../AssetDownloaderWindow.py" line="347"/>
         <location filename="../HyperDrive.py" line="1259"/>
         <source>Update</source>
         <translation>Actualizar</translation>
@@ -923,8 +924,8 @@
         <translation>Buscar actualizaciones</translation>
     </message>
     <message>
+        <location filename="../AssetDownloaderWindow.py" line="781"/>
         <location filename="../HyperDrive.py" line="608"/>
-        <location filename="../AssetDownloader.py" line="126"/>
         <source>Download assets</source>
         <translation>Descargar archivos</translation>
     </message>
@@ -1085,9 +1086,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../AssetDownloaderWindow.py" line="484"/>
+        <location filename="../AssetDownloaderWindow.py" line="751"/>
         <location filename="../HyperDrive.py" line="1261"/>
-        <location filename="../AssetDownloader.py" line="96"/>
-        <location filename="../AssetDownloader.py" line="396"/>
         <location filename="../TournamentDataManager.py" line="227"/>
         <location filename="../Helpers/DownloadHelper.py" line="214"/>
         <source>Cancel</source>
@@ -1269,7 +1270,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="235"/>
         <source>Asset pack name</source>
         <translation>Nombre del paquete de archivos</translation>
     </message>
@@ -1287,81 +1287,432 @@
         <translation>El idioma de exportación de archivos ha sido cambiado existosamente</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="241"/>
         <source>Description</source>
         <translation>Descripción</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="242"/>
         <source>Credits</source>
         <translation>Créditos</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="236"/>
         <source>Installed version</source>
         <translation>Versión instalada</translation>
     </message>
     <message>
         <location filename="../PlayerDBWindow.py" line="235"/>
-        <location filename="../AssetDownloader.py" line="234"/>
         <source>State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="237"/>
         <source>Latest version</source>
         <translation>Ultima versión</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="238"/>
         <source>Size</source>
         <translation>Tamaño</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="239"/>
+        <location filename="../AssetDownloaderWindow.py" line="146"/>
+        <location filename="../AssetDownloader.py" line="234"/>
+        <source>Base files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="164"/>
+        <source>less than a minute left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="167"/>
+        <source>about {0} min left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="168"/>
+        <source>about {0} h {1} min left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="175"/>
+        <source>1 pack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="176"/>
+        <source>{0} packs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="264"/>
+        <source>Select {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="282"/>
+        <source>Required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="284"/>
+        <source>Every other pack of the game needs these</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="292"/>
+        <source>Base config to use this game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="297"/>
+        <source>Credits: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="306"/>
+        <source>Credits:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="313"/>
         <source>Stage data</source>
         <translation>Datos del escenario</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="240"/>
+        <location filename="../AssetDownloaderWindow.py" line="315"/>
         <source>Eyesight data</source>
         <translation>Posición de los vista</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="362"/>
+        <location filename="../AssetDownloaderWindow.py" line="354"/>
+        <source>More actions for {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="364"/>
+        <source>Remove…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="399"/>
+        <source>Added automatically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="402"/>
+        <location filename="../AssetDownloaderWindow.py" line="408"/>
+        <location filename="../AssetDownloaderWindow.py" line="493"/>
+        <location filename="../AssetDownloaderWindow.py" line="525"/>
+        <location filename="../AssetDownloaderWindow.py" line="1122"/>
+        <source>Installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="404"/>
+        <source>just now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="412"/>
+        <source>Update available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="417"/>
+        <source>Not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="422"/>
+        <location filename="../AssetDownloaderWindow.py" line="506"/>
+        <source>Cancelling…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="424"/>
+        <source>Waiting in queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="426"/>
+        <source>Unpacking…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="431"/>
+        <source>Downloading · {0}%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="482"/>
+        <source>Cancel {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="508"/>
+        <source>Waiting · {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="512"/>
+        <source>{0} of {1}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="522"/>
+        <source>Unpacking {0}…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="529"/>
+        <source>Failed: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="533"/>
+        <source>Cancelled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="565"/>
+        <source>Downloads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="570"/>
+        <source>Downloads keep going if you close this window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="575"/>
+        <source>Clear finished</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="578"/>
+        <source>Cancel all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="585"/>
+        <source>Show or hide the downloads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="642"/>
+        <source>{0} in progress · {1} left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="649"/>
+        <source>All done</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="667"/>
+        <source>Review updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="676"/>
+        <location filename="../AssetDownloaderWindow.py" line="1137"/>
+        <source>Review {0} updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="683"/>
+        <source>Newer versions of packs you have installed. Untick any you want to keep as they are.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="769"/>
+        <source>Update {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="834"/>
+        <source>Search games and packs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="854"/>
+        <source>Check for new packs and updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="878"/>
+        <source>Try again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1071"/>
+        <source>{0} free</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1084"/>
+        <location filename="../AssetDownloaderWindow.py" line="1292"/>
+        <source>Loading the pack list…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1088"/>
+        <source>Can&apos;t reach the asset server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1089"/>
+        <source>Showing the packs you already have. New packs and updates need a connection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1095"/>
+        <source>Couldn&apos;t check for new packs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1096"/>
+        <source>Showing the list from earlier.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1121"/>
+        <source>All games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1123"/>
+        <source>Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1132"/>
+        <source>Search {0} games and their packs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1139"/>
+        <source>Review 1 update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1166"/>
+        <source>INSTALLED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1167"/>
+        <source>MORE GAMES</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1207"/>
+        <location filename="../AssetDownloaderWindow.py" line="1357"/>
+        <source>{0} installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1214"/>
+        <source>1 update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1216"/>
+        <source>{0} updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1218"/>
+        <source>{0} of {1} installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1295"/>
+        <source>No games or packs match “{0}”.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1301"/>
+        <source>No packs installed yet. Connect to download some.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1306"/>
+        <source>Nothing to show here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1327"/>
+        <source>{0} needs its base files first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1332"/>
+        <source>They hold the game&apos;s characters and stages ({0}). They&apos;re added for you when you pick any pack.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1360"/>
+        <source>{0} · {1} installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1392"/>
+        <source>Downloads need a connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1395"/>
+        <source>Pick the packs to download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1398"/>
+        <source>1 pack selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1400"/>
+        <source>{0} packs selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1403"/>
+        <source>+ base files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1409"/>
+        <source>Download {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1411"/>
         <source>Download</source>
         <translation>Descargar</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="365"/>
-        <source>Update all</source>
+        <location filename="../AssetDownloaderWindow.py" line="1446"/>
+        <location filename="../AssetDownloaderWindow.py" line="1459"/>
+        <source>Remove pack</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="95"/>
-        <location filename="../AssetDownloader.py" line="395"/>
+        <location filename="../AssetDownloaderWindow.py" line="1447"/>
+        <source>Remove {0} from {1}? You can download it again at any time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../AssetDownloaderWindow.py" line="1460"/>
+        <source>Couldn&apos;t remove {0}:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Downloading assets</source>
         <translation>Descargando archivos</translation>
     </message>
     <message>
-        <location filename="../AssetDownloader.py" line="424"/>
         <source>Failed to fetch assets from github:</source>
         <translation>Error al buscar los archivos en Github</translation>
-    </message>
-    <message>
-        <location filename="../AssetDownloader.py" line="484"/>
-        <source>Downloading {0}... ({1}/{2})</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../AssetDownloader.py" line="510"/>
-        <source>Extracting... ({0}/{1})</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../AssetDownloader.py" line="577"/>
-        <source>Download failed:</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Downloading {0}...</source>
@@ -1994,6 +2345,7 @@
     <message>
         <location filename="../TeamPlayerWidget.py" line="101"/>
         <location filename="../ScoreboardPlayerWidget.py" line="141"/>
+        <location filename="../AssetDownloaderWindow.py" line="977"/>
         <source>Clear</source>
         <translation>Borrar</translation>
     </message>
@@ -2169,6 +2521,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../AssetDownloaderWindow.py" line="488"/>
         <location filename="../GameReportWidget.py" line="142"/>
         <source>Retry</source>
         <translation type="unfinished"></translation>
@@ -2937,6 +3290,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../AssetDownloaderWindow.py" line="891"/>
         <location filename="../BracketWidget.py" line="1073"/>
         <source>Games</source>
         <translation type="unfinished"></translation>
@@ -3534,6 +3888,8 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../AssetDownloaderWindow.py" line="360"/>
+        <location filename="../AssetDownloaderWindow.py" line="923"/>
         <location filename="../PlayerMediaTabs.py" line="264"/>
         <location filename="../PlayerMediaTabs.py" line="822"/>
         <source>Open folder</source>
