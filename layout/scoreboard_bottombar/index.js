@@ -1,7 +1,8 @@
-// Bottom bar scoreboard: a full-width bar along the bottom of the screen with
-// the tournament (logo, name, phase and best of, match), each side's name,
-// location and score, their character art meeting at a VS in the middle, and
-// a clock. Under each name the handle, pronouns and seed take turns.
+// Bottom bar scoreboard: a bar along the bottom of the screen with each
+// side's name and info at its ends, then their character art and score, and
+// the tournament's logo and a clock between the scores. A pill above it has
+// the tournament's name, and a thinner bar under it the phase, match and best
+// of. Under each name the handle, pronouns and seed take turns.
 
 // The handle, pronouns and seed, the ones shown, as turns pick them
 const rotating = (s, player) => {
@@ -42,15 +43,15 @@ const clock = (settings) => {
     parts = new Intl.DateTimeFormat("en-US", options).formatToParts(new Date());
   }
   const part = (type) => (parts.find((p) => p.type === type) || {}).value || "";
-  HD.set(".clock .time", `${part("hour")}:${part("minute")}${part("dayPeriod").toLowerCase()}`, { duration: 0.2 });
-  HD.set(".clock .zone", part("timeZoneName"), { duration: 0.2 });
+  const time = `${part("hour")}:${part("minute")}${part("dayPeriod").toLowerCase()}`;
+  HD.set(".clock", HD.html`${time}<span class="zone">${part("timeZoneName")}</span>`, { duration: 0.2 });
 };
 
 // Which character each side shows when it takes turns
 const shown = { 1: 0, 2: 0 };
 
 const showCharacter = (n, fade) => {
-  const characters = $(`.p${n}.character_container.cycle .hd_character`).toArray();
+  const characters = $(`.p${n} .character_container.cycle .hd_character`).toArray();
   if (characters.length === 0) return;
   shown[n] %= characters.length;
   gsap.to(characters, { autoAlpha: (i) => (i === shown[n] ? 1 : 0), duration: fade ? 0.6 : 0, overwrite: true });
@@ -76,10 +77,14 @@ HD.layout({
     // A player's characters take turns every this many seconds; 0 shows
     // them side by side
     character_cycle_seconds: 4,
+    // How the bar under it arranges the phase, match and best of: "spread"
+    // (phase left, match centered, best of right), "center" (one centered
+    // line) or "chips" (a centered chip each)
+    info_layout: "spread",
   },
 
   init(settings) {
-    $("body").toggleClass("no_clock", !settings.show_clock);
+    $("body").toggleClass("no_clock", !settings.show_clock).addClass(`info_${settings.info_layout}`);
     clock(settings);
     setInterval(() => clock(settings), 1000);
     if (settings.character_cycle_seconds > 0) {
@@ -94,10 +99,12 @@ HD.layout({
 
   intro(tl) {
     const vars = { duration: 0.35, ease: "power2.out", autoAlpha: 0 };
-    tl.from(".bar", { yPercent: 110, duration: 0.5, ease: "power3.out" }, 0)
-      .from(".info, .p1.player", { ...vars, x: -40, stagger: 0.08 }, 0.35)
-      .from(".p2.player, .clock", { ...vars, x: 40, stagger: 0.08 }, "<")
-      .from(".vs", { autoAlpha: 0, scale: 0, duration: 0.3, ease: "back.out(2)" }, "<0.1");
+    tl.from(".bar, .subbar", { yPercent: 110, autoAlpha: 0, duration: 0.5, ease: "power3.out", stagger: 0.05 }, 0)
+      .from(".p1.player", { ...vars, x: -40 }, 0.35)
+      .from(".p2.player", { ...vars, x: 40 }, "<")
+      .from(".center", { autoAlpha: 0, scale: 0.6, duration: 0.35, ease: "back.out(2)" }, "<0.05")
+      .from(".pill", { ...vars, y: 20 }, "<0.1")
+      .from(".subbar > div", { ...vars, y: -10, stagger: 0.06 }, "<");
   },
 
   update(s) {
@@ -124,7 +131,7 @@ HD.layout({
 
       // A player with several characters shows them one at a time, stacked
       // in the same place; doubles show each player's first side by side
-      const container = t.sel("&.character_container");
+      const container = t.sel(".character_container");
       const count = Object.values(player.character || {}).filter((c) => c && c.codename && _.size(c.assets)).length;
       const cycle = !s.isTeams && count > 1 && s.settings.character_cycle_seconds > 0;
       $(container).toggleClass("cycle", cycle);
@@ -155,7 +162,8 @@ HD.layout({
     s.set(".logo", HD.img(logo));
     s.set(".tournament_name", info.tournamentName);
     const length = s.settings.set_length === "first_to" ? s.score.first_to_text : s.score.best_of_text;
-    s.set(".phase", HD.text([s.score.phase || info.eventName, length], " | "));
+    s.set(".phase", s.score.phase || info.eventName);
     s.set(".match", s.score.match);
+    s.set(".best_of", length);
   },
 });

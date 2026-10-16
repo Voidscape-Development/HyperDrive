@@ -1,7 +1,10 @@
 /* ═══════════════════════════════════════════════════════════
    SCOREBOARD BOTTOM BAR — index.css
-   A full-width bar along the bottom: tournament info | P1 name and
-   score | character art and VS | P2 score and name | clock.
+   Along the bottom, top to bottom:
+     - a pill with the tournament's name
+     - the bar: P1 name and info | character | score | logo and
+       clock | score | character | P2 name and info
+     - a thinner bar with the phase, match and best of
    Fonts and design tokens come from ../main.css (loaded first).
    ═══════════════════════════════════════════════════════════ */
 
@@ -14,17 +17,59 @@ body {
   height: 1080px;
 }
 
-.bar {
+.hud {
   position: absolute;
   left: 0;
   bottom: 0;
   width: 1920px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-color);
+}
+
+.pill,
+.bar,
+.subbar {
+  background: var(--bg-fill, var(--bg-color));
+  box-sizing: border-box;
+}
+
+
+/* ── Tournament name pill ────────────────────────────────── */
+
+.pill {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  max-width: 1100px;
+  padding: 0 30px;
+  margin-bottom: 8px;
+  border-radius: var(--border-radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.pill:has(> .text_empty) {
+  visibility: hidden;
+}
+
+.tournament_name {
+  height: 100%;
+  overflow: hidden;
+}
+
+
+/* ── Main bar ────────────────────────────────────────────── */
+
+.bar {
+  position: relative;
+  width: 100%;
   height: 140px;
   display: flex;
   align-items: stretch;
-  box-sizing: border-box;
-  color: var(--text-color);
-  background: var(--bg-fill, var(--bg-color));
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.45);
 }
 
@@ -43,78 +88,6 @@ body {
 .accent .p2 { flex: 1; background: linear-gradient(to left, transparent, var(--p2-score-bg-color) 40%); }
 
 
-/* ── Tournament info ─────────────────────────────────────── */
-
-.info {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: 440px;
-  flex-shrink: 0;
-  padding: 0 20px 0 24px;
-  box-sizing: border-box;
-}
-
-.logo {
-  width: 100px;
-  height: 100px;
-  flex-shrink: 0;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-}
-
-.logo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.info_text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-  flex: 1;
-  height: 100%;
-  gap: 2px;
-}
-
-.info_text > div {
-  overflow: hidden;
-}
-
-.info_text .text {
-  justify-content: flex-start;
-}
-
-.tournament_name {
-  height: 40px;
-  font-size: 36px;
-}
-
-.phase {
-  height: 26px;
-  font-size: 21px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-
-.match {
-  height: 32px;
-  font-size: 27px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--accent-color);
-}
-
-.info_text > div:has(> .text_empty) {
-  display: none;
-}
-
-
 /* ── Players ─────────────────────────────────────────────── */
 
 .player {
@@ -124,13 +97,8 @@ body {
   align-items: stretch;
 }
 
-.p1.player {
-  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--p1-score-bg-color) 22%, transparent));
-}
-
 .p2.player {
   flex-direction: row-reverse;
-  background: linear-gradient(to left, transparent, color-mix(in srgb, var(--p2-score-bg-color) 22%, transparent));
 }
 
 .name_block {
@@ -139,7 +107,7 @@ body {
   justify-content: center;
   flex: 1;
   min-width: 0;
-  padding: 0 22px;
+  padding: 0 28px;
   gap: 4px;
 }
 
@@ -149,8 +117,8 @@ body {
   overflow: hidden;
 }
 
-.p1 .name .text { justify-content: flex-end; }
-.p2 .name .text { justify-content: flex-start; }
+.p1 .name .text { justify-content: flex-start; }
+.p2 .name .text { justify-content: flex-end; }
 
 .sponsor {
   margin-right: 10px;
@@ -184,8 +152,7 @@ body {
   overflow: hidden;
 }
 
-.p1 .extra { justify-content: flex-end; }
-.p2 .extra { flex-direction: row-reverse; justify-content: flex-end; }
+.p2 .extra { flex-direction: row-reverse; }
 
 .extra > div {
   overflow: hidden;
@@ -204,8 +171,8 @@ body {
   min-width: 0;
 }
 
-.p1 .extra .text { justify-content: flex-end; }
-.p2 .extra .text { justify-content: flex-start; }
+.p1 .extra .text { justify-content: flex-start; }
+.p2 .extra .text { justify-content: flex-end; }
 
 .extra > div:has(> .text_empty) {
   display: none;
@@ -240,6 +207,32 @@ body {
 .pronoun_logo { -webkit-mask-image: url(../icons/user.svg); }
 .seed_logo { -webkit-mask-image: url(../icons/seed_leaf.svg); }
 
+/* Character art, between the name and the score, fading out toward the
+   name */
+.character_container {
+  width: 240px;
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.p1 .character_container {
+  background: linear-gradient(to left, color-mix(in srgb, var(--p1-score-bg-color) 45%, transparent), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 35%);
+}
+
+.p2 .character_container {
+  background: linear-gradient(to right, color-mix(in srgb, var(--p2-score-bg-color) 45%, transparent), transparent);
+  -webkit-mask-image: linear-gradient(to left, transparent 0, black 35%);
+}
+
+/* A player's characters taking turns: stacked, each filling the space */
+.character_container.cycle .hd_character {
+  position: absolute;
+  inset: 0;
+}
+
 .score {
   width: 108px;
   flex-shrink: 0;
@@ -255,102 +248,172 @@ body {
 .p2 .score { color: var(--p2-score-color); background: var(--p2-score-bg-color); }
 
 
-/* ── Characters and VS ───────────────────────────────────── */
+/* ── Logo and clock, between the scores ──────────────────── */
 
 .center {
   display: flex;
-  width: 420px;
-  flex-shrink: 0;
-  align-items: stretch;
-  position: relative;
-}
-
-.center .character_container {
-  flex: 1;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-}
-
-/* A player's characters taking turns: stacked, each filling the space */
-.center .character_container.cycle .hd_character {
-  position: absolute;
-  inset: 0;
-}
-
-/* Each side's art fades out toward the VS */
-.center .p1.character_container {
-  background: linear-gradient(to right, color-mix(in srgb, var(--p1-score-bg-color) 45%, transparent), transparent);
-  -webkit-mask-image: linear-gradient(to left, transparent 0, black 35%);
-}
-
-.center .p2.character_container {
-  background: linear-gradient(to left, color-mix(in srgb, var(--p2-score-bg-color) 45%, transparent), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, black 35%);
-}
-
-.vs {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 64px;
-  letter-spacing: 2px;
-  z-index: 2;
-}
-
-
-/* ── Clock ───────────────────────────────────────────────── */
-
-.clock {
-  display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  width: 210px;
+  justify-content: center;
+  width: 220px;
   flex-shrink: 0;
-  padding-right: 8px;
+  gap: 4px;
+  padding-top: 4px;
   box-sizing: border-box;
 }
 
-.clock .time {
-  height: 52px;
-  font-size: 48px;
+.logo {
+  width: 86px;
+  height: 86px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.clock {
+  height: 28px;
+  width: 100%;
+  font-size: 25px;
+  overflow: hidden;
 }
 
 .clock .zone {
-  height: 26px;
-  font-size: 21px;
+  margin-left: 6px;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: 3px;
-  opacity: 0.75;
+  letter-spacing: 2px;
+  opacity: 0.7;
 }
 
 .no_clock .clock {
   display: none;
 }
 
+.no_clock .logo {
+  width: 110px;
+  height: 110px;
+}
+
+
+/* ── Phase, match and best of ────────────────────────────── */
+
+.subbar {
+  width: 100%;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--bg-color) 82%, black);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.subbar > div {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  overflow: hidden;
+}
+
+.subbar > .text_empty {
+  display: none;
+}
+
+.subbar .match {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/* "spread": the phase under P1's end, the match in the middle, the best
+   of under P2's end */
+.info_spread .subbar {
+  padding: 0 28px;
+}
+
+.info_spread .subbar > div {
+  flex: 1;
+}
+
+.info_spread .subbar > .text_empty {
+  display: flex;
+  visibility: hidden;
+}
+
+.info_spread .phase .text { justify-content: flex-start; }
+.info_spread .match .text { justify-content: center; }
+.info_spread .best_of .text { justify-content: flex-end; }
+
+/* "center": one line in the middle, with dots between */
+.info_center .subbar {
+  justify-content: center;
+  gap: 44px;
+}
+
+.info_center .subbar > div {
+  position: relative;
+  overflow: visible;
+}
+
+.info_center .subbar > div:not(.text_empty) ~ div:not(.text_empty)::before {
+  content: "•";
+  position: absolute;
+  left: -27px;
+  color: var(--text-color);
+  opacity: 0.5;
+}
+
+/* "chips": a chip each, in the middle */
+.info_chips .subbar {
+  justify-content: center;
+  gap: 10px;
+}
+
+.info_chips .subbar > div {
+  height: 30px;
+  padding: 0 16px;
+  border-radius: var(--border-radius-chip);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.info_chips .subbar .match {
+  background: var(--accent-color);
+  color: var(--on-accent-color);
+}
+
 
 /* ── Inset (inset.html) ──────────────────────────────────── */
 
-/* The bar floats above the bottom edge with rounded corners, like
-   HyperDrive's other panels */
-.inset .bar {
+/* Floats above the bottom edge with rounded corners, like HyperDrive's
+   other panels */
+.inset .hud {
   left: 24px;
   bottom: 24px;
   width: 1872px;
-  height: 128px;
-  overflow: hidden;
+}
+
+.inset .bar,
+.inset .subbar {
   border-radius: var(--border-radius);
   border: 1px solid rgba(255, 255, 255, 0.07);
+  overflow: hidden;
   box-shadow:
     0 2px 3px rgba(0, 0, 0, 0.55),
     0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-.inset .info { width: 420px; padding-left: 14px; }
-.inset .logo { width: 96px; height: 96px; }
-.inset .center { width: 400px; }
-.inset .clock { width: 196px; }
+.inset .bar { height: 128px; }
+.inset .subbar { margin-top: 6px; height: 40px; }
+.inset .character_container { width: 220px; }
+.inset .center { width: 200px; }
+.inset .logo { width: 78px; height: 78px; }
 .inset .name { height: 50px; font-size: 46px; }
 .inset .score { width: 100px; font-size: 78px; }
+.inset.no_clock .logo { width: 100px; height: 100px; }
