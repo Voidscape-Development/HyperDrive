@@ -1,0 +1,122 @@
+// Bottom bar scoreboard: a full-width bar along the bottom of the screen with
+// the tournament (logo, name, phase and best of, match), each side's name,
+// location and score, their character art meeting at a VS in the middle, and
+// a clock. Under each name the handle, pronouns and seed take turns.
+
+// The handle, pronouns and seed, the ones shown, as turns pick them
+const rotating = (s, player) => {
+  const hidden = (what) => $("body").hasClass(`hd-hide-${what}`);
+  return [
+    s.settings.show_twitter && !hidden("social") && HD.ui.chip("twitter", player.twitter),
+    s.settings.show_pronoun && !hidden("pronouns") && HD.ui.chip("pronoun", player.pronoun),
+    s.settings.show_seed && !hidden("seed") && player.seed ? HD.ui.chip("seed", player.seed, "Seed ") : "",
+  ];
+};
+
+const rotate = (s) => {
+  if (s.isTeams) return;
+  for (const t of s.teams) t.set(".rotating", turns.pick(rotating(s, t.player)));
+};
+const turns = HD.turns(6, rotate);
+
+// The state's flag, else the country's (or as location_flag says)
+const placeFlags = (s, player) => {
+  const which = s.settings.location_flag;
+  if (which === "country") return HD.ui.flag(player.country);
+  if (which === "state") return HD.ui.flag(player.state);
+  if (which === "both") return HD.html`${HD.ui.flag(player.country)}${HD.ui.flag(player.state)}`;
+  return HD.ui.flag(player.state && player.state.asset ? player.state : player.country);
+};
+
+// The time and time zone, in clock_timezone (or the computer's)
+const clock = (settings) => {
+  if (!settings.show_clock) return;
+  const options = { hour: "2-digit", minute: "2-digit", hour12: !settings.clock_24h, timeZoneName: "short" };
+  let parts;
+  try {
+    parts = new Intl.DateTimeFormat("en-US", {
+      ...options,
+      timeZone: settings.clock_timezone || undefined,
+    }).formatToParts(new Date());
+  } catch {
+    parts = new Intl.DateTimeFormat("en-US", options).formatToParts(new Date());
+  }
+  const part = (type) => (parts.find((p) => p.type === type) || {}).value || "";
+  HD.set(".clock .time", `${part("hour")}:${part("minute")}${part("dayPeriod").toLowerCase()}`, { duration: 0.2 });
+  HD.set(".clock .zone", part("timeZoneName"), { duration: 0.2 });
+};
+
+HD.layout({
+  subscribe: ["score", "game", "tournamentInfo"],
+
+  settings: {
+    show_clock: true,
+    clock_24h: false,
+    // An IANA time zone ("America/New_York"); empty for the computer's
+    clock_timezone: "",
+    // "best_of" (Best of 3) or "first_to" (First to 2)
+    set_length: "best_of",
+    // "auto" (the state's, else the country's), "state", "country" or "both"
+    location_flag: "auto",
+    show_twitter: true,
+    show_pronoun: true,
+    show_seed: true,
+    // The start.gg tournament's logo when it has one, else layout/logo.png
+    use_tournament_logo: true,
+  },
+
+  init(settings) {
+    $("body").toggleClass("no_clock", !settings.show_clock);
+    clock(settings);
+    setInterval(() => clock(settings), 1000);
+  },
+
+  intro(tl) {
+    const vars = { duration: 0.35, ease: "power2.out", autoAlpha: 0 };
+    tl.from(".bar", { yPercent: 110, duration: 0.5, ease: "power3.out" }, 0)
+      .from(".info, .p1.player", { ...vars, x: -40, stagger: 0.08 }, 0.35)
+      .from(".p2.player, .clock", { ...vars, x: 40, stagger: 0.08 }, "<")
+      .from(".vs", { autoAlpha: 0, scale: 0, duration: 0.3, ease: "back.out(2)" }, "<0.1");
+  },
+
+  update(s) {
+    for (const t of s.teams) {
+      const { team, player } = t;
+      const losers = team.losers && HD.html`<span class='losers'>L</span>`;
+
+      // Doubles show the team (or its players' names), and its players
+      // under it when it has a name
+      if (s.isTeams) {
+        t.set(".name", HD.html`${t.name}${losers}`);
+        t.set(".location", "");
+        t.set(".rotating", team.teamName && HD.playerNames(team));
+      } else {
+        t.set(".name", HD.ui.name(player, team));
+        t.set(".location", placeFlags(s, player));
+      }
+
+      const pop = !s.first && s.scoreChanged(`team.${t.n}.score`);
+      t.set(".score", team.score, {
+        after: () =>
+          pop && gsap.fromTo(t.sel(".score .text"), { scale: 1.45 }, { scale: 1, duration: 0.4, ease: "back.out(3)" }),
+      });
+
+      s.characters(t.sel("&.character_container"), {
+        source: ["score", s.n, "team", t.n],
+        slice_character: s.isTeams ? [0, 1] : undefined,
+        flip_x: t.n === 2,
+        ...HD.slideToMiddle(t.n === 1 ? 1 : -1),
+      });
+    }
+    HD.teamColors(s);
+    rotate(s);
+
+    const info = s.data.tournamentInfo || {};
+    const logo = (s.settings.use_tournament_logo && info.logo) || "../logo.png";
+    s.set(".logo", HD.img(logo));
+    s.set(".tournament_name", info.tournamentName);
+    const length = s.settings.set_length === "first_to" ? s.score.first_to_text : s.score.best_of_text;
+    s.set(".phase", HD.text([s.score.phase || info.eventName, length], " | "));
+    s.set(".match", s.score.match);
+  },
+});

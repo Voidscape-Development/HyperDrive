@@ -1,0 +1,324 @@
+/* ═══════════════════════════════════════════════════════════
+   SCOREBOARD BOTTOM BAR — index.css
+   A full-width bar along the bottom: tournament info | P1 name and
+   score | character art and VS | P2 score and name | clock.
+   Fonts and design tokens come from ../main.css (loaded first).
+   ═══════════════════════════════════════════════════════════ */
+
+body {
+  font-family: var(--font);
+  font-weight: 700;
+  overflow: hidden;
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+}
+
+.bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1920px;
+  height: 140px;
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  color: var(--text-color);
+  background: var(--bg-fill, var(--bg-color));
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.45);
+}
+
+/* The team colors meeting at the middle, along the top edge */
+.accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  display: flex;
+  z-index: 5;
+}
+
+.accent .p1 { flex: 1; background: linear-gradient(to right, transparent, var(--p1-score-bg-color) 40%); }
+.accent .p2 { flex: 1; background: linear-gradient(to left, transparent, var(--p2-score-bg-color) 40%); }
+
+
+/* ── Tournament info ─────────────────────────────────────── */
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 440px;
+  flex-shrink: 0;
+  padding: 0 20px 0 24px;
+  box-sizing: border-box;
+}
+
+.logo {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.info_text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  gap: 2px;
+}
+
+.info_text > div {
+  overflow: hidden;
+}
+
+.info_text .text {
+  justify-content: flex-start;
+}
+
+.tournament_name {
+  height: 40px;
+  font-size: 36px;
+}
+
+.phase {
+  height: 26px;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.match {
+  height: 32px;
+  font-size: 27px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+}
+
+.info_text > div:has(> .text_empty) {
+  display: none;
+}
+
+
+/* ── Players ─────────────────────────────────────────────── */
+
+.player {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.p1.player {
+  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--p1-score-bg-color) 22%, transparent));
+}
+
+.p2.player {
+  flex-direction: row-reverse;
+  background: linear-gradient(to left, transparent, color-mix(in srgb, var(--p2-score-bg-color) 22%, transparent));
+}
+
+.name_block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  padding: 0 22px;
+  gap: 4px;
+}
+
+.name {
+  height: 54px;
+  font-size: 50px;
+  overflow: hidden;
+}
+
+.p1 .name .text { justify-content: flex-end; }
+.p2 .name .text { justify-content: flex-start; }
+
+.sponsor {
+  margin-right: 10px;
+}
+
+.p1 .sponsor { color: var(--p1-sponsor-color); }
+.p2 .sponsor { color: var(--p2-sponsor-color); }
+
+/* Losers bracket indicator */
+.losers {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  font-size: 24px;
+  border-radius: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 0 10px;
+}
+
+.p1 .losers { background: var(--p1-score-bg-color); color: var(--p1-score-color); }
+.p2 .losers { background: var(--p2-score-bg-color); color: var(--p2-score-color); }
+
+/* Location, then the handle, pronouns or seed */
+.extra {
+  display: flex;
+  height: 28px;
+  gap: 14px;
+  font-size: 23px;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.p1 .extra { justify-content: flex-end; }
+.p2 .extra { flex-direction: row-reverse; justify-content: flex-end; }
+
+.extra > div {
+  overflow: hidden;
+  opacity: 0.85;
+}
+
+.extra .location {
+  flex-shrink: 0;
+}
+
+.extra .location .text {
+  gap: 6px;
+}
+
+.extra .rotating {
+  min-width: 0;
+}
+
+.p1 .extra .text { justify-content: flex-end; }
+.p2 .extra .text { justify-content: flex-start; }
+
+.extra > div:has(> .text_empty) {
+  display: none;
+}
+
+.flag {
+  display: inline-block;
+  object-fit: cover;
+  width: 30px;
+  height: 20px;
+  border-radius: 3px;
+}
+
+.location .flag:not(:first-child) {
+  margin-left: 6px;
+}
+
+.twitter_logo,
+.pronoun_logo,
+.seed_logo {
+  display: inline-block;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  background: var(--text-color);
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.twitter_logo { -webkit-mask-image: url(../icons/twitter.svg); }
+.pronoun_logo { -webkit-mask-image: url(../icons/user.svg); }
+.seed_logo { -webkit-mask-image: url(../icons/seed_leaf.svg); }
+
+.score {
+  width: 108px;
+  flex-shrink: 0;
+  font-size: 84px;
+  overflow: hidden;
+}
+
+.score .text {
+  transform-origin: center;
+}
+
+.p1 .score { color: var(--p1-score-color); background: var(--p1-score-bg-color); }
+.p2 .score { color: var(--p2-score-color); background: var(--p2-score-bg-color); }
+
+
+/* ── Characters and VS ───────────────────────────────────── */
+
+.center {
+  display: flex;
+  width: 420px;
+  flex-shrink: 0;
+  align-items: stretch;
+  position: relative;
+}
+
+.center .character_container {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Each side's art fades out toward the VS */
+.center .p1.character_container {
+  background: linear-gradient(to right, color-mix(in srgb, var(--p1-score-bg-color) 45%, transparent), transparent);
+  -webkit-mask-image: linear-gradient(to left, transparent 0, black 35%);
+}
+
+.center .p2.character_container {
+  background: linear-gradient(to left, color-mix(in srgb, var(--p2-score-bg-color) 45%, transparent), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 35%);
+}
+
+.vs {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 64px;
+  letter-spacing: 2px;
+  z-index: 2;
+}
+
+
+/* ── Clock ───────────────────────────────────────────────── */
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 210px;
+  flex-shrink: 0;
+  padding-right: 8px;
+  box-sizing: border-box;
+}
+
+.clock .time {
+  height: 52px;
+  font-size: 48px;
+}
+
+.clock .zone {
+  height: 26px;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  opacity: 0.75;
+}
+
+.no_clock .clock {
+  display: none;
+}
