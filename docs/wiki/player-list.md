@@ -14,7 +14,17 @@ any list of players.
 | **Number of slots** | How many places, e.g. 8 for a top 8 |
 | **Players per slot** | 2 for a doubles top 8 |
 | **Characters per player** | How many characters each player shows |
-| **Show scores** | Adds a score to each slot |
+| **Show scores** | Adds a score to each slot, beside its team name |
+| **Start slots collapsed** | Slots open collapsed to their title. Off: they open as you left them |
+| **Compact players** | Folds every player's details away, keeping their tag, sponsor and characters |
+| **Collapse all** / **Expand all** | Collapses every slot to its title, or shows every slot's players |
+
+## Collapsing slots
+
+The arrow at the start of a slot collapses it to its title: its place, team name and score,
+which you can still edit. A slot with no team name shows its players' tags in grey. Each
+player's own arrow folds away their details. HyperDrive remembers which slots and players
+are folded for next time.
 
 ## Results text
 

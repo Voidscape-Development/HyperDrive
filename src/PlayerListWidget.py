@@ -21,6 +21,7 @@ from .GameAssetManager import GameAssetManager
 from .PlayerList import PlayerList
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
+from .Theme import ThemedIcon
 from .TournamentDataManager import TournamentDataManager
 
 
@@ -40,7 +41,8 @@ class PlayerListWidget(QDockWidget):
     def SetupUi(self, base):
         self.signals = PlayerListWidgetSignals()
 
-        self.playerList = PlayerList(base=base)
+        # The slots start as just their titles, so a top 8 fits on screen
+        self.playerList = PlayerList(base=base, startCollapsed=True)
 
         self.setWindowTitle(QApplication.translate("app", "Player List"))
         self.setFloating(True)
@@ -99,6 +101,55 @@ class PlayerListWidget(QDockWidget):
         showScoresWidget.layout().addWidget(self.showScoresCheckbox)
         self.showScoresCheckbox.checkStateChanged.connect(self.playerList.SetScoresVisible)
         row.layout().addWidget(showScoresWidget)
+
+        startCollapsedWidget = QWidget()
+        startCollapsedWidget.setLayout(QVBoxLayout())
+        self.startCollapsedCheckbox = QCheckBox()
+        self.startCollapsedCheckbox.setChecked(self.playerList.StartCollapsed())
+        self.startCollapsedCheckbox.setToolTip(
+            QApplication.translate(
+                "app",
+                "Slots start collapsed to their title when HyperDrive opens. Off: they open "
+                "as you left them",
+            )
+        )
+        startCollapsedWidget.layout().addWidget(
+            QLabel(QApplication.translate("app", "Start slots collapsed"))
+        )
+        startCollapsedWidget.layout().addWidget(self.startCollapsedCheckbox)
+        self.startCollapsedCheckbox.toggled.connect(self.playerList.SetStartCollapsed)
+        row.layout().addWidget(startCollapsedWidget)
+
+        compactPlayersWidget = QWidget()
+        compactPlayersWidget.setLayout(QVBoxLayout())
+        self.compactPlayersCheckbox = QCheckBox()
+        self.compactPlayersCheckbox.setChecked(self.playerList.CompactPlayers())
+        self.compactPlayersCheckbox.setToolTip(
+            QApplication.translate(
+                "app",
+                "Folds every player's details away, keeping their tag, sponsor and characters",
+            )
+        )
+        compactPlayersWidget.layout().addWidget(
+            QLabel(QApplication.translate("app", "Compact players"))
+        )
+        compactPlayersWidget.layout().addWidget(self.compactPlayersCheckbox)
+        self.compactPlayersCheckbox.toggled.connect(self.playerList.SetCompactPlayers)
+        row.layout().addWidget(compactPlayersWidget)
+
+        self.collapseAllBt = QPushButton(QApplication.translate("app", "Collapse all"))
+        self.collapseAllBt.setIcon(ThemedIcon("assets/icons/arrow_right.svg"))
+        self.collapseAllBt.setToolTip(
+            QApplication.translate("app", "Collapse every slot to its title")
+        )
+        self.collapseAllBt.clicked.connect(lambda: self.playerList.SetAllCollapsed(True))
+        row.layout().addWidget(self.collapseAllBt)
+
+        self.expandAllBt = QPushButton(QApplication.translate("app", "Expand all"))
+        self.expandAllBt.setIcon(ThemedIcon("assets/icons/arrow_down.svg"))
+        self.expandAllBt.setToolTip(QApplication.translate("app", "Show every slot's players"))
+        self.expandAllBt.clicked.connect(lambda: self.playerList.SetAllCollapsed(False))
+        row.layout().addWidget(self.expandAllBt)
 
         self.loadFromStandingsBt = QPushButton(
             QApplication.translate("app", "Load tournament standings")

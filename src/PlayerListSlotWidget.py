@@ -8,10 +8,13 @@ from qtpy.QtWidgets import *
 from .DisplayOptions import ApplyHiddenElements
 from .ScoreboardPlayerWidget import ScoreboardPlayerWidget
 from .StateManager import StateManager
+from .Theme import ThemedIcon
 
 
 class PlayerListSlotWidgetSignals(QObject):
     dataChanged = Signal()
+    # Folded or unfolded with its arrow
+    collapsedChanged = Signal(bool)
 
 
 class PlayerListSlotWidget(QGroupBox):
@@ -25,20 +28,37 @@ class PlayerListSlotWidget(QGroupBox):
         self.signals = PlayerListSlotWidgetSignals()
 
         self.setLayout(QVBoxLayout())
-        slotNameWidget = QWidget()
-        slotNameWidget.setLayout(QHBoxLayout())
+
+        # The slot's title: its place, team name and score, still shown
+        # (and edited) when the slot is collapsed to it
+        header = QHBoxLayout()
+        header.setSpacing(6)
+        self.layout().addLayout(header)
+
+        self.collapsed = False
+        self.collapseButton = QToolButton()
+        self.collapseButton.setAutoRaise(True)
+        self.collapseButton.setFixedSize(24, 24)
+        self.collapseButton.clicked.connect(self.ToggleCollapsed)
+        header.addWidget(self.collapseButton)
+
+        numberLabel = QLabel(f"{index}.")
+        numberLabel.setStyleSheet("font-weight: bold;")
+        # Room for two digits, so the names line up from slot to slot
+        bold = QFont(numberLabel.font())
+        bold.setBold(True)
+        numberLabel.setMinimumWidth(QFontMetrics(bold).horizontalAdvance("00."))
+        numberLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        header.addWidget(numberLabel)
 
         self.slotName = QLineEdit()
-        slotNameLabel = QLabel()
-        slotNameLabel.setText(QApplication.translate("Form", "Team Name"))
-        slotNameLabel.setMaximumWidth(150)
-        slotNameLabel.setMinimumWidth(slotNameLabel.maximumWidth())
-        slotNameWidget.layout().addWidget(slotNameLabel)
-        slotNameWidget.layout().addWidget(self.slotName)
-        self.layout().addWidget(slotNameWidget)
+        self.slotName.setToolTip(QApplication.translate("Form", "Team Name"))
+        self.slotName.setAccessibleName(QApplication.translate("Form", "Team Name"))
+        header.addWidget(self.slotName, 1)
 
         self.scoreWidget = QWidget()
         self.scoreWidget.setLayout(QHBoxLayout())
+        self.scoreWidget.layout().setContentsMargins(0, 0, 0, 0)
         scoreLabel = QLabel()
         scoreLabel.setText(QApplication.translate("app", "Score"))
         score = QSpinBox()
@@ -48,11 +68,9 @@ class PlayerListSlotWidget(QGroupBox):
         score.editingFinished.connect(
             lambda: [StateManager.Set(f"{self.base}.slot.{self.index}.score", score.value())]
         )
-        self.layout().addWidget(self.scoreWidget)
+        header.addWidget(self.scoreWidget)
         score.editingFinished.emit()
         self.scoreWidget.setVisible(False)
-        scoreLabel.setMaximumWidth(slotNameLabel.maximumWidth())
-        scoreLabel.setMinimumWidth(scoreLabel.maximumWidth())
 
         self.childDataChangedLock = False
 
@@ -66,6 +84,42 @@ class PlayerListSlotWidget(QGroupBox):
         self.layout().addWidget(self.list)
 
         self.playerWidgets = []
+
+        self.UpdateCollapseButton()
+        self.UpdatePlaceholder()
+
+    # =====================================================
+    # COLLAPSING
+    # =====================================================
+    def ToggleCollapsed(self):
+        self.SetCollapsed(not self.collapsed)
+        self.signals.collapsedChanged.emit(self.collapsed)
+
+    def SetCollapsed(self, collapsed):
+        """Folds the slot to its title row, or shows its players."""
+        self.collapsed = collapsed
+        self.list.setVisible(not collapsed)
+        self.UpdateCollapseButton()
+
+    def UpdateCollapseButton(self):
+        self.collapseButton.setIcon(
+            ThemedIcon(
+                "assets/icons/arrow_right.svg" if self.collapsed else "assets/icons/arrow_down.svg"
+            )
+        )
+        self.collapseButton.setToolTip(
+            QApplication.translate("app", "Show players")
+            if self.collapsed
+            else QApplication.translate("app", "Hide players")
+        )
+
+    def UpdatePlaceholder(self):
+        # With no team name, the players' tags hint at who is in the slot
+        tags = [pw.GetCurrentPlayerTag().strip() for pw in self.playerWidgets]
+        tags = [t for t in tags if t]
+        self.slotName.setPlaceholderText(
+            " / ".join(tags) if tags else QApplication.translate("Form", "Team Name")
+        )
 
     # =====================================================
     # SIZE
@@ -92,7 +146,8 @@ class PlayerListSlotWidget(QGroupBox):
                 path=f"{self.base}.slot.{self.index}.player.{len(self.playerWidgets) + 1}",
             )
             self.playerWidgets.append(p)
-            self.list.layout().addWidget(p)
+            # At the top, also when a player beside it has its details shown
+            self.list.layout().addWidget(p, 0, Qt.AlignmentFlag.AlignTop)
             self.playerList.dragBoard.Register(p)
 
             p.SetCharactersPerPlayer(self.playerList.charactersPerPlayer)
@@ -115,12 +170,23 @@ class PlayerListSlotWidget(QGroupBox):
 
             p.instanceSignals.dataChanged.connect(self.ChildDataChangedEmit)
 
+            # Folded as it was last time, or as the list's "compact players" says
+            p.SetDetailsShown(self.playerList.PlayerDetailsShown(self.index, p.index))
+            # After the player's own handler, so detailsShown is the new state
+            p.detailsButton.clicked.connect(
+                lambda x=None, p=p: self.playerList.SavePlayerDetailsShown(
+                    self.index, p.index, p.detailsShown
+                )
+            )
+
         while len(self.playerWidgets) > number:
             p = self.playerWidgets[-1]
             p.setParent(None)
             self.playerWidgets.remove(p)
             StateManager.Unset(p.path)
             p.deleteLater()
+
+        self.UpdatePlaceholder()
 
     def SetCharacterNumber(self, value):
         # logger.info(f"PlayerListSlotWidget#SetCharacterNumber({value})")
@@ -166,6 +232,7 @@ class PlayerListSlotWidget(QGroupBox):
         finally:
             self.childDataChangedLock = False
 
+        self.UpdatePlaceholder()
         self.signals.dataChanged.emit()
 
     def Clear(self):
@@ -177,8 +244,10 @@ class PlayerListSlotWidget(QGroupBox):
         finally:
             self.childDataChangedLock = False
 
+        self.UpdatePlaceholder()
         self.signals.dataChanged.emit()
 
     def ChildDataChangedEmit(self):
         if not self.childDataChangedLock:
+            self.UpdatePlaceholder()
             self.signals.dataChanged.emit()
