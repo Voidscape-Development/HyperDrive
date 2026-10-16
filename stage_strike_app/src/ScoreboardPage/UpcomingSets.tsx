@@ -1,38 +1,57 @@
 import React from "react";
-import {ChevronDown, RefreshCw, Upload} from "lucide-react";
+import {Check, RefreshCw, Search, Tv} from "lucide-react";
+import {toast} from "sonner";
 import i18n from "../i18n/config";
 import {BACKEND_PORT, PROTOCOL} from "../env";
 import {api} from "./api";
 import type {HDSet} from "../backendDataTypes";
-import {Field} from "@/components/Field";
+import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
 import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {Spinner} from "@/components/ui/spinner";
 import {cn} from "@/lib/utils";
 
 interface UpcomingSetsProps {
     scoreboardNumber: number;
-    onSelectedSetChanged?: (setId: number) => void;
+    // The set the scoreboard has, marked in the list
+    currentSetId?: number;
+    onSetLoaded?: (setId: number) => void;
+    searchRef?: React.Ref<HTMLInputElement>;
 }
 
-/** The tournament's sets, to load one into the scoreboard */
-export default function UpcomingSets({scoreboardNumber, onSelectedSetChanged}: UpcomingSetsProps) {
+type Which = "stream" | "all";
+
+const Chip = ({pressed, onClick, children}: {pressed: boolean; onClick: () => void; children: React.ReactNode}) => (
+    <button
+        type="button"
+        aria-pressed={pressed}
+        onClick={onClick}
+        className={cn(
+            "h-9 cursor-pointer rounded-full border px-3.5 text-[13px] font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+            pressed ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+        )}
+    >
+        {children}
+    </button>
+);
+
+const setName = (set: HDSet) => `${set.p1_name || i18n.t("tbd")} ${i18n.t("vs")} ${set.p2_name || i18n.t("tbd")}`;
+
+/** The tournament's sets, each loaded into the scoreboard with one tap */
+export default function UpcomingSets({scoreboardNumber, currentSetId, onSetLoaded, searchRef}: UpcomingSetsProps) {
     const [isLoading, setIsLoading] = React.useState(true);
     const [setFilter, setSetFilter] = React.useState("");
-    const [selectedSet, setSelectedSet] = React.useState<HDSet | null>(null);
     const [showFinished, setShowFinished] = React.useState(false);
-    const [expanded, setExpanded] = React.useState(true);
+    // null until picked: the stream sets when there are some, else all of them
+    const [which, setWhich] = React.useState<Which | null>(null);
+    const [loadingId, setLoadingId] = React.useState<number | null>(null);
     const [sets, setSets] = React.useState<HDSet[]>([]);
 
     const fetchSets = React.useCallback(() => {
         setIsLoading(true);
         fetch(PROTOCOL + "//" + window.location.hostname + `:${BACKEND_PORT}/get-sets?_foo=${showFinished ? "&getFinished=true" : ""}&`)
             .then((res) => res.json())
-            .then((data: HDSet[]) => setSets(data))
+            .then((data: HDSet[]) => setSets(Array.isArray(data) ? data : []))
             .catch(console.log)
             .finally(() => setIsLoading(false));
     }, [showFinished]);
@@ -41,110 +60,124 @@ export default function UpcomingSets({scoreboardNumber, onSelectedSetChanged}: U
         fetchSets();
     }, [fetchSets]);
 
-    const submitNewSet = () => {
-        setIsLoading(true);
-        // Into the scoreboard being shown, not always scoreboard 1
-        api.loadSet(scoreboardNumber ?? 1, selectedSet?.id)
-            .then(() => onSelectedSetChanged?.(selectedSet.id))
-            .catch(() => {})
-            .finally(() => setIsLoading(false));
-    };
+    const hasStreamSets = sets.some((s) => s.stream);
+    const shown: Which = which ?? (hasStreamSets ? "stream" : "all");
 
     const filteredSets = React.useMemo(() => {
-        const fs = setFilter.toLocaleLowerCase();
-        if (!fs) {
-            return sets;
-        }
+        const fs = setFilter.trim().toLocaleLowerCase();
         return sets.filter((set) => (
-            set.p1_name.toLocaleLowerCase().includes(fs)
-            || set.p2_name.toLocaleLowerCase().includes(fs)
-            || set.round_name.toLocaleLowerCase().includes(fs)
-            || set.stream?.toLocaleLowerCase().includes(fs)
+            (shown === "all" || set.stream)
+            && (!fs
+                || set.p1_name?.toLocaleLowerCase().includes(fs)
+                || set.p2_name?.toLocaleLowerCase().includes(fs)
+                || set.round_name?.toLocaleLowerCase().includes(fs)
+                || set.tournament_phase?.toLocaleLowerCase().includes(fs)
+                || set.stream?.toLocaleLowerCase().includes(fs)
+                || set.station?.toLocaleLowerCase().includes(fs))
         ));
-    }, [sets, setFilter]);
+    }, [sets, setFilter, shown]);
+
+    const load = (set: HDSet) => {
+        setLoadingId(set.id);
+        // Into the scoreboard being shown, not always scoreboard 1
+        api.loadSet(scoreboardNumber ?? 1, set.id)
+            .then(() => {
+                toast.success(i18n.t("set_loaded", {set: setName(set), value: scoreboardNumber}));
+                onSetLoaded?.(set.id);
+            })
+            .catch(() => toast.error(i18n.t("set_load_failed")))
+            .finally(() => setLoadingId(null));
+    };
 
     return (
-        <Collapsible open={expanded} onOpenChange={setExpanded} asChild>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg">{i18n.t("upcoming_sets")}</CardTitle>
-                    <CardAction>
-                        <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="icon" aria-label={i18n.t("upcoming_sets")}>
-                                <ChevronDown className={cn("transition-transform", !expanded && "-rotate-90")}/>
-                            </Button>
-                        </CollapsibleTrigger>
-                    </CardAction>
-                </CardHeader>
-                <CollapsibleContent>
-                    <CardContent className="flex flex-col gap-4">
-                        <div className="flex flex-wrap gap-2">
-                            <Button variant={"outline"} onClick={fetchSets} disabled={isLoading}>
-                                <RefreshCw className={cn(isLoading && "animate-spin")}/>
-                                {i18n.t("refresh_sets")}
-                            </Button>
-                            <Button onClick={submitNewSet} disabled={!selectedSet || isLoading}>
-                                <Upload/>
-                                {i18n.t("load_selected_set")}
-                            </Button>
-                        </div>
+        <section aria-labelledby="up-next-title" className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+                <h2 id="up-next-title" className="flex-1 text-2xl font-bold tracking-tight">{i18n.t("up_next")}</h2>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-11 rounded-xl"
+                    aria-label={i18n.t("refresh_sets")}
+                    onClick={fetchSets}
+                    disabled={isLoading}
+                >
+                    <RefreshCw className={cn(isLoading && "animate-spin")}/>
+                </Button>
+            </div>
 
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id={"show-finished-sets"}
-                                checked={showFinished}
-                                onCheckedChange={(checked) => setShowFinished(checked === true)}
-                            />
-                            <Label htmlFor={"show-finished-sets"}>{i18n.t("show_finished_sets")}</Label>
-                        </div>
-                        <Field label={i18n.t("filter")} htmlFor={"upcoming-sets-filter"}>
-                            <Input
-                                id={"upcoming-sets-filter"}
-                                value={setFilter}
-                                onChange={(e) => setSetFilter(e.target.value)}
-                            />
-                        </Field>
+            <div className="relative">
+                <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"/>
+                <Input
+                    ref={searchRef}
+                    type="search"
+                    aria-label={i18n.t("filter")}
+                    placeholder={i18n.t("search_sets")}
+                    value={setFilter}
+                    onChange={(e) => setSetFilter(e.target.value)}
+                    className="h-11 pl-9 text-base md:text-sm"
+                />
+            </div>
 
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>{i18n.t("p1")}</TableHead>
-                                        <TableHead>{i18n.t("p2")}</TableHead>
-                                        <TableHead>{i18n.t("phase")}</TableHead>
-                                        <TableHead>{i18n.t("match")}</TableHead>
-                                        <TableHead>{i18n.t("stream")}</TableHead>
-                                        <TableHead>{i18n.t("station")}</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredSets.map((set) => (
-                                        <TableRow
-                                            key={set.id}
-                                            className="cursor-pointer"
-                                            data-state={selectedSet?.id === set.id ? "selected" : undefined}
-                                            onClick={() => setSelectedSet(set)}
-                                        >
-                                            {/*
-                                              * It's unclear if the backend will translate things like
-                                              * "Losers Round 5" for us. Stuff exists to support it in the
-                                              * python side of things, but using it browser-side is definitely
-                                              * a yak that needs shaving.
-                                              */}
-                                            <TableCell>{set.p1_name}</TableCell>
-                                            <TableCell>{set.p2_name}</TableCell>
-                                            <TableCell>{set.tournament_phase}</TableCell>
-                                            <TableCell>{set.round_name}</TableCell>
-                                            <TableCell>{set.stream}</TableCell>
-                                            <TableCell>{set.station}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </CardContent>
-                </CollapsibleContent>
-            </Card>
-        </Collapsible>
+            <div className="flex flex-wrap gap-2">
+                <Chip pressed={shown === "stream"} onClick={() => setWhich("stream")}>{i18n.t("on_stream")}</Chip>
+                <Chip pressed={shown === "all"} onClick={() => setWhich("all")}>{i18n.t("all_sets")}</Chip>
+                <Chip pressed={showFinished} onClick={() => setShowFinished(!showFinished)}>{i18n.t("show_finished_sets")}</Chip>
+            </div>
+
+            {filteredSets.length === 0
+                ? (
+                    <p className="flex items-center gap-2 rounded-xl border border-dashed px-4 py-6 text-sm text-muted-foreground">
+                        {isLoading
+                            ? <><Spinner/>{i18n.t("loading")}</>
+                            : (shown === "stream" && !setFilter ? i18n.t("no_stream_sets") : i18n.t("no_sets"))}
+                    </p>
+                )
+                : (
+                    <ul className="flex flex-col divide-y overflow-hidden rounded-xl border bg-card">
+                        {filteredSets.map((set) => {
+                            const current = set.id === currentSetId;
+                            const meta = [set.tournament_phase, set.round_name, set.station && i18n.t("station_n", {value: set.station})]
+                                .filter(Boolean)
+                                .join(" · ");
+                            return (
+                                <li key={set.id} className={cn("flex items-center gap-3 py-2.5 pr-2.5 pl-3.5", current && "bg-muted/40")}>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="truncate font-semibold">
+                                            {set.p1_name || i18n.t("tbd")}
+                                            <span className="px-1.5 text-sm font-normal text-muted-foreground">{i18n.t("vs")}</span>
+                                            {set.p2_name || i18n.t("tbd")}
+                                        </div>
+                                        <div className="flex min-w-0 items-center gap-2 pt-0.5">
+                                            {set.stream && (
+                                                <Badge variant="outline" className="shrink-0 gap-1">
+                                                    <Tv/>{set.stream}
+                                                </Badge>
+                                            )}
+                                            <span className="truncate text-xs text-muted-foreground">{meta}</span>
+                                        </div>
+                                    </div>
+                                    {current
+                                        ? (
+                                            <span className="flex h-11 items-center gap-1.5 px-2 text-sm text-pick">
+                                                <Check className="size-4"/>{i18n.t("loaded")}
+                                            </span>
+                                        )
+                                        : (
+                                            <Button
+                                                variant="outline"
+                                                className="h-11 rounded-xl px-4"
+                                                aria-label={i18n.t("load_set_named", {set: setName(set)})}
+                                                disabled={loadingId !== null}
+                                                onClick={() => load(set)}
+                                            >
+                                                {loadingId === set.id ? <Spinner/> : i18n.t("load")}
+                                            </Button>
+                                        )}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
+        </section>
     );
 }

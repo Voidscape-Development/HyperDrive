@@ -18,7 +18,6 @@ import type {
 import {Autocomplete} from "@/components/Autocomplete";
 import {Field} from "@/components/Field";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Card} from "@/components/ui/card";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
 import {Input} from "@/components/ui/input";
 import {cn} from "@/lib/utils";
@@ -83,19 +82,21 @@ const formFromPlayer = (player: HDPlayerInfo) => ({
 });
 
 /**
- * One player of a team. Changes are sent to HyperDrive as they're made: text when
+ * One player of a team: what's shown on stream first (tag, sponsor, characters),
+ * the rest folded under "More details". Changes are sent to HyperDrive as they're made: text when
  * the field loses focus, Enter is pressed or typing stops for a moment, and
  * picks (a player from the database, a character, a country) right away.
  */
-export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, player, defaultExpanded = true}: {
+export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, player, showHeading}: {
     scoreboardNumber: number;
     hdTeamId: string;
     teamId: string;
     teamKey: string;
     player: HDPlayerInfo;
-    defaultExpanded?: boolean;
+    // With more than one player on the team, each gets a heading
+    showHeading: boolean;
 }) {
-    const [expanded, setExpanded] = React.useState(defaultExpanded);
+    const [detailsOpen, setDetailsOpen] = React.useState(false);
 
     const gameCodename = useSelector((s: ReduxState) => s.hdState.hdState?.game?.codename);
     const playerDb = useSelector((s: ReduxState) => s.hdPlayers.players);
@@ -154,8 +155,8 @@ export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, pla
         (form) => api.updatePlayer(scoreboardNumber, hdTeamId, teamKey, payload(form)),
     );
 
-    const text = (field: "team" | "realName" | "twitter" | "pronoun", label: string, className?: string) => (
-        <Field label={label} htmlFor={idBase + field} className={className}>
+    const text = (field: "team" | "realName" | "twitter" | "pronoun", label: string) => (
+        <Field label={label} htmlFor={idBase + field}>
             <Input
                 id={idBase + field}
                 value={values[field]}
@@ -181,6 +182,10 @@ export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, pla
         setField("name", picked.gamerTag, {immediate: true});
     };
 
+    const heading = (values.team ? `${values.team} | ${values.name}` : values.name) || i18n.t("player_n", {value: teamKey});
+    // What's in "More details", so it shows without opening it
+    const details = [values.realName, values.twitter, values.countryCode].filter(Boolean).join(" · ");
+
     const setCharacter = (charIdx: string | number, changes: Partial<CharacterSelection>) => {
         setField("charSelections", {
             ...values.charSelections,
@@ -196,105 +201,115 @@ export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, pla
         });
     };
 
-    const tag = values.team ? `${values.team} | ${values.name}` : values.name;
-    const subtitle = [
-        values.realName,
-        Object.values(values.charSelections)
-            .map((c) => characters?.[c.charName]?.display_name ?? c.charName)
-            .filter(Boolean)
-            .join(", "),
-    ].filter(Boolean).join(" · ");
-    const row = "flex flex-col gap-4 sm:flex-row";
+    const lookupName = values.team ? `${values.team} ${values.name}` : values.name;
+    const mains = Object.values(playerDb?.[lookupName]?.mains?.[gameCodename] ?? [])
+        .map((m) => m?.[0])
+        .filter(Boolean);
+    const charSlots = Object.values(values.charSelections);
+    const row = "grid grid-cols-1 gap-4 sm:grid-cols-2";
 
     return (
-        <Collapsible open={expanded} onOpenChange={setExpanded} asChild>
-            <Card className="gap-0 py-0 shadow-none">
+        <section aria-label={heading} className="flex flex-col gap-4">
+            {showHeading && (
+                <div className="flex items-center gap-3">
+                    <Avatar className="size-9">
+                        <AvatarImage
+                            src={player?.online_avatar}
+                            className="object-contain"
+                            alt={i18n.t("avatar_for", {player: values.name})}
+                        />
+                        <AvatarFallback>{values.name?.at(0) ?? "?"}</AvatarFallback>
+                    </Avatar>
+                    <h3 className="min-w-0 truncate font-semibold">{heading}</h3>
+                </div>
+            )}
+
+            <Field label={i18n.t("tag")} htmlFor={idBase + "tag"}>
+                <Autocomplete
+                    id={idBase + "tag"}
+                    freeSolo
+                    options={playerOptions}
+                    value={null}
+                    inputValue={values.name}
+                    getLabel={(p) => p?.prefixed_tag ?? ""}
+                    getKey={(p) => p.prefixed_tag}
+                    renderOption={(p) => {
+                        const chars = (p.mains?.[gameCodename] ?? [])
+                            .map((m) => characters?.[m?.[0]]?.display_name ?? m?.[0])
+                            .filter(Boolean)
+                            .join(", ");
+                        return <span className="flex min-w-0 flex-col">
+                            <span className="truncate font-medium">{p.prefixed_tag}</span>
+                            {chars && <span className="truncate text-xs text-muted-foreground">{chars}</span>}
+                        </span>;
+                    }}
+                    minChars={1}
+                    limit={20}
+                    onSelect={onTagChanged}
+                    onInputChange={(value) => setField("name", value)}
+                    onBlur={flush}
+                    onKeyDown={saveOnCommit(flush).onKeyDown}
+                />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+                {text("team", i18n.t("sponsor"))}
+                {text("pronoun", i18n.t("pronouns"))}
+            </div>
+
+            {charSlots.map((cs, i) =>
+                <CharSelector
+                    key={`${playerId}-cs-${cs.charIdx}`}
+                    id={`${playerId}-cs-${cs.charIdx}`}
+                    label={charSlots.length > 1 ? i18n.t("character_n", {value: i + 1}) : i18n.t("character")}
+                    charName={cs.charName}
+                    charSkin={cs.charSkin}
+                    mains={mains}
+                    onCharNameChanged={(val) => onCharNameChanged(cs.charIdx, val)}
+                    onCharSkinChanged={(skin) => setCharacter(cs.charIdx, {charSkin: skin})}
+                />
+            )}
+
+            <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
                 <CollapsibleTrigger asChild>
                     <button
                         type="button"
-                        aria-label={i18n.t("expand_player")}
-                        className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-xl border px-3.5 text-left outline-none hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     >
-                        <Avatar className="size-10">
-                            <AvatarImage
-                                src={player?.online_avatar}
-                                className="object-contain"
-                                alt={i18n.t("avatar_for", {player: values.name})}
-                            />
-                            <AvatarFallback>{values.name?.at(0) ?? "?"}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                            <div className="truncate font-semibold">{tag || i18n.t("player_n", {value: teamKey})}</div>
-                            {subtitle && <div className="truncate text-sm text-muted-foreground">{subtitle}</div>}
-                        </div>
-                        <ChevronDown className={cn("size-5 shrink-0 text-muted-foreground transition-transform", !expanded && "-rotate-90")}/>
+                        <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-semibold">{i18n.t("more_details")}</span>
+                            <span className="block truncate text-xs text-muted-foreground">
+                                {details || i18n.t("more_details_hint")}
+                            </span>
+                        </span>
+                        <ChevronDown className={cn("size-5 shrink-0 text-muted-foreground transition-transform", detailsOpen && "rotate-180")}/>
                     </button>
                 </CollapsibleTrigger>
-                {/* Kept mounted so fields still being saved aren't lost when it's collapsed */}
-                <CollapsibleContent forceMount className="data-[state=closed]:hidden">
-                    <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
-                        <div className={row}>
-                            {text("team", i18n.t("sponsor"), "sm:w-[35%]")}
-                            <Field label={i18n.t("tag")} htmlFor={idBase + "tag"} className="flex-1">
-                                <Autocomplete
-                                    id={idBase + "tag"}
-                                    freeSolo
-                                    options={playerOptions}
-                                    value={null}
-                                    inputValue={values.name}
-                                    getLabel={(p) => p?.prefixed_tag ?? ""}
-                                    getKey={(p) => p.prefixed_tag}
-                                    minChars={1}
-                                    limit={20}
-                                    onSelect={onTagChanged}
-                                    onInputChange={(value) => setField("name", value)}
-                                    onBlur={flush}
-                                    onKeyDown={saveOnCommit(flush).onKeyDown}
-                                />
-                            </Field>
-                        </div>
-
-                        {text("realName", i18n.t("real_name"))}
-
-                        <div className={row}>
-                            {text("twitter", i18n.t("twitter"), "flex-1")}
-                            {text("pronoun", i18n.t("pronouns"), "flex-1")}
-                        </div>
-
-                        <div className={row}>
-                            <Field label={i18n.t("country")} htmlFor={idBase + "country"} className="flex-1">
-                                <CountrySelector
-                                    id={idBase + "country"}
-                                    value={values.countryCode}
-                                    onChange={(code) => {
-                                        setField("countryCode", code ?? "");
-                                        setField("stateCode", "", {immediate: true});
-                                    }}
-                                />
-                            </Field>
-                            <Field label={i18n.t("state")} htmlFor={idBase + "state"} className="flex-1">
-                                <CountryStateSelector
-                                    id={idBase + "state"}
-                                    countryCode={values.countryCode}
-                                    value={values.stateCode}
-                                    onChange={(code) => setField("stateCode", code ?? "", {immediate: true})}
-                                />
-                            </Field>
-                        </div>
-
-                        {Object.values(values.charSelections).map((cs) =>
-                            <CharSelector
-                                key={`${playerId}-cs-${cs.charIdx}`}
-                                id={`${playerId}-cs-${cs.charIdx}`}
-                                charName={cs.charName}
-                                charSkin={cs.charSkin}
-                                onCharNameChanged={(val) => onCharNameChanged(cs.charIdx, val)}
-                                onCharSkinChanged={(skin) => setCharacter(cs.charIdx, {charSkin: skin})}
+                <CollapsibleContent className="flex flex-col gap-4 pt-4">
+                    {text("realName", i18n.t("real_name"))}
+                    {text("twitter", i18n.t("twitter"))}
+                    <div className={row}>
+                        <Field label={i18n.t("country")} htmlFor={idBase + "country"}>
+                            <CountrySelector
+                                id={idBase + "country"}
+                                value={values.countryCode}
+                                onChange={(code) => {
+                                    setField("countryCode", code ?? "");
+                                    setField("stateCode", "", {immediate: true});
+                                }}
                             />
-                        )}
+                        </Field>
+                        <Field label={i18n.t("state")} htmlFor={idBase + "state"}>
+                            <CountryStateSelector
+                                id={idBase + "state"}
+                                countryCode={values.countryCode}
+                                value={values.stateCode}
+                                onChange={(code) => setField("stateCode", code ?? "", {immediate: true})}
+                            />
+                        </Field>
                     </div>
                 </CollapsibleContent>
-            </Card>
-        </Collapsible>
+            </Collapsible>
+        </section>
     );
 }
