@@ -125,7 +125,19 @@ def FakeInstall(game, pack, files, progress, cancelled, onUnpack=None, gamesDir=
 
 
 AssetCatalog.InstallPack = FakeInstall
-AssetCatalog.FetchLogo = lambda game: None
+logoLoads = []
+logoGate = threading.Event()
+logoGate.set()
+
+
+def FakeLoadLogo(game):
+    # Never the real cache folder or network
+    logoLoads.append(game)
+    logoGate.wait(5)
+    return b"png:" + game.encode()
+
+
+AssetCatalog.LoadLogo = FakeLoadLogo
 AssetCatalog.FreeSpace = lambda gamesDir=None: 50 * 1024**3
 fetches = []
 
@@ -229,6 +241,25 @@ def TestCancelRetryAndFailure():
     assert downloader.jobs[-1] is webm
 
 
+def TestLogosLoadOnce():
+    downloader = NewDownloader()
+    del logoLoads[:]
+    calls = []
+    logoGate.clear()
+    # Asked for three times while it loads: loaded once, everyone answered
+    for _ in range(3):
+        downloader.RequestLogo("ssbu", lambda game, data: calls.append((game, data)))
+    downloader.RequestLogo("ggst", lambda game, data: calls.append((game, data)))
+    logoGate.set()
+    WaitFor(lambda: len(calls) == 4)
+    assert sorted(logoLoads) == ["ggst", "ssbu"]
+    assert calls.count(("ssbu", b"png:ssbu")) == 3
+    # Loaded: answered straight away
+    downloader.RequestLogo("ssbu", lambda game, data: calls.append((game, data)))
+    assert len(calls) == 5 and sorted(logoLoads) == ["ggst", "ssbu"]
+    assert downloader.logoWaiters == {}
+
+
 def TestCancelAllOnQuit():
     downloader = NewDownloader()
     downloader.catalog = CATALOG
@@ -324,6 +355,7 @@ try:
         TestCatalogAndUpdates,
         TestQueueAddsBaseFilesFirst,
         TestCancelRetryAndFailure,
+        TestLogosLoadOnce,
         TestCancelAllOnQuit,
         TestWindow,
     ):
@@ -332,3 +364,4 @@ try:
 finally:
     # A failed check mustn't leave a fake download waiting, or exiting hangs
     gate.set()
+    logoGate.set()

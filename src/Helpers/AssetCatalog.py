@@ -10,6 +10,7 @@ config and is needed by every other pack."""
 import datetime
 import os
 import shutil
+import time
 
 import py7zr
 import requests
@@ -21,6 +22,9 @@ LOGO_URLS = [
     "https://raw.githubusercontent.com/joaorb64/StreamHelperAssets/main/games/{game}/base_files/logo_small.png",
     "https://raw.githubusercontent.com/joaorb64/StreamHelperAssets/main/games/{game}/base_files/logo.png",
 ]
+LOGO_CACHE_DIR = "./user_data/asset_logo_cache"
+# A cached logo older than this is fetched again, in case the game's logo changed
+LOGO_CACHE_MAX_AGE = 30 * 24 * 60 * 60
 BASE_FILES = "base_files"
 # Partial downloads go here, so a cancelled or failed one never reaches a game folder
 DOWNLOADS_DIR = ".downloads"
@@ -51,6 +55,53 @@ def FetchLogo(game):
         except requests.RequestException:
             continue
     return None
+
+
+def LogoCachePath(game, cacheDir=LOGO_CACHE_DIR):
+    """Where the game's logo is cached, or None for a game code that isn't a
+    safe file name."""
+    if not game or not all(c.isalnum() or c in "_-." for c in game) or game.startswith("."):
+        return None
+    return os.path.join(cacheDir, f"{game}.png")
+
+
+def CachedLogo(game, cacheDir=LOGO_CACHE_DIR, maxAge=LOGO_CACHE_MAX_AGE):
+    """The cached logo as (PNG bytes or None, whether it's recent enough)."""
+    path = LogoCachePath(game, cacheDir)
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+        return data, time.time() - os.path.getmtime(path) < maxAge
+    except (OSError, TypeError):
+        return None, False
+
+
+def SaveLogo(game, data, cacheDir=LOGO_CACHE_DIR):
+    path = LogoCachePath(game, cacheDir)
+    if path is None:
+        return
+    try:
+        os.makedirs(cacheDir, exist_ok=True)
+        # Written aside then swapped in, so a crash never leaves half a file
+        temp = path + ".part"
+        with open(temp, "wb") as f:
+            f.write(data)
+        os.replace(temp, path)
+    except OSError:
+        pass
+
+
+def LoadLogo(game, cacheDir=LOGO_CACHE_DIR, maxAge=LOGO_CACHE_MAX_AGE):
+    """The game's logo from the cache, fetched (and cached) when it isn't
+    there or is old. An old cached logo is still used if the fetch fails."""
+    cached, fresh = CachedLogo(game, cacheDir, maxAge)
+    if cached is not None and fresh:
+        return cached
+    data = FetchLogo(game)
+    if data is None:
+        return cached
+    SaveLogo(game, data, cacheDir)
+    return data
 
 
 def Packs(catalog, game):

@@ -7,6 +7,7 @@ import datetime
 import os
 import sys
 import tempfile
+import time
 import types
 
 sys.path.insert(0, os.path.abspath("."))
@@ -241,6 +242,51 @@ def TestCancelAndFailureLeaveNothing():
         assert not os.path.exists(os.path.join(gamesDir, DOWNLOADS_DIR))
 
 
+def TestLogoCache():
+    with tempfile.TemporaryDirectory() as root:
+        cacheDir = os.path.join(root, "logos")
+        fetched = []
+
+        def Fetch(game):
+            fetched.append(game)
+            return None if game == "offline" else b"new " + game.encode()
+
+        AssetCatalog.FetchLogo = Fetch
+        # Not cached: fetched and saved
+        assert AssetCatalog.LoadLogo("ssbu", cacheDir) == b"new ssbu"
+        assert open(os.path.join(cacheDir, "ssbu.png"), "rb").read() == b"new ssbu"
+        # Cached: no fetch
+        assert AssetCatalog.LoadLogo("ssbu", cacheDir) == b"new ssbu"
+        assert fetched == ["ssbu"]
+
+        # Old: fetched again
+        path = os.path.join(cacheDir, "ssbu.png")
+        with open(path, "wb") as f:
+            f.write(b"old")
+        old = time.time() - AssetCatalog.LOGO_CACHE_MAX_AGE - 60
+        os.utime(path, (old, old))
+        assert AssetCatalog.LoadLogo("ssbu", cacheDir) == b"new ssbu"
+        assert fetched == ["ssbu", "ssbu"]
+
+        # Old, and the fetch fails: the old one is better than none
+        path = os.path.join(cacheDir, "offline.png")
+        with open(path, "wb") as f:
+            f.write(b"old")
+        os.utime(path, (old, old))
+        assert AssetCatalog.LoadLogo("offline", cacheDir) == b"old"
+        # Never fetched and the fetch fails: nothing saved, tried again next time
+        os.remove(path)
+        assert AssetCatalog.LoadLogo("offline", cacheDir) is None
+        assert not os.path.exists(path)
+
+        # Game codes that aren't plain file names are never cached
+        for game in ("../ssbu", "a/b", ".hidden", ""):
+            assert AssetCatalog.LogoCachePath(game, cacheDir) is None
+            AssetCatalog.LoadLogo(game, cacheDir)
+        assert sorted(os.listdir(cacheDir)) == ["ssbu.png"]
+        assert sorted(os.listdir(root)) == ["logos"]
+
+
 def TestFreeSpace():
     with tempfile.TemporaryDirectory() as root:
         # Works before the games folder exists
@@ -248,6 +294,7 @@ def TestFreeSpace():
 
 
 originalGet = requests.get
+originalFetchLogo = AssetCatalog.FetchLogo
 try:
     for test in (
         TestStatesAndUpdates,
@@ -256,9 +303,11 @@ try:
         TestPackFiles,
         TestInstallAndRemove,
         TestCancelAndFailureLeaveNothing,
+        TestLogoCache,
         TestFreeSpace,
     ):
         test()
         print(f"{test.__name__}: OK")
 finally:
     requests.get = originalGet
+    AssetCatalog.FetchLogo = originalFetchLogo

@@ -79,8 +79,10 @@ class AssetDownloader(QObject):
         self.catalogError = None
         self.catalogTime = None
         self.catalogLoading = False
-        # Game logos fetched this session, {game: PNG bytes or None}
+        # Game logos loaded this session, {game: PNG bytes or None}
         self.logos = {}
+        # Logos being loaded, {game: [callbacks]}
+        self.logoWaiters = {}
 
         self.jobs = []
         self.runningJob = None
@@ -149,17 +151,27 @@ class AssetDownloader(QObject):
         self.LoadCatalog()
 
     def RequestLogo(self, game, onLoaded):
-        """Calls onLoaded(game, bytes or None) with the game's logo, fetching it once a session."""
+        """Calls onLoaded(game, bytes or None) with the game's logo. It comes
+        from the disk cache when it can, and is loaded once a session however
+        many times it's asked for."""
         if game in self.logos:
             onLoaded(game, self.logos[game])
             return
+        if game in self.logoWaiters:
+            # Already loading: called back with the others
+            self.logoWaiters[game].append(onLoaded)
+            return
+        self.logoWaiters[game] = [onLoaded]
 
         def Loaded(data):
             self.logos[game] = data
-            onLoaded(game, data)
+            for callback in self.logoWaiters.pop(game, []):
+                callback(game, data)
 
-        worker = Worker(lambda progress_callback, cancel_event: AssetCatalog.FetchLogo(game))
+        worker = Worker(lambda progress_callback, cancel_event: AssetCatalog.LoadLogo(game))
         worker.signals.result.connect(Loaded)
+        # Not kept as missing: a later request tries again
+        worker.signals.error.connect(lambda error: self.logoWaiters.pop(game, None))
         self.logoPool.start(worker)
 
     # =====================================================
