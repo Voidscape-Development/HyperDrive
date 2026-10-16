@@ -46,6 +46,16 @@ const clock = (settings) => {
   HD.set(".clock .zone", part("timeZoneName"), { duration: 0.2 });
 };
 
+// Which character each side shows when it takes turns
+const shown = { 1: 0, 2: 0 };
+
+const showCharacter = (n, fade) => {
+  const characters = $(`.p${n}.character_container.cycle .hd_character`).toArray();
+  if (characters.length === 0) return;
+  shown[n] %= characters.length;
+  gsap.to(characters, { autoAlpha: (i) => (i === shown[n] ? 1 : 0), duration: fade ? 0.6 : 0, overwrite: true });
+};
+
 HD.layout({
   subscribe: ["score", "game", "tournamentInfo"],
 
@@ -63,12 +73,23 @@ HD.layout({
     show_seed: true,
     // The start.gg tournament's logo when it has one, else layout/logo.png
     use_tournament_logo: true,
+    // A player's characters take turns every this many seconds; 0 shows
+    // them side by side
+    character_cycle_seconds: 4,
   },
 
   init(settings) {
     $("body").toggleClass("no_clock", !settings.show_clock);
     clock(settings);
     setInterval(() => clock(settings), 1000);
+    if (settings.character_cycle_seconds > 0) {
+      HD.every(settings.character_cycle_seconds, () => {
+        for (const n of [1, 2]) {
+          shown[n] += 1;
+          showCharacter(n, true);
+        }
+      });
+    }
   },
 
   intro(tl) {
@@ -101,11 +122,29 @@ HD.layout({
           pop && gsap.fromTo(t.sel(".score .text"), { scale: 1.45 }, { scale: 1, duration: 0.4, ease: "back.out(3)" }),
       });
 
-      s.characters(t.sel("&.character_container"), {
+      // A player with several characters shows them one at a time, stacked
+      // in the same place; doubles show each player's first side by side
+      const container = t.sel("&.character_container");
+      const count = Object.values(player.character || {}).filter((c) => c && c.codename && _.size(c.assets)).length;
+      const cycle = !s.isTeams && count > 1 && s.settings.character_cycle_seconds > 0;
+      $(container).toggleClass("cycle", cycle);
+      const slide = HD.slideToMiddle(t.n === 1 ? 1 : -1);
+      s.characters(container, {
         source: ["score", s.n, "team", t.n],
         slice_character: s.isTeams ? [0, 1] : undefined,
         flip_x: t.n === 2,
-        ...HD.slideToMiddle(t.n === 1 ? 1 : -1),
+        ...slide,
+        // They come in hidden, then showCharacter() shows one
+        ...(cycle && {
+          in: {
+            autoAlpha: 0,
+            duration: 0,
+            onComplete: () => {
+              shown[t.n] = 0;
+              showCharacter(t.n, true);
+            },
+          },
+        }),
       });
     }
     HD.teamColors(s);

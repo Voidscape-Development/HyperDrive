@@ -13,7 +13,9 @@ It shows:
 
 Under each name the location stays, and the handle, pronouns and seed take
 turns every 6 seconds. In doubles the team's name shows, with its players
-under it when it has a name. When a score changes it pops.
+under it when it has a name. A player with several characters shows them
+one at a time, crossfading every 4 seconds; in doubles each player's first
+character shows side by side. When a score changes it pops.
 
 ## Settings
 
@@ -28,6 +30,7 @@ Set them in this folder's `settings.json`, or in the page's URL
 | `set_length` | `"best_of"` | `"best_of"` (Best of 3) or `"first_to"` (First to 2) |
 | `location_flag` | `"auto"` | `"auto"` (the state's, else the country's), `"state"`, `"country"` or `"both"` |
 | `show_twitter`, `show_pronoun`, `show_seed` | `true` | What takes turns under the name. The layout theme's display options hide them too |
+| `character_cycle_seconds` | `4` | How long each of a player's characters shows. `0` shows them side by side |
 | `use_tournament_logo` | `true` | The start.gg tournament's logo when it has one, else `layout/logo.png` |
 
 The layout theme's colors, font and animation speed apply as in the other

@@ -269,6 +269,13 @@ body {
   flex: 1;
   height: 100%;
   overflow: hidden;
+  position: relative;
+}
+
+/* A player's characters taking turns: stacked, each filling the space */
+.center .character_container.cycle .hd_character {
+  position: absolute;
+  inset: 0;
 }
 
 /* Each side's art fades out toward the VS */
