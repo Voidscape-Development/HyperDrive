@@ -77,7 +77,8 @@ def _bracket_type_name(value):
 
 
 # A match's state as start.gg's set state (1 waiting, 2 in progress, 3 done),
-# which the set list has (see ResultTypes.SetListItem)
+# which the set list and the queues' sets have (see ResultTypes.SetListItem
+# and FutureSet)
 _STARTGG_SET_STATES = {
     MatchState.MATCH_STATE_IN_PROGRESS: 2,
     MatchState.MATCH_STATE_COMPLETED: 3,
@@ -1261,7 +1262,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             "phase": phase_name,
             "best_of": 0,
             "best_of_text": "",
-            "state": match.state,
+            "state": _startgg_set_state(match.state),
             "team": teams,
             "station": "",
             "event": self.event_slug,

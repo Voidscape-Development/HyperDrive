@@ -128,6 +128,9 @@ class ScoreboardWidget(QWidget):
         self.lastSetSelected = None
 
         self.lastStationSelected = None
+        # Tracking a stream or station from its next set: the set on it when
+        # tracking starts isn't loaded
+        self.waitForNextSet = False
 
         # The set (or stream/station/user selection) being auto updated
         self.autoUpdateData = None
@@ -1023,6 +1026,7 @@ class ScoreboardWidget(QWidget):
     def LoadStationSets(self, station):
         self.lastSetSelected = None
         self.lastStationSelected = station
+        self.waitForNextSet = bool(station.get("wait_for_next"))
         TournamentDataManager.instance.LoadStationSets(self)
 
     def LoadStationSetClicked(self):
@@ -1038,6 +1042,12 @@ class ScoreboardWidget(QWidget):
         StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", data)
 
     def NewSetSelected(self, data):
+        if self.waitForNextSet and data.get("auto_update") in ("stream", "station"):
+            # The first look at the stream or station: its set now counts as
+            # loaded, so the next one is what loads
+            self.waitForNextSet = False
+            self.lastSetSelected = data.get("id")
+
         # A set picked in the set list says whether to keep it updated;
         # otherwise the setting decides
         autoUpdate = data.get("keep_updated")
@@ -1409,6 +1419,7 @@ class ScoreboardWidget(QWidget):
         if clear_variables:
             self.lastSetSelected = None
             self.lastStationSelected = None
+            self.waitForNextSet = False
 
             StateManager.Set(f"score.{self.scoreboardNumber}.auto_update", None)
             StateManager.Set(f"score.{self.scoreboardNumber}.set_id", None)
