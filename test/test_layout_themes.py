@@ -144,7 +144,7 @@ def TestCss():
         }
     )
     css = CssVariables(theme)
-    assert css["--general-primary-color"] == "#d02670"
+    assert css["--general-primary-color"] == "#ffb800"
     assert css["--general-border-radius"] == "4px"
     assert css["--general-font-family"] == '"BadFont"'
     assert css["--chip-text-color"] == "rgba(255, 0, 0, 0.502)"

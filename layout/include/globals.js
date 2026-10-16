@@ -466,6 +466,24 @@ HD.layouts = {};
     return `rgba(${rgb.join(", ")}, ${Math.round((parseInt(m[1], 16) / 255) * 1000) / 1000})`;
   }
 
+  // Dark or white text, whichever reads better on a theme color (WCAG
+  // contrast): #rrggbb, #aarrggbb or rgb()/rgba(). null for anything else
+  function textOn(color) {
+    const hex = /^#(?:[0-9a-f]{2})?([0-9a-f]{6})$/i.exec(color || "");
+    const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(color || "");
+    let channels;
+    if (hex) channels = hex[1].match(/../g).map((h) => parseInt(h, 16));
+    else if (rgb) channels = rgb.slice(1, 4).map(Number);
+    else return null;
+    const [r, g, b] = channels.map((value) => {
+      const c = value / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    // Contrast with white is 1.05 / (L + 0.05), with #111214 (L 0.006) (L + 0.05) / 0.056
+    return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.056 ? "#ffffff" : "#111214";
+  }
+
   // Returns whether the theme changed
   function applyTheme(data, old) {
     const theme = _.get(data, "layout_theme");
@@ -490,8 +508,11 @@ HD.layouts = {};
     const props = { ...css };
     const font = get("general", "font_family", "");
     if (font) props["--font"] = `"${String(font).replace(/["\\]/g, "")}", ${FONT_FALLBACK}`;
+    // Text on the winner highlight, which can be light (the default amber)
+    props["--on-bracket-winner-color"] = textOn(css["--bracket-winner-color"]);
     if (colors) {
       for (const [prop, from] of Object.entries(THEME_COLORS)) props[prop] = css[from];
+      props["--on-accent-color"] = textOn(css["--general-primary-color"]);
       const bg = get("general", "background");
       props["--bg-color"] = bg && bg.color ? cssColor(bg.color) : null;
       if (get("versus", "custom_sponsor_colors", false)) {

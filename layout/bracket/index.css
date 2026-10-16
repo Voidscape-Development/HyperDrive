@@ -371,6 +371,7 @@ body {
 /* The winner's score, in the theme's winner color when there's one */
 .player.won .score {
   background: var(--bracket-winner-color, var(--bracket-score-bg, var(--p1-score-bg-color)));
+  color: var(--on-bracket-winner-color, var(--p1-score-color));
 }
 
 .sponsor_icon:not(.text_empty) {

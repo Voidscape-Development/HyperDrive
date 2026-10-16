@@ -20,12 +20,14 @@ SettingsManager.SaveSettings = lambda: None
 from src.Theme import (
     COLOR_KEYS,
     DEFAULT_ACCENT,
+    DEFAULT_ACCENT_ON_LIGHT,
     DEFAULT_RADIUS,
     DEFAULT_SPACING,
     MAX_RADIUS,
     THEME_DARK,
     THEME_LIGHT,
     BuiltinTheme,
+    Contrast,
     ExportTheme,
     ImportTheme,
     NormalizeTheme,
@@ -176,6 +178,18 @@ def TestAccent():
     assert Theme.Current()["colors"]["accent"] == "#2f80ed"
     Settings({"accent_color": "nope"})
     assert Theme.Current()["colors"]["accent"] == DEFAULT_ACCENT
+    # The default amber is the logo's deeper one on the light theme
+    Settings({"theme": THEME_LIGHT})
+    assert Theme.Current()["colors"]["accent"] == DEFAULT_ACCENT_ON_LIGHT
+    # Amber takes dark text, and is darkened as text on a light window
+    colors = Theme.Colors()
+    assert colors["onAccent"].name() == "#111111"
+    assert Contrast(colors["accentText"], colors["window"]) >= 4.5
+    Settings({"theme": THEME_DARK})
+    colors = Theme.Colors()
+    assert colors["accent"].name() == DEFAULT_ACCENT
+    assert colors["onAccent"].name() == "#111111"
+    assert Contrast(colors["accentText"], colors["window"]) >= 4.5
     # Text on a light accent is dark, on a dark accent white
     Settings({"accent_color": "#ffe066"})
     assert Theme.Colors()["onAccent"].name() == "#111111"

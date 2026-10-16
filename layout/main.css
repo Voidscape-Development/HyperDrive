@@ -186,8 +186,10 @@ img {
   --p1-score-color: #ffffff;
   --p2-score-color: #ffffff;
 
-  /* Highlights (winners, the current set, the selected stage) */
-  --accent-color: #d02670;
+  /* Highlights (winners, the current set, the selected stage): the
+     HyperDrive amber, with dark text on it */
+  --accent-color: #ffb800;
+  --on-accent-color: #111214;
   --accent-secondary-color: #121212;
 }
 

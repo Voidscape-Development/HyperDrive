@@ -121,6 +121,7 @@ body.standings_only .standings_container {
 
 .standings_table tr.top td.st_rank {
   background: var(--bracket-winner-color, var(--accent-color));
+  color: var(--on-bracket-winner-color, var(--on-accent-color));
 }
 
 .standings_table tr.top td.st_name {
@@ -333,6 +334,7 @@ body.grid_only .grid_container.hidden {
 
 .rr_grid .rr_set.won {
   background: var(--bracket-winner-color, var(--accent-color));
+  color: var(--on-bracket-winner-color, var(--on-accent-color));
 }
 
 .rr_grid .rr_set.lost {
