@@ -1038,7 +1038,14 @@ class ScoreboardWidget(QWidget):
         StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", data)
 
     def NewSetSelected(self, data):
-        autoUpdate = not SettingsManager.Get("general.disable_autoupdate", False)
+        # A set picked in the set list says whether to keep it updated;
+        # otherwise the setting decides
+        autoUpdate = data.get("keep_updated")
+        if autoUpdate is None:
+            autoUpdate = not SettingsManager.Get("general.disable_autoupdate", False)
+        elif not autoUpdate:
+            # Or the previous set's updates would go on
+            self.StopAutoUpdate()
         if autoUpdate:
             self.autoUpdateData = data
             if data.get("id") != None and data.get("id") != self.lastSetSelected:

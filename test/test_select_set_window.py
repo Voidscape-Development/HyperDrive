@@ -45,6 +45,7 @@ sys.modules["src.TournamentDataManager"] = types.SimpleNamespace(
 TournamentDataManager.instance = TournamentDataManager()
 
 from src.SelectSetWindow import *
+from src.SettingsManager import SettingsManager
 
 # start.gg's set states
 WAITING, IN_PROGRESS, DONE, CALLED = 1, 2, 3, 6
@@ -321,6 +322,42 @@ def TestLoading():
     window.close()
 
 
+def TestKeepUpdated():
+    settings = {}
+    get = SettingsManager.Get
+    SettingsManager.Get = staticmethod(lambda key, default=None: settings.get(key, default))
+    try:
+        # Starts as the setting says, each time the window opens
+        scoreboard, window = Open()
+        Finish(window, SETS)
+        assert window.details.keepUpdated.isChecked()
+        window.details.loadButton.click()
+        Settle()
+        assert scoreboard.loaded[-1]["keep_updated"] is True
+
+        settings["general.disable_autoupdate"] = True
+        window.LoadSets()
+        window.show()
+        Settle()
+        assert not window.details.keepUpdated.isChecked()
+        # Changed for one set only
+        window.details.keepUpdated.setChecked(True)
+        Finish(window, SETS)
+        window.details.loadButton.click()
+        Settle()
+        assert scoreboard.loaded[-1]["keep_updated"] is True
+        window.LoadSets()
+        window.show()
+        Settle()
+        assert not window.details.keepUpdated.isChecked()
+        Finish(window, SETS)
+        window.details.loadButton.click()
+        Settle()
+        assert scoreboard.loaded[-1]["keep_updated"] is False
+    finally:
+        SettingsManager.Get = get
+
+
 if __name__ == "__main__":
     for test in [
         TestSetFields,
@@ -329,6 +366,7 @@ if __name__ == "__main__":
         TestFetching,
         TestSelection,
         TestLoading,
+        TestKeepUpdated,
     ]:
         test()
         print(f"{test.__name__}: OK")

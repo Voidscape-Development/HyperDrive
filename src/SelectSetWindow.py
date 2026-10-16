@@ -9,6 +9,7 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .Theme import Blend, Theme
 from .TournamentDataManager import TournamentDataManager
@@ -517,6 +518,19 @@ class SetDetails(QFrame):
         layout.addLayout(facts)
         layout.addStretch()
 
+        # For this set only; starts as the setting says each time the window
+        # opens (see SelectSetWindow.showEvent)
+        self.keepUpdated = QCheckBox(QApplication.translate("app", "Keep scores updated"))
+        self.keepUpdated.setFont(ScaledFont(self.font(), bold=True))
+        layout.addWidget(self.keepUpdated)
+        self.keepUpdatedHint = QLabel(
+            QApplication.translate(
+                "app", "Loads new scores and characters from the bracket while the set is played."
+            )
+        )
+        self.keepUpdatedHint.setWordWrap(True)
+        layout.addWidget(self.keepUpdatedHint)
+
         self.loadButton = QPushButton(QApplication.translate("app", "Load set"))
         # The theme draws the default button in the accent color
         self.loadButton.setDefault(True)
@@ -540,7 +554,7 @@ class SetDetails(QFrame):
             }}
         """)
         muted = f"color: {self.colors['muted'].name()};"
-        for label in [self.title, self.empty, *self.factLabels.values()]:
+        for label in [self.title, self.empty, self.keepUpdatedHint, *self.factLabels.values()]:
             label.setStyleSheet(muted)
         for side in self.sides:
             side["seed"].setStyleSheet(muted)
@@ -805,6 +819,9 @@ class SelectSetWindow(QDialog):
             " · ".join(n for n in [info.get("tournamentName"), info.get("eventName")] if n)
         )
         self.eventLabel.setVisible(bool(self.eventLabel.text()))
+        self.details.keepUpdated.setChecked(
+            not SettingsManager.Get("general.disable_autoupdate", False)
+        )
         super().showEvent(event)
         if self.dirty:
             self.Rebuild()
@@ -982,6 +999,7 @@ class SelectSetWindow(QDialog):
 
         setData = dict(s)
         setData["auto_update"] = "set"
+        setData["keep_updated"] = self.details.keepUpdated.isChecked()
         self.parent().signals.NewSetSelected.emit(setData)
 
         if TournamentDataManager.instance.setLoadingWorker:
