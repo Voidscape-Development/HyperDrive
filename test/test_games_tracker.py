@@ -16,7 +16,15 @@ for name, path in [("src", "src"), ("src.Helpers", "src/Helpers")]:
 from qtpy.QtCore import QPoint, Qt
 from qtpy.QtGui import QColor
 from qtpy.QtTest import QTest
-from qtpy.QtWidgets import QApplication
+from qtpy.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QLineEdit,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 app = QApplication.instance() or QApplication(sys.argv)
 
@@ -88,6 +96,43 @@ def TestWrapsAndHides():
     print("TestWrapsAndHides: OK")
 
 
+def TestKeepsColumnWidth():
+    # Between two team columns, as on the scoreboard: showing the games
+    # doesn't widen the score column; the squares wrap instead
+    window = QWidget()
+    row = QHBoxLayout(window)
+    teams = []
+    for _ in range(2):
+        team = QLineEdit()
+        team.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        teams.append(team)
+    score = QWidget()
+    column = QVBoxLayout(score)
+    column.addWidget(QPushButton("RESET SCORE"))
+    tracker = GamesTracker()
+    tracker.SetGames([], -1)
+    column.addWidget(tracker)
+    row.addWidget(teams[0])
+    row.addWidget(score)
+    row.addWidget(teams[1])
+    window.resize(1000, 300)
+    window.show()
+    app.processEvents()
+    width = score.width()
+
+    for count in (3, 7, 15):
+        report = GameReport()
+        report.SetBestOf(count)
+        tracker.SetGames(report.games, report.CurrentGameIndex())
+        app.processEvents()
+        assert score.width() == width, (count, score.width(), width)
+        # Every square fits, on as many rows as it takes
+        assert all(tracker.rect().contains(r) for r in tracker.Rects()), count
+        assert tracker.height() == tracker.heightForWidth(tracker.width())
+    window.close()
+    print("TestKeepsColumnWidth: OK")
+
+
 def TestClick():
     tracker, report = Tracker([1, UNDECIDED, UNDECIDED])
     clicked = []
@@ -105,5 +150,6 @@ def TestClick():
 if __name__ == "__main__":
     TestColors()
     TestWrapsAndHides()
+    TestKeepsColumnWidth()
     TestClick()
     print("OK")
