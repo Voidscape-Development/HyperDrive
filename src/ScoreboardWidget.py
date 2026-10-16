@@ -35,6 +35,7 @@ from .StateManager import StateManager
 from .StatsUtil import StatsUtil
 from .Theme import ThemedIcon
 from .TournamentDataManager import TournamentDataManager
+from .TrackingBar import MODE_SET, MODE_STATION, MODE_STREAM, NextQueued, QueueOf, TrackingBar
 
 empty = {}
 
@@ -128,6 +129,10 @@ class ScoreboardWidget(QWidget):
         self.lastSetSelected = None
 
         self.lastStationSelected = None
+        # The set loaded from the bracket, as the bracket has it, for the
+        # tracking bar; None when the set on the scoreboard isn't the one
+        # being tracked (waiting for a stream's next set)
+        self.trackedSet = None
         # Tracking a stream or station from its next set: the set on it when
         # tracking starts isn't loaded
         self.waitForNextSet = False
@@ -264,17 +269,24 @@ class ScoreboardWidget(QWidget):
 
         self.innerWidget.layout().addWidget(bottomOptions)
 
-        self.btSelectSet = QPushButton(QApplication.translate("app", "Load set"))
-        self.btSelectSet.setIcon(ThemedIcon("./assets/icons/list.svg"))
-        self.btSelectSet.setEnabled(False)
-        bottomOptions.layout().addWidget(self.btSelectSet)
-        self.btSelectSet.clicked.connect(self.signals.SetSelection.emit)
+        # While following a set, a stream or a station: what, and its sets
+        self.trackingBar = TrackingBar()
+        self.trackingBar.changeClicked.connect(self.ChangeTracking)
+        self.trackingBar.stopClicked.connect(lambda: self.StopAutoUpdate(clear_variables=True))
+        self.trackingBar.setVisible(False)
+        bottomOptions.layout().addWidget(self.trackingBar)
 
         hbox = QHBoxLayout()
         bottomOptions.layout().addLayout(hbox)
 
+        self.btSelectSet = QPushButton(QApplication.translate("app", "Load a set..."))
+        self.btSelectSet.setIcon(ThemedIcon("./assets/icons/list.svg"))
+        self.btSelectSet.setEnabled(False)
+        hbox.addWidget(self.btSelectSet)
+        self.btSelectSet.clicked.connect(self.signals.SetSelection.emit)
+
         self.btLoadStationSet = QPushButton(
-            QApplication.translate("app", "Track sets from a stream or station")
+            QApplication.translate("app", "Track a stream or station...")
         )
         self.btLoadStationSet.setIcon(ThemedIcon("./assets/icons/station.svg"))
         hbox.addWidget(self.btLoadStationSet)
@@ -295,23 +307,6 @@ class ScoreboardWidget(QWidget):
 
         self.selectSetWindow = SelectSetWindow(self)
         self.selectStationWindow = SelectStationWindow(self)
-
-        self.timerLayout = QWidget()
-        self.timerLayout.setLayout(QHBoxLayout())
-        self.timerLayout.layout().setContentsMargins(0, 0, 0, 0)
-        self.timerLayout.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
-        self.timerLayout.layout().setAlignment(Qt.AlignmentFlag.AlignCenter)
-        bottomOptions.layout().addWidget(self.timerLayout)
-        self.labelAutoUpdate = QLabel("Auto update")
-        self.timerLayout.layout().addWidget(self.labelAutoUpdate)
-        self.timerTime = QLabel("0")
-        self.timerLayout.layout().addWidget(self.timerTime)
-        self.timerCancelBt = QPushButton()
-        self.timerCancelBt.setIcon(ThemedIcon("assets/icons/cancel.svg"))
-        self.timerCancelBt.setIconSize(QSize(12, 12))
-        self.timerCancelBt.clicked.connect(lambda: self.StopAutoUpdate(clear_variables=True))
-        self.timerLayout.layout().addWidget(self.timerCancelBt)
-        self.timerLayout.setVisible(False)
 
         self.team1column = uic.loadUi(ResolvePath("src/layout/ScoreboardTeam.ui"))
         self.columns.layout().addWidget(self.team1column)
@@ -636,7 +631,7 @@ class ScoreboardWidget(QWidget):
 
     def UpdateBottomButtons(self):
         if TournamentDataManager.instance.provider and TournamentDataManager.instance.provider.url:
-            self.btSelectSet.setText(
+            self.btSelectSet.setToolTip(
                 QApplication.translate("app", "Load set from {0}").format(
                     TournamentDataManager.instance.provider.url
                 )
@@ -644,7 +639,7 @@ class ScoreboardWidget(QWidget):
             self.btSelectSet.setEnabled(True)
             self.btLoadStationSet.setEnabled(True)
         else:
-            self.btSelectSet.setText(QApplication.translate("app", "Load set"))
+            self.btSelectSet.setToolTip("")
             self.btSelectSet.setEnabled(False)
             self.btLoadStationSet.setEnabled(False)
 
@@ -1027,6 +1022,10 @@ class ScoreboardWidget(QWidget):
         self.lastSetSelected = None
         self.lastStationSelected = station
         self.waitForNextSet = bool(station.get("wait_for_next"))
+        self.trackedSet = None
+        # The queue of what was tracked before isn't this one's
+        StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", {})
+        self.stationQueueCache.UpdateQueue([])
         TournamentDataManager.instance.LoadStationSets(self)
 
     def LoadStationSetClicked(self):
@@ -1047,6 +1046,7 @@ class ScoreboardWidget(QWidget):
             # loaded, so the next one is what loads
             self.waitForNextSet = False
             self.lastSetSelected = data.get("id")
+            self.trackedSet = None
 
         # A set picked in the set list says whether to keep it updated;
         # otherwise the setting decides
@@ -1067,24 +1067,15 @@ class ScoreboardWidget(QWidget):
                 # again. Then the job is still running, so this only updates
                 # what the next run loads. Otherwise it restarts the countdown.
                 Scheduler.instance.Start(self.autoUpdateJob)
-            self.timerLayout.setVisible(True)
 
-            if data.get("auto_update") == "set":
-                self.labelAutoUpdate.setText(QApplication.translate("app", "Auto update (Set)"))
-            elif data.get("auto_update") == "stream":
-                self.labelAutoUpdate.setText(
-                    QApplication.translate("app", "Auto update (Stream [{0}])").format(
-                        self.lastStationSelected.get("identifier")
-                    )
-                )
-            elif data.get("auto_update") == "station":
-                self.labelAutoUpdate.setText(
-                    QApplication.translate("app", "Auto update (Station [{0}])").format(
-                        self.lastStationSelected.get("identifier")
-                    )
+            mode = data.get("auto_update")
+            if mode in (MODE_STREAM, MODE_STATION):
+                self.trackingBar.SetTracking(
+                    mode, (self.lastStationSelected or {}).get("identifier", "")
                 )
             else:
-                self.labelAutoUpdate.setText(QApplication.translate("app", "Auto update"))
+                self.trackingBar.SetTracking(MODE_SET)
+            self.trackingBar.setVisible(True)
 
         newSet = False
 
@@ -1111,6 +1102,7 @@ class ScoreboardWidget(QWidget):
 
                 # A new set was loaded
                 self.lastSetSelected = data.get("id")
+                self.trackedSet = data
                 newSet = True
 
                 # Clear stage strike data
@@ -1146,6 +1138,7 @@ class ScoreboardWidget(QWidget):
                 p.dataLock.release()
             StateManager.ReleaseSaving()
 
+        self.RefreshTrackingBar()
         if newSet:
             self.signals.NewSetLoaded.emit()
 
@@ -1353,6 +1346,8 @@ class ScoreboardWidget(QWidget):
         # Avoid loading data from the previous set
         if str(data.get("id")) != str(self.lastSetSelected):
             return
+        self.trackedSet = data
+        self.RefreshTrackingBar()
 
         if self.gameReport.HoldProviderResults():
             # The score here is ahead of start.gg's (games being reported)
@@ -1420,22 +1415,50 @@ class ScoreboardWidget(QWidget):
             self.lastSetSelected = None
             self.lastStationSelected = None
             self.waitForNextSet = False
+            self.trackedSet = None
 
             StateManager.Set(f"score.{self.scoreboardNumber}.auto_update", None)
             StateManager.Set(f"score.{self.scoreboardNumber}.set_id", None)
             StateManager.Set(f"score.{self.scoreboardNumber}.station", None)
             self.gameReport.NewSet(None)
 
-        self.timerLayout.setVisible(False)
+        self.trackingBar.setVisible(False)
 
     def AutoUpdateJobStateChanged(self, name):
         if name == self.autoUpdateJob:
             self.UpdateTimeLeftTimer()
 
     def UpdateTimeLeftTimer(self):
+        if self.trackingBar.isHidden():
+            return
         # None while an update or a newly selected set is loading
-        remaining = Scheduler.instance.RemainingMs(self.autoUpdateJob)
-        self.timerTime.setText(str(math.ceil(remaining / 1000) if remaining is not None else 0))
+        self.trackingBar.SetCountdown(Scheduler.instance.RemainingMs(self.autoUpdateJob))
+        # The next set can change with the stream queue, refreshed on its own
+        self.RefreshTrackingBar()
+
+    def RefreshTrackingBar(self):
+        """The tracking bar's set now and next."""
+        if self.trackingBar.isHidden():
+            return
+        mode = self.trackingBar.mode
+        queue = QueueOf(
+            mode,
+            (self.lastStationSelected or {}).get("identifier", ""),
+            StateManager.Get("stream_queue.byName") or {},
+            StateManager.Get(f"score.{self.scoreboardNumber}.station_queue") or {},
+        )
+        self.trackingBar.SetSets(
+            self.trackedSet,
+            NextQueued(queue, self.lastSetSelected),
+            waiting=mode != MODE_SET,
+        )
+
+    def ChangeTracking(self):
+        # Picking another of what's tracked: a set, or a stream or station
+        if self.trackingBar.mode == MODE_SET:
+            self.signals.SetSelection.emit()
+        else:
+            self.signals.StationSelection.emit()
 
     # =====================================================
     # REMOTE COMMANDS

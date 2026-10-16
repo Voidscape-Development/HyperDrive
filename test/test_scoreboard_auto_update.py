@@ -25,6 +25,7 @@ app = QApplication.instance() or QApplication(sys.argv)
 
 import src.ScoreboardWidget as scoreboardModule
 from src.ScoreboardWidget import ScoreboardWidget
+from src.TrackingBar import *
 
 # What the scoreboard did: ("load", set id), ("start"|"stop", job), ("stopped",)
 calls = []
@@ -53,16 +54,17 @@ class Scoreboard:
     autoUpdateJob = "job"
     scoreboardNumber = 1
     playerWidgets = []
-    timerLayout = Ignored()
-    labelAutoUpdate = Ignored()
     gameReport = Ignored()
     signals = types.SimpleNamespace(NewSetLoaded=Ignored())
+    RefreshTrackingBar = ScoreboardWidget.RefreshTrackingBar
 
     def __init__(self):
         self.lastSetSelected = None
         self.lastStationSelected = {"identifier": "main", "type": "stream"}
         self.waitForNextSet = False
         self.autoUpdateData = None
+        self.trackedSet = None
+        self.trackingBar = TrackingBar()
 
     def CommandClearAll(self, **kwargs):
         pass
@@ -140,8 +142,125 @@ def TestKeepUpdated():
         scoreboardModule.SettingsManager.Get = get
 
 
+def Queued(id, a, b, state=1, match="Winners Semi-Final"):
+    return {
+        "id": id,
+        "match": match,
+        "phase": "Top 32",
+        "state": state,
+        "team": {"1": {"teamName": a}, "2": {"teamName": b}},
+    }
+
+
+def TestTrackingBarText():
+    assert TrackingTitle(MODE_STREAM, "main") == "Tracking stream main"
+    assert TrackingTitle(MODE_STATION, 4) == "Tracking station 4"
+    assert TrackingTitle(MODE_SET) == "Keeping this set updated"
+    assert CountdownText(8200) == "checks again in 9s"
+    assert CountdownText(0) == "checks again in 0s"
+    assert CountdownText(None) == "checking now..."
+
+    queue = [Queued(1, "A", "B", state=3), Queued(2, "C", "D"), Queued(3, "E", "F")]
+    # Past the set on the scoreboard and finished sets
+    assert NextQueued(queue, None)["id"] == 2
+    assert NextQueued(queue, 2)["id"] == 3
+    assert NextQueued(queue, "2")["id"] == 3
+    assert NextQueued([Queued(2, "C", "D")], 2) is None
+    assert NextQueued([], None) is None
+
+    queues = {"Main": queue}
+    assert QueueOf(MODE_STREAM, "main", queues, {}) is queue
+    assert QueueOf(MODE_STREAM, "main (Slot 1/2)", queues, {}) is queue
+    assert QueueOf(MODE_STREAM, "side", queues, {}) == []
+    assert [s["id"] for s in QueueOf(MODE_STATION, 4, {}, {"2": queue[2], "1": queue[1]})] == [
+        2,
+        3,
+    ]
+    assert QueueOf(MODE_SET, "", queues, {"1": queue[1]}) == []
+
+
+def TestTrackingBar():
+    get = scoreboardModule.StateManager.state
+    scoreboardModule.StateManager.state = {
+        "stream_queue": {
+            "byName": {
+                "main": [
+                    Queued(5, "Kaito", "Mira", state=2),
+                    Queued(6, "Sable", "Oriel"),
+                ]
+            }
+        },
+        "score": {"1": {"station_queue": {"1": Queued(9, "Rook", "Juno")}}},
+    }
+    try:
+        calls.clear()
+        scoreboard = Scoreboard()
+        bar = scoreboard.trackingBar
+        scoreboard.Select({"id": 5, "auto_update": "stream", **Queued(5, "Kaito", "Mira")})
+        assert not bar.isHidden() and bar.titleLabel.text() == "Tracking stream main"
+        assert bar.nowLabel.text() == "Kaito vs Mira · Winners Semi-Final · Top 32"
+        # Next: past the set on the scoreboard
+        assert bar.nextLabel.text() == "Sable vs Oriel · Winners Semi-Final · Top 32"
+        assert not bar.nextLabel.isHidden()
+
+        # Waiting: the stream's set now isn't the scoreboard's
+        scoreboard = Scoreboard()
+        scoreboard.waitForNextSet = True
+        scoreboard.Select({"id": 5, "auto_update": "stream"})
+        assert scoreboard.trackingBar.nowLabel.text() == "Waiting for the next set"
+        assert scoreboard.trackingBar.nextLabel.text().startswith("Sable vs Oriel")
+
+        # A station's next comes from its queue
+        scoreboard = Scoreboard()
+        scoreboard.lastStationSelected = {"identifier": 4, "type": "station"}
+        scoreboard.Select({"id": 8, "auto_update": "station", **Queued(8, "Ash", "Lux")})
+        bar = scoreboard.trackingBar
+        assert bar.titleLabel.text() == "Tracking station 4"
+        assert bar.nextLabel.text().startswith("Rook vs Juno")
+
+        # A set: no next
+        scoreboard = Scoreboard()
+        scoreboard.Select(
+            {
+                "id": 10,
+                "auto_update": "set",
+                "p1_name": "Pell",
+                "p2_name": "Halcyon",
+                "round_name": "Grand Final",
+            }
+        )
+        bar = scoreboard.trackingBar
+        assert bar.titleLabel.text() == "Keeping this set updated"
+        assert bar.nowLabel.text() == "Pell vs Halcyon · Grand Final"
+        assert bar.nextLabel.isHidden() and bar.nextName.isHidden()
+
+        # The bracket's data for the set, once loaded, is what's shown; not
+        # another set's
+        loaded = types.SimpleNamespace(
+            lastSetSelected=10,
+            trackedSet=None,
+            RefreshTrackingBar=lambda: None,
+            ChangeSetData=lambda data: None,
+            gameReport=types.SimpleNamespace(
+                HoldProviderResults=lambda: False, ApplySetData=lambda data: None
+            ),
+        )
+        full = {"id": 10, "p1_name": "Pell", "p2_name": "Halcyon", "round_name": "Grand Final"}
+        ScoreboardWidget.UpdateSetData(loaded, full)
+        assert loaded.trackedSet is full
+        ScoreboardWidget.UpdateSetData(loaded, {"id": 11, "p1_name": "Other"})
+        assert loaded.trackedSet is full
+
+        # Turned off for a set: no bar
+        scoreboard = Scoreboard()
+        scoreboard.Select({"id": 12, "auto_update": "set", "keep_updated": False})
+        assert scoreboard.trackingBar.isHidden()
+    finally:
+        scoreboardModule.StateManager.state = get
+
+
 if __name__ == "__main__":
-    for test in [TestWaitForNextSet, TestKeepUpdated]:
+    for test in [TestWaitForNextSet, TestKeepUpdated, TestTrackingBarText, TestTrackingBar]:
         test()
         print(f"{test.__name__}: OK")
     print("All scoreboard auto update checks passed")
