@@ -726,7 +726,7 @@ p, li { white-space: pre-wrap; }
     <name>Settings</name>
     <message>
         <location filename="../HyperDrive.py" line="804"/>
-        <location filename="../Settings/SettingsWindow.py" line="29"/>
+        <location filename="../Settings/SettingsWindow.py" line="30"/>
         <source>Settings</source>
         <translation>Configurações</translation>
     </message>
@@ -915,7 +915,9 @@ p, li { white-space: pre-wrap; }
         <location filename="../AssetDownloaderWindow.py" line="484"/>
         <location filename="../AssetDownloaderWindow.py" line="751"/>
         <location filename="../HyperDrive.py" line="1261"/>
+        <location filename="../SelectStationWindow.py" line="745"/>
         <location filename="../TournamentDataManager.py" line="227"/>
+        <location filename="../SelectSetWindow.py" line="750"/>
         <location filename="../Helpers/DownloadHelper.py" line="217"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
@@ -973,16 +975,119 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="59"/>
+        <location filename="../SelectSetWindow.py" line="67"/>
+        <location filename="../SelectSetWindow.py" line="660"/>
         <location filename="../SelectEventWindow.py" line="109"/>
         <source>In progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../SelectSetWindow.py" line="70"/>
+        <location filename="../SelectSetWindow.py" line="661"/>
         <location filename="../SelectEventWindow.py" line="111"/>
         <source>Completed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../SelectSetWindow.py" line="345"/>
+        <source>Not assigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="373"/>
+        <location filename="../SelectSetWindow.py" line="915"/>
+        <source>vs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="434"/>
+        <location filename="../SelectSetWindow.py" line="503"/>
+        <source>Round</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="435"/>
+        <source>Stream · Station</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="457"/>
+        <source>Selected set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="462"/>
+        <source>Pick a set from the list to see it here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="523"/>
+        <source>Keep scores updated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="527"/>
+        <source>Loads new scores and characters from the bracket while the set is played.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="611"/>
+        <location filename="../SelectSetWindow.py" line="630"/>
+        <source>Load a set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="648"/>
+        <source>Search players, teams, round or phase</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="659"/>
+        <source>Not finished</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="683"/>
+        <source>Hide sets with an empty slot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="743"/>
+        <source>↑ ↓ to move · Enter or double-click to load · Ctrl+F to search · Esc to close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="784"/>
+        <source>{0}: Any</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="854"/>
+        <source>Fetching sets...({0}/{1})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="872"/>
+        <source>Updated at {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="935"/>
+        <source>Showing {0} of {1} sets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="955"/>
+        <source>There are no sets to show.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="958"/>
+        <source>No sets match the search and filters.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="69"/>
         <location filename="../SelectEventWindow.py" line="112"/>
         <source>Upcoming</source>
         <translation type="unfinished"></translation>
@@ -1239,7 +1344,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="101"/>
+        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="114"/>
         <source>Pull Latest Completed Sets from ParryGG</source>
         <translation>Buscar Últimos Sets Concluídos do ParryGG</translation>
     </message>
@@ -1892,7 +1997,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../CommentaryWidget.py" line="58"/>
         <location filename="../PlayerListWidget.py" line="87"/>
-        <location filename="../ScoreboardWidget.py" line="170"/>
+        <location filename="../ScoreboardWidget.py" line="187"/>
         <location filename="../BracketWidget.py" line="557"/>
         <source>Characters per player</source>
         <translation>Personagens por jogador</translation>
@@ -2043,7 +2148,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../ScoreboardPlayerWidget.py" line="100"/>
         <location filename="../CommentaryWidget.py" line="91"/>
         <location filename="../DisplayOptions.py" line="30"/>
-        <location filename="../ScoreboardWidget.py" line="217"/>
+        <location filename="../ScoreboardWidget.py" line="234"/>
         <source>Additional information</source>
         <translation>Informações adicionais</translation>
     </message>
@@ -2076,8 +2181,6 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../BracketView.py" line="163"/>
-        <location filename="../SelectSetWindow.py" line="103"/>
-        <location filename="../SelectSetWindow.py" line="104"/>
         <source>Player {0}</source>
         <translation>Jogador {0}</translation>
     </message>
@@ -2177,7 +2280,7 @@ p, li { white-space: pre-wrap; }
         <translation>O texto para bans por número de partidas é inválido.</translation>
     </message>
     <message>
-        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="95"/>
+        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="108"/>
         <source>Parry.gg API key has not been set. Please configure it in Settings &gt; API Keys.</source>
         <translation>A chave de API do Parry.gg não foi configurada. Configure-a em Configurações &gt; Chaves de API.</translation>
     </message>
@@ -2235,30 +2338,31 @@ p, li { white-space: pre-wrap; }
         <translation>Cole a URL para o perfil do jogador no ParryGG</translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="35"/>
         <source>Show completed sets</source>
         <translation>Mostrar sets finalizados</translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="38"/>
         <source>Show complete pairs</source>
         <translation>Mostrar pares completos</translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="86"/>
+        <location filename="../SelectSetWindow.py" line="857"/>
+        <location filename="../SelectSetWindow.py" line="953"/>
         <source>Fetching sets...</source>
         <translation>Obtendo partidas...</translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="96"/>
-        <location filename="../SelectStationWindow.py" line="78"/>
-        <location filename="../SelectSetWindow.py" line="99"/>
+        <location filename="../SelectSetWindow.py" line="505"/>
+        <location filename="../SelectSetWindow.py" line="679"/>
         <source>Stream</source>
         <translation>Stream</translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="196"/>
-        <location filename="../SelectSetWindow.py" line="100"/>
+        <location filename="../SelectStationWindow.py" line="528"/>
+        <location filename="../SelectSetWindow.py" line="506"/>
+        <location filename="../SelectSetWindow.py" line="680"/>
         <source>Station</source>
         <translation>Estação</translation>
     </message>
@@ -2288,7 +2392,8 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="93"/>
         <location filename="../TeamBattleWidget.py" line="191"/>
         <location filename="../BracketWidget.py" line="195"/>
-        <location filename="../SelectSetWindow.py" line="101"/>
+        <location filename="../SelectSetWindow.py" line="504"/>
+        <location filename="../SelectSetWindow.py" line="681"/>
         <source>Phase</source>
         <translation>Fase</translation>
     </message>
@@ -2297,7 +2402,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="194"/>
         <location filename="../StreamQueueWidget.py" line="415"/>
         <location filename="../TeamBattleWidget.py" line="192"/>
-        <location filename="../SelectSetWindow.py" line="102"/>
+        <location filename="../SelectSetWindow.py" line="433"/>
         <source>Match</source>
         <translation>Partida</translation>
     </message>
@@ -2433,7 +2538,10 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="52"/>
         <location filename="../StreamQueueWidget.py" line="139"/>
         <location filename="../StreamQueueWidget.py" line="140"/>
+        <location filename="../SelectStationWindow.py" line="78"/>
         <location filename="../BracketView.py" line="41"/>
+        <location filename="../SelectSetWindow.py" line="387"/>
+        <location filename="../SelectSetWindow.py" line="580"/>
         <source>TBD</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2784,7 +2892,6 @@ p, li { white-space: pre-wrap; }
         <translation>Primeiro a atingir</translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="15"/>
         <source>Select a set</source>
         <translation>Selecione um set</translation>
     </message>
@@ -3085,7 +3192,7 @@ p, li { white-space: pre-wrap; }
         <translation>Stage</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="177"/>
+        <location filename="../ScoreboardWidget.py" line="194"/>
         <source>Players per team</source>
         <translation>Jogadores por time</translation>
     </message>
@@ -3098,7 +3205,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../PlayerDBWindow.py" line="218"/>
         <location filename="../PlayerDBWindow.py" line="313"/>
-        <location filename="../ScoreboardWidget.py" line="201"/>
+        <location filename="../ScoreboardWidget.py" line="218"/>
         <source>Real Name</source>
         <translation>Nome Real</translation>
     </message>
@@ -3119,7 +3226,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../PlayerDBWindow.py" line="713"/>
         <location filename="../PlayerDBWindow.py" line="802"/>
         <location filename="../PlayerListWidget.py" line="298"/>
-        <location filename="../ScoreboardWidget.py" line="207"/>
+        <location filename="../ScoreboardWidget.py" line="224"/>
         <location filename="../BracketWidget.py" line="1067"/>
         <source>Seed</source>
         <translation>Seed</translation>
@@ -3127,7 +3234,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../CommentaryWidget.py" line="82"/>
         <location filename="../DisplayOptions.py" line="21"/>
-        <location filename="../ScoreboardWidget.py" line="208"/>
+        <location filename="../ScoreboardWidget.py" line="225"/>
         <source>Birthday</source>
         <translation>Aniversário</translation>
     </message>
@@ -3136,7 +3243,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../ScoreboardPlayerWidget.py" line="88"/>
         <location filename="../CommentaryWidget.py" line="84"/>
         <location filename="../DisplayOptions.py" line="23"/>
-        <location filename="../ScoreboardWidget.py" line="210"/>
+        <location filename="../ScoreboardWidget.py" line="227"/>
         <location filename="../TeamBattleWidget.py" line="229"/>
         <source>Location</source>
         <translation>Local</translation>
@@ -3145,7 +3252,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../CommentaryWidget.py" line="77"/>
         <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../PlayerDBWindow.py" line="316"/>
-        <location filename="../ScoreboardWidget.py" line="203"/>
+        <location filename="../ScoreboardWidget.py" line="220"/>
         <location filename="../TeamBattleWidget.py" line="224"/>
         <location filename="../SocialsWidget.py" line="36"/>
         <source>Socials</source>
@@ -3155,7 +3262,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../CommentaryWidget.py" line="88"/>
         <location filename="../DisplayOptions.py" line="27"/>
         <location filename="../PlayerListWidget.py" line="300"/>
-        <location filename="../ScoreboardWidget.py" line="214"/>
+        <location filename="../ScoreboardWidget.py" line="231"/>
         <location filename="../TeamBattleWidget.py" line="159"/>
         <location filename="../TeamBattleWidget.py" line="233"/>
         <source>Characters</source>
@@ -3167,7 +3274,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../PlayerDBWindow.py" line="221"/>
         <location filename="../PlayerDBWindow.py" line="314"/>
         <location filename="../PlayerListWidget.py" line="303"/>
-        <location filename="../ScoreboardWidget.py" line="215"/>
+        <location filename="../ScoreboardWidget.py" line="232"/>
         <location filename="../TeamBattleWidget.py" line="234"/>
         <source>Pronouns</source>
         <translation>Pronomes</translation>
@@ -3179,44 +3286,52 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../CommentaryWidget.py" line="109"/>
-        <location filename="../ScoreboardWidget.py" line="235"/>
+        <location filename="../ScoreboardWidget.py" line="252"/>
         <source>Compact player cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="264"/>
-        <location filename="../ScoreboardWidget.py" line="644"/>
+        <location filename="../SelectSetWindow.py" line="534"/>
         <source>Load set</source>
         <translation>Carregar set</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="274"/>
         <source>Track sets from a stream or station</source>
         <translation>Seguir os sets de um stream ou uma estação</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="316"/>
-        <location filename="../ScoreboardWidget.py" line="382"/>
+        <location filename="../ScoreboardWidget.py" line="293"/>
+        <source>Load a set...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="300"/>
+        <source>Track a stream or station...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardWidget.py" line="325"/>
+        <location filename="../ScoreboardWidget.py" line="391"/>
         <source>TEAM {0}</source>
         <translation>TIME {0}</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="475"/>
+        <location filename="../ScoreboardWidget.py" line="484"/>
         <source>Games - Scoreboard {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="481"/>
+        <location filename="../ScoreboardWidget.py" line="490"/>
         <source>GAMES</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="484"/>
+        <location filename="../ScoreboardWidget.py" line="493"/>
         <source>The result, stage and characters of each game of the set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="572"/>
+        <location filename="../ScoreboardWidget.py" line="581"/>
         <source>Clear the players, scores, phase and match, and unlink the loaded set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3237,12 +3352,12 @@ p, li { white-space: pre-wrap; }
         <translation type="obsolete">Final, Semifinal da Repescagem, etc</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="968"/>
+        <location filename="../ScoreboardWidget.py" line="977"/>
         <source>Clear All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="969"/>
+        <location filename="../ScoreboardWidget.py" line="978"/>
         <source>Clear the players, scores, phase and match of this scoreboard, and unlink the loaded set?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3255,7 +3370,7 @@ p, li { white-space: pre-wrap; }
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="637"/>
+        <location filename="../ScoreboardWidget.py" line="646"/>
         <source>Load set from {0}</source>
         <translation>Carregar set do {0}</translation>
     </message>
@@ -3280,7 +3395,7 @@ p, li { white-space: pre-wrap; }
         <translation>URL da transmissão</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="280"/>
+        <location filename="../ScoreboardWidget.py" line="306"/>
         <source>Open {0} in a browser to edit the scoreboard remotely.</source>
         <translation>Abra {0} em um navegador para editar o placar remotamente.</translation>
     </message>
@@ -3314,17 +3429,14 @@ p, li { white-space: pre-wrap; }
         <translation>O post foi enviado com sucesso para a conta {0}</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1056"/>
         <source>Auto update (Set)</source>
         <translation>Atualização automática (Set)</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1059"/>
         <source>Auto update (Stream [{0}])</source>
         <translation>Atualização automática (Stream [{0}])</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1065"/>
         <source>Auto update (Station [{0}])</source>
         <translation>Atualização automática (Estação [{0}])</translation>
     </message>
@@ -3333,7 +3445,6 @@ p, li { white-space: pre-wrap; }
         <translation>Atualização automática (Usuário)</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="1070"/>
         <location filename="../BracketWidget.py" line="222"/>
         <source>Auto update</source>
         <translation>Atualização automática</translation>
@@ -3418,23 +3529,19 @@ p, li { white-space: pre-wrap; }
         <translation>Bandeiras customizadas</translation>
     </message>
     <message>
-        <location filename="../SelectStationWindow.py" line="13"/>
         <source>Select a station</source>
         <translation>Selecione uma estação</translation>
     </message>
     <message>
-        <location filename="../SelectStationWindow.py" line="76"/>
         <location filename="../BracketWidget.py" line="408"/>
         <source>Type</source>
         <translation>Tipo</translation>
     </message>
     <message>
-        <location filename="../SelectStationWindow.py" line="77"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="../SelectStationWindow.py" line="79"/>
         <source>Identifier</source>
         <translation>Identificador</translation>
     </message>
@@ -3869,11 +3976,18 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="61"/>
+        <location filename="../SelectStationWindow.py" line="159"/>
+        <location filename="../SelectStationWindow.py" line="1083"/>
+        <location filename="../SelectSetWindow.py" line="68"/>
         <source>Called</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="71"/>
+        <location filename="../SelectStationWindow.py" line="885"/>
+        <location filename="../SelectStationWindow.py" line="1071"/>
+        <location filename="../SelectStationWindow.py" line="1082"/>
+        <location filename="../TrackingBar.py" line="102"/>
         <source>Now</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3921,6 +4035,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="197"/>
+        <location filename="../SelectSetWindow.py" line="436"/>
+        <location filename="../SelectSetWindow.py" line="507"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4060,6 +4176,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="514"/>
+        <location filename="../SelectStationWindow.py" line="534"/>
+        <location filename="../SelectSetWindow.py" line="340"/>
         <source>Station {0}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4683,6 +4801,290 @@ Drop an image here.</source>
         <source>Show all pronouns</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="158"/>
+        <source>In use</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="160"/>
+        <source>Free</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="436"/>
+        <source>When tracking starts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="439"/>
+        <source>Load the current set now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="442"/>
+        <source>Wait for the next set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="446"/>
+        <source>Automatic set updating is off in the settings, so only the set on it now will load.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="461"/>
+        <source>You can stop at any time from the scoreboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="519"/>
+        <source>Pick a stream or station to see its sets here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="526"/>
+        <source>Stream queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="537"/>
+        <source>Start tracking {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="594"/>
+        <location filename="../SelectStationWindow.py" line="618"/>
+        <source>Track a stream or station</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="622"/>
+        <source>HyperDrive follows its sets and loads each one onto this scoreboard as it comes up.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="631"/>
+        <location filename="../SelectSetWindow.py" line="638"/>
+        <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="641"/>
+        <source>Search streams, stations or players on them</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="739"/>
+        <source>Arrow keys to move · Enter or double-click to start · Esc to close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="863"/>
+        <location filename="../SelectStationWindow.py" line="1018"/>
+        <source>Loading streams and stations...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="865"/>
+        <source>Loading the stream queues...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="867"/>
+        <source>Checking which stations are in use...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="883"/>
+        <source>uses Station {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="886"/>
+        <location filename="../SelectStationWindow.py" line="1073"/>
+        <location filename="../SelectStationWindow.py" line="1084"/>
+        <location filename="../TrackingBar.py" line="105"/>
+        <source>Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="889"/>
+        <location filename="../SelectStationWindow.py" line="1066"/>
+        <source>Loading the queue...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="899"/>
+        <source>Nothing on stream</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="906"/>
+        <location filename="../TrackingBar.py" line="209"/>
+        <source>Nothing queued</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="914"/>
+        <source>{0} queued</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="929"/>
+        <source>Checking...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="931"/>
+        <source>No set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="938"/>
+        <source>On {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="940"/>
+        <source>Off stream</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="950"/>
+        <location filename="../SelectSetWindow.py" line="662"/>
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="952"/>
+        <source>Streams · {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="955"/>
+        <source>Stations · {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="968"/>
+        <source>Streams</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="977"/>
+        <source>Stations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="1022"/>
+        <source>This event has no streams or stations.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="1026"/>
+        <source>No streams or stations match the search.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="1077"/>
+        <source>Nothing is queued on this stream.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="1079"/>
+        <source>Checking the station&apos;s sets...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectStationWindow.py" line="1089"/>
+        <source>No sets are on this station.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="22"/>
+        <source>Tracking stream {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="24"/>
+        <source>Tracking station {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="25"/>
+        <source>Keeping this set updated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="30"/>
+        <source>checking now...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="31"/>
+        <source>checks again in {0}s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="85"/>
+        <source>Change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="89"/>
+        <source>Stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="128"/>
+        <source>Load now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="132"/>
+        <source>Hold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="135"/>
+        <source>Keep the set on the scoreboard until you load the next one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="183"/>
+        <source>Track another stream or station</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="185"/>
+        <source>Load another set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="188"/>
+        <source>Stop updating the scoreboard from the bracket</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="201"/>
+        <source>Waiting for the next set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="203"/>
+        <source>No set yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="220"/>
+        <source>Next set: {0} is held. Load it when you&apos;re ready.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TrackingBar.py" line="224"/>
+        <source>Next set: {0} loads in {1}s.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>layout_options</name>
@@ -5022,12 +5424,10 @@ Drop an image here.</source>
         <translation>]</translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="129"/>
         <source>(</source>
         <translation>(</translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="131"/>
         <source>)</source>
         <translation>)</translation>
     </message>
@@ -5044,27 +5444,27 @@ Drop an image here.</source>
         <translation>Habilitar teclas de atalho</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="158"/>
+        <location filename="../Settings/SettingsWindow.py" line="159"/>
         <source>General</source>
         <translation>Geral</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="164"/>
+        <location filename="../Settings/SettingsWindow.py" line="165"/>
         <source>Appearance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="286"/>
+        <location filename="../Settings/SettingsWindow.py" line="306"/>
         <source>Scoreboard</source>
         <translation type="unfinished">Placar</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="315"/>
+        <location filename="../Settings/SettingsWindow.py" line="335"/>
         <source>State Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="630"/>
+        <location filename="../Settings/SettingsWindow.py" line="650"/>
         <source>Twitch Predictions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5073,22 +5473,22 @@ Drop an image here.</source>
         <translation>Teclas de atalho</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="416"/>
+        <location filename="../Settings/SettingsWindow.py" line="436"/>
         <source>Default Display Options</source>
         <translation>Opções de Exibição Padrão</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="443"/>
+        <location filename="../Settings/SettingsWindow.py" line="463"/>
         <source>Character Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="449"/>
+        <location filename="../Settings/SettingsWindow.py" line="469"/>
         <source>Match &amp; Phase Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="455"/>
+        <location filename="../Settings/SettingsWindow.py" line="475"/>
         <source>Pronouns</source>
         <translation type="unfinished">Pronomes</translation>
     </message>
@@ -5097,12 +5497,12 @@ Drop an image here.</source>
         <translation>Bluesky</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="517"/>
+        <location filename="../Settings/SettingsWindow.py" line="537"/>
         <source>API Keys</source>
         <translation>Chaves de API</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="560"/>
+        <location filename="../Settings/SettingsWindow.py" line="580"/>
         <source>start.gg Reporting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5116,39 +5516,39 @@ Drop an image here.</source>
 <context>
     <name>settings.api_keys</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="462"/>
+        <location filename="../Settings/SettingsWindow.py" line="482"/>
         <source>ParryGG</source>
         <translation>ParryGG</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="467"/>
+        <location filename="../Settings/SettingsWindow.py" line="487"/>
         <source>You can get an API Key from parry.gg/api-keys</source>
         <translation>Você pode obter uma Chave de API em parry.gg/api-keys</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="471"/>
-        <location filename="../Settings/SettingsWindow.py" line="490"/>
-        <location filename="../Settings/SettingsWindow.py" line="509"/>
+        <location filename="../Settings/SettingsWindow.py" line="491"/>
+        <location filename="../Settings/SettingsWindow.py" line="510"/>
+        <location filename="../Settings/SettingsWindow.py" line="529"/>
         <source>Please note that the API Key will be stored in plain text on your computer</source>
         <translation>Note que a Chave de API será salva no seu computador em forma de texto</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="480"/>
+        <location filename="../Settings/SettingsWindow.py" line="500"/>
         <source>start.gg (reporting sets)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="485"/>
+        <location filename="../Settings/SettingsWindow.py" line="505"/>
         <source>Needed to report sets to start.gg from the scoreboard&apos;s Games window. Create a token at start.gg &gt; Developer Settings, with an account that&apos;s an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="499"/>
+        <location filename="../Settings/SettingsWindow.py" line="519"/>
         <source>Twitch (predictions)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="504"/>
+        <location filename="../Settings/SettingsWindow.py" line="524"/>
         <source>A user access token of your channel with the channel:manage:predictions scope, e.g. from a token generator for Twitch&apos;s API. See Settings &gt; Twitch Predictions.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5395,7 +5795,7 @@ Drop an image here.</source>
 <context>
     <name>settings.bracket_auto_update_interval</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="94"/>
+        <location filename="../Settings/SettingsWindow.py" line="95"/>
         <source>Bracket auto update interval (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5434,12 +5834,12 @@ Drop an image here.</source>
 <context>
     <name>settings.character_picker</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="424"/>
+        <location filename="../Settings/SettingsWindow.py" line="444"/>
         <source>Show the player&apos;s mains in the character grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="432"/>
+        <location filename="../Settings/SettingsWindow.py" line="452"/>
         <source>Show recently picked characters in the character grid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5447,7 +5847,7 @@ Drop an image here.</source>
 <context>
     <name>settings.compact_commentators</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="406"/>
+        <location filename="../Settings/SettingsWindow.py" line="426"/>
         <source>Compact Commentator Cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5455,7 +5855,7 @@ Drop an image here.</source>
 <context>
     <name>settings.compact_players</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="397"/>
+        <location filename="../Settings/SettingsWindow.py" line="417"/>
         <source>Compact Player Cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5463,7 +5863,7 @@ Drop an image here.</source>
 <context>
     <name>settings.completed_sets_pull_interval</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="73"/>
+        <location filename="../Settings/SettingsWindow.py" line="74"/>
         <source>Completed sets auto pull interval (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5471,7 +5871,7 @@ Drop an image here.</source>
 <context>
     <name>settings.control_score_from_stage_strike</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="173"/>
+        <location filename="../Settings/SettingsWindow.py" line="174"/>
         <source>Enable score control from the stage striking app</source>
         <translation>Habilitar controle do placar a partir do app de stage strike</translation>
     </message>
@@ -5479,12 +5879,12 @@ Drop an image here.</source>
 <context>
     <name>settings.custom_player_export</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="116"/>
+        <location filename="../Settings/SettingsWindow.py" line="117"/>
         <source>Export custom player data from user_data/custom_player_export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="124"/>
+        <location filename="../Settings/SettingsWindow.py" line="125"/>
         <source>Sends the files in a folder named after a player&apos;s tag (or sponsor and tag) to the layouts, as the player&apos;s custom data. Changes to the files show up on stream within a second.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5492,7 +5892,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_autoupdate</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="198"/>
+        <location filename="../Settings/SettingsWindow.py" line="199"/>
         <source>Disable automatic set updating for the scoreboard</source>
         <translation>Desabilitar atualização automática do placar</translation>
     </message>
@@ -5514,7 +5914,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_export</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="305"/>
+        <location filename="../Settings/SettingsWindow.py" line="325"/>
         <source>Disable HyperDrive file exporting</source>
         <translation>Desabilitar exportação de arquivos</translation>
     </message>
@@ -5529,7 +5929,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_overwrite</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="256"/>
+        <location filename="../Settings/SettingsWindow.py" line="276"/>
         <source>Do not override existing values in the local player database (takes effect on next restart)</source>
         <translation>Não sobrescrever entradas existentes em local_players.csv (reinicialização necessária)</translation>
     </message>
@@ -5537,7 +5937,7 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_scoreupdate</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="244"/>
+        <location filename="../Settings/SettingsWindow.py" line="264"/>
         <source>Disable automatic score updating for the scoreboard</source>
         <translation>Desabilitar atualização automática de pontuação do placar</translation>
     </message>
@@ -5552,7 +5952,7 @@ Drop an image here.</source>
 <context>
     <name>settings.force_no_mains_on_new_set_loads</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="232"/>
+        <location filename="../Settings/SettingsWindow.py" line="252"/>
         <source>Do not update character data when a set is loaded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5560,17 +5960,17 @@ Drop an image here.</source>
 <context>
     <name>settings.general</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="55"/>
+        <location filename="../Settings/SettingsWindow.py" line="56"/>
         <source>Webserver Port</source>
         <translation>Porta do Servidor Web</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="64"/>
+        <location filename="../Settings/SettingsWindow.py" line="65"/>
         <source>Enable profanity filter</source>
         <translation>Habilitar filtro de texto ofensivo</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="296"/>
+        <location filename="../Settings/SettingsWindow.py" line="316"/>
         <source>Enable StateManager Logging</source>
         <translation>Habilitar Log do StateManager</translation>
     </message>
@@ -5660,12 +6060,12 @@ Drop an image here.</source>
 <context>
     <name>settings.local_player_data</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="268"/>
+        <location filename="../Settings/SettingsWindow.py" line="288"/>
         <source>Use the local player database for player info when loading sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="276"/>
+        <location filename="../Settings/SettingsWindow.py" line="296"/>
         <source>Sets, the stream queue and station sets are loaded without the players&apos; socials, pronouns and location, which come from the local player database instead. Players not in it yet are looked up once and saved to it.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5706,7 +6106,7 @@ Drop an image here.</source>
 <context>
     <name>settings.scoreboard_auto_update_interval</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="210"/>
+        <location filename="../Settings/SettingsWindow.py" line="211"/>
         <source>Scoreboard automatic set updating interval (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5714,7 +6114,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_additional</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="388"/>
+        <location filename="../Settings/SettingsWindow.py" line="408"/>
         <source>Show Additional Info</source>
         <translation>Mostrar Informações Adicionais</translation>
     </message>
@@ -5722,7 +6122,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_birthday</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="352"/>
+        <location filename="../Settings/SettingsWindow.py" line="372"/>
         <source>Show Birthday</source>
         <translation>Mostrar Aniversário</translation>
     </message>
@@ -5730,7 +6130,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_characters</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="370"/>
+        <location filename="../Settings/SettingsWindow.py" line="390"/>
         <source>Show Characters</source>
         <translation>Mostrar Personagens</translation>
     </message>
@@ -5745,7 +6145,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_location</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="361"/>
+        <location filename="../Settings/SettingsWindow.py" line="381"/>
         <source>Show Location</source>
         <translation>Mostrar Localização</translation>
     </message>
@@ -5753,7 +6153,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_name</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="325"/>
+        <location filename="../Settings/SettingsWindow.py" line="345"/>
         <source>Show Real Name</source>
         <translation>Mostrar Nome Real</translation>
     </message>
@@ -5761,7 +6161,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_pronouns</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="379"/>
+        <location filename="../Settings/SettingsWindow.py" line="399"/>
         <source>Show Pronouns</source>
         <translation>Mostrar Pronomes</translation>
     </message>
@@ -5769,7 +6169,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_seed</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="343"/>
+        <location filename="../Settings/SettingsWindow.py" line="363"/>
         <source>Show Seed</source>
         <translation>Mostrar Seed</translation>
     </message>
@@ -5777,7 +6177,7 @@ Drop an image here.</source>
 <context>
     <name>settings.show_social</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="334"/>
+        <location filename="../Settings/SettingsWindow.py" line="354"/>
         <source>Show Social Media</source>
         <translation>Mostrar Redes Sociais</translation>
     </message>
@@ -5785,7 +6185,7 @@ Drop an image here.</source>
 <context>
     <name>settings.stage_strike_ask_characters</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="186"/>
+        <location filename="../Settings/SettingsWindow.py" line="187"/>
         <source>Ask for the next game&apos;s characters on the stage striking app after each game</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5793,22 +6193,22 @@ Drop an image here.</source>
 <context>
     <name>settings.startgg_reporting</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="526"/>
+        <location filename="../Settings/SettingsWindow.py" line="546"/>
         <source>Send each game to start.gg as it&apos;s played (otherwise games are sent when the set is reported)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="534"/>
+        <location filename="../Settings/SettingsWindow.py" line="554"/>
         <source>Lets viewers follow the set on start.gg live. Uses one request per change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="542"/>
+        <location filename="../Settings/SettingsWindow.py" line="562"/>
         <source>Mark sets as in progress on start.gg when they&apos;re loaded on a scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="553"/>
+        <location filename="../Settings/SettingsWindow.py" line="573"/>
         <source>Ask before reporting a set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5832,7 +6232,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_battle_default_first_to</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="147"/>
+        <location filename="../Settings/SettingsWindow.py" line="148"/>
         <source>Crew/Team Battle: games to win a matchup (First To)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5840,7 +6240,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_battle_default_stocks</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="135"/>
+        <location filename="../Settings/SettingsWindow.py" line="136"/>
         <source>Crew/Team Battle: starting stocks per player (Stock Pool)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5905,54 +6305,67 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
+    <name>settings.tracking_next_set_delay</name>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="233"/>
+        <source>Seconds before a tracked stream&apos;s or station&apos;s next set loads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="241"/>
+        <source>Time to hold the next set if the current one isn&apos;t over yet. 0 loads it at once.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>settings.twitch_predictions</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="568"/>
+        <location filename="../Settings/SettingsWindow.py" line="588"/>
         <source>Run Twitch predictions for the set on stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="575"/>
+        <location filename="../Settings/SettingsWindow.py" line="595"/>
         <source>Needs the Twitch token of Settings &gt; API Keys, and a channel that&apos;s a Twitch affiliate or partner.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="581"/>
+        <location filename="../Settings/SettingsWindow.py" line="601"/>
         <source>Scoreboard</source>
         <translation type="unfinished">Placar</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="586"/>
+        <location filename="../Settings/SettingsWindow.py" line="606"/>
         <source>The number of the scoreboard of the stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="591"/>
+        <location filename="../Settings/SettingsWindow.py" line="611"/>
         <source>Start one when a set is loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="599"/>
+        <location filename="../Settings/SettingsWindow.py" line="619"/>
         <source>Resolve it with the winner when the set is over</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="607"/>
+        <location filename="../Settings/SettingsWindow.py" line="627"/>
         <source>Title</source>
         <translation type="unfinished">Título</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="612"/>
+        <location filename="../Settings/SettingsWindow.py" line="632"/>
         <source>{team1}, {team2} and {round} are replaced. Twitch allows 45 characters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="618"/>
+        <location filename="../Settings/SettingsWindow.py" line="638"/>
         <source>Seconds viewers have to predict</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="625"/>
+        <location filename="../Settings/SettingsWindow.py" line="645"/>
         <source>From 30 to 1800</source>
         <translation type="unfinished"></translation>
     </message>
