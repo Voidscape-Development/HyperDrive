@@ -1,6 +1,10 @@
 # Bottom bar scoreboard
 
-A full-width bar along the bottom of the screen (1920x140):
+A bar along the bottom of the screen. `index.html` spans the full width
+(1920x140); `inset.html` floats 24px above and in from the edges, with
+rounded corners (1872x128).
+
+It shows:
 
 - The tournament's logo, name, phase and best of, and the match
 - Each side's sponsor and name, location flag and score, in the team colors

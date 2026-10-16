@@ -322,3 +322,28 @@ body {
 .no_clock .clock {
   display: none;
 }
+
+
+/* ── Inset (inset.html) ──────────────────────────────────── */
+
+/* The bar floats above the bottom edge with rounded corners, like
+   HyperDrive's other panels */
+.inset .bar {
+  left: 24px;
+  bottom: 24px;
+  width: 1872px;
+  height: 128px;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.55),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.inset .info { width: 420px; padding-left: 14px; }
+.inset .logo { width: 96px; height: 96px; }
+.inset .center { width: 400px; }
+.inset .clock { width: 196px; }
+.inset .name { height: 50px; font-size: 46px; }
+.inset .score { width: 100px; font-size: 78px; }
