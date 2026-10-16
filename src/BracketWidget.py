@@ -27,7 +27,6 @@ from .BracketFocusBar import BracketFocusBar
 from .BracketModel import *
 from .BracketView import BracketView
 from .DisplayOptions import DisplayOptionsButton
-from .FlowLayout import FlowLayout
 from .GameAssetManager import GameAssetManager
 from .Helpers.BracketFocusHelper import MAIN_CHANNEL
 from .PlayerList import PlayerList
@@ -38,7 +37,7 @@ from .Scheduler import (
 )
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .Theme import ThemedIcon
+from .Theme import Theme, ThemedIcon
 from .TournamentDataManager import TournamentDataManager
 
 SAVE_PATH = "./user_data/bracket_tournament.json"
@@ -95,6 +94,60 @@ class PhasesWindow(QWidget):
         self.closed.emit()
 
 
+class ChannelTabBar(QTabBar):
+    """The channels' tabs. With more channels than room, the tabs scroll
+    instead of widening the header, so the phase and the source stay in
+    view; overflowChanged tells when some are out of view."""
+
+    overflowChanged = Signal(bool)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.overflowing = False
+        self.setUsesScrollButtons(True)
+        self.setElideMode(Qt.TextElideMode.ElideNone)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+
+    def minimumSizeHint(self):
+        # About one tab and the scroll buttons
+        hint = self.sizeHint()
+        return QSize(min(hint.width(), 120), hint.height())
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.CheckOverflow()
+
+    def tabLayoutChange(self):
+        super().tabLayoutChange()
+        self.CheckOverflow()
+
+    def CheckOverflow(self):
+        overflowing = self.count() > 1 and self.width() + 1 < self.sizeHint().width()
+        if overflowing != self.overflowing:
+            self.overflowing = overflowing
+            self.overflowChanged.emit(overflowing)
+
+
+class SourcePopup(QFrame):
+    """Loading from start.gg, in a popup under the header's source button:
+    it's used now and then, so it doesn't take a row of the widget."""
+
+    def __init__(self, parent):
+        super().__init__(parent, Qt.WindowType.Popup)
+        self.setObjectName("sourcePopup")
+        self.setMinimumWidth(340)
+
+    def ShowUnder(self, button: QWidget):
+        self.adjustSize()
+        corner = button.mapToGlobal(QPoint(button.width(), button.height() + 4))
+        pos = QPoint(corner.x() - self.width(), corner.y())
+        screen = button.screen().availableGeometry() if button.screen() else None
+        if screen is not None:
+            pos.setX(max(screen.left(), min(pos.x(), screen.right() - self.width())))
+        self.move(pos)
+        self.show()
+
+
 class BracketWidget(QDockWidget):
     instance: "BracketWidget" = None
 
@@ -147,12 +200,22 @@ class BracketWidget(QDockWidget):
 
         contents = QWidget()
         contents.setLayout(QVBoxLayout())
+        contents.layout().setContentsMargins(0, 0, 0, 0)
+        contents.layout().setSpacing(0)
         self.setWidget(contents)
 
-        # A tab per channel
-        tabsRow = QHBoxLayout()
-        contents.layout().addLayout(tabsRow)
-        self.channelTabs = QTabBar()
+        # The header, a row: the channel, its phase and where the phase
+        # comes from
+        self.header = QFrame()
+        self.header.setObjectName("bracketHeader")
+        tabsRow = QHBoxLayout(self.header)
+        tabsRow.setContentsMargins(8, 2, 8, 2)
+        tabsRow.setSpacing(6)
+        contents.layout().addWidget(self.header)
+
+        # A tab per channel. With more channels than room, the tabs scroll
+        # and the channel list button lists them all
+        self.channelTabs = ChannelTabBar()
         self.channelTabs.setExpanding(False)
         self.channelTabs.setDocumentMode(True)
         self.channelTabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -172,12 +235,84 @@ class BracketWidget(QDockWidget):
         )
         btAddChannel.clicked.connect(lambda: self.focusBar.AddChannel())
         tabsRow.addWidget(btAddChannel)
-        tabsRow.addStretch()
+        self.btChannelList = QToolButton()
+        self.btChannelList.setIcon(ThemedIcon("./assets/icons/chevron_down.svg"))
+        self.btChannelList.setToolTip(QApplication.translate("app", "All channels"))
+        self.btChannelList.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.btChannelList.setStyleSheet("QToolButton::menu-indicator { image: none; }")
+        self.channelMenu = QMenu(self)
+        self.channelMenu.aboutToShow.connect(self.BuildChannelMenu)
+        self.btChannelList.setMenu(self.channelMenu)
+        self.btChannelList.setVisible(False)
+        # Queued: it changes during the header's layout, which wouldn't make
+        # room for the button then
+        self.channelTabs.overflowChanged.connect(
+            self.btChannelList.setVisible, Qt.ConnectionType.QueuedConnection
+        )
+        tabsRow.addWidget(self.btChannelList)
 
-        # Loading from start.gg
-        # The bars wrap their controls, so they don't set the window's width
-        providerRow = FlowLayout()
-        contents.layout().addLayout(providerRow)
+        self.headerSeparator = QFrame()
+        self.headerSeparator.setFixedSize(1, 20)
+        tabsRow.addSpacing(4)
+        tabsRow.addWidget(self.headerSeparator)
+        tabsRow.addSpacing(4)
+
+        # The channel's phase, as the title; its menu shows another phase
+        self.phaseButton = QToolButton()
+        self.phaseButton.setObjectName("phaseButton")
+        self.phaseButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.phaseButton.setToolTip(
+            QApplication.translate("app", "Show another phase on this channel")
+        )
+        font = self.phaseButton.font()
+        font.setBold(True)
+        font.setPointSizeF(font.pointSizeF() * 1.2)
+        self.phaseButton.setFont(font)
+        self.phaseMenu = QMenu(self)
+        self.phaseMenu.aboutToShow.connect(self.BuildPhaseMenu)
+        self.phaseButton.setMenu(self.phaseMenu)
+        tabsRow.addWidget(self.phaseButton)
+        self.phaseTypeLabel = QLabel()
+        self.phaseTypeLabel.setObjectName("phaseTypeLabel")
+        font = self.phaseTypeLabel.font()
+        font.setPointSizeF(font.pointSizeF() * 0.85)
+        self.phaseTypeLabel.setFont(font)
+        tabsRow.addWidget(self.phaseTypeLabel)
+
+        self.btToggleSide = QToolButton()
+        self.btToggleSide.setCheckable(True)
+        self.btToggleSide.setIcon(ThemedIcon("./assets/icons/people.svg"))
+        self.btToggleSide.setToolTip(
+            QApplication.translate(
+                "app",
+                "Phases and players: show or hide the window to edit the phases and the player lists",
+            )
+        )
+        self.btToggleSide.toggled.connect(self.SetPhasesWindowShown)
+        tabsRow.addWidget(self.btToggleSide)
+        tabsRow.addStretch(1)
+
+        # Where the phases come from: loading from start.gg, in a popup
+        self.btSource = QToolButton()
+        self.btSource.setObjectName("sourceChip")
+        self.btSource.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.btSource.setToolTip(
+            QApplication.translate("app", "Load a phase group from start.gg, and update its sets")
+        )
+        self.btSource.clicked.connect(lambda: self.sourcePopup.ShowUnder(self.btSource))
+        tabsRow.addWidget(self.btSource)
+
+        self.sourcePopup = SourcePopup(self)
+        sourceLayout = QVBoxLayout(self.sourcePopup)
+        sourceLayout.setContentsMargins(14, 12, 14, 12)
+        sourceLayout.setSpacing(10)
+        self.sourceTitle = QLabel()
+        font = self.sourceTitle.font()
+        font.setBold(True)
+        self.sourceTitle.setFont(font)
+        sourceLayout.addWidget(self.sourceTitle)
+        sourceForm = QFormLayout()
+        sourceLayout.addLayout(sourceForm)
         self.phaseSelection = QComboBox()
         self.phaseSelection.setMinimumWidth(160)
         self.phaseSelection.currentIndexChanged.connect(self.UpdatePhaseGroups)
@@ -191,17 +326,15 @@ class BracketWidget(QDockWidget):
                 else None
             )
         )
-        providerRow.addGroup(
-            QLabel(QApplication.translate("app", "Phase")),
-            self.phaseSelection,
-            self.btRefreshPhase,
-        )
+        phaseRow = QHBoxLayout()
+        phaseRow.addWidget(self.phaseSelection, 1)
+        phaseRow.addWidget(self.btRefreshPhase)
+        sourceForm.addRow(QApplication.translate("app", "Phase"), phaseRow)
         self.phaseGroupSelection = QComboBox()
         self.phaseGroupSelection.setMinimumWidth(120)
-        providerRow.addGroup(
-            QLabel(QApplication.translate("app", "Phase Group")), self.phaseGroupSelection
-        )
+        sourceForm.addRow(QApplication.translate("app", "Phase Group"), self.phaseGroupSelection)
         self.btLoadPhaseGroup = QPushButton(QApplication.translate("app", "Load"))
+        self.btLoadPhaseGroup.setDefault(True)
         self.btLoadPhaseGroup.setIcon(ThemedIcon("./assets/icons/undo.svg"))
         self.btLoadPhaseGroup.setToolTip(
             QApplication.translate(
@@ -210,7 +343,11 @@ class BracketWidget(QDockWidget):
             )
         )
         self.btLoadPhaseGroup.clicked.connect(self.PhaseGroupChanged)
-        providerRow.addWidget(self.btLoadPhaseGroup)
+        self.btLoadPhaseGroup.clicked.connect(self.sourcePopup.hide)
+        sourceLayout.addWidget(self.btLoadPhaseGroup)
+        self.sourceDivider = QFrame()
+        self.sourceDivider.setFixedHeight(1)
+        sourceLayout.addWidget(self.sourceDivider)
         self.btRefreshSets = QPushButton(QApplication.translate("app", "Update sets"))
         self.btRefreshSets.setToolTip(
             QApplication.translate(
@@ -227,7 +364,20 @@ class BracketWidget(QDockWidget):
             )
         )
         self.labelAutoUpdateTimer = QLabel()
-        providerRow.addGroup(self.btRefreshSets, self.cbAutoUpdateSets, self.labelAutoUpdateTimer)
+        updateRow = QHBoxLayout()
+        updateRow.addWidget(self.btRefreshSets)
+        updateRow.addWidget(self.cbAutoUpdateSets)
+        updateRow.addStretch(1)
+        updateRow.addWidget(self.labelAutoUpdateTimer)
+        sourceLayout.addLayout(updateRow)
+        self.sourceNote = QLabel(
+            QApplication.translate(
+                "app",
+                "Results come from start.gg. Changes made here only affect what's shown on stream.",
+            )
+        )
+        self.sourceNote.setWordWrap(True)
+        sourceLayout.addWidget(self.sourceNote)
 
         # The player list changes as it's built, which updates these
         self.view = BracketView()
@@ -260,30 +410,9 @@ class BracketWidget(QDockWidget):
         self.playersStack.addWidget(self.localPlayersPage)
         left.addTab(Scrolling(self.playersStack), QApplication.translate("app", "Players"))
 
-        # The bracket
-        right = QWidget()
-        right.setLayout(QVBoxLayout())
-        right.layout().setContentsMargins(0, 0, 0, 0)
-        contents.layout().addWidget(right, 1)
-
-        viewBar = FlowLayout()
-        right.layout().addLayout(viewBar)
-        self.btToggleSide = QPushButton(QApplication.translate("app", "Phases and players"))
-        self.btToggleSide.setCheckable(True)
-        self.btToggleSide.setIcon(ThemedIcon("./assets/icons/people.svg"))
-        self.btToggleSide.setToolTip(
-            QApplication.translate(
-                "app", "Show or hide the window to edit the phases and the player lists"
-            )
-        )
-        self.btToggleSide.toggled.connect(self.SetPhasesWindowShown)
-        self.phaseTitle = QLabel()
-        font = self.phaseTitle.font()
-        font.setBold(True)
-        self.phaseTitle.setFont(font)
-        viewBar.addGroup(self.btToggleSide, self.phaseTitle)
-
-        self.limitExport = QCheckBox(QApplication.translate("app", "Only show the top"))
+        # What goes on stream, a second row: the channel's top N and the
+        # focus layout's controls
+        self.limitExport = QCheckBox(QApplication.translate("app", "Top"))
         self.limitExport.setToolTip(
             QApplication.translate(
                 "app",
@@ -295,10 +424,68 @@ class BracketWidget(QDockWidget):
         self.limitExportNumber.setMinimum(2)
         self.limitExportNumber.setMaximum(1024)
         self.limitExportNumber.setValue(8)
+        self.limitExportNumber.setMaximumWidth(72)
         self.limitExportNumber.valueChanged.connect(self.ExportOptionsChanged)
-        viewBar.addGroup(self.limitExport, self.limitExportNumber)
+        self.limitExportNumber.setToolTip(self.limitExport.toolTip())
 
-        self.btClearEdits = QPushButton(QApplication.translate("app", "Clear manual changes"))
+        BracketFocus.instance.signals.channelsChanged.connect(self.ChannelsChanged)
+        BracketFocus.instance.signals.settingsChanged.connect(self.ChannelSettingsChanged)
+        self.onStream = QFrame()
+        self.onStream.setObjectName("bracketOnStream")
+        onStreamLayout = QVBoxLayout(self.onStream)
+        onStreamLayout.setContentsMargins(8, 6, 8, 6)
+        self.focusBar = BracketFocusBar(
+            self.view, leading=[(self.limitExport, self.limitExportNumber)]
+        )
+        onStreamLayout.addWidget(self.focusBar)
+        contents.layout().addWidget(self.onStream)
+
+        # The bracket
+        viewSplitter = QSplitter(Qt.Orientation.Vertical)
+        contents.layout().addWidget(viewSplitter, 1)
+
+        viewSplitter.addWidget(self.view)
+        viewSplitter.addWidget(self.standingsTable)
+        viewSplitter.setSizes([3, 1])
+
+        # Over the bracket's corners: the zoom, and players placed by hand
+        self.zoomBar = QFrame(self.view)
+        self.zoomBar.setObjectName("viewOverlay")
+        zoomLayout = QHBoxLayout(self.zoomBar)
+        zoomLayout.setContentsMargins(3, 3, 3, 3)
+        zoomLayout.setSpacing(2)
+        btZoomOut = QToolButton()
+        btZoomOut.setText("−")
+        btZoomOut.setToolTip(QApplication.translate("app", "Zoom out"))
+        btZoomOut.setAutoRaise(True)
+        btZoomOut.clicked.connect(lambda: self.view.ZoomBy(1 / 1.25))
+        self.zoomLabel = QLabel()
+        self.zoomLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.zoomLabel.setMinimumWidth(self.zoomLabel.fontMetrics().horizontalAdvance("000%") + 8)
+        btZoomIn = QToolButton()
+        btZoomIn.setText("+")
+        btZoomIn.setToolTip(QApplication.translate("app", "Zoom in"))
+        btZoomIn.setAutoRaise(True)
+        btZoomIn.clicked.connect(lambda: self.view.ZoomBy(1.25))
+        btFit = QToolButton()
+        btFit.setText(QApplication.translate("app", "Fit"))
+        btFit.setToolTip(QApplication.translate("app", "Zoom to the whole bracket"))
+        btFit.setAutoRaise(True)
+        btFit.clicked.connect(lambda: self.view.FitInView())
+        for widget in (btZoomOut, self.zoomLabel, btZoomIn, btFit):
+            zoomLayout.addWidget(widget)
+        self.view.signals.zoomChanged.connect(self.UpdateZoomLabel)
+
+        self.editsNotice = QFrame(self.view)
+        self.editsNotice.setObjectName("viewOverlay")
+        noticeLayout = QHBoxLayout(self.editsNotice)
+        noticeLayout.setContentsMargins(10, 3, 3, 3)
+        self.editsNoticeLabel = QLabel(
+            QApplication.translate("app", "Some sets have players placed by hand")
+        )
+        noticeLayout.addWidget(self.editsNoticeLabel)
+        self.btClearEdits = QToolButton()
+        self.btClearEdits.setText(QApplication.translate("app", "Clear manual changes"))
         self.btClearEdits.setToolTip(
             QApplication.translate(
                 "app",
@@ -306,23 +493,9 @@ class BracketWidget(QDockWidget):
             )
         )
         self.btClearEdits.clicked.connect(self.ClearManualChanges)
-        viewBar.addWidget(self.btClearEdits)
-
-        btFit = QPushButton(QApplication.translate("app", "Fit"))
-        btFit.clicked.connect(lambda: self.view.FitInView())
-        viewBar.addWidget(btFit)
-
-        BracketFocus.instance.signals.channelsChanged.connect(self.ChannelsChanged)
-        BracketFocus.instance.signals.settingsChanged.connect(self.ChannelSettingsChanged)
-        self.focusBar = BracketFocusBar(self.view)
-        right.layout().addWidget(self.focusBar)
-
-        viewSplitter = QSplitter(Qt.Orientation.Vertical)
-        right.layout().addWidget(viewSplitter, 1)
-
-        viewSplitter.addWidget(self.view)
-        viewSplitter.addWidget(self.standingsTable)
-        viewSplitter.setSizes([3, 1])
+        noticeLayout.addWidget(self.btClearEdits)
+        self.editsNotice.hide()
+        self.view.installEventFilter(self)
 
         # Hidden until needed
         self.btToggleSide.setChecked(SettingsManager.Get("bracket_phases_window_shown", False))
@@ -369,6 +542,8 @@ class BracketWidget(QDockWidget):
         self.mirrorTimer.timeout.connect(self.MirrorPlayers)
         self.mirrorTimer.start()
 
+        self.ApplyStyle()
+        self.UpdateZoomLabel()
         self.UpdateTabs()
         self.ready = True
         self.Load()
@@ -604,6 +779,168 @@ class BracketWidget(QDockWidget):
             self.phasesWindow.hide()
         if SettingsManager.Get("bracket_phases_window_shown", False) != shown:
             SettingsManager.Set("bracket_phases_window_shown", shown)
+
+    def ApplyStyle(self):
+        c = {k: v.name() for k, v in Theme.Colors().items()}
+        radius = Theme.Radius()
+        self.header.setStyleSheet(
+            f"QFrame#bracketHeader {{ border-bottom: 1px solid {c['raised']}; }}"
+        )
+        self.headerSeparator.setStyleSheet(f"background: {c['border']};")
+        self.onStream.setStyleSheet(
+            f"QFrame#bracketOnStream {{ background: {c['surface']};"
+            f" border-bottom: 1px solid {c['raised']}; }}"
+        )
+        self.phaseButton.setStyleSheet(
+            f"QToolButton#phaseButton {{ background: transparent; border: 1px solid transparent;"
+            f" padding: 2px 20px 2px 6px; }}"
+            f" QToolButton#phaseButton:hover {{ background: {c['raised']}; border-color: {c['border']}; }}"
+            " QToolButton#phaseButton::menu-indicator {"
+            " subcontrol-origin: padding; subcontrol-position: right center; right: 4px; }"
+        )
+        self.phaseTypeLabel.setStyleSheet(
+            f"QLabel#phaseTypeLabel {{ background: {c['raised']}; color: {c['muted']};"
+            f" border-radius: 8px; padding: 1px 8px; }}"
+        )
+        self.btSource.setStyleSheet(
+            f"QToolButton#sourceChip {{ background: {c['surface']}; border: 1px solid {c['border']};"
+            f" border-radius: 13px; padding: 3px 10px; }}"
+            f" QToolButton#sourceChip:hover {{ border-color: {c['accent']}; }}"
+        )
+        self.sourcePopup.setStyleSheet(
+            f"QFrame#sourcePopup {{ background: {c['surface']}; border: 1px solid {c['border']};"
+            f" border-radius: {radius + 2}px; }}"
+        )
+        self.sourceDivider.setStyleSheet(f"background: {c['raised']};")
+        self.sourceNote.setStyleSheet(f"color: {c['muted']};")
+        overlay = (
+            f"QFrame#viewOverlay {{ background: {c['surface']}; border: 1px solid {c['border']};"
+            f" border-radius: {radius + 2}px; }}"
+        )
+        self.zoomBar.setStyleSheet(overlay)
+        self.editsNotice.setStyleSheet(overlay)
+        self.zoomLabel.setStyleSheet(f"color: {c['muted']};")
+        self.editsNoticeLabel.setStyleSheet(f"color: {c['muted']};")
+        self.UpdateHeader()
+
+    def changeEvent(self, event):
+        # The theme changed
+        if event.type() == QEvent.Type.PaletteChange and getattr(self, "ready", False):
+            self.ApplyStyle()
+        super().changeEvent(event)
+
+    def eventFilter(self, obj, event):
+        if obj is self.view and event.type() == QEvent.Type.Resize:
+            # Once the view has laid out its viewport for the new size
+            QTimer.singleShot(0, self.PlaceOverlays)
+        return super().eventFilter(obj, event)
+
+    def PlaceOverlays(self):
+        """The zoom in the bracket's bottom right corner, the players
+        placed by hand in its bottom left."""
+        area = self.view.viewport().geometry()
+        margin = 12
+        for widget, right in ((self.zoomBar, True), (self.editsNotice, False)):
+            widget.adjustSize()
+            x = area.right() - widget.width() - margin + 1 if right else area.left() + margin
+            widget.move(x, area.bottom() - widget.height() - margin + 1)
+            widget.raise_()
+
+    def UpdateZoomLabel(self):
+        self.zoomLabel.setText(f"{round(self.view.Zoom() * 100)}%")
+
+    # Header
+    def BuildChannelMenu(self):
+        """Every channel, for when they don't all fit in the tabs."""
+        self.channelMenu.clear()
+        focus = BracketFocus.instance
+        for index, name in enumerate(focus.channels):
+            action = self.channelMenu.addAction(name)
+            action.setCheckable(True)
+            action.setChecked(name == focus.current)
+            action.triggered.connect(
+                lambda _checked=False, index=index: self.channelTabs.setCurrentIndex(index)
+            )
+        self.channelMenu.addSeparator()
+        self.channelMenu.addAction(
+            QApplication.translate("app", "New channel..."), self.focusBar.AddChannel
+        )
+
+    def BuildPhaseMenu(self):
+        self.phaseMenu.clear()
+        current = self.Ch().phase
+        for phase in self.tournament.phases:
+            text = f"{phase.name} ({TypeName(phase.type)})"
+            if phase.providerPhaseGroupId is not None:
+                text += " · start.gg"
+            action = self.phaseMenu.addAction(text)
+            action.setCheckable(True)
+            action.setChecked(phase.id == current)
+            action.triggered.connect(lambda _checked=False, id=phase.id: self.Ch().SetPhase(id))
+        self.phaseMenu.addSeparator()
+        self.phaseMenu.addAction(QApplication.translate("app", "New phase"), self.NewPhase)
+        self.phaseMenu.addAction(
+            QApplication.translate("app", "Phases and players..."),
+            lambda: self.btToggleSide.setChecked(True),
+        )
+
+    def UpdateHeader(self):
+        phase = self.CurrentPhase()
+        name = phase.name if phase else QApplication.translate("app", "No phase")
+        metrics = self.phaseButton.fontMetrics()
+        self.phaseButton.setText(metrics.elidedText(name, Qt.TextElideMode.ElideRight, 260))
+        self.phaseTypeLabel.setText(TypeName(phase.type) if phase else "")
+        self.phaseTypeLabel.setVisible(phase is not None)
+        self.UpdateSourceChip()
+
+    def UpdateSourceChip(self):
+        """The source button: where the channel's phase comes from, and when
+        its sets are updated next."""
+        provider = TournamentDataManager.instance.provider
+        source = {"StartGG": "start.gg", "ParryGG": "parry.gg"}.get(
+            getattr(provider, "NAME", ""), "start.gg"
+        )
+        phase = self.CurrentPhase()
+        loaded = self.ProviderPhases()
+        if provider is None:
+            detail = QApplication.translate("app", "No tournament loaded")
+        elif phase is not None and phase.providerPhaseGroupId is not None:
+            detail = phase.name
+        elif loaded:
+            detail = QApplication.translate("app", "{0} loaded").format(len(loaded))
+        else:
+            detail = QApplication.translate("app", "Load a bracket")
+        text = f"{source} · {detail}"
+        scheduler = Scheduler.instance
+        if scheduler.IsEnabled("bracket_sets") and loaded:
+            if scheduler.IsRunning("bracket_sets"):
+                text += " · " + QApplication.translate("app", "Updating...")
+            else:
+                remaining = scheduler.RemainingMs("bracket_sets")
+                if remaining is not None:
+                    text += " · " + QApplication.translate("app", "next in {0}s").format(
+                        round(remaining / 1000)
+                    )
+        metrics = self.btSource.fontMetrics()
+        self.btSource.setText(metrics.elidedText(text, Qt.TextElideMode.ElideMiddle, 300))
+        self.sourceTitle.setText(QApplication.translate("app", "Load from {0}").format(source))
+
+        colors = Theme.Colors()
+        color = colors["accent"] if loaded else colors["muted"]
+        if getattr(self, "_sourceDotColor", None) != color.name():
+            self._sourceDotColor = color.name()
+            ratio = self.devicePixelRatioF()
+            pixmap = QPixmap(round(10 * ratio), round(10 * ratio))
+            pixmap.setDevicePixelRatio(ratio)
+            pixmap.fill(Qt.GlobalColor.transparent)
+            painter = QPainter(pixmap)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(color)
+            painter.drawEllipse(QRectF(1, 1, 8, 8))
+            painter.end()
+            self.btSource.setIcon(QIcon(pixmap))
+            self.btSource.setIconSize(QSize(10, 10))
 
     # =====================================================
     # PHASES
@@ -1049,9 +1386,12 @@ class BracketWidget(QDockWidget):
 
     def UpdateView(self):
         phase = self.CurrentPhase()
-        self.phaseTitle.setText(phase.name if phase else "")
+        self.UpdateHeader()
         bracket = phase.bracket if phase else None
-        self.btClearEdits.setVisible(bracket is not None and bracket.HasOverrides())
+        edits = bracket is not None and bracket.HasOverrides()
+        if edits != self.editsNotice.isVisible():
+            self.editsNotice.setVisible(edits)
+            self.PlaceOverlays()
         pool = bracket is not None and bracket.IsPool()
         self.standingsTable.setVisible(pool)
         self.limitExport.setEnabled(not pool)
@@ -1415,6 +1755,7 @@ class BracketWidget(QDockWidget):
             self.phaseSelection.addItem(phase.get("name"), phase)
         self.phaseSelection.blockSignals(False)
         self.UpdatePhaseGroups()
+        self.UpdateSourceChip()
 
     def UpdatePhaseGroups(self):
         self.phaseGroupSelection.clear()
@@ -1627,6 +1968,7 @@ class BracketWidget(QDockWidget):
         scheduler = Scheduler.instance
         if not scheduler.IsEnabled("bracket_sets"):
             self.labelAutoUpdateTimer.setVisible(False)
+            self.UpdateSourceChip()
             return
         self.labelAutoUpdateTimer.setVisible(True)
         if not self.ProviderPhases():
@@ -1643,6 +1985,7 @@ class BracketWidget(QDockWidget):
                         round(remaining / 1000)
                     )
                 )
+        self.UpdateSourceChip()
 
     def ApplySetsUpdate(self, update):
         id = update.get("phaseGroupId")

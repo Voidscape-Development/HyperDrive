@@ -4,9 +4,19 @@ The [Bracket](hyperdrive://open/bracket) tab shows brackets on stream: start.gg 
 groups, or brackets you build yourself. It supports double elimination, single elimination,
 round robin and swiss.
 
+## The layout of the tab
+
+- **The header** shows the [channel](#channels) tabs, the channel's phase as its title (click it
+  to show another phase), the people button for the phases and players window, and on the right
+  the **start.gg** button: where the bracket comes from and when its sets update next.
+- **The bar under it** is what goes on stream: the channel's **Top** N and the
+  [focus](#bracket-focus).
+- **Over the bracket**, bottom right: zoom out, zoom in and **Fit**. Bottom left, when sets
+  have players placed by hand: **Clear manual changes**.
+
 ## Loading a bracket from start.gg
 
-With a [tournament](tournaments.md) loaded:
+With a [tournament](tournaments.md) loaded, click the **start.gg** button in the header:
 
 1. Pick the **Phase** and the **Phase Group** (e.g. *Top 8*).
 2. Click **Load**. The group's players and sets are loaded, and shown on this channel.
@@ -14,13 +24,15 @@ With a [tournament](tournaments.md) loaded:
 
 **Update sets** updates the results without reloading the players. **Auto update** does it
 periodically, as the bracket progresses; the interval is in
-[Settings › General](hyperdrive://open/settings/general).
+[Settings › General](hyperdrive://open/settings/general). The start.gg button counts down
+to the next update.
 
 Results come from start.gg. Changes you make here only change what's shown on stream.
 
 ## Building a bracket by hand
 
-Click **Phases** to open the phases and players window, then **New phase**:
+Click the people button (or the phase title, then **Phases and players...**) to open the phases and players
+window, then **New phase**:
 
 | Option | What it does |
 | - | - |
@@ -38,33 +50,34 @@ Click **Phases** to open the phases and players window, then **New phase**:
 
 ## What goes on stream
 
-- **Only show the top**: only sends the sets of players who can still finish in the top N,
-  e.g. a top 8 out of a bigger bracket.
-- **Clear manual changes**: puts back the players the bracket gives each set, undoing
-  players placed by hand.
+- **Top**: only sends the sets of players who can still finish in the top N, e.g. a top 8
+  out of a bigger bracket.
+- **Clear manual changes** (over the bracket, when there are some): puts back the players
+  the bracket gives each set, undoing players placed by hand.
 - **Fit** zooms the view to the whole bracket.
 
 ## Channels
 
 Each tab of the bracket is a *channel*: it shows one phase on its own, e.g. a pool bracket
 on one screen and top 8 on another. **+** adds a channel; right-click a tab to rename or
-remove it.
+remove it. With more channels than fit, the tabs scroll and a ▾ button lists them all.
 
 Layouts show the `main` channel. Add `?channel=<name>` to a layout's URL to show another one.
 
 ## Bracket focus
 
-`layout/bracket_focus` zooms to part of the bracket and follows the action. The **Layout
-focus** bar picks what it shows:
+`layout/bracket_focus` zooms to part of the bracket and follows the action. **Focus** picks
+what it shows, one mode at a time; the setting of the mode in use shows next to it. What the
+layout shows now is on the right of the bar.
 
-| Control | What it does |
+| Mode | What it does |
 | - | - |
-| **Whole bracket** | Shows everything |
-| **Focus selected** | Zooms to the sets and rounds you Ctrl+click, and highlights them |
-| **Previous round**, **Next round** | Steps through the rounds |
-| **Player's run…** | Zooms to every set of a player |
-| **Follow scoreboard** | Keeps zooming to the set on a scoreboard |
-| **Round tour** | Shows the whole bracket, then each round in turn, over and over |
+| **Whole** | Shows everything |
+| **Selected** | Zooms to the sets and rounds you Ctrl+click, and highlights them. **Unselect** clears them |
+| **Round** | Zooms to a round; ◀ ▶ step through the rounds |
+| **Player** | Zooms to every set of the player you pick |
+| **Follow** | Keeps zooming to the set on a **Scoreboard** |
+| **Tour** | Shows the whole bracket, then each round in turn, over and over, **Each step** seconds; ◀ ▶ skip steps |
 
 The focus can also be driven from a phone at `/bracket-focus-app` (see
 [Web pages](web-pages.md)) or a [Stream Deck](stream-deck.md).
