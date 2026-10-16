@@ -214,6 +214,40 @@ def TestCustomThemes():
     assert sorted(Theme.CustomThemes()) == ["Renamed"]
 
 
+def LinkColor(label):
+    # The most common saturated color: the link's
+    image = label.grab().toImage()
+    counts = {}
+    for x in range(image.width()):
+        for y in range(image.height()):
+            color = image.pixelColor(x, y)
+            if color.saturation() > 120:
+                counts[color.name()] = counts.get(color.name(), 0) + 1
+    return max(counts, key=counts.get) if counts else None
+
+
+def TestLinksTakeAccent():
+    from qtpy.QtWidgets import QApplication, QLabel
+
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    app = QApplication.instance() or QApplication(sys.argv)
+    Settings({"theme": THEME_DARK, "accent_color": "#22c55e"})
+    Theme.Apply()
+    label = QLabel("Open <a href='http://localhost'>http://localhost:5500</a> now")
+    label.resize(400, 30)
+    label.show()
+    app.processEvents()
+    assert LinkColor(label) == Theme.Colors()["accentText"].name()
+
+    # A label shown before the accent changed takes the new one too
+    Settings({"theme": THEME_DARK, "accent_color": "#e11d48"})
+    Theme.Apply()
+    app.processEvents()
+    assert LinkColor(label) == Theme.Colors()["accentText"].name()
+    assert "<a href='http://localhost'>" in label.text()
+    label.close()
+
+
 if __name__ == "__main__":
     tests = [v for k, v in list(globals().items()) if k.startswith("Test")]
     for test in tests:

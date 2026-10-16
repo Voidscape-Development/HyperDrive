@@ -585,6 +585,7 @@ class Theme:
         app.setFont(font)
 
         app.setStyleSheet(Theme.StyleSheet(colors, theme))
+        Theme.RefreshLinks()
 
         if not Theme._systemSignalConnected:
             hints = QApplication.styleHints()
@@ -593,6 +594,21 @@ class Theme:
                     lambda scheme: Theme.Apply() if Theme.Mode() == THEME_SYSTEM else None
                 )
                 Theme._systemSignalConnected = True
+
+    @staticmethod
+    def RefreshLinks():
+        """Links in labels take the palette's link color (the accent) when
+        their text is set, and keep it: they're set again so they take the
+        new one. Setting the same text does nothing, so it's cleared first."""
+        for widget in QApplication.allWidgets():
+            if (
+                isinstance(widget, QLabel)
+                and widget.textFormat() != Qt.TextFormat.PlainText
+                and "<a " in widget.text()
+            ):
+                text = widget.text()
+                widget.setText("")
+                widget.setText(text)
 
     @staticmethod
     def Palette(c):

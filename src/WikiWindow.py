@@ -303,6 +303,18 @@ class WikiWindow(QWidget):
     # =====================================================
     # SEARCH
     # =====================================================
+    def changeEvent(self, event):
+        # The page and the search results keep the colors they were shown
+        # with: shown again in the new theme's, where they were
+        if event.type() == QEvent.Type.PaletteChange and self.page is not None:
+            scroll = self.browser.verticalScrollBar().value()
+            self.browser.document().setDefaultStyleSheet(self.StyleSheet())
+            self.browser.setHtml(Wiki.Html(self.page))
+            self.browser.verticalScrollBar().setValue(scroll)
+            if self.search.text().strip():
+                self.UpdateSearch(self.search.text())
+        super().changeEvent(event)
+
     def _FocusSearch(self):
         self.search.setFocus()
         self.search.selectAll()
