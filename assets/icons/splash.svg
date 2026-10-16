@@ -2,39 +2,28 @@
   <title>HyperDrive splash screen</title>
   <!-- Rendered to splash.png at 2x. Fonts are Saira (SIL OFL), from layout/fonts -->
   <style>
-    @font-face { font-family: "Saira HD"; font-weight: 800; font-style: italic;
-      src: url("../../layout/fonts/Saira/Saira-ExtraBoldItalic.ttf"); }
-    .word { font-family: "Saira HD"; font-weight: 800; font-style: italic; font-size: 56px; letter-spacing: -0.5px; }
+    @font-face { font-family: "Saira HD Condensed"; font-weight: 800; font-style: italic;
+      src: url("../../layout/fonts/Saira/Saira_Condensed-ExtraBoldItalic.ttf"); }
+    @font-face { font-family: "Saira HD"; font-weight: 500;
+      src: url("../../layout/fonts/Saira/Saira-Medium.ttf"); }
+    .word { font-family: "Saira HD Condensed"; font-weight: 800; font-style: italic; font-size: 54px; letter-spacing: 1px; }
+    .tag { font-family: "Saira HD"; font-weight: 500; font-size: 10px; letter-spacing: 0.4px; }
   </style>
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1c1660"/>
-      <stop offset="1" stop-color="#090920"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#22d3ee"/>
-      <stop offset="0.5" stop-color="#8b5cf6"/>
-      <stop offset="1" stop-color="#ec4899"/>
-    </linearGradient>
-    <linearGradient id="drive" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#67e8f9"/>
-      <stop offset="1" stop-color="#a78bfa"/>
-    </linearGradient>
-  </defs>
 
-  <rect width="540" height="220" fill="url(#bg)"/>
+  <rect width="540" height="220" fill="#111214"/>
 
-  <!-- Warp lines -->
-  <g stroke="#ffffff" stroke-linecap="round" stroke-opacity="0.18">
-    <line x1="210" y1="26" x2="330" y2="26" stroke-width="2"/>
-    <line x1="380" y1="48" x2="520" y2="48" stroke-width="2"/>
-    <line x1="300" y1="186" x2="440" y2="186" stroke-width="2"/>
-    <line x1="420" y1="200" x2="528" y2="200" stroke-width="1.5"/>
-  </g>
+  <!-- Mark, with two faint chevrons trailing behind it -->
+  <svg x="-17.5" y="67.5" width="189" height="85" viewBox="-102 56 320 144">
+    <g transform="translate(-10 0)">
+      <path d="M-84 64 H-40 L10 128 L-40 192 H-84 L-34 128 Z" fill="#1A1B1F"/>
+      <path d="M-14 64 H30 L80 128 L30 192 H-14 L36 128 Z" fill="#26272C"/>
+      <path d="M56 64 H100 L150 128 L100 192 H56 L106 128 Z" fill="#F4F4F2"/>
+      <path d="M126 64 H170 L220 128 L170 192 H126 L176 128 Z" fill="#FFB800"/>
+    </g>
+  </svg>
 
-  <image href="icon.svg" x="26" y="30" width="160" height="160"/>
+  <text x="200" y="122" class="word" fill="#F4F4F2">HYPERDRIVE</text>
+  <text x="201" y="141" class="tag" fill="#9A9BA3">Stream helper for fighting game tournaments</text>
 
-  <text x="206" y="130" class="word" fill="#ffffff">Hyper<tspan fill="url(#drive)">Drive</tspan></text>
-
-  <rect y="214" width="540" height="6" fill="url(#accent)"/>
+  <rect y="218" width="540" height="2" fill="#FFB800"/>
 </svg>
