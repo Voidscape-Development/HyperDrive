@@ -296,9 +296,7 @@ class BracketWidget(QDockWidget):
         self.btSource = QToolButton()
         self.btSource.setObjectName("sourceChip")
         self.btSource.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.btSource.setToolTip(
-            QApplication.translate("app", "Load a phase group from start.gg, and update its sets")
-        )
+        self.btSource.setToolTip(QApplication.translate("app", "Load a phase group from start.gg"))
         self.btSource.clicked.connect(lambda: self.sourcePopup.ShowUnder(self.btSource))
         tabsRow.addWidget(self.btSource)
 
@@ -345,10 +343,22 @@ class BracketWidget(QDockWidget):
         self.btLoadPhaseGroup.clicked.connect(self.PhaseGroupChanged)
         self.btLoadPhaseGroup.clicked.connect(self.sourcePopup.hide)
         sourceLayout.addWidget(self.btLoadPhaseGroup)
-        self.sourceDivider = QFrame()
-        self.sourceDivider.setFixedHeight(1)
-        sourceLayout.addWidget(self.sourceDivider)
-        self.btRefreshSets = QPushButton(QApplication.translate("app", "Update sets"))
+        self.sourceNote = QLabel(
+            QApplication.translate(
+                "app",
+                "Results come from start.gg. Changes made here only affect what's shown on stream.",
+            )
+        )
+        self.sourceNote.setWordWrap(True)
+        sourceLayout.addWidget(self.sourceNote)
+
+        # Updating the loaded phase groups' sets: over the bracket, next to
+        # the zoom (see below), as it's asked for often during a bracket
+        self.btRefreshSets = QToolButton()
+        self.btRefreshSets.setText(QApplication.translate("app", "Update sets"))
+        self.btRefreshSets.setIcon(ThemedIcon("./assets/icons/undo.svg"))
+        self.btRefreshSets.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.btRefreshSets.setAutoRaise(True)
         self.btRefreshSets.setToolTip(
             QApplication.translate(
                 "app",
@@ -364,20 +374,6 @@ class BracketWidget(QDockWidget):
             )
         )
         self.labelAutoUpdateTimer = QLabel()
-        updateRow = QHBoxLayout()
-        updateRow.addWidget(self.btRefreshSets)
-        updateRow.addWidget(self.cbAutoUpdateSets)
-        updateRow.addStretch(1)
-        updateRow.addWidget(self.labelAutoUpdateTimer)
-        sourceLayout.addLayout(updateRow)
-        self.sourceNote = QLabel(
-            QApplication.translate(
-                "app",
-                "Results come from start.gg. Changes made here only affect what's shown on stream.",
-            )
-        )
-        self.sourceNote.setWordWrap(True)
-        sourceLayout.addWidget(self.sourceNote)
 
         # The player list changes as it's built, which updates these
         self.view = BracketView()
@@ -448,7 +444,28 @@ class BracketWidget(QDockWidget):
         viewSplitter.addWidget(self.standingsTable)
         viewSplitter.setSizes([3, 1])
 
-        # Over the bracket's corners: the zoom, and players placed by hand
+        # Over the bracket's corners: updating the sets and the zoom, and
+        # players placed by hand
+        self.updateBar = QFrame(self.view)
+        self.updateBar.setObjectName("viewOverlay")
+        updateLayout = QHBoxLayout(self.updateBar)
+        updateLayout.setContentsMargins(3, 3, 10, 3)
+        updateLayout.setSpacing(8)
+        updateLayout.addWidget(self.btRefreshSets)
+        self.updateSeparator = QFrame()
+        self.updateSeparator.setFixedSize(1, 18)
+        updateLayout.addWidget(self.updateSeparator)
+        updateLayout.addWidget(self.cbAutoUpdateSets)
+        # As wide as its longest text, so the bar doesn't jump as it counts
+        self.labelAutoUpdateTimer.setMinimumWidth(
+            self.labelAutoUpdateTimer.fontMetrics().horizontalAdvance(
+                QApplication.translate("app", "Next update in {0}s").format("000")
+            )
+            + 4
+        )
+        updateLayout.addWidget(self.labelAutoUpdateTimer)
+        self.updateBar.hide()
+
         self.zoomBar = QFrame(self.view)
         self.zoomBar.setObjectName("viewOverlay")
         zoomLayout = QHBoxLayout(self.zoomBar)
@@ -811,14 +828,16 @@ class BracketWidget(QDockWidget):
             f"QFrame#sourcePopup {{ background: {c['surface']}; border: 1px solid {c['border']};"
             f" border-radius: {radius + 2}px; }}"
         )
-        self.sourceDivider.setStyleSheet(f"background: {c['raised']};")
         self.sourceNote.setStyleSheet(f"color: {c['muted']};")
         overlay = (
             f"QFrame#viewOverlay {{ background: {c['surface']}; border: 1px solid {c['border']};"
             f" border-radius: {radius + 2}px; }}"
         )
+        self.updateBar.setStyleSheet(overlay)
         self.zoomBar.setStyleSheet(overlay)
         self.editsNotice.setStyleSheet(overlay)
+        self.updateSeparator.setStyleSheet(f"background: {c['border']};")
+        self.labelAutoUpdateTimer.setStyleSheet(f"color: {c['muted']};")
         self.zoomLabel.setStyleSheet(f"color: {c['muted']};")
         self.editsNoticeLabel.setStyleSheet(f"color: {c['muted']};")
         self.UpdateHeader()
@@ -836,15 +855,29 @@ class BracketWidget(QDockWidget):
         return super().eventFilter(obj, event)
 
     def PlaceOverlays(self):
-        """The zoom in the bracket's bottom right corner, the players
-        placed by hand in its bottom left."""
+        """In the bracket's bottom right corner the zoom, with updating the
+        sets on its left; in its bottom left the players placed by hand,
+        a row up if the view is too narrow for both."""
         area = self.view.viewport().geometry()
-        margin = 12
-        for widget, right in ((self.zoomBar, True), (self.editsNotice, False)):
+        margin, gap = 12, 8
+        for widget in (self.zoomBar, self.updateBar, self.editsNotice):
             widget.adjustSize()
-            x = area.right() - widget.width() - margin + 1 if right else area.left() + margin
-            widget.move(x, area.bottom() - widget.height() - margin + 1)
             widget.raise_()
+        bottom = area.bottom() - margin + 1
+        right = area.right() - margin + 1
+        self.zoomBar.move(right - self.zoomBar.width(), bottom - self.zoomBar.height())
+        left = self.zoomBar.x()
+        if self.updateBar.isVisibleTo(self.view):
+            self.updateBar.move(
+                left - gap - self.updateBar.width(),
+                bottom - self.updateBar.height(),
+            )
+            left = self.updateBar.x()
+        notice = self.editsNotice
+        y = bottom - notice.height()
+        if area.left() + margin + notice.width() + gap > left:
+            y -= notice.height() + gap
+        notice.move(area.left() + margin, y)
 
     def UpdateZoomLabel(self):
         self.zoomLabel.setText(f"{round(self.view.Zoom() * 100)}%")
@@ -894,8 +927,7 @@ class BracketWidget(QDockWidget):
         self.UpdateSourceChip()
 
     def UpdateSourceChip(self):
-        """The source button: where the channel's phase comes from, and when
-        its sets are updated next."""
+        """The source button: where the channel's phase comes from."""
         provider = TournamentDataManager.instance.provider
         source = {"StartGG": "start.gg", "ParryGG": "parry.gg"}.get(
             getattr(provider, "NAME", ""), "start.gg"
@@ -911,16 +943,6 @@ class BracketWidget(QDockWidget):
         else:
             detail = QApplication.translate("app", "Load a bracket")
         text = f"{source} · {detail}"
-        scheduler = Scheduler.instance
-        if scheduler.IsEnabled("bracket_sets") and loaded:
-            if scheduler.IsRunning("bracket_sets"):
-                text += " · " + QApplication.translate("app", "Updating...")
-            else:
-                remaining = scheduler.RemainingMs("bracket_sets")
-                if remaining is not None:
-                    text += " · " + QApplication.translate("app", "next in {0}s").format(
-                        round(remaining / 1000)
-                    )
         metrics = self.btSource.fontMetrics()
         self.btSource.setText(metrics.elidedText(text, Qt.TextElideMode.ElideMiddle, 300))
         self.sourceTitle.setText(QApplication.translate("app", "Load from {0}").format(source))
@@ -1389,8 +1411,13 @@ class BracketWidget(QDockWidget):
         self.UpdateHeader()
         bracket = phase.bracket if phase else None
         edits = bracket is not None and bracket.HasOverrides()
-        if edits != self.editsNotice.isVisible():
+        # Updating the sets, once a start.gg phase group is loaded
+        provider = bool(self.ProviderPhases())
+        if edits != self.editsNotice.isVisibleTo(
+            self.view
+        ) or provider != self.updateBar.isVisibleTo(self.view):
             self.editsNotice.setVisible(edits)
+            self.updateBar.setVisible(provider)
             self.PlaceOverlays()
         pool = bracket is not None and bracket.IsPool()
         self.standingsTable.setVisible(pool)
@@ -1966,11 +1993,13 @@ class BracketWidget(QDockWidget):
 
     def UpdateAutoUpdateTimer(self):
         scheduler = Scheduler.instance
-        if not scheduler.IsEnabled("bracket_sets"):
-            self.labelAutoUpdateTimer.setVisible(False)
-            self.UpdateSourceChip()
+        enabled = scheduler.IsEnabled("bracket_sets")
+        if enabled != self.labelAutoUpdateTimer.isVisibleTo(self.updateBar):
+            self.labelAutoUpdateTimer.setVisible(enabled)
+            # The update bar got wider or narrower
+            QTimer.singleShot(0, self.PlaceOverlays)
+        if not enabled:
             return
-        self.labelAutoUpdateTimer.setVisible(True)
         if not self.ProviderPhases():
             self.labelAutoUpdateTimer.setText(
                 QApplication.translate("app", "Waiting for a loaded bracket")
@@ -1985,7 +2014,6 @@ class BracketWidget(QDockWidget):
                         round(remaining / 1000)
                     )
                 )
-        self.UpdateSourceChip()
 
     def ApplySetsUpdate(self, update):
         id = update.get("phaseGroupId")

@@ -8,11 +8,12 @@ round robin and swiss.
 
 - **The header** shows the [channel](#channels) tabs, the channel's phase as its title (click it
   to show another phase), the people button for the phases and players window, and on the right
-  the **start.gg** button: where the bracket comes from and when its sets update next.
+  the **start.gg** button: where the bracket comes from, and loading it.
 - **The bar under it** is what goes on stream: the channel's **Top** N and the
   [focus](#bracket-focus).
-- **Over the bracket**, bottom right: zoom out, zoom in and **Fit**. Bottom left, when sets
-  have players placed by hand: **Clear manual changes**.
+- **Over the bracket**, bottom right: **Update sets** and **Auto update** (once a start.gg
+  phase group is loaded), then zoom out, zoom in and **Fit**. Bottom left, when sets have
+  players placed by hand: **Clear manual changes**.
 
 ## Loading a bracket from start.gg
 
@@ -22,10 +23,10 @@ With a [tournament](tournaments.md) loaded, click the **start.gg** button in the
 2. Click **Load**. The group's players and sets are loaded, and shown on this channel.
    Loading it again reloads it.
 
-**Update sets** updates the results without reloading the players. **Auto update** does it
-periodically, as the bracket progresses; the interval is in
-[Settings › General](hyperdrive://open/settings/general). The start.gg button counts down
-to the next update.
+Once it's loaded, **Update sets** in the bracket's bottom right corner updates the results
+without reloading the players. **Auto update**, next to it, does it periodically as the
+bracket progresses, and counts down to the next update; the interval is in
+[Settings › General](hyperdrive://open/settings/general).
 
 Results come from start.gg. Changes you make here only change what's shown on stream.
 
