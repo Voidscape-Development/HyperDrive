@@ -6,7 +6,8 @@
 #   assets/icons/splash.svg -> assets/icons/splash.png (drawn at 2x)
 #
 # Needs a Chromium/Chrome binary (set CHROME to its path if it isn't on PATH)
-# and ImageMagick's convert.
+# and ImageMagick's convert. Recent Chrome builds crop --window-size screenshots;
+# if the output is cut off, point CHROME at chrome-headless-shell instead.
 
 set -e
 
