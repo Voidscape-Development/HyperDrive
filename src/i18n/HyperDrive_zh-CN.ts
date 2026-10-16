@@ -1047,7 +1047,7 @@
         <location filename="../HyperDrive.py" line="1261"/>
         <location filename="../SelectStationWindow.py" line="745"/>
         <location filename="../TournamentDataManager.py" line="227"/>
-        <location filename="../SelectSetWindow.py" line="750"/>
+        <location filename="../SelectSetWindow.py" line="752"/>
         <location filename="../Helpers/DownloadHelper.py" line="217"/>
         <source>Cancel</source>
         <translation>取消</translation>
@@ -2036,7 +2036,7 @@
     </message>
     <message>
         <location filename="../SelectSetWindow.py" line="373"/>
-        <location filename="../SelectSetWindow.py" line="915"/>
+        <location filename="../SelectSetWindow.py" line="917"/>
         <source>vs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2099,37 +2099,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="743"/>
+        <location filename="../SelectSetWindow.py" line="745"/>
         <source>↑ ↓ to move · Enter or double-click to load · Ctrl+F to search · Esc to close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="784"/>
+        <location filename="../SelectSetWindow.py" line="786"/>
         <source>{0}: Any</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="854"/>
+        <location filename="../SelectSetWindow.py" line="856"/>
         <source>Fetching sets...({0}/{1})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="872"/>
+        <location filename="../SelectSetWindow.py" line="874"/>
         <source>Updated at {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="935"/>
+        <location filename="../SelectSetWindow.py" line="937"/>
         <source>Showing {0} of {1} sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="955"/>
+        <location filename="../SelectSetWindow.py" line="957"/>
         <source>There are no sets to show.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="958"/>
+        <location filename="../SelectSetWindow.py" line="960"/>
         <source>No sets match the search and filters.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2228,27 +2228,27 @@
         <translation>第{0}局</translation>
     </message>
     <message>
-        <location filename="../GamesTracker.py" line="199"/>
-        <location filename="../GamesTracker.py" line="200"/>
+        <location filename="../GamesTracker.py" line="202"/>
+        <location filename="../GamesTracker.py" line="203"/>
         <location filename="../GameReportWidget.py" line="359"/>
         <source>Won by {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GamesTracker.py" line="201"/>
+        <location filename="../GamesTracker.py" line="204"/>
         <location filename="../GameReportWidget.py" line="279"/>
         <location filename="../GameReportWidget.py" line="361"/>
         <source>Draw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GamesTracker.py" line="202"/>
+        <location filename="../GamesTracker.py" line="205"/>
         <location filename="../GameReportWidget.py" line="363"/>
         <source>Not played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GamesTracker.py" line="210"/>
+        <location filename="../GamesTracker.py" line="213"/>
         <source>Open in the Games window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2522,8 +2522,8 @@
         <translation>显示完整对战配对（2人）</translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="857"/>
-        <location filename="../SelectSetWindow.py" line="953"/>
+        <location filename="../SelectSetWindow.py" line="859"/>
+        <location filename="../SelectSetWindow.py" line="955"/>
         <source>Fetching sets...</source>
         <translation>拉取对局信息中...</translation>
     </message>
@@ -6357,7 +6357,7 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WikiWindow.py" line="328"/>
+        <location filename="../WikiWindow.py" line="340"/>
         <source>No pages match your search.</source>
         <translation type="unfinished"></translation>
     </message>
