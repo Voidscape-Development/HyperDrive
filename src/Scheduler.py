@@ -10,6 +10,9 @@ COMPLETED_SETS_MIN_INTERVAL_SECS = 30
 SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS = 5
 SCOREBOARD_AUTO_UPDATE_MIN_INTERVAL_SECS = 3
 SCOREBOARD_AUTO_UPDATE_GROUP = "scoreboard_auto_update"
+# A tracked stream's or station's next set loads this long after it comes
+# up, so it can be held; 0 loads it at once
+TRACKING_NEXT_SET_DEFAULT_DELAY_SECS = 5
 # The loaded bracket's set results are pulled this often
 BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS = 30
 BRACKET_AUTO_UPDATE_MIN_INTERVAL_SECS = 15

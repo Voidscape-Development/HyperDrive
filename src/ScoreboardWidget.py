@@ -25,6 +25,7 @@ from .Scheduler import (
     SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
     SCOREBOARD_AUTO_UPDATE_GROUP,
     SCOREBOARD_AUTO_UPDATE_MIN_INTERVAL_SECS,
+    TRACKING_NEXT_SET_DEFAULT_DELAY_SECS,
     Scheduler,
 )
 from .ScoreboardPlayerWidget import ScoreboardPlayerWidget
@@ -133,6 +134,14 @@ class ScoreboardWidget(QWidget):
         # tracking bar; None when the set on the scoreboard isn't the one
         # being tracked (waiting for a stream's next set)
         self.trackedSet = None
+        # The tracked stream's or station's next set, waiting to load (see
+        # WaitToSwitch), and whether it's held until loaded by hand
+        self.nextSet = None
+        self.nextSetHeld = False
+        self.nextSetTimer = QTimer(self)
+        self.nextSetTimer.setSingleShot(True)
+        self.nextSetTimer.setTimerType(Qt.TimerType.PreciseTimer)
+        self.nextSetTimer.timeout.connect(self.LoadNextSet)
         # Tracking a stream or station from its next set: the set on it when
         # tracking starts isn't loaded
         self.waitForNextSet = False
@@ -273,6 +282,8 @@ class ScoreboardWidget(QWidget):
         self.trackingBar = TrackingBar()
         self.trackingBar.changeClicked.connect(self.ChangeTracking)
         self.trackingBar.stopClicked.connect(lambda: self.StopAutoUpdate(clear_variables=True))
+        self.trackingBar.loadNowClicked.connect(self.LoadNextSet)
+        self.trackingBar.holdClicked.connect(self.HoldNextSet)
         self.trackingBar.setVisible(False)
         bottomOptions.layout().addWidget(self.trackingBar)
 
@@ -1023,6 +1034,7 @@ class ScoreboardWidget(QWidget):
         self.lastStationSelected = station
         self.waitForNextSet = bool(station.get("wait_for_next"))
         self.trackedSet = None
+        self.ClearNextSet()
         # The queue of what was tracked before isn't this one's
         StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", {})
         self.stationQueueCache.UpdateQueue([])
@@ -1040,6 +1052,55 @@ class ScoreboardWidget(QWidget):
 
         StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", data)
 
+    # A tracked stream's or station's next set loads after a countdown in the
+    # tracking bar, so the set on the scoreboard can be held there a while
+    def WaitToSwitch(self, data):
+        """Whether data, a tracked stream's or station's set, waits before it
+        loads. Starts or keeps the countdown."""
+        if data.get("auto_update") not in (MODE_STREAM, MODE_STATION) or data.get("load_now"):
+            # Picked by hand, or the countdown is over
+            self.ClearNextSet()
+            return False
+        if data.get("id") is None or data.get("id") == self.lastSetSelected:
+            # Nothing came up, or the set on the scoreboard is back on top
+            self.ClearNextSet()
+            return False
+        delay = SettingsManager.Get(
+            "general.tracking_next_set_delay", TRACKING_NEXT_SET_DEFAULT_DELAY_SECS
+        )
+        # The first set of a stream or station loads at once
+        if self.trackedSet is None or not delay or delay <= 0:
+            return False
+        if self.nextSet is None or str(self.nextSet.get("id")) != str(data.get("id")):
+            if not self.nextSetHeld:
+                self.nextSetTimer.start(int(delay * 1000))
+        self.nextSet = data
+        self.ShowNextSet()
+        return True
+
+    def ShowNextSet(self):
+        if self.nextSet is not None:
+            self.trackingBar.ShowNextSet(
+                self.nextSet, self.nextSetTimer.remainingTime(), self.nextSetHeld
+            )
+
+    def LoadNextSet(self):
+        data = self.nextSet
+        self.ClearNextSet()
+        if data is not None:
+            self.NewSetSelected(dict(data, load_now=True))
+
+    def HoldNextSet(self):
+        self.nextSetHeld = True
+        self.nextSetTimer.stop()
+        self.ShowNextSet()
+
+    def ClearNextSet(self):
+        self.nextSetTimer.stop()
+        self.nextSet = None
+        self.nextSetHeld = False
+        self.trackingBar.HideNextSet()
+
     def NewSetSelected(self, data):
         if self.waitForNextSet and data.get("auto_update") in ("stream", "station"):
             # The first look at the stream or station: its set now counts as
@@ -1047,6 +1108,9 @@ class ScoreboardWidget(QWidget):
             self.waitForNextSet = False
             self.lastSetSelected = data.get("id")
             self.trackedSet = None
+
+        if self.WaitToSwitch(data):
+            return
 
         # A set picked in the set list says whether to keep it updated;
         # otherwise the setting decides
@@ -1410,6 +1474,7 @@ class ScoreboardWidget(QWidget):
     def StopAutoUpdate(self, clear_variables=False):
         self.autoUpdateData = None
         Scheduler.instance.Stop(self.autoUpdateJob)
+        self.ClearNextSet()
 
         if clear_variables:
             self.lastSetSelected = None
@@ -1435,6 +1500,7 @@ class ScoreboardWidget(QWidget):
         self.trackingBar.SetCountdown(Scheduler.instance.RemainingMs(self.autoUpdateJob))
         # The next set can change with the stream queue, refreshed on its own
         self.RefreshTrackingBar()
+        self.ShowNextSet()
 
     def RefreshTrackingBar(self):
         """The tracking bar's set now and next."""

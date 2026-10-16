@@ -6,7 +6,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from .SelectSetWindow import ScaledFont, ThemeColors
-from .SelectStationWindow import QueueFor, QueueSets, SetLine
+from .SelectStationWindow import QueueFor, QueueSets, SetLine, SetTitle
 from .Theme import Theme, ThemedIcon
 
 MODE_SET = "set"
@@ -61,6 +61,8 @@ def QueueOf(mode, name, streamQueues, stationQueue):
 class TrackingBar(QFrame):
     changeClicked = Signal()
     stopClicked = Signal()
+    loadNowClicked = Signal()
+    holdClicked = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -113,6 +115,32 @@ class TrackingBar(QFrame):
         sets.addWidget(self.nextLabel, 1, 1)
         layout.addLayout(sets)
 
+        # The next set came up: it loads after a countdown, unless held
+        self.notice = QFrame()
+        self.notice.setObjectName("nextSetNotice")
+        noticeLayout = QHBoxLayout(self.notice)
+        noticeLayout.setContentsMargins(10, 6, 6, 6)
+        noticeLayout.setSpacing(8)
+        self.noticeLabel = QLabel()
+        self.noticeLabel.setWordWrap(True)
+        self.noticeLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        noticeLayout.addWidget(self.noticeLabel, 1)
+        self.loadNowButton = QPushButton(QApplication.translate("app", "Load now"))
+        self.loadNowButton.setAutoDefault(False)
+        self.loadNowButton.clicked.connect(self.loadNowClicked.emit)
+        noticeLayout.addWidget(self.loadNowButton)
+        self.holdButton = QPushButton(QApplication.translate("app", "Hold"))
+        self.holdButton.setAutoDefault(False)
+        self.holdButton.setToolTip(
+            QApplication.translate(
+                "app", "Keep the set on the scoreboard until you load the next one"
+            )
+        )
+        self.holdButton.clicked.connect(self.holdClicked.emit)
+        noticeLayout.addWidget(self.holdButton)
+        self.notice.setVisible(False)
+        layout.addWidget(self.notice)
+
         self.mode = MODE_SET
         self.ApplyStyle()
         self.SetSets(None, None)
@@ -130,6 +158,11 @@ class TrackingBar(QFrame):
                 background: {colors["selected"].name()};
                 border: 1px solid {colors["accent"].name()};
                 border-radius: {radius + 2}px;
+            }}
+            QFrame#nextSetNotice {{
+                background: {colors["surface"].name()};
+                border: 1px solid {colors["border"].name()};
+                border-radius: {radius}px;
             }}
         """)
         self.dot.setStyleSheet(f"background: {colors['accent'].name()}; border-radius: 4px;")
@@ -178,3 +211,25 @@ class TrackingBar(QFrame):
         # Long sets are cut short on screen, whole in the tooltip
         self.nowLabel.setToolTip(self.nowLabel.text())
         self.nextLabel.setToolTip(self.nextLabel.text())
+
+    def ShowNextSet(self, nextSet, remainingMs, held):
+        """The next set came up: it loads in remainingMs, or waits for Load
+        now while held."""
+        title = SetTitle(nextSet)
+        if held:
+            text = QApplication.translate(
+                "app", "Next set: {0} is held. Load it when you're ready."
+            ).format(title)
+        else:
+            text = QApplication.translate("app", "Next set: {0} loads in {1}s.").format(
+                # Rounded: a timer can run a few ms over its time
+                title,
+                max(0, round((remainingMs or 0) / 1000)),
+            )
+        self.noticeLabel.setText(text)
+        self.noticeLabel.setToolTip(SetLine(nextSet))
+        self.holdButton.setVisible(not held)
+        self.notice.setVisible(True)
+
+    def HideNextSet(self):
+        self.notice.setVisible(False)

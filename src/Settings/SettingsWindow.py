@@ -10,6 +10,7 @@ from ..Scheduler import (
     SCOREBOARD_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
     SCOREBOARD_AUTO_UPDATE_GROUP,
     SCOREBOARD_AUTO_UPDATE_MIN_INTERVAL_SECS,
+    TRACKING_NEXT_SET_DEFAULT_DELAY_SECS,
     Scheduler,
 )
 from ..SettingsManager import SettingsManager
@@ -224,6 +225,25 @@ class SettingsWindow(QDialog):
                 ),
                 None,
                 SCOREBOARD_AUTO_UPDATE_MIN_INTERVAL_SECS,
+            )
+        )
+
+        scoreboardSettings.append(
+            (
+                QApplication.translate(
+                    "settings.tracking_next_set_delay",
+                    "Seconds before a tracked stream's or station's next set loads",
+                ),
+                "tracking_next_set_delay",
+                "spinbox",
+                TRACKING_NEXT_SET_DEFAULT_DELAY_SECS,
+                lambda: None,
+                QApplication.translate(
+                    "settings.tracking_next_set_delay",
+                    "Time to hold the next set if the current one isn't over yet. "
+                    "0 loads it at once.",
+                ),
+                0,
             )
         )
 

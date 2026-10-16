@@ -1,9 +1,12 @@
 # Checks how a scoreboard takes a new set (NewSetSelected): a set picked in
 # the set list with "Keep scores updated" off, and a stream or station
-# tracked from its next set, which leaves the set on it when tracking starts.
+# tracked from its next set, which leaves the set on it when tracking starts,
+# the tracking bar, and a tracked stream's next set loading after a
+# countdown that can be held.
 # Run from the repository root: python test/test_scoreboard_auto_update.py
 import os
 import sys
+import time
 import types
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -19,6 +22,7 @@ for name, path in [
     package.__path__ = [os.path.abspath(path)]
     sys.modules[name] = package
 
+from qtpy.QtCore import QTimer
 from qtpy.QtWidgets import QApplication
 
 app = QApplication.instance() or QApplication(sys.argv)
@@ -39,6 +43,9 @@ scoreboardModule.TournamentDataManager.instance = types.SimpleNamespace(
 scoreboardModule.SettingsManager.Get = staticmethod(lambda key, default=None: default)
 scoreboardModule.StateManager.Set = staticmethod(lambda *args: None)
 scoreboardModule.StateManager.Unset = staticmethod(lambda *args: None)
+# Nothing is saved or exported
+scoreboardModule.StateManager.BlockSaving = staticmethod(lambda: None)
+scoreboardModule.StateManager.ReleaseSaving = staticmethod(lambda: None)
 
 
 class Ignored:
@@ -57,6 +64,12 @@ class Scoreboard:
     gameReport = Ignored()
     signals = types.SimpleNamespace(NewSetLoaded=Ignored())
     RefreshTrackingBar = ScoreboardWidget.RefreshTrackingBar
+    WaitToSwitch = ScoreboardWidget.WaitToSwitch
+    ShowNextSet = ScoreboardWidget.ShowNextSet
+    LoadNextSet = ScoreboardWidget.LoadNextSet
+    HoldNextSet = ScoreboardWidget.HoldNextSet
+    ClearNextSet = ScoreboardWidget.ClearNextSet
+    NewSetSelected = ScoreboardWidget.NewSetSelected
 
     def __init__(self):
         self.lastSetSelected = None
@@ -65,6 +78,11 @@ class Scoreboard:
         self.autoUpdateData = None
         self.trackedSet = None
         self.trackingBar = TrackingBar()
+        self.nextSet = None
+        self.nextSetHeld = False
+        self.nextSetTimer = QTimer()
+        self.nextSetTimer.setSingleShot(True)
+        self.nextSetTimer.timeout.connect(self.LoadNextSet)
 
     def CommandClearAll(self, **kwargs):
         pass
@@ -259,8 +277,110 @@ def TestTrackingBar():
         scoreboardModule.StateManager.state = get
 
 
+def Tracking(delay=None):
+    """A scoreboard tracking stream "main", its set 5 loaded."""
+    settings = {} if delay is None else {"general.tracking_next_set_delay": delay}
+    scoreboardModule.SettingsManager.Get = staticmethod(
+        lambda key, default=None: settings.get(key, default)
+    )
+    scoreboard = Scoreboard()
+    scoreboard.Select({"id": 5, "auto_update": "stream", **Queued(5, "Kaito", "Mira")})
+    calls.clear()
+    return scoreboard
+
+
+def Next(id, a="Sable", b="Oriel"):
+    return {"id": id, "auto_update": "stream", **Queued(id, a, b)}
+
+
+def TestNextSetCountdown():
+    get = scoreboardModule.SettingsManager.Get
+    try:
+        scoreboard = Tracking()
+        notice = scoreboard.trackingBar.notice
+        # The next set waits, the set on the scoreboard stays
+        scoreboard.Select(Next(6))
+        assert Loaded() == [] and scoreboard.lastSetSelected == 5
+        assert not notice.isHidden() and not scoreboard.trackingBar.holdButton.isHidden()
+        assert scoreboard.trackingBar.noticeLabel.text() == "Next set: Sable vs Oriel loads in 5s."
+        assert scoreboard.nextSetTimer.isActive()
+        # Seen again on the next check: the countdown goes on
+        remaining = scoreboard.nextSetTimer.remainingTime()
+        scoreboard.Select(Next(6))
+        assert Loaded() == [] and scoreboard.nextSetTimer.remainingTime() <= remaining
+
+        scoreboard.LoadNextSet()
+        assert Loaded() == [6] and scoreboard.lastSetSelected == 6
+        assert notice.isHidden() and not scoreboard.nextSetTimer.isActive()
+        # Loaded: the next check doesn't count it as new
+        calls.clear()
+        scoreboard.Select(Next(6))
+        assert Loaded() == [] and notice.isHidden()
+
+        # Held: it waits until loaded by hand, even if another comes up
+        scoreboard.Select(Next(7, "Rook", "Juno"))
+        scoreboard.HoldNextSet()
+        assert not scoreboard.nextSetTimer.isActive()
+        assert scoreboard.trackingBar.holdButton.isHidden()
+        assert "is held" in scoreboard.trackingBar.noticeLabel.text()
+        scoreboard.Select(Next(7, "Rook", "Juno"))
+        scoreboard.Select(Next(8, "Ash", "Lux"))
+        assert Loaded() == [] and scoreboard.nextSetHeld
+        assert not scoreboard.nextSetTimer.isActive()
+        assert "Ash vs Lux" in scoreboard.trackingBar.noticeLabel.text()
+        scoreboard.LoadNextSet()
+        assert Loaded() == [8] and not scoreboard.nextSetHeld
+
+        # The set on the scoreboard back on top: nothing to switch to
+        scoreboard.Select(Next(9))
+        assert not notice.isHidden()
+        scoreboard.Select(Next(8))
+        assert notice.isHidden() and Loaded() == [8]
+
+        # A set picked by hand: no switch waits any more
+        scoreboard.Select(Next(9))
+        scoreboard.Select({"id": 20, "auto_update": "set", "p1_name": "A", "p2_name": "B"})
+        assert notice.isHidden() and scoreboard.nextSet is None and Loaded() == [8, 20]
+    finally:
+        scoreboardModule.SettingsManager.Get = get
+
+
+def TestNextSetLoadsAfterTheDelay():
+    get = scoreboardModule.SettingsManager.Get
+    try:
+        # The countdown runs out
+        scoreboard = Tracking(delay=0.1)
+        scoreboard.Select(Next(6))
+        assert Loaded() == []
+        deadline = time.monotonic() + 3
+        while not Loaded() and time.monotonic() < deadline:
+            app.processEvents()
+            time.sleep(0.01)
+        assert Loaded() == [6] and scoreboard.trackingBar.notice.isHidden()
+
+        # 0: at once
+        scoreboard = Tracking(delay=0)
+        scoreboard.Select(Next(6))
+        assert Loaded() == [6] and scoreboard.trackingBar.notice.isHidden()
+
+        # The first set of a stream loads at once
+        scoreboard = Tracking()
+        scoreboard.trackedSet = None
+        scoreboard.Select(Next(6))
+        assert Loaded() == [6]
+    finally:
+        scoreboardModule.SettingsManager.Get = get
+
+
 if __name__ == "__main__":
-    for test in [TestWaitForNextSet, TestKeepUpdated, TestTrackingBarText, TestTrackingBar]:
+    for test in [
+        TestWaitForNextSet,
+        TestKeepUpdated,
+        TestTrackingBarText,
+        TestTrackingBar,
+        TestNextSetCountdown,
+        TestNextSetLoadsAfterTheDelay,
+    ]:
         test()
         print(f"{test.__name__}: OK")
     print("All scoreboard auto update checks passed")
