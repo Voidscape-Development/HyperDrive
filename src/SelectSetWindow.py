@@ -709,8 +709,10 @@ class SelectSetWindow(QDialog):
         # Enter, up and down from both, once both exist
         self.setList.installEventFilter(self)
         self.searchBar.installEventFilter(self)
-        self.setList.selectionModel().currentChanged.connect(
-            lambda current, previous: self.details.SetSet(self.SelectedSet())
+        # On the selection, not the current index: a click moves the current
+        # index before it selects the row, so the set isn't selected yet then
+        self.setList.selectionModel().selectionChanged.connect(
+            lambda selected, deselected: self.details.SetSet(self.SelectedSet())
         )
         self.columnHeader = ColumnHeader(self.setList)
         listColumn.addWidget(self.columnHeader)
