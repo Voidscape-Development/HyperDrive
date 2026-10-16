@@ -88,6 +88,18 @@ The link under the buttons, `http://<address>:5500/scoreboard`, opens a remote s
 any browser on your network: handy for a producer, or a second screen. See
 [Web pages](web-pages.md).
 
+- Tap a side to give it a point. Each side has **−** below it to take one away, and every
+  score change shows a toast with **Undo**.
+- The line above the score says where the set stands (game 4, match point, final game).
+  Once a side wins, **Load next set** takes you to the list of sets.
+- The person button below a side opens its players: tag (pick one from the player
+  database to fill in the rest), sponsor, characters and costumes, plus the side's name
+  and color.
+- On a phone, **Live** and **Up next** at the bottom switch between the score and the
+  sets. On a wider screen the sets are always on the right, and the keyboard works too:
+  **Q** / **P** add a point to the left / right side, **Shift+Q** / **Shift+P** take one
+  away and **S** swaps the sides.
+
 ## Related settings
 
 In [Settings › Scoreboard](hyperdrive://open/settings/scoreboard):
