@@ -204,6 +204,9 @@ class DownloadDialog(QDialog):
         )
         self._progress = QProgressBar(self)
         self._progress.setRange(0, 0)  # unknown at first (indeterminate)
+        # The label says how much is done; text on the bar can't follow the
+        # accent's contrast (light text on the amber)
+        self._progress.setTextVisible(False)
         self._last_update = datetime.datetime.fromtimestamp(0)
 
         self._close_button = QPushButton(QApplication.translate("app", "Close"), self)
