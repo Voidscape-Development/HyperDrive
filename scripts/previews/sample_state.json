@@ -6816,13 +6816,13 @@
   "layout_theme": {
     "css": {
       "--animation-speed": "100%",
-      "--bracket-focus-color": "#d02670",
+      "--bracket-focus-color": "#ffb800",
       "--bracket-focus-dim": "30%",
       "--bracket-focus-max-zoom": "200%",
       "--bracket-lines-color": "#000000",
       "--bracket-score-background": "#fe3636",
       "--bracket-sponsor-background": "#fe3636",
-      "--bracket-winner-color": "#d02670",
+      "--bracket-winner-color": "#ffb800",
       "--chip-background": "#121212",
       "--chip-text-color": "#ffffff",
       "--event-stats-characters-count": "10",
@@ -6833,11 +6833,11 @@
       "--general-border-radius": "0px",
       "--general-chip-radius": "5px",
       "--general-font-family": "inherit",
-      "--general-primary-color": "#d02670",
+      "--general-primary-color": "#ffb800",
       "--general-secondary-color": "#121212",
       "--general-text-color": "#ffffff",
       "--league-players-count": "16",
-      "--stage-strike-selected-color": "#d02670",
+      "--stage-strike-selected-color": "#ffb800",
       "--stage-strike-striked-color": "rgba(0, 0, 0, 0.69)",
       "--standings-highlight-top": "0",
       "--stream-queue-sets-count": "0",
@@ -6849,7 +6849,7 @@
       "--versus-team2-sponsor-color": "#000000"
     },
     "name": "Default",
-    "stylesheet": ":root {\n  --general-primary-color: #d02670;\n  --general-secondary-color: #121212;\n  --general-text-color: #ffffff;\n  --general-background: #121212;\n  --general-font-family: inherit;\n  --general-border-radius: 0px;\n  --general-chip-radius: 5px;\n  --animation-speed: 100%;\n  --teams-team1-color: #e53935;\n  --teams-team2-color: #1e88e5;\n  --teams-team1-score-color: #ffffff;\n  --teams-team2-score-color: #ffffff;\n  --chip-text-color: #ffffff;\n  --chip-background: #121212;\n  --bracket-score-background: #fe3636;\n  --bracket-sponsor-background: #fe3636;\n  --bracket-winner-color: #d02670;\n  --bracket-lines-color: #000000;\n  --bracket-focus-color: #d02670;\n  --bracket-focus-dim: 30%;\n  --bracket-focus-max-zoom: 200%;\n  --standings-highlight-top: 0;\n  --stage-strike-striked-color: rgba(0, 0, 0, 0.69);\n  --stage-strike-selected-color: #d02670;\n  --stream-queue-sets-count: 0;\n  --event-stats-characters-count: 10;\n  --event-stats-stages-count: 6;\n  --event-stats-upsets-count: 6;\n  --event-stats-performers-count: 5;\n  --league-players-count: 16;\n  --versus-team1-sponsor-color: #000000;\n  --versus-team2-sponsor-color: #000000;\n}\n",
+    "stylesheet": ":root {\n  --general-primary-color: #ffb800;\n  --general-secondary-color: #121212;\n  --general-text-color: #ffffff;\n  --general-background: #121212;\n  --general-font-family: inherit;\n  --general-border-radius: 0px;\n  --general-chip-radius: 5px;\n  --animation-speed: 100%;\n  --teams-team1-color: #e53935;\n  --teams-team2-color: #1e88e5;\n  --teams-team1-score-color: #ffffff;\n  --teams-team2-score-color: #ffffff;\n  --chip-text-color: #ffffff;\n  --chip-background: #121212;\n  --bracket-score-background: #fe3636;\n  --bracket-sponsor-background: #fe3636;\n  --bracket-winner-color: #ffb800;\n  --bracket-lines-color: #000000;\n  --bracket-focus-color: #ffb800;\n  --bracket-focus-dim: 30%;\n  --bracket-focus-max-zoom: 200%;\n  --standings-highlight-top: 0;\n  --stage-strike-striked-color: rgba(0, 0, 0, 0.69);\n  --stage-strike-selected-color: #ffb800;\n  --stream-queue-sets-count: 0;\n  --event-stats-characters-count: 10;\n  --event-stats-stages-count: 6;\n  --event-stats-upsets-count: 6;\n  --event-stats-performers-count: 5;\n  --league-players-count: 16;\n  --versus-team1-sponsor-color: #000000;\n  --versus-team2-sponsor-color: #000000;\n}\n",
     "values": {
       "animation": {
         "enabled": true,
@@ -6860,7 +6860,7 @@
         "character_display": true,
         "country_flag_display": true,
         "dim_losers": true,
-        "focus_color": "#d02670",
+        "focus_color": "#ffb800",
         "focus_dim": 30,
         "focus_label_display": true,
         "focus_max_zoom": 200,
@@ -6882,7 +6882,7 @@
           "gradient": false
         },
         "state_flag_display": true,
-        "winner_color": "#d02670"
+        "winner_color": "#ffb800"
       },
       "chip": {
         "avatar_display": true,
@@ -6911,14 +6911,14 @@
         "border_radius": 0,
         "chip_radius": 5,
         "font_family": "",
-        "primary_color": "#d02670",
+        "primary_color": "#ffb800",
         "secondary_color": "#121212",
         "text_case": "layout",
         "text_color": "#ffffff",
         "text_outline": true
       },
       "stage_strike": {
-        "selected_color": "#d02670",
+        "selected_color": "#ffb800",
         "stage_names_display": true,
         "striked_color": "#b0000000",
         "striker_display": true

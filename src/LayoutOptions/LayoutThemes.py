@@ -124,7 +124,7 @@ def LayoutThemeSchema():
                     "primary_color",
                     _tr("Primary color"),
                     FIELD_COLOR,
-                    "#d02670",
+                    "#ffb800",
                     tooltip=_tr("Highlights: winners, the current set, the selected stage"),
                 ),
                 Field(
@@ -281,13 +281,13 @@ def LayoutThemeSchema():
                     FIELD_FILL,
                     Fill("#fe3636", "#121212"),
                 ),
-                Field("winner_color", _tr("Winner highlight"), FIELD_COLOR, "#d02670"),
+                Field("winner_color", _tr("Winner highlight"), FIELD_COLOR, "#ffb800"),
                 Field("lines_color", _tr("Bracket lines color"), FIELD_COLOR, "#000000"),
                 Field(
                     "focus_color",
                     _tr("Focus highlight"),
                     FIELD_COLOR,
-                    "#d02670",
+                    "#ffb800",
                     tooltip=_tr("Outline of the sets the bracket focus layout zooms to"),
                 ),
                 Field(
@@ -356,7 +356,7 @@ def LayoutThemeSchema():
                 Field("stage_names_display", _tr("Display stage names"), FIELD_CHECKBOX, True),
                 Field("striker_display", _tr("Display who struck or picked"), FIELD_CHECKBOX, True),
                 Field("striked_color", _tr("Struck stage tint"), FIELD_COLOR, "#b0000000"),
-                Field("selected_color", _tr("Selected stage outline"), FIELD_COLOR, "#d02670"),
+                Field("selected_color", _tr("Selected stage outline"), FIELD_COLOR, "#ffb800"),
             ],
         ),
         Section(

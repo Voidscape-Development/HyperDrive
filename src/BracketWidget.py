@@ -1213,6 +1213,7 @@ class BracketWidget(QDockWidget):
             state = None
         self.view.SetBracket(phase.bracket if phase else None, fit=state is None)
         if state is not None:
+            self.view.StopAutoFit()
             self.view.setTransform(state["transform"])
             h, v = state["scroll"]
             QTimer.singleShot(

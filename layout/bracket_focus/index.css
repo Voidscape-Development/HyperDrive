@@ -7,7 +7,7 @@
   --flag-height: 26;
   --title-size: 100px;
   --lines: black;
-  --focus-color: var(--bracket-focus-color, var(--accent-color, #d02670));
+  --focus-color: var(--bracket-focus-color, var(--accent-color, #ffb800));
   --focus-dim: var(--bracket-focus-dim, 30%);
   --focus-time: 0.6s;
 }
@@ -279,6 +279,7 @@ body.hd-bracket-hide-round-names .bf_round_name {
 
 .player.won .score {
   background: var(--bracket-winner-color, var(--bracket-score-bg, var(--p1-score-bg-color)));
+  color: var(--on-bracket-winner-color, var(--p1-score-color));
 }
 
 .sponsor {

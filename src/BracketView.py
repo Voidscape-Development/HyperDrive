@@ -432,7 +432,13 @@ class BracketView(QGraphicsView):
         self._dragPos = None
         self._dragging = False
         self._lastTarget = None
+        # Fitted to the view, and fitted again when the view is resized,
+        # until it's zoomed or panned
+        self.autoFit = False
         self._fitPending = False
+        for bar in (self.horizontalScrollBar(), self.verticalScrollBar()):
+            # Only emitted for the user's scrolling, not the view's own
+            bar.actionTriggered.connect(self.StopAutoFit)
 
     # =====================================================
     # PLAYERS
@@ -460,11 +466,15 @@ class BracketView(QGraphicsView):
         self.bracket = bracket
         self.Rebuild()
         if fit:
+            self.autoFit = True
             self._fitPending = True
             QTimer.singleShot(0, self._FitIfPending)
 
     def _FitIfPending(self):
-        if self._fitPending:
+        # Not while hidden (e.g. the dock is behind another tab at startup):
+        # the view isn't its real size yet, and the bracket would be fitted
+        # into a fraction of it. showEvent fits it then
+        if self._fitPending and self.isVisible():
             self._fitPending = False
             self.FitInView()
 
@@ -850,6 +860,9 @@ class BracketView(QGraphicsView):
                     target[0].update()
                 self._lastTarget = target
                 return
+        elif event.buttons() & Qt.MouseButton.LeftButton:
+            # Panning with the hand
+            self.StopAutoFit()
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -878,10 +891,24 @@ class BracketView(QGraphicsView):
         super().mouseReleaseEvent(event)
 
     # Zoom
+    def showEvent(self, event):
+        super().showEvent(event)
+        QTimer.singleShot(0, self._FitIfPending)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.autoFit and self.isVisible():
+            self.FitInView()
+
+    def StopAutoFit(self, *args):
+        self.autoFit = False
+
     def FitInView(self):
+        """Zooms so the whole bracket fills the view."""
         rect = self._scene.sceneRect()
         if rect.isNull():
             return
+        self.autoFit = True
         self.resetTransform()
         viewRect = self.viewport().rect()
         factor = min(viewRect.width() / rect.width(), viewRect.height() / rect.height())
@@ -891,6 +918,7 @@ class BracketView(QGraphicsView):
         self.ensureVisible(QRectF(rect.topLeft(), QSizeF(1, 1)), 0, 0)
 
     def wheelEvent(self, event):
+        self.StopAutoFit()
         factor = 1.15 if event.angleDelta().y() > 0 else 1 / 1.15
         current = self.transform().m11()
         if 0.1 < current * factor < 4:

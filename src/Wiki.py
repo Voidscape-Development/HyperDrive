@@ -284,10 +284,10 @@ class Wiki:
 # The guide's web page, at /wiki on the web server
 WEB_STYLE = """
 :root { color-scheme: light dark; --bg: #f2f3f7; --surface: #ffffff; --raised: #e7e9f0;
-  --border: #c9cdd9; --text: #1b1d27; --muted: #5c6275; --accent: #d02670; }
+  --border: #c9cdd9; --text: #1b1d27; --muted: #5c6275; --accent: #8f6200; --on-accent: #ffffff; }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #14151b; --surface: #1c1e26; --raised: #262935; --border: #353a4a;
-    --text: #e9eaf0; --muted: #9298ab; --accent: #e8689f; }
+    --text: #e9eaf0; --muted: #9298ab; --accent: #ffb800; --on-accent: #111214; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text);
@@ -306,7 +306,7 @@ nav ul { list-style: none; margin: 0; padding: 0; }
 nav li a { display: block; padding: 3px 8px; border-radius: 6px; color: var(--text);
   text-decoration: none; }
 nav li a:hover { background: var(--raised); }
-nav li a.current { background: var(--accent); color: #fff; }
+nav li a.current { background: var(--accent); color: var(--on-accent); }
 main { flex: 1; min-width: 0; padding: 24px 40px 64px; max-width: 900px;
   overflow-wrap: break-word; }
 main h1 { margin-top: 0; }

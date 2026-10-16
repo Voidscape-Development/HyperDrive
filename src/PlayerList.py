@@ -5,6 +5,7 @@ from qtpy.QtWidgets import *
 from .DisplayOptions import ApplyHiddenElements
 from .PlayerDrag import PlayerDragBoard
 from .PlayerListSlotWidget import PlayerListSlotWidget
+from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .TournamentDataManager import TournamentDataManager
 
@@ -15,15 +16,15 @@ class PlayerListWidgetSignals(QObject):
 
 
 class PlayerList(QWidget):
-    def __init__(self, *args, base="player_list"):
+    def __init__(self, *args, base="player_list", startCollapsed=False):
         with StateManager.SaveBlock():
             super().__init__(*args)
-            self.SetupUi(base)
+            self.SetupUi(base, startCollapsed)
 
     # =====================================================
     # SETUP
     # =====================================================
-    def SetupUi(self, base):
+    def SetupUi(self, base, startCollapsed=False):
         self.signals = PlayerListWidgetSignals()
 
         self.base = base
@@ -41,6 +42,19 @@ class PlayerList(QWidget):
         # Object names of the player fields hidden by the display options;
         # slots apply these to the player widgets they create
         self.hiddenElements = set()
+        self.scoresVisible = False
+
+        # Which slots are collapsed and which players have their details
+        # folded, by place, kept in the settings for next time. Also the
+        # list's "start slots collapsed" and "compact players" choices
+        self.foldsKey = "player_list_folds." + base.replace(".", "_")
+        folds = SettingsManager.Get(self.foldsKey, None)
+        self.folds = folds if isinstance(folds, dict) else {}
+        for key in ("slots", "players"):
+            if not isinstance(self.folds.get(key), dict):
+                self.folds[key] = {}
+        if not isinstance(self.folds.get("start_collapsed"), bool):
+            self.folds["start_collapsed"] = startCollapsed
 
         self.setLayout(QVBoxLayout())
 
@@ -113,7 +127,12 @@ class PlayerList(QWidget):
             self.widgetArea.layout().addWidget(s)
             s.SetPlayersPerTeam(self.playersPerTeam)
             s.SetCharacterNumber(self.charactersPerPlayer)
+            s.scoreWidget.setVisible(self.scoresVisible)
+            s.SetCollapsed(self.SlotCollapsed(s.index))
             s.signals.dataChanged.connect(self.ChildDataChangedEmit)
+            s.signals.collapsedChanged.connect(
+                lambda collapsed, s=s: self.SaveSlotCollapsed(s.index, collapsed)
+            )
 
             # s.SetCharactersPerPlayer(self.charNumber.value())
 
@@ -193,8 +212,58 @@ class PlayerList(QWidget):
                 ApplyHiddenElements(pw, self.hiddenElements)
 
     def SetScoresVisible(self, value):
+        self.scoresVisible = value != Qt.CheckState.Unchecked
         for s in self.slotWidgets:
-            if value == Qt.Unchecked:
-                s.scoreWidget.setVisible(False)
-            else:
-                s.scoreWidget.setVisible(True)
+            s.scoreWidget.setVisible(self.scoresVisible)
+
+    # =====================================================
+    # FOLDING
+    # =====================================================
+    def SaveFolds(self):
+        SettingsManager.Set(self.foldsKey, self.folds)
+
+    def StartCollapsed(self):
+        return self.folds["start_collapsed"]
+
+    def SetStartCollapsed(self, value):
+        self.folds["start_collapsed"] = bool(value)
+        self.SaveFolds()
+
+    def CompactPlayers(self):
+        return self.folds.get("compact_players", False) is True
+
+    def SlotCollapsed(self, slot):
+        """How a slot starts: collapsed with "start slots collapsed", else as
+        it was left."""
+        if self.StartCollapsed():
+            return True
+        return self.folds["slots"].get(str(slot), False) is True
+
+    def SaveSlotCollapsed(self, slot, collapsed):
+        self.folds["slots"][str(slot)] = bool(collapsed)
+        self.SaveFolds()
+
+    def SetAllCollapsed(self, collapsed):
+        for s in self.slotWidgets:
+            s.SetCollapsed(collapsed)
+            self.folds["slots"][str(s.index)] = bool(collapsed)
+        self.SaveFolds()
+
+    def PlayerDetailsShown(self, slot, player):
+        shown = self.folds["players"].get(f"{slot}-{player}")
+        if isinstance(shown, bool):
+            return shown
+        return not self.CompactPlayers()
+
+    def SavePlayerDetailsShown(self, slot, player, shown):
+        self.folds["players"][f"{slot}-{player}"] = bool(shown)
+        self.SaveFolds()
+
+    def SetCompactPlayers(self, compact):
+        """Folds every player's details away, or shows them all."""
+        self.folds["compact_players"] = bool(compact)
+        for s in self.slotWidgets:
+            for pw in s.playerWidgets:
+                pw.SetDetailsShown(not compact)
+                self.folds["players"][f"{s.index}-{pw.index}"] = not compact
+        self.SaveFolds()

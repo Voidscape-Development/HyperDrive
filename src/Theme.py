@@ -20,8 +20,10 @@ THEME_SYSTEM = "system"
 CUSTOM_PREFIX = "custom:"
 
 DEFAULT_THEME = THEME_DARK
-# Taken from the HyperDrive logo's magenta
-DEFAULT_ACCENT = "#d02670"
+# The HyperDrive logo's amber (assets/BRAND.md). On a light background the
+# logo uses a deeper amber, so the light theme does too.
+DEFAULT_ACCENT = "#ffb800"
+DEFAULT_ACCENT_ON_LIGHT = "#f0a500"
 DEFAULT_UI_SCALE = 100
 UI_SCALES = [80, 90, 100, 110, 125, 150, 175, 200]
 
@@ -115,9 +117,43 @@ def Blend(a, b, amount):
     )
 
 
+def Luminance(color):
+    # WCAG relative luminance
+    def channel(value):
+        value /= 255
+        return value / 12.92 if value <= 0.03928 else ((value + 0.055) / 1.055) ** 2.4
+
+    color = QColor(color)
+    return (
+        0.2126 * channel(color.red())
+        + 0.7152 * channel(color.green())
+        + 0.0722 * channel(color.blue())
+    )
+
+
+def Contrast(a, b):
+    # WCAG contrast ratio, from 1 to 21
+    la, lb = sorted([Luminance(a), Luminance(b)], reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def ReadableOn(background, color, ratio=4.5):
+    """color, made darker or lighter until it reads as text on background."""
+    color = QColor(color)
+    lighten = Luminance(background) < 0.18
+    for _ in range(20):
+        if Contrast(color, background) >= ratio:
+            break
+        color = color.lighter(112) if lighten else color.darker(112)
+    return color
+
+
 def BuiltinTheme(mode, accent=DEFAULT_ACCENT):
     colors = dict(_BUILTIN_COLORS[mode])
-    colors["accent"] = QColor(accent).name() if QColor(accent).isValid() else DEFAULT_ACCENT
+    accent = QColor(accent).name() if QColor(accent).isValid() else DEFAULT_ACCENT
+    if mode == THEME_LIGHT and accent == DEFAULT_ACCENT:
+        accent = DEFAULT_ACCENT_ON_LIGHT
+    colors["accent"] = accent
     return {
         "name": QApplication.translate("settings.appearance", "Dark")
         if mode == THEME_DARK
@@ -516,10 +552,14 @@ class Theme:
         accent = colors["accent"]
         colors["accentHover"] = accent.lighter(115)
         # White or black, whichever reads better on the accent
-        colors["onAccent"] = QColor("#ffffff") if accent.lightnessF() < 0.62 else QColor("#111111")
+        onWhite, onBlack = Contrast(accent, "#ffffff"), Contrast(accent, "#111111")
+        colors["onAccent"] = QColor("#ffffff") if onWhite >= onBlack else QColor("#111111")
         colors["accentSoft"] = Blend(colors["surface"], accent, 0.22)
-        # Accent color readable as text on the window
-        colors["accentText"] = Blend(accent, colors["text"], 0.25) if dark else accent
+        # Accent color readable as text on the window (a light accent like
+        # the default amber is darkened on a light theme)
+        colors["accentText"] = ReadableOn(
+            colors["window"], Blend(accent, colors["text"], 0.25) if dark else accent
+        )
         return colors
 
     @staticmethod

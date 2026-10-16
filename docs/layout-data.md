@@ -382,7 +382,7 @@ The theme picked in Layout themes:
 | - | - |
 | `name` | |
 | `values` | Every field, by section: `{general: {primary_color, ...}, chip: {...}, ...}` (see `LayoutThemeSchema()` in `src/LayoutOptions/LayoutThemes.py`) |
-| `css` | The values as CSS custom properties: `{"--general-primary-color": "#d02670", ...}` |
+| `css` | The values as CSS custom properties: `{"--general-primary-color": "#ffb800", ...}` |
 | `stylesheet` | The same as a `:root { ... }` stylesheet |
 
 Layouts don't need to read it: the runtime (`globals.js`) applies it before
