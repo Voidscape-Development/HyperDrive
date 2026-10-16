@@ -35,7 +35,9 @@ class GamesTracker(QWidget):
         )
         self.hovered = -1
         self.setMouseTracking(True)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        # Takes the width the score column has without asking for more:
+        # expanding, it widened the column, taking room from the teams
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -82,8 +84,9 @@ class GamesTracker(QWidget):
         return rows * SQUARE + (rows - 1) * GAP + 4
 
     def sizeHint(self):
-        count = max(1, len(self.games))
-        return QSize(count * SQUARE + (count - 1) * GAP, self.heightForWidth(10_000))
+        # As narrow as a square: the squares wrap to the width given, so many
+        # games don't widen the score column either
+        return QSize(SQUARE, self.heightForWidth(10_000))
 
     def minimumSizeHint(self):
         return QSize(SQUARE, self.heightForWidth(SQUARE))

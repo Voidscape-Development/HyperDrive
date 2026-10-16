@@ -17,6 +17,7 @@ for name, path in [("src", "src"), ("src.Helpers", "src/Helpers")]:
 
 from qtpy.QtCore import QEvent, QObject, Qt, Signal
 from qtpy.QtGui import QKeyEvent
+from qtpy.QtTest import QTest
 from qtpy.QtWidgets import QApplication, QWidget
 
 app = QApplication.instance() or QApplication(sys.argv)
@@ -299,6 +300,35 @@ def TestSelection():
     window.close()
 
 
+def TestClickShowsSet():
+    scoreboard, window = Open()
+    # All of them, the completed ones too
+    window.showButtons.buttons()[3].click()
+    Settle()
+    Finish(window, SETS)
+    for row in range(window.model.rowCount()):
+        index = window.model.index(row, 0)
+        s = index.data(ROLE_SET)
+        if s is None:
+            continue
+        # A click moves the current index before it selects the row
+        QTest.mouseClick(
+            window.setList.viewport(),
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+            window.setList.visualRect(index).center(),
+        )
+        Settle()
+        assert window.SelectedSet()["id"] == s["id"]
+        assert not window.details.empty.isVisible()
+        assert window.details.sides[0]["name"].text() == s["p1_name"]
+        assert window.details.factValues["status"].text() == StatusNames()[SetStatus(s)]
+    # The last one is the completed set, with its score
+    assert window.SelectedSet()["id"] == 5
+    assert [side["score"].text() for side in window.details.sides] == ["3", "1"]
+    window.close()
+
+
 def TestLoading():
     scoreboard, window = Open()
     Finish(window, SETS)
@@ -365,6 +395,7 @@ if __name__ == "__main__":
         TestFilterOptions,
         TestFetching,
         TestSelection,
+        TestClickShowsSet,
         TestLoading,
         TestKeepUpdated,
     ]:
