@@ -1,5 +1,8 @@
 {
   "asset_packs": {
     "ssbu": ["base_files", "full", "stage_icon"]
+  },
+  "pages": {
+    "layout/completed_sets/upset_alert.html": { "query": "show_latest=true" }
   }
 }
