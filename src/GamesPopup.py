@@ -25,6 +25,8 @@ from .GamesTracker import GamesTracker
 from .Theme import Theme, ThemedIcon
 
 CHARACTER_ICON = QSize(24, 24)
+# Widest a team's name is shown on the one-game pop-up's winner buttons
+WINNER_NAME_WIDTH = 150
 
 
 # =====================================================
@@ -138,31 +140,92 @@ def PlacePopup(popup, anchor: QRect):
     popup.move(position)
 
 
+def ColorDot(color, size=10):
+    pixmap = QPixmap(size * 2, size * 2)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor(color))
+    painter.drawEllipse(QRectF(0, 0, size * 2, size * 2))
+    painter.end()
+    pixmap.setDevicePixelRatio(2)
+    return QIcon(pixmap)
+
+
+class IconCharacterCombo(CharacterCombo):
+    """A character dropdown showing only the character's icon, with its name
+    in the tooltip: several fit where one dropdown with names would."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.dimmed = False
+
+    def SetShown(self, dimmed):
+        self.dimmed = dimmed
+        name = self.currentText()
+        self.setToolTip(name or QApplication.translate("app", "No character"))
+        self.update()
+
+    def sizeHint(self):
+        option = QStyleOptionComboBox()
+        self.initStyleOption(option)
+        option.currentText = ""
+        return self.style().sizeFromContents(
+            QStyle.ContentsType.CT_ComboBox, option, self.iconSize(), self
+        )
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
+
+    def paintEvent(self, event):
+        painter = QStylePainter(self)
+        option = QStyleOptionComboBox()
+        self.initStyleOption(option)
+        option.currentText = ""
+        painter.drawComplexControl(QStyle.ComplexControl.CC_ComboBox, option)
+        # The characters a game would take, not picked yet
+        if self.dimmed:
+            painter.setOpacity(0.45)
+        painter.drawControl(QStyle.ControlElement.CE_ComboBoxLabel, option)
+
+
 class CharacterCombos(QWidget):
     """A team's characters in a game: a character dropdown, opening the
-    grid, per player. A game without any shows the ones it would take
-    (GameReportController.CarriedCharacters) in italics, if it's the game
-    being played."""
+    grid, per player, side by side or one under the other. compact shows
+    only their icons. A game without any shows the ones it would take
+    (GameReportController.CarriedCharacters) in italics (dimmed, compact),
+    if it's the game being played."""
 
-    def __init__(self, controller, team, align=Qt.AlignmentFlag.AlignLeft, parent=None):
+    def __init__(
+        self,
+        controller,
+        team,
+        align=Qt.AlignmentFlag.AlignLeft,
+        vertical=False,
+        compact=False,
+        parent=None,
+    ):
         super().__init__(parent)
         self.controller = controller
         self.team = team
         self.index = 0
         self.carried = False
-        layout = QHBoxLayout(self)
+        layout = QVBoxLayout(self) if vertical else QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
-        layout.setAlignment(align)
+        if not vertical:
+            layout.setAlignment(align)
         self.combos = []
         for _ in range(controller.PlayersPerTeam()):
-            combo = CharacterCombo()
+            combo = IconCharacterCombo() if compact else CharacterCombo()
             combo.setModel(GameAssetManager.instance.characterModel)
             combo.setIconSize(CHARACTER_ICON)
-            combo.setSizeAdjustPolicy(
-                QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
-            )
-            combo.setMinimumContentsLength(9)
+            if not compact:
+                combo.setSizeAdjustPolicy(
+                    QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+                )
+                combo.setMinimumContentsLength(9)
             # Keys go to the pop-up (1 / 2 pick the winner) until clicked
             combo.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
             combo.currentIndexChanged.connect(self.Changed)
@@ -184,9 +247,12 @@ class CharacterCombos(QWidget):
         for p, combo in enumerate(self.combos):
             with QSignalBlocker(combo):
                 combo.setCurrentIndex(CharacterIndex(combo, chars[p] if p < len(chars) else None))
-            font = combo.font()
-            font.setItalic(self.carried)
-            combo.setFont(font)
+            if isinstance(combo, IconCharacterCombo):
+                combo.SetShown(self.carried)
+            else:
+                font = combo.font()
+                font.setItalic(self.carried)
+                combo.setFont(font)
 
     def Changed(self):
         chars = []
@@ -245,7 +311,8 @@ class GamePopup(_Popup):
     def __init__(self, controller, index, parent=None):
         super().__init__(controller, parent)
         self.index = index
-        self.setMinimumWidth(340)
+        # Room for long characters' names, like Mr. Game & Watch
+        self.setMinimumWidth(400)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
@@ -292,7 +359,7 @@ class GamePopup(_Popup):
             column.addWidget(button)
             self.winnerButtons[team] = button
             if controller.HasCharacters():
-                combos = CharacterCombos(controller, team, Qt.AlignmentFlag.AlignHCenter)
+                combos = CharacterCombos(controller, team, vertical=True)
                 column.addWidget(combos)
                 self.characters[team] = combos
             teams.addLayout(column, 1)
@@ -384,7 +451,14 @@ class GamePopup(_Popup):
         for team, button in self.winnerButtons.items():
             checked = game["winner"] == team
             name = controller.TeamName(team)
-            button.setText(name + "\n" + QApplication.translate("app", "Won") if checked else name)
+            # A long name (a doubles team's) ends in … instead of widening the pop-up
+            shown = button.fontMetrics().elidedText(
+                name, Qt.TextElideMode.ElideRight, WINNER_NAME_WIDTH
+            )
+            button.setText(
+                shown + "\n" + QApplication.translate("app", "Won") if checked else shown
+            )
+            button.setToolTip(name if shown != name else "")
             button.setChecked(checked)
             button.setEnabled(needed)
             StyleWinnerButton(button, controller.TeamColor(team), checked)
@@ -591,7 +665,11 @@ class GamesSheetPopup(_Popup):
                     (1, 1, Qt.AlignmentFlag.AlignRight),
                     (2, 3, Qt.AlignmentFlag.AlignLeft),
                 ]:
-                    combos = CharacterCombos(controller, team, align)
+                    # Several characters a team: only their icons, so the
+                    # pop-up doesn't grow as wide as four dropdowns
+                    combos = CharacterCombos(
+                        controller, team, align, compact=controller.PlayersPerTeam() > 1
+                    )
                     combos.SetGame(i)
                     self.grid.addWidget(combos, r, column)
                     row["characters"][team] = combos
@@ -605,7 +683,8 @@ class GamesSheetPopup(_Popup):
                 button = QPushButton()
                 button.setCheckable(True)
                 button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-                button.setMinimumWidth(84)
+                button.setMinimumWidth(72)
+                button.setIconSize(QSize(8, 8))
                 button.clicked.connect(
                     lambda checked, i=i, team=team: self.controller.SetWinner(
                         i, team if checked else UNDECIDED
@@ -655,7 +734,13 @@ class GamesSheetPopup(_Popup):
                 combos.setEnabled(needed)
             for team, button in row["winners"].items():
                 checked = game["winner"] == team
-                button.setText(controller.TeamName(team))
+                # The columns' headers name the teams, which can be too long
+                # for the buttons
+                button.setText(QApplication.translate("app", "Won"))
+                button.setIcon(QIcon() if checked else ColorDot(controller.TeamColor(team)))
+                button.setToolTip(
+                    QApplication.translate("app", "Won by {0}").format(controller.TeamName(team))
+                )
                 button.setChecked(checked)
                 button.setEnabled(needed)
                 StyleWinnerButton(button, controller.TeamColor(team), checked)

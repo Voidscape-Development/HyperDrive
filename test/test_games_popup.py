@@ -19,9 +19,9 @@ for name, path in [("src", "src"), ("src.Helpers", "src/Helpers")]:
     sys.modules[name] = package
 
 from qtpy.QtCore import QObject, QPoint, QRect, QSize, Qt, Signal
-from qtpy.QtGui import QStandardItem, QStandardItemModel
+from qtpy.QtGui import QColor, QIcon, QPixmap, QStandardItem, QStandardItemModel
 from qtpy.QtTest import QTest
-from qtpy.QtWidgets import QApplication, QWidget
+from qtpy.QtWidgets import QApplication, QVBoxLayout, QWidget
 
 app = QApplication.instance() or QApplication(sys.argv)
 
@@ -32,7 +32,8 @@ os.chdir(workDir)
 # Theme reads the icons from the repository
 os.symlink(os.path.join(repoDir, "assets"), os.path.join(workDir, "assets"))
 
-CHARACTERS = ["Diddy Kong", "Byleth", "Pyra", "Sonic"]
+CHARACTERS = ["Diddy Kong", "Byleth", "Pyra", "Sonic", "Pikachu", "Mr. Game & Watch", "Steve"]
+COLORS = ["#8d6e63", "#26a69a", "#e53935", "#1e88e5", "#fdd835", "#424242", "#7cb342"]
 
 
 # The asset manager loads games on import; the pop-ups need its models
@@ -51,8 +52,10 @@ class FakeAssetManager:
         self.skinModels = {}
         self.characterModel = QStandardItemModel()
         self.characterModel.appendRow(QStandardItem(""))
-        for name in CHARACTERS:
-            item = QStandardItem(name)
+        for name, color in zip(CHARACTERS, COLORS):
+            icon = QPixmap(24, 24)
+            icon.fill(QColor(color))
+            item = QStandardItem(QIcon(icon), name)
             item.setData({"en_name": name, "display_name": name}, Qt.ItemDataRole.UserRole)
             self.characterModel.appendRow(item)
         self.stageModelWithBlank = QStandardItemModel()
@@ -138,7 +141,7 @@ sys.modules["src.StartGGReporter"] = module
 
 from src.GameReport import UNDECIDED
 from src.GameReportController import GameReportController
-from src.GamesPopup import GamePopup, GamesSheetPopup
+from src.GamesPopup import WINNER_NAME_WIDTH, GamePopup, GamesSheetPopup, IconCharacterCombo
 
 
 class FakeColorButton:
@@ -150,24 +153,33 @@ class FakeColorButton:
 
 
 class FakeScoreboard(QWidget):
-    def __init__(self):
+    def __init__(self, players=1):
         super().__init__()
         self.scoreboardNumber = 1
-        self.team1playerWidgets = [None]
+        self.team1playerWidgets = [None] * players
         self.colorButton1 = FakeColorButton("#d93a3a")
         self.colorButton2 = FakeColorButton("#2e6fe0")
 
 
-def Setup(bestOf=5, scoreboardCharacters=(None, None)):
+def Setup(bestOf=5, scoreboardCharacters=(None, None), names=("Tweek", "MkLeo")):
+    """scoreboardCharacters: each team's character, or list of characters
+    (one per player) for doubles."""
     FakeState.data = {
-        "score.1.team.1.mergedTeamName": "Tweek",
-        "score.1.team.2.mergedTeamName": "MkLeo",
+        "score.1.team.1.mergedTeamName": names[0],
+        "score.1.team.2.mergedTeamName": names[1],
     }
-    for team, character in enumerate(scoreboardCharacters, start=1):
-        if character:
-            FakeState.data[f"score.1.team.{team}.player.1.character.1"] = {"en_name": character}
+    players = 1
+    for team, characters in enumerate(scoreboardCharacters, start=1):
+        if not isinstance(characters, (list, tuple)):
+            characters = [characters]
+        players = max(players, len(characters))
+        for p, character in enumerate(characters, start=1):
+            if character:
+                FakeState.data[f"score.1.team.{team}.player.{p}.character.1"] = {
+                    "en_name": character
+                }
     FakeReporter.token = False
-    scoreboard = FakeScoreboard()
+    scoreboard = FakeScoreboard(players)
     controller = GameReportController(scoreboard)
     controller.SetBestOf(bestOf)
     return scoreboard, controller
@@ -188,7 +200,12 @@ def TestSheetRows():
     app.processEvents()
     assert len(popup.rows) == 5
     assert popup.rows[0]["highlight"].isVisible()
-    assert [b.text() for b in popup.rows[0]["winners"].values()] == ["Tweek", "MkLeo"]
+    # The buttons say "Won": the columns' headers name the teams
+    assert [b.text() for b in popup.rows[0]["winners"].values()] == ["Won", "Won"]
+    assert popup.rows[0]["winners"][2].toolTip() == "Won by MkLeo"
+    assert popup.teamHeaders[1].text() == "Tweek"
+    # One player a team: dropdowns with the characters' names
+    assert not isinstance(popup.rows[0]["characters"][1].combos[0], IconCharacterCombo)
 
     # A winner click updates the rows in place, it doesn't build them again
     button = popup.rows[0]["winners"][1]
@@ -332,6 +349,41 @@ def TestGamePopupOffersReport():
     print("TestGamePopupOffersReport: OK")
 
 
+def TestDoubles():
+    scoreboard, controller = Setup(
+        scoreboardCharacters=(["Pyra", "Mr. Game & Watch"], ["Byleth", "Steve"]),
+        names=("Tweek / Sparg0 / Somebody", "MkLeo / Light"),
+    )
+    sheet = GamesSheetPopup(controller, scoreboard)
+    sheet.Open(Anchor())
+    # Only the characters' icons, named in their tooltips
+    combos = sheet.rows[0]["characters"][1].combos
+    assert len(combos) == 2 and all(isinstance(c, IconCharacterCombo) for c in combos)
+    assert combos[1].toolTip() == "Mr. Game & Watch" and combos[1].dimmed
+    assert combos[1].width() < 80
+    assert sheet.width() < 600, sheet.width()
+    sheet.rows[0]["winners"][1].click()
+    game = controller.report.games[0]
+    assert game["characters"][1] == ["Pyra", "Mr. Game & Watch"]
+    assert not combos[1].dimmed
+    sheet.close()
+
+    popup = GamePopup(controller, 1, scoreboard)
+    popup.Open(Anchor())
+    # One under the other, under the team's button
+    combos = popup.characters[1].combos
+    assert isinstance(popup.characters[1].layout(), QVBoxLayout)
+    assert combos[1].y() > combos[0].y() and combos[1].x() == combos[0].x()
+    # A long name ends in …, the whole name in the tooltip
+    button = popup.winnerButtons[1]
+    assert button.text().endswith("…") and button.toolTip() == "Tweek / Sparg0 / Somebody"
+    assert button.fontMetrics().horizontalAdvance(button.text()) <= WINNER_NAME_WIDTH
+    assert popup.winnerButtons[2].text() == "MkLeo / Light"
+    assert popup.width() <= 420, popup.width()
+    popup.close()
+    print("TestDoubles: OK")
+
+
 def SaveScreenshots(folder):
     from src.Theme import Theme
 
@@ -360,6 +412,30 @@ def SaveScreenshots(folder):
     popup.grab().save(os.path.join(folder, "game_popup_set_won.png"))
     popup.close()
 
+    scoreboard, controller = Setup(
+        scoreboardCharacters=(["Pyra", "Mr. Game & Watch"], ["Byleth", "Steve"]),
+        names=("Tweek / Sparg0", "MkLeo / Light"),
+    )
+    for i, (winner, c1, c2) in enumerate(
+        [
+            (1, ["Diddy Kong", "Pikachu"], ["Byleth", "Sonic"]),
+            (2, ["Diddy Kong", "Pikachu"], ["Byleth", "Steve"]),
+        ]
+    ):
+        controller.report.SetCharacters(i, 1, c1)
+        controller.report.SetCharacters(i, 2, c2)
+        controller.SetWinner(i, winner)
+    popup = GamesSheetPopup(controller, scoreboard)
+    popup.Open(Anchor())
+    app.processEvents()
+    popup.grab().save(os.path.join(folder, "games_sheet_doubles.png"))
+    popup.close()
+    popup = GamePopup(controller, 2, scoreboard)
+    popup.Open(Anchor())
+    app.processEvents()
+    popup.grab().save(os.path.join(folder, "game_popup_doubles.png"))
+    popup.close()
+
 
 screenshots = os.path.abspath(os.path.join(repoDir, sys.argv[1])) if len(sys.argv) > 1 else None
 TestSheetRows()
@@ -367,6 +443,7 @@ TestSheetSetWon()
 TestGamePopup()
 TestGamePopupCarriesLastGame()
 TestGamePopupOffersReport()
+TestDoubles()
 if screenshots:
     SaveScreenshots(screenshots)
 print("OK")
