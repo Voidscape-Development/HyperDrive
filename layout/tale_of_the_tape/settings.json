@@ -1,0 +1,12 @@
+{
+  "assets": {
+    "default": {}
+  },
+  "title": "Tale of the tape",
+  "rows": ["seed", "head_to_head", "best_finish", "recent_finishes", "event_record"],
+  "custom_rows": [],
+  "highlight_better": true,
+  "bio_key": "bio",
+  "meetings_displayed": 3,
+  "meetings_title": "Last meetings"
+}
