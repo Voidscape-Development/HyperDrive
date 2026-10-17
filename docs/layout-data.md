@@ -200,7 +200,7 @@ unchanged.
 The event's last 10 completed sets, from "Pull Latest Completed Sets"
 (start.gg or parry.gg), most recent first, keyed `"1"`, `"2"`... Shown by
 `layout/completed_sets/` (`list.html`, `ticker.html`, `card.html` and
-`column.html`; see its `settings.json`).
+`column.html`, and `upset_alert.html` for new upsets; see its `settings.json`).
 
 | Key | |
 | - | - |
@@ -250,6 +250,9 @@ The teams are the scoreboard's sides: when they're swapped, `winner`, the
 characters and `scoreAfter` follow the teams. Their colors are in
 `score.N.team.T.color`, and the best of in `score.N.best_of`.
 
+[`layout/game_log`](../layout/game_log) shows them: a card per game with its
+stage, characters, winner and score after it.
+
 ## `score.N.report`
 
 Reporting the set to start.gg: `{setId, status, message, liveUpdates}`.
@@ -294,6 +297,8 @@ scoreboard's players, the commentators, the player lists, team battle players
 and the stream queue's players, next to `twitter`, which is unchanged
 (`socials.twitter` is the same handle). Platforms with no account are left
 out, so check one with `player.socials?.twitch`.
+[`layout/socials`](../layout/socials) shows them, a player's or the
+commentators', with their icons.
 
 start.gg's linked accounts fill `twitter`, `twitch`, `discord` and `xbox`
 (the API has no others). The *+* button next to a player's Twitter field adds

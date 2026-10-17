@@ -15,7 +15,8 @@ HTML overlays that you add to OBS or any other streaming software as browser sou
 - **Crew/team battles** (Stock Pool or First To), with an in-game scoreboard, a roster
   board and a versus screen in [`layout/team_battle`](layout/team_battle).
 - **More than 40 layouts** in [`layout/`](layout): scoreboards, brackets, top 8s, versus
-  screens, stream queues and maps. They share theme options that you can change from the app.
+  screens, stream queues and maps, a game log, a tale of the tape, socials lower thirds,
+  upset alerts and starting soon screens. They share theme options that you can change from the app.
 - **A local player database** that you can edit in the app or from a browser.
 - **Player media:** avatars, sponsor logos, team logos and custom player data (a bio, a
   stats file, an image) managed from the Player Database window, or by dropping files in
