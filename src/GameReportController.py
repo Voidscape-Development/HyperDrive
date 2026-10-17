@@ -1,6 +1,7 @@
-# The scoreboard's Games window: the result, stage and characters of each game
-# of the set, which the scoreboard's score follows, and reporting the set to
-# start.gg (see StartGGReporter).
+# A scoreboard's games: the result, stage and characters of each game of the
+# set, which the scoreboard's score follows, and reporting the set to start.gg
+# (see StartGGReporter). The games tracker under the score and the games
+# pop-ups (GamesPopup) show and edit them.
 #
 # Games can be sent to start.gg as they're played, so the set shows live on
 # start.gg, or only when the set is reported (Settings > start.gg Reporting).
@@ -18,39 +19,11 @@ from .SettingsManager import SettingsManager
 from .StartGGReporter import *
 from .StateManager import StateManager
 
-
-class _RowFlash(QWidget):
-    """A highlight over a game's row that fades out, so the row the games
-    tracker opened is easy to spot."""
-
-    def __init__(self, parent, rect):
-        super().__init__(parent)
-        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.setGeometry(rect)
-        self.strength = 1.0
-        self.animation = QVariantAnimation(self)
-        self.animation.setStartValue(1.0)
-        self.animation.setEndValue(0.0)
-        self.animation.setDuration(1600)
-        self.animation.setEasingCurve(QEasingCurve.Type.InQuad)
-        self.animation.valueChanged.connect(self.Fade)
-        self.animation.finished.connect(self.deleteLater)
-        self.show()
-        self.raise_()
-        self.animation.start()
-
-    def Fade(self, value):
-        self.strength = float(value)
-        self.update()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        color = QColor(self.palette().color(QPalette.ColorRole.Highlight))
-        color.setAlphaF(0.35 * self.strength)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(color)
-        painter.drawRoundedRect(QRectF(self.rect()), 6, 6)
+# Kinds of status, for its color
+STATUS_KIND_NONE = "none"
+STATUS_KIND_MUTED = "muted"
+STATUS_KIND_OK = "ok"
+STATUS_KIND_ERROR = "error"
 
 
 def LiveUpdates():
@@ -65,32 +38,24 @@ def ConfirmReport():
     return SettingsManager.Get("startgg_reporting.confirm_report", True)
 
 
-def CharacterIndex(combo, key):
-    """Row of a character in the character model, by its key."""
-    if not key:
-        return 0
-    for i in range(1, combo.count()):
-        data = combo.itemData(i, Qt.ItemDataRole.UserRole) or {}
-        if data.get("en_name") == key:
-            return i
-    return 0
-
-
 class GameReportSignals(QObject):
     # Team 1's and team 2's score, from the games
     scoreChanged = Signal(int, int)
     # The set was reported to start.gg (set id)
     setReported = Signal(str)
-    # The games changed (results, stages, characters, how many)
+    # The games changed (results, stages, characters, how many), or what
+    # they're shown with (the teams' names and colors, the game's assets)
     gamesChanged = Signal()
+    # What's being sent to start.gg, or why the set can't be reported
+    statusChanged = Signal()
 
 
-class GameReportWidget(QWidget):
+class GameReportController(QObject):
     # Seconds after sending games during which start.gg's may not have them yet
     SEND_GRACE_SECS = 15
 
-    def __init__(self, scoreboard, *args):
-        super().__init__(*args)
+    def __init__(self, scoreboard):
+        super().__init__(scoreboard)
         self.scoreboard = scoreboard
         self.number = scoreboard.scoreboardNumber
         self.signals = GameReportSignals()
@@ -104,205 +69,74 @@ class GameReportWidget(QWidget):
         self.markedInProgress = set()
         self.lastRequest = None
         self.lastSent = 0
-        self.rows = []
-        self.rebuilding = False
+        self.builtNames = None
 
         self.liveTimer = QTimer(self)
         self.liveTimer.setSingleShot(True)
         self.liveTimer.setInterval(1500)
         self.liveTimer.timeout.connect(self.SendLiveUpdate)
 
-        self.setLayout(QVBoxLayout())
-
-        info = QHBoxLayout()
-        self.layout().addLayout(info)
-        self.setLabel = QLabel()
-        self.setLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        info.addWidget(self.setLabel)
-        info.addStretch()
-        self.statusLabel = QLabel()
-        self.statusLabel.setWordWrap(True)
-        info.addWidget(self.statusLabel, 1)
-
-        self.gamesArea = QScrollArea()
-        self.gamesArea.setWidgetResizable(True)
-        self.gamesArea.setFrameShape(QFrame.Shape.NoFrame)
-        self.layout().addWidget(self.gamesArea)
-
-        buttons = QHBoxLayout()
-        self.layout().addLayout(buttons)
-        self.btReport = QPushButton(QApplication.translate("app", "Report set to start.gg"))
-        self.btReport.setToolTip(
-            QApplication.translate(
-                "app", "Sends the set's result and its games to start.gg, ending the set"
-            )
-        )
-        self.btReport.clicked.connect(self.ReportSet)
-        buttons.addWidget(self.btReport)
-        self.btRetry = QPushButton(QApplication.translate("app", "Retry"))
-        self.btRetry.clicked.connect(self.RetryLast)
-        buttons.addWidget(self.btRetry)
-        self.btSendNow = QPushButton(QApplication.translate("app", "Send games now"))
-        self.btSendNow.setToolTip(
-            QApplication.translate(
-                "app", "Sends the games played so far to start.gg without ending the set"
-            )
-        )
-        self.btSendNow.clicked.connect(self.SendLiveUpdate)
-        buttons.addWidget(self.btSendNow)
-        buttons.addStretch()
-        self.btCheckToken = QPushButton(QApplication.translate("app", "Check token"))
-        self.btCheckToken.setToolTip(
-            QApplication.translate(
-                "app", "Checks the start.gg API token set in Settings > API Keys"
-            )
-        )
-        self.btCheckToken.clicked.connect(self.CheckToken)
-        buttons.addWidget(self.btCheckToken)
-        self.btClear = QPushButton(QApplication.translate("app", "Clear games"))
-        self.btClear.clicked.connect(self.ClearGames)
-        buttons.addWidget(self.btClear)
-        self.btReset = QPushButton(QApplication.translate("app", "Reset on start.gg"))
-        self.btReset.setToolTip(
-            QApplication.translate("app", "Resets the set on start.gg, so it can be reported again")
-        )
-        self.btReset.clicked.connect(self.ResetSet)
-        buttons.addWidget(self.btReset)
-
         StartGGReporter.instance.signals.status_changed.connect(self.ReporterStatusChanged)
         StartGGReporter.instance.signals.set_reported.connect(self.ReporterSetReported)
-        GameAssetManager.instance.signals.onLoad.connect(self.RebuildRows)
-
-        self.RebuildRows()
-        self.UpdateStatus()
+        GameAssetManager.instance.signals.onLoad.connect(self.signals.gamesChanged.emit)
 
     # =====================================================
-    # ROWS
+    # SHOWING THE GAMES
     # =====================================================
-    # Games UI
     def PlayersPerTeam(self):
         return max(1, len(getattr(self.scoreboard, "team1playerWidgets", []) or [1]))
 
-    def RebuildRows(self):
-        self.rebuilding = True
-        try:
-            container = QWidget()
-            grid = QGridLayout()
-            grid.setContentsMargins(0, 0, 0, 0)
-            container.setLayout(grid)
-            self.rows = []
+    def HasStages(self):
+        return bool(StateManager.Get("game.has_stages", False))
 
-            hasStages = bool(StateManager.Get("game.has_stages", False))
-            hasCharacters = GameAssetManager.instance.characterModel.rowCount() > 1
-            players = self.PlayersPerTeam()
-
-            header = [QApplication.translate("app", "Game")]
-            if hasStages:
-                header.append(QApplication.translate("app", "Stage"))
-            header += [
-                QApplication.translate("app", "Team 1"),
-                "",
-                "",
-                "",
-                QApplication.translate("app", "Team 2"),
-            ]
-            for c, text in enumerate(header):
-                label = QLabel(text)
-                font = label.font()
-                font.setBold(True)
-                label.setFont(font)
-                grid.addWidget(label, 0, c)
-
-            teamNames = [self.TeamName(1), self.TeamName(2)]
-            self.builtNames = teamNames
-            current = self.report.CurrentGameIndex()
-            for i, game in enumerate(self.report.games):
-                row = {"index": i}
-                r = i + 1
-                c = 0
-                label = QLabel(QApplication.translate("app", "Game {0}").format(i + 1))
-                row["label"] = label
-                if i == current:
-                    font = label.font()
-                    font.setBold(True)
-                    label.setFont(font)
-                grid.addWidget(label, r, c)
-                c += 1
-
-                if hasStages:
-                    stage = QComboBox()
-                    stage.setModel(GameAssetManager.instance.stageModelWithBlank)
-                    stage.setMaximumWidth(220)
-                    index = 0
-                    if game.get("stage"):
-                        for s in range(1, stage.count()):
-                            data = stage.itemData(s, Qt.ItemDataRole.UserRole) or {}
-                            if data.get("codename") == game["stage"]:
-                                index = s
-                                break
-                    stage.setCurrentIndex(index)
-                    stage.currentIndexChanged.connect(
-                        lambda _x, i=i, stage=stage: self.StageChanged(i, stage)
-                    )
-                    grid.addWidget(stage, r, c)
-                    row["stage"] = stage
-                    c += 1
-
-                row["characters"] = {}
-                buttons = {}
-                for team in (1, 2):
-                    combos = []
-                    box = QWidget()
-                    box.setLayout(QHBoxLayout())
-                    box.layout().setContentsMargins(0, 0, 0, 0)
-                    if hasCharacters:
-                        chars = game["characters"].get(team) or []
-                        for p in range(players):
-                            combo = QComboBox()
-                            combo.setModel(GameAssetManager.instance.characterModel)
-                            combo.setIconSize(QSize(24, 24))
-                            combo.setMaximumWidth(200)
-                            key = chars[p] if p < len(chars) else None
-                            combo.setCurrentIndex(CharacterIndex(combo, key))
-                            combo.currentIndexChanged.connect(
-                                lambda _x, i=i, team=team: self.CharactersChanged(i, team)
-                            )
-                            box.layout().addWidget(combo)
-                            combos.append(combo)
-                    row["characters"][team] = combos
-                    column = c if team == 1 else c + 4
-                    grid.addWidget(box, r, column)
-
-                for offset, (winner, text) in enumerate(
-                    (
-                        (1, teamNames[0]),
-                        (DRAW, QApplication.translate("app", "Draw")),
-                        (2, teamNames[1]),
-                    )
-                ):
-                    button = QPushButton(text)
-                    button.setCheckable(True)
-                    button.setChecked(game["winner"] == winner)
-                    button.clicked.connect(
-                        lambda checked, i=i, winner=winner: self.WinnerClicked(i, winner, checked)
-                    )
-                    grid.addWidget(button, r, c + 1 + offset)
-                    buttons[winner] = button
-                row["winners"] = buttons
-                self.rows.append(row)
-
-            grid.setRowStretch(len(self.report.games) + 1, 1)
-            grid.setColumnStretch(grid.columnCount(), 1)
-            self.gamesArea.setWidget(container)
-            self.grid = grid
-        finally:
-            self.rebuilding = False
-        self.UpdateStatus()
+    def HasCharacters(self):
+        return GameAssetManager.instance.characterModel.rowCount() > 1
 
     def TeamName(self, team):
         name = StateManager.Get(f"score.{self.number}.team.{team}.mergedTeamName") or ""
         name = name.replace("[L]", "").strip()
         return name or QApplication.translate("app", "Team {0}").format(team)
+
+    def TeamColor(self, team):
+        button = getattr(self.scoreboard, f"colorButton{team}", None)
+        if button is not None:
+            return QColor(button.color())
+        return QColor("#fe3636" if team == 1 else "#2e89ff")
+
+    def CharacterName(self, en_name):
+        characters = GameAssetManager.instance.characters or {}
+        return (characters.get(en_name) or {}).get("display_name") or en_name
+
+    def StageName(self, codename):
+        stage = StateManager.Get(f"game.stages.{codename}") or {}
+        return stage.get("display_name") or stage.get("name") or codename
+
+    def SetWinsNeeded(self):
+        """Wins that take the set (3 in a best of 5), or None without a best of."""
+        if self.report.bestOf <= 0:
+            return None
+        return self.report.bestOf // 2 + 1
+
+    def SetDecided(self):
+        """The team that won the set by reaching the wins it needs, or None."""
+        needed = self.SetWinsNeeded()
+        if needed is None:
+            return None
+        t1, t2 = self.report.Score()
+        if t1 >= needed and t1 > t2:
+            return 1
+        if t2 >= needed and t2 > t1:
+            return 2
+        return None
+
+    def GameNeeded(self, index):
+        """False for a game after the set was won that wasn't played."""
+        if self.SetDecided() is None:
+            return True
+        if self.report.games[index]["winner"] is not UNDECIDED:
+            return True
+        last = max(i for i, g in enumerate(self.report.games) if g["winner"] is not UNDECIDED)
+        return index < last
 
     def ScoreboardCharacters(self, team):
         result = []
@@ -313,41 +147,28 @@ class GameReportWidget(QWidget):
             result.append(character.get("en_name"))
         return result
 
+    def CarriedCharacters(self, index, team):
+        """The characters a game without any is shown with: the scoreboard's,
+        the ones being played, else the last game's with some. (characters,
+        where they're from: a game's index, or None for the scoreboard)"""
+        chars = self.ScoreboardCharacters(team)
+        if any(chars):
+            return chars, None
+        for i in range(index - 1, -1, -1):
+            chars = self.report.games[i]["characters"].get(team) or []
+            if any(chars):
+                return chars, i
+        return [], None
+
     def FillCharacters(self, index):
-        """Takes the characters on the scoreboard for a game without any."""
+        """Takes the characters a game without any is shown with, once it
+        has a result."""
         game = self.report.games[index]
         for team in (1, 2):
             if not any(game["characters"].get(team) or []):
-                chars = self.ScoreboardCharacters(team)
+                chars, _ = self.CarriedCharacters(index, team)
                 if any(chars):
                     self.report.SetCharacters(index, team, chars)
-
-    def FocusGame(self, index):
-        """Scrolls to a game's row and flashes it (the scoreboard's games
-        tracker was clicked)."""
-        if not 0 <= index < len(self.rows):
-            return
-        label = self.rows[index]["label"]
-        self.gamesArea.ensureWidgetVisible(label, 0, 40)
-        container = self.gamesArea.widget()
-        r = index + 1
-        rect = QRect()
-        for c in range(self.grid.columnCount()):
-            item = self.grid.itemAtPosition(r, c)
-            if item is not None and item.geometry().isValid():
-                rect = rect.united(item.geometry())
-        if rect.isValid():
-            _RowFlash(container, rect.adjusted(-4, -3, 4, 3))
-
-    # =====================================================
-    # GAMES TRACKER
-    # =====================================================
-    def SetWinnerFromTracker(self, index, winner):
-        """The scoreboard's games tracker set who won a game."""
-        self.report.SetWinner(index, winner)
-        if winner is not UNDECIDED:
-            self.FillCharacters(index)
-        self.Edited()
 
     def GameTooltip(self, index):
         """Who won a game, its stage and characters, for the games tracker."""
@@ -363,16 +184,11 @@ class GameReportWidget(QWidget):
             result = QApplication.translate("app", "Not played")
         lines = [f"<b>{QApplication.translate('app', 'Game {0}').format(index + 1)}</b>: {result}"]
         if game.get("stage"):
-            stage = StateManager.Get(f"game.stages.{game['stage']}") or {}
-            name = stage.get("display_name") or stage.get("name") or game["stage"]
-            lines.append(QApplication.translate("app", "Stage: {0}").format(name))
-        characters = GameAssetManager.instance.characters or {}
+            lines.append(
+                QApplication.translate("app", "Stage: {0}").format(self.StageName(game["stage"]))
+            )
         for team in (1, 2):
-            names = [
-                (characters.get(c) or {}).get("display_name") or c
-                for c in (game["characters"].get(team) or [])
-                if c
-            ]
+            names = [self.CharacterName(c) for c in (game["characters"].get(team) or []) if c]
             if names:
                 lines.append(f"{self.TeamName(team)}: {', '.join(names)}")
         lines.append(
@@ -385,41 +201,26 @@ class GameReportWidget(QWidget):
     # =====================================================
     # EDITING GAMES
     # =====================================================
-    def WinnerClicked(self, index, winner, checked):
-        self.report.SetWinner(index, winner if checked else UNDECIDED)
-        if checked:
+    def SetWinner(self, index, winner):
+        """1 or 2 for the team that won, DRAW, or UNDECIDED to clear it."""
+        self.report.SetWinner(index, winner)
+        if winner is not UNDECIDED:
             self.FillCharacters(index)
         self.Edited()
 
-    def StageChanged(self, index, combo):
-        if self.rebuilding:
-            return
-        data = combo.currentData() or {}
-        self.report.SetStage(index, data.get("codename"))
-        self.Edited(rebuild=False)
+    def SetCharacters(self, index, team, characters):
+        self.report.SetCharacters(index, team, characters)
+        self.Edited()
 
-    def CharactersChanged(self, index, team):
-        if self.rebuilding:
-            return
-        row = self.rows[index]
-        chars = []
-        for combo in row["characters"][team]:
-            data = combo.currentData() or {}
-            chars.append(data.get("en_name") or None)
-        self.report.SetCharacters(index, team, chars)
-        self.Edited(rebuild=False)
-
-    def Edited(self, rebuild=True, fromScoreboard=False):
+    def Edited(self, fromScoreboard=False):
         """The games were changed here."""
         self.dirty = True
-        if rebuild:
-            self.RebuildRows()
         self.Export()
         if not fromScoreboard:
             self.signals.scoreChanged.emit(*self.report.Score())
         if LiveUpdates() and self.CanSend()[0]:
             self.liveTimer.start()
-        self.UpdateStatus()
+        self.signals.statusChanged.emit()
 
     def SetStage(self, index, codename):
         if index < 0:
@@ -436,11 +237,11 @@ class GameReportWidget(QWidget):
             self.report.SetStage(i, None)
         self.Edited()
 
-    def ClearGames(self):
+    def ClearGames(self, parent=None):
         if (
             self.report.HasResults()
             and QMessageBox.question(
-                self,
+                parent or self.scoreboard,
                 QApplication.translate("app", "Clear games"),
                 QApplication.translate(
                     "app", "Clear the results, stages and characters of every game?"
@@ -458,7 +259,6 @@ class GameReportWidget(QWidget):
     # Called by the scoreboard
     def SetBestOf(self, bestOf):
         self.report.SetBestOf(bestOf)
-        self.RebuildRows()
         self.Export()
 
     def ScoreChanged(self, team, value):
@@ -469,14 +269,12 @@ class GameReportWidget(QWidget):
                 if game["winner"] is not UNDECIDED and (i >= len(before) or before[i] is UNDECIDED):
                     self.FillCharacters(i)
             if getattr(self.scoreboard, "applyingProviderData", False):
-                self.RebuildRows()
                 self.Export()
             else:
                 self.Edited(fromScoreboard=True)
 
     def Swap(self):
         self.report.Swap()
-        self.RebuildRows()
         self.Export()
 
     def Swapped(self):
@@ -496,8 +294,8 @@ class GameReportWidget(QWidget):
         self.lastSent = 0
         self.report.Reset()
         StartGGReporter.instance.Clear(self.number)
-        self.RebuildRows()
         self.Export()
+        self.signals.statusChanged.emit()
 
     def ApplySetData(self, data):
         """The scoreboard got the set's data from start.gg."""
@@ -511,17 +309,21 @@ class GameReportWidget(QWidget):
         # Games reported on start.gg (by someone else, or by us earlier),
         # unless there are changes here that weren't sent yet
         games = data.get("games")
+        exported = False
         if games and not self.HoldProviderResults():
             before = self.report.ToDict()
             self.report.SetFromProvider(games, self.Swapped())
             if self.report.ToDict() != before:
-                self.RebuildRows()
                 self.Export()
+                exported = True
                 self.signals.scoreChanged.emit(*self.report.Score())
 
-        # The players' names are on the buttons
-        if getattr(self, "builtNames", None) != [self.TeamName(1), self.TeamName(2)]:
-            self.RebuildRows()
+        # The players' names are on the winner buttons
+        names = [self.TeamName(1), self.TeamName(2)]
+        if self.builtNames != names:
+            self.builtNames = names
+            if not exported:
+                self.signals.gamesChanged.emit()
 
         if (
             self.setState in (1, 6)
@@ -533,7 +335,7 @@ class GameReportWidget(QWidget):
             self.markedInProgress.add(str(self.setId))
             StartGGReporter.instance.Submit(self.number, KIND_START, self.setId)
 
-        self.UpdateStatus()
+        self.signals.statusChanged.emit()
 
     def HoldProviderResults(self):
         """start.gg's score and games for the set are behind what's here:
@@ -544,7 +346,7 @@ class GameReportWidget(QWidget):
         return (
             self.dirty
             or StartGGReporter.instance.Busy(self.number)
-            or time.time() - self.lastSent < GameReportWidget.SEND_GRACE_SECS
+            or time.time() - self.lastSent < GameReportController.SEND_GRACE_SECS
         )
 
     # =====================================================
@@ -568,6 +370,24 @@ class GameReportWidget(QWidget):
                 "app", "Waiting for the set's players from start.gg"
             )
         return True, ""
+
+    def Reporting(self):
+        """Whether the set can be reported from here at all: a token, and a
+        set from start.gg loaded. Without them, there's nothing about
+        start.gg to show."""
+        return HasToken() and self.setId is not None
+
+    def Sending(self):
+        state = StartGGReporter.instance.Status(self.number).get("state")
+        return state in (STATUS_PENDING, STATUS_SENDING, STATUS_RETRYING)
+
+    def Reported(self):
+        state = StartGGReporter.instance.Status(self.number).get("state")
+        return state == STATUS_REPORTED or self.setState == 3
+
+    def CanRetry(self):
+        state = StartGGReporter.instance.Status(self.number).get("state")
+        return state == STATUS_ERROR and self.lastRequest is not None
 
     def Variables(self, final):
         gameAssets = GameAssetManager.instance
@@ -598,32 +418,27 @@ class GameReportWidget(QWidget):
         self.lastSent = time.time()
         self.dirty = False
 
-    def ReportSet(self):
+    def ReportSet(self, parent=None):
+        parent = parent or self.scoreboard
         ok, why = self.CanSend()
         if not ok:
-            QMessageBox.warning(self, QApplication.translate("app", "Report set"), why)
+            QMessageBox.warning(parent, QApplication.translate("app", "Report set"), why)
             return
         variables = self.Variables(final=True)
         if variables.get("winnerId") is None:
             QMessageBox.warning(
-                self,
+                parent,
                 QApplication.translate("app", "Report set"),
                 QApplication.translate("app", "The set has no winner yet: the score is tied."),
             )
             return
         t1, t2 = self.report.Score()
-        team1 = StateManager.Get(
-            f"score.{self.number}.team.1.mergedTeamName"
-        ) or QApplication.translate("app", "Team 1")
-        team2 = StateManager.Get(
-            f"score.{self.number}.team.2.mergedTeamName"
-        ) or QApplication.translate("app", "Team 2")
         if ConfirmReport():
             answer = QMessageBox.question(
-                self,
+                parent,
                 QApplication.translate("app", "Report set"),
                 QApplication.translate("app", "Report {0} {1} - {2} {3} to start.gg?").format(
-                    team1, t1, t2, team2
+                    self.TeamName(1), t1, t2, self.TeamName(2)
                 )
                 + "\n"
                 + QApplication.translate(
@@ -638,13 +453,14 @@ class GameReportWidget(QWidget):
         self.lastSent = time.time()
         self.dirty = False
 
-    def ResetSet(self):
+    def ResetSet(self, parent=None):
+        parent = parent or self.scoreboard
         ok, why = self.CanSend()
         if not ok:
-            QMessageBox.warning(self, QApplication.translate("app", "Reset set"), why)
+            QMessageBox.warning(parent, QApplication.translate("app", "Reset set"), why)
             return
         answer = QMessageBox.question(
-            self,
+            parent,
             QApplication.translate("app", "Reset set"),
             QApplication.translate(
                 "app",
@@ -667,26 +483,22 @@ class GameReportWidget(QWidget):
             request["variables"] = self.Variables(final=request["kind"] == KIND_REPORT)
         StartGGReporter.instance.Retry(self.number, request)
 
-    def CheckToken(self):
+    def CheckToken(self, parent=None):
+        parent = parent or self.scoreboard
         if not HasToken():
             QMessageBox.warning(
-                self,
+                parent,
                 QApplication.translate("app", "start.gg API token"),
                 QApplication.translate(
                     "app", "Set a start.gg API token in Settings > API Keys to report sets"
                 ),
             )
             return
-        self.btCheckToken.setEnabled(False)
 
         def Done(ok, message):
-            try:
-                self.btCheckToken.setEnabled(True)
-            except RuntimeError:
-                return
             if ok:
                 QMessageBox.information(
-                    self,
+                    parent,
                     QApplication.translate("app", "start.gg API token"),
                     QApplication.translate("app", "The token works. It belongs to {0}.").format(
                         message
@@ -699,7 +511,7 @@ class GameReportWidget(QWidget):
                 )
             else:
                 QMessageBox.warning(
-                    self,
+                    parent,
                     QApplication.translate("app", "start.gg API token"),
                     QApplication.translate("app", "The token doesn't work: {0}").format(message),
                 )
@@ -708,23 +520,19 @@ class GameReportWidget(QWidget):
 
     def ReporterStatusChanged(self, number):
         if number == self.number:
-            self.UpdateStatus()
             self.Export()
+            self.signals.statusChanged.emit()
 
     def ReporterSetReported(self, number, setId):
         if number != self.number or str(setId) != str(self.setId):
             return
         self.setState = 3
         self.signals.setReported.emit(str(setId))
+        self.signals.statusChanged.emit()
 
-    def UpdateStatus(self):
-        if self.setId is None:
-            self.setLabel.setText(QApplication.translate("app", "No set loaded from start.gg"))
-        else:
-            self.setLabel.setText(
-                QApplication.translate("app", "start.gg set {0}").format(self.setId)
-            )
-
+    def Status(self):
+        """What's being sent to start.gg, or why the set can't be reported:
+        (text, STATUS_KIND_*)."""
         ok, why = self.CanSend()
         status = StartGGReporter.instance.Status(self.number)
         state = status.get("state")
@@ -736,34 +544,27 @@ class GameReportWidget(QWidget):
             STATUS_RETRYING: QApplication.translate("app", "Couldn't reach start.gg."),
             STATUS_ERROR: QApplication.translate("app", "start.gg error:"),
         }
-        palette = QApplication.palette()
-        color = palette.color(QPalette.ColorRole.Text).name()
         if not ok:
-            text = why
-            color = palette.color(QPalette.ColorRole.PlaceholderText).name()
-        elif state in texts:
+            return why, STATUS_KIND_MUTED
+        if state in texts:
             text = texts[state]
             if status.get("message"):
                 text += " " + status.get("message")
             if state in (STATUS_ERROR, STATUS_RETRYING):
-                color = "#e05252"
-            elif state in (STATUS_SYNCED, STATUS_REPORTED):
-                color = "#3fb950"
-        elif self.setState == 3:
-            text = QApplication.translate("app", "This set is finished on start.gg")
-        elif self.dirty and not LiveUpdates():
-            text = QApplication.translate("app", "Games are sent when the set is reported")
-        else:
-            text = status.get("message") or ""
-        self.statusLabel.setText(text)
-        self.statusLabel.setStyleSheet(f"color: {color};")
-
-        sending = state in (STATUS_PENDING, STATUS_SENDING, STATUS_RETRYING)
-        self.btReport.setEnabled(ok and not sending)
-        self.btSendNow.setEnabled(ok and not sending)
-        self.btSendNow.setVisible(not LiveUpdates())
-        self.btReset.setEnabled(ok and not sending)
-        self.btRetry.setVisible(state == STATUS_ERROR and self.lastRequest is not None)
+                return text, STATUS_KIND_ERROR
+            if state in (STATUS_SYNCED, STATUS_REPORTED):
+                return text, STATUS_KIND_OK
+            return text, STATUS_KIND_NONE
+        if self.setState == 3:
+            return QApplication.translate("app", "This set is finished on start.gg"), STATUS_KIND_OK
+        if self.dirty and not LiveUpdates():
+            return (
+                QApplication.translate("app", "Games are sent when the set is reported"),
+                STATUS_KIND_MUTED,
+            )
+        if LiveUpdates():
+            return QApplication.translate("app", "Live on start.gg"), STATUS_KIND_OK
+        return status.get("message") or "", STATUS_KIND_NONE
 
     # =====================================================
     # EXPORTS
