@@ -1,0 +1,24 @@
+{
+  "assets": {
+    "default": {}
+  },
+  "subtitle": "",
+  "countdown_to": "",
+  "countdown_minutes": 0,
+  "countdown_from_queue": true,
+  "countdown_label": "Starting in",
+  "countdown_done": "Any moment now",
+  "clock_24h": false,
+  "stream": "",
+  "sets_displayed": 3,
+  "up_next_title": "Up next",
+  "now_label": "Now",
+  "eta_format": "minutes",
+  "show_results": true,
+  "results_title": "Results",
+  "ticker_speed": 80,
+  "upset_threshold": 1,
+  "upset_label": "Upset",
+  "show_banner": true,
+  "use_tournament_logo": true
+}
