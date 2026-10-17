@@ -1,0 +1,145 @@
+/* upset_alert.html: an alert at the top center when a new set is an
+   upset. The upset label in the accent color, then the winner, the score
+   and the loser, with the round and upset factor under them. Colors, fonts
+   and radii come from main.css and the layout theme. */
+
+body {
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  font-family: var(--font);
+  font-weight: 700;
+  color: var(--text-color);
+  background: transparent;
+}
+
+.ua-slot {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ua-alert {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--border-radius);
+  background: var(--bg-fill, var(--bg-color));
+  box-shadow:
+    0 0 0 2px var(--accent-color),
+    0 8px 28px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ua-label {
+  display: flex;
+  align-items: center;
+  padding: 0 34px;
+  font-size: 54px;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--on-accent-color);
+  background: var(--accent-color);
+}
+
+.ua-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 34px 14px 30px;
+}
+
+.ua-matchup {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.ua-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 46px;
+}
+
+.ua-loser {
+  opacity: 0.6;
+}
+
+.ua-seed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  font-size: 26px;
+  border-radius: var(--border-radius-chip);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ua-winner .ua-seed {
+  color: var(--on-accent-color);
+  background: var(--accent-color);
+}
+
+.cs-sponsor {
+  margin-right: 10px;
+  color: var(--accent-color);
+}
+
+.ua-loser .cs-sponsor {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.cs-flags {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.cs-flag {
+  height: 28px;
+  border-radius: 3px;
+}
+
+.cs-characters {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.cs-character {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.ua-score {
+  padding: 2px 18px;
+  font-size: 52px;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ua-dash {
+  margin: 0 6px;
+  opacity: 0.6;
+}
+
+.ua-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  font-size: 24px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.ua-factor b {
+  color: var(--accent-color);
+}
