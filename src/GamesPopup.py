@@ -106,6 +106,12 @@ def StyleWinnerButton(button, color, checked, radius=None):
         )
 
 
+def BoldMetrics(widget):
+    font = QFont(widget.font())
+    font.setBold(True)
+    return QFontMetrics(font)
+
+
 def ReportButtonState(controller):
     """(shown, text, enabled, tooltip) of a button reporting the set."""
     if not controller.Reporting():
@@ -458,8 +464,9 @@ class GamePopup(_Popup):
         for team, button in self.winnerButtons.items():
             checked = game["winner"] == team
             name = controller.TeamName(team)
-            # A long name (a doubles team's) ends in … instead of widening the pop-up
-            shown = button.fontMetrics().elidedText(
+            # A long name (a doubles team's) ends in … instead of widening the
+            # pop-up. Measured in bold, as StyleWinnerButton shows it.
+            shown = BoldMetrics(button).elidedText(
                 name, Qt.TextElideMode.ElideRight, WINNER_NAME_WIDTH
             )
             button.setText(

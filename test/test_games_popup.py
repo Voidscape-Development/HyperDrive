@@ -164,7 +164,13 @@ sys.modules["src.StartGGReporter"] = module
 
 from src.GameReport import UNDECIDED
 from src.GameReportController import GameReportController
-from src.GamesPopup import WINNER_NAME_WIDTH, GamePopup, GamesSheetPopup, IconCharacterCombo
+from src.GamesPopup import (
+    WINNER_NAME_WIDTH,
+    BoldMetrics,
+    GamePopup,
+    GamesSheetPopup,
+    IconCharacterCombo,
+)
 
 
 class FakeColorButton:
@@ -412,7 +418,7 @@ def TestDoubles():
     # A long name ends in …, the whole name in the tooltip
     button = popup.winnerButtons[1]
     assert button.text().endswith("…") and button.toolTip() == "Tweek / Sparg0 / Somebody"
-    assert button.fontMetrics().horizontalAdvance(button.text()) <= WINNER_NAME_WIDTH
+    assert BoldMetrics(button).horizontalAdvance(button.text()) <= WINNER_NAME_WIDTH
     assert popup.winnerButtons[2].text() == "MkLeo / Light"
     assert popup.width() <= 420, popup.width()
     popup.close()
