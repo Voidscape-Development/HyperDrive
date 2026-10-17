@@ -1,0 +1,149 @@
+/* ═══════════════════════════════════════════════════════════
+   SOCIALS — index.css
+   Lower thirds: a card per person with their avatar, name and
+   pronouns, and their social media accounts with each platform's
+   icon (../icons, one color: they take the card's color).
+     - player1.html: bottom left; player2.html: bottom right
+     - commentators.html: a card each, along the bottom center
+   Fonts and design tokens come from ../main.css (loaded first).
+   ═══════════════════════════════════════════════════════════ */
+
+body {
+  font-family: var(--font);
+  font-weight: 700;
+  overflow: hidden;
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  color: var(--text-color);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.cards {
+  position: absolute;
+  bottom: 60px;
+  display: flex;
+  gap: 24px;
+}
+
+.side_1 .cards {
+  left: 60px;
+}
+
+.side_2 .cards {
+  right: 60px;
+}
+
+.who_commentators .cards {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+
+/* ── A card ──────────────────────────────────────────────── */
+
+.card {
+  --color: var(--accent-color);
+  display: flex;
+  height: 124px;
+  border-radius: var(--border-radius);
+  background: var(--bg-fill, var(--bg-color));
+  box-shadow:
+    inset 6px 0 0 var(--color),
+    0 4px 14px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.color_p1 { --color: var(--p1-score-bg-color); }
+.color_p2 { --color: var(--p2-score-bg-color); }
+
+.avatar {
+  width: 124px;
+  height: 124px;
+  flex-shrink: 0;
+  margin-left: 6px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 360px;
+  padding: 0 34px 0 30px;
+}
+
+.name_row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.name {
+  height: 52px;
+  max-width: 560px;
+  font-size: 48px;
+}
+
+.name .text {
+  justify-content: flex-start;
+}
+
+.sponsor {
+  margin-right: 12px;
+  color: var(--color);
+}
+
+.sponsor:empty {
+  display: none;
+}
+
+.pronoun {
+  height: 30px;
+  padding: 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: var(--border-radius-chip);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pronoun:has(> .text_empty) {
+  display: none;
+}
+
+.socials {
+  height: 36px;
+  max-width: 760px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.socials .text {
+  justify-content: flex-start;
+  gap: 26px;
+}
+
+.social {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  background: var(--color);
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
