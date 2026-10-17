@@ -1,0 +1,408 @@
+/* ═══════════════════════════════════════════════════════════
+   GAME LOG — index.css
+   A card per game of the set: its stage, both sides' characters,
+   who won (in their team color) and the score after it.
+     - strip.html:  a row, at the bottom center
+     - column.html: a column, at the left
+     - recap.html:  full screen, with the names, score and each
+                    character's record in the set
+   Fonts and design tokens come from ../main.css (loaded first).
+   ═══════════════════════════════════════════════════════════ */
+
+body {
+  font-family: var(--font);
+  font-weight: 700;
+  overflow: hidden;
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  color: var(--text-color);
+}
+
+.games {
+  position: absolute;
+  display: flex;
+  gap: 10px;
+}
+
+.games.empty {
+  display: none;
+}
+
+.view_strip .games {
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+}
+
+.view_column .games {
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+}
+
+
+/* ── A game (strip and column) ───────────────────────────── */
+
+.game {
+  position: relative;
+  width: 168px;
+  height: 116px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-radius: var(--border-radius);
+  background: var(--bg-fill, var(--bg-color));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.4;
+}
+
+.stage_empty {
+  display: none;
+}
+
+.number {
+  position: absolute;
+  top: 7px;
+  left: 11px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.85;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.sides {
+  position: absolute;
+  inset: 28px 12px 34px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.side {
+  display: flex;
+  gap: 2px;
+}
+
+.icon {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
+}
+
+.icon_empty {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  width: 30px;
+  height: 30px;
+  margin: 7px;
+  filter: none;
+}
+
+.result {
+  position: absolute;
+  bottom: 9px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 22px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* The winner's color along the bottom, on its side; the loser's
+   characters faded */
+.won::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  height: 5px;
+  width: 50%;
+}
+
+.won_1::after {
+  left: 0;
+  background: var(--p1-score-bg-color);
+}
+
+.won_2::after {
+  right: 0;
+  background: var(--p2-score-bg-color);
+}
+
+.won_1 .t2 :is(.icon, .portrait),
+.won_2 .t1 :is(.icon, .portrait),
+.draw :is(.icon, .portrait) {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.current {
+  box-shadow:
+    inset 0 0 0 3px var(--accent-color),
+    0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.current .result {
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.upcoming {
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.22);
+  opacity: 0.7;
+}
+
+.no_upcoming .upcoming {
+  display: none;
+}
+
+
+/* ── Recap ───────────────────────────────────────────────── */
+
+.view_recap {
+  background:
+    radial-gradient(ellipse at 0% 100%, color-mix(in srgb, var(--p1-score-bg-color) 28%, transparent), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--p2-score-bg-color) 28%, transparent), transparent 55%),
+    var(--bg-color);
+}
+
+.recap {
+  position: absolute;
+  inset: 0;
+  padding: 64px 80px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tournament_name {
+  height: 36px;
+  font-size: 32px;
+  letter-spacing: 2px;
+  opacity: 0.7;
+  max-width: 1400px;
+}
+
+.round {
+  height: 40px;
+  font-size: 38px;
+  letter-spacing: 1px;
+  max-width: 1400px;
+}
+
+.teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+}
+
+.p1.team {
+  justify-content: flex-end;
+}
+
+.team .name {
+  height: 72px;
+  font-size: 66px;
+  min-width: 0;
+  max-width: 640px;
+}
+
+.p1.team .name .text { justify-content: flex-end; }
+.p2.team .name .text { justify-content: flex-start; }
+
+.sponsor {
+  margin-right: 12px;
+}
+
+.p1 .sponsor { color: var(--p1-sponsor-color); }
+.p2 .sponsor { color: var(--p2-sponsor-color); }
+
+.losers {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  font-size: 28px;
+  border-radius: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 0 12px;
+}
+
+.p1 .losers { background: var(--p1-score-bg-color); color: var(--p1-score-color); }
+.p2 .losers { background: var(--p2-score-bg-color); color: var(--p2-score-color); }
+
+.team .score {
+  width: 110px;
+  height: 110px;
+  font-size: 84px;
+  border-radius: var(--border-radius);
+}
+
+.p1.team .score { background: var(--p1-score-bg-color); color: var(--p1-score-color); }
+.p2.team .score { background: var(--p2-score-bg-color); color: var(--p2-score-color); }
+
+.dash {
+  font-size: 60px;
+  opacity: 0.5;
+}
+
+.view_recap .games {
+  position: static;
+  gap: 24px;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.view_recap .game {
+  width: 300px;
+  height: 460px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.stage_box {
+  position: relative;
+  height: 170px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.view_recap .stage {
+  opacity: 1;
+}
+
+.view_recap .number {
+  top: 12px;
+  left: 14px;
+  padding: 4px 12px;
+  font-size: 20px;
+  border-radius: var(--border-radius-pill);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.stage_name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 24px 14px 10px;
+  font-size: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+}
+
+.view_recap .sides {
+  position: relative;
+  inset: auto;
+  flex: 1;
+  gap: 4px;
+  padding: 10px;
+  align-items: stretch;
+}
+
+.view_recap .side {
+  flex: 1;
+  gap: 4px;
+}
+
+.portrait {
+  flex: 1;
+  border-radius: 8px;
+  background-size: 260%;
+  background-repeat: no-repeat;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.t1 .portrait {
+  box-shadow: inset 0 -4px 0 var(--p1-score-bg-color);
+}
+
+.t2 .portrait {
+  box-shadow: inset 0 -4px 0 var(--p2-score-bg-color);
+  transform: scaleX(-1);
+}
+
+.portrait_empty {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.view_recap .result {
+  position: static;
+  height: 64px;
+  line-height: 64px;
+  font-size: 40px;
+}
+
+.view_recap .won::after {
+  height: 8px;
+}
+
+.records_row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+}
+
+.records {
+  display: flex;
+  gap: 14px;
+}
+
+.record {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 20px 0 8px;
+  font-size: 28px;
+  border-radius: var(--border-radius-pill);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.record .icon {
+  width: 42px;
+  height: 42px;
+}
+
+.p1 .record { box-shadow: inset 4px 0 0 var(--p1-score-bg-color); }
+.p2 .record { box-shadow: inset -4px 0 0 var(--p2-score-bg-color); }
+
+.record_score {
+  opacity: 0.75;
+}
