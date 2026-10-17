@@ -86,6 +86,15 @@ class GameReportController(QObject):
     def PlayersPerTeam(self):
         return max(1, len(getattr(self.scoreboard, "team1playerWidgets", []) or [1]))
 
+    def CharactersPerPlayer(self):
+        spin = getattr(self.scoreboard, "charNumber", None)
+        return max(1, spin.value()) if spin is not None else 1
+
+    def CharactersPerTeam(self):
+        """A game's characters for a team: each player's, in order (player
+        1's characters, then player 2's...)."""
+        return self.PlayersPerTeam() * self.CharactersPerPlayer()
+
     def HasStages(self):
         return bool(StateManager.Get("game.has_stages", False))
 
@@ -141,10 +150,12 @@ class GameReportController(QObject):
     def ScoreboardCharacters(self, team):
         result = []
         for p in range(1, self.PlayersPerTeam() + 1):
-            character = (
-                StateManager.Get(f"score.{self.number}.team.{team}.player.{p}.character.1") or {}
-            )
-            result.append(character.get("en_name"))
+            for c in range(1, self.CharactersPerPlayer() + 1):
+                character = (
+                    StateManager.Get(f"score.{self.number}.team.{team}.player.{p}.character.{c}")
+                    or {}
+                )
+                result.append(character.get("en_name"))
         return result
 
     def CarriedCharacters(self, index, team):

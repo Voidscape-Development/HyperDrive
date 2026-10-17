@@ -34,6 +34,29 @@ os.symlink(os.path.join(repoDir, "assets"), os.path.join(workDir, "assets"))
 
 CHARACTERS = ["Diddy Kong", "Byleth", "Pyra", "Sonic", "Pikachu", "Mr. Game & Watch", "Steve"]
 COLORS = ["#8d6e63", "#26a69a", "#e53935", "#1e88e5", "#fdd835", "#424242", "#7cb342"]
+# A tag game's, four characters a player
+TAG_CHARACTERS = [
+    "Iron Man",
+    "Storm",
+    "Ms. Marvel",
+    "Doctor Doom",
+    "Ryu",
+    "Chun-Li",
+    "Ken",
+    "Akuma",
+]
+TAG_COLORS = [
+    "#c62828",
+    "#eceff1",
+    "#3949ab",
+    "#2e7d32",
+    "#f5f5f5",
+    "#1565c0",
+    "#ef6c00",
+    "#4a148c",
+]
+CHARACTERS += TAG_CHARACTERS
+COLORS += TAG_COLORS
 
 
 # The asset manager loads games on import; the pop-ups need its models
@@ -152,34 +175,46 @@ class FakeColorButton:
         return self._color
 
 
+class FakeSpin:
+    def __init__(self, value):
+        self._value = value
+
+    def value(self):
+        return self._value
+
+
 class FakeScoreboard(QWidget):
-    def __init__(self, players=1):
+    def __init__(self, players=1, characters=1):
         super().__init__()
         self.scoreboardNumber = 1
         self.team1playerWidgets = [None] * players
+        self.charNumber = FakeSpin(characters)
         self.colorButton1 = FakeColorButton("#d93a3a")
         self.colorButton2 = FakeColorButton("#2e6fe0")
 
 
-def Setup(bestOf=5, scoreboardCharacters=(None, None), names=("Tweek", "MkLeo")):
+def Setup(bestOf=5, scoreboardCharacters=(None, None), names=("Tweek", "MkLeo"), characters=1):
     """scoreboardCharacters: each team's character, or list of characters
-    (one per player) for doubles."""
+    (one per player) for doubles. characters: characters a player, each
+    player's in a row in the lists."""
     FakeState.data = {
         "score.1.team.1.mergedTeamName": names[0],
         "score.1.team.2.mergedTeamName": names[1],
     }
     players = 1
+    perPlayer = characters
     for team, characters in enumerate(scoreboardCharacters, start=1):
         if not isinstance(characters, (list, tuple)):
             characters = [characters]
-        players = max(players, len(characters))
-        for p, character in enumerate(characters, start=1):
+        players = max(players, len(characters) // perPlayer)
+        for i, character in enumerate(characters):
+            p, c = divmod(i, perPlayer)
             if character:
-                FakeState.data[f"score.1.team.{team}.player.{p}.character.1"] = {
+                FakeState.data[f"score.1.team.{team}.player.{p + 1}.character.{c + 1}"] = {
                     "en_name": character
                 }
     FakeReporter.token = False
-    scoreboard = FakeScoreboard(players)
+    scoreboard = FakeScoreboard(players, perPlayer)
     controller = GameReportController(scoreboard)
     controller.SetBestOf(bestOf)
     return scoreboard, controller
@@ -384,6 +419,35 @@ def TestDoubles():
     print("TestDoubles: OK")
 
 
+def TestCharactersPerPlayer():
+    scoreboard, controller = Setup(
+        scoreboardCharacters=(TAG_CHARACTERS[:4], TAG_CHARACTERS[4:]),
+        names=("Justin Wong", "Daigo"),
+        characters=4,
+    )
+    assert controller.CharactersPerTeam() == 4
+    assert controller.ScoreboardCharacters(1) == TAG_CHARACTERS[:4]
+
+    sheet = GamesSheetPopup(controller, scoreboard)
+    sheet.Open(Anchor())
+    combos = sheet.rows[0]["characters"][2].combos
+    assert len(combos) == 4 and all(isinstance(c, IconCharacterCombo) for c in combos)
+    assert [c.toolTip() for c in combos] == TAG_CHARACTERS[4:]
+    assert sheet.width() < 600, sheet.width()
+    # The game takes all four, and start.gg gets them all for the player
+    sheet.rows[0]["winners"][2].click()
+    assert controller.report.games[0]["characters"][2] == TAG_CHARACTERS[4:]
+    sheet.close()
+
+    popup = GamePopup(controller, 1, scoreboard)
+    popup.Open(Anchor())
+    assert len(popup.characters[1].combos) == 4
+    assert ComboName(popup.characters[1].combos[3]) == "Doctor Doom"
+    assert popup.width() <= 420, popup.width()
+    popup.close()
+    print("TestCharactersPerPlayer: OK")
+
+
 def SaveScreenshots(folder):
     from src.Theme import Theme
 
@@ -436,6 +500,24 @@ def SaveScreenshots(folder):
     popup.grab().save(os.path.join(folder, "game_popup_doubles.png"))
     popup.close()
 
+    scoreboard, controller = Setup(
+        scoreboardCharacters=(TAG_CHARACTERS[:4], TAG_CHARACTERS[4:]),
+        names=("Justin Wong", "Daigo"),
+        characters=4,
+    )
+    for i, winner in enumerate([1, 2]):
+        controller.SetWinner(i, winner)
+    popup = GamesSheetPopup(controller, scoreboard)
+    popup.Open(Anchor())
+    app.processEvents()
+    popup.grab().save(os.path.join(folder, "games_sheet_tag.png"))
+    popup.close()
+    popup = GamePopup(controller, 2, scoreboard)
+    popup.Open(Anchor())
+    app.processEvents()
+    popup.grab().save(os.path.join(folder, "game_popup_tag.png"))
+    popup.close()
+
 
 screenshots = os.path.abspath(os.path.join(repoDir, sys.argv[1])) if len(sys.argv) > 1 else None
 TestSheetRows()
@@ -444,6 +526,7 @@ TestGamePopup()
 TestGamePopupCarriesLastGame()
 TestGamePopupOffersReport()
 TestDoubles()
+TestCharactersPerPlayer()
 if screenshots:
     SaveScreenshots(screenshots)
 print("OK")

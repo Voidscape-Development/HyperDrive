@@ -168,12 +168,10 @@ class IconCharacterCombo(CharacterCombo):
         self.update()
 
     def sizeHint(self):
-        option = QStyleOptionComboBox()
-        self.initStyleOption(option)
-        option.currentText = ""
-        return self.style().sizeFromContents(
-            QStyle.ContentsType.CT_ComboBox, option, self.iconSize(), self
-        )
+        # The icon in a frame, without the dropdown arrow: the grid opens
+        # on a click all the same
+        icon = self.iconSize()
+        return QSize(icon.width() + 12, max(icon.height() + 10, super().sizeHint().height()))
 
     def minimumSizeHint(self):
         return self.sizeHint()
@@ -183,16 +181,25 @@ class IconCharacterCombo(CharacterCombo):
         option = QStyleOptionComboBox()
         self.initStyleOption(option)
         option.currentText = ""
+        option.currentIcon = QIcon()
+        option.subControls = QStyle.SubControl.SC_ComboBoxFrame
         painter.drawComplexControl(QStyle.ComplexControl.CC_ComboBox, option)
-        # The characters a game would take, not picked yet
-        if self.dimmed:
-            painter.setOpacity(0.45)
-        painter.drawControl(QStyle.ControlElement.CE_ComboBoxLabel, option)
+        icon = self.itemIcon(self.currentIndex())
+        if not icon.isNull():
+            # The characters a game would take, not picked yet
+            if self.dimmed:
+                painter.setOpacity(0.45)
+            size = self.iconSize()
+            rect = QRect(QPoint(0, 0), size)
+            rect.moveCenter(self.rect().center())
+            icon.paint(painter, rect)
 
 
 class CharacterCombos(QWidget):
     """A team's characters in a game: a character dropdown, opening the
-    grid, per player, side by side or one under the other. compact shows
+    grid, per character the team has (each player's characters,
+    GameReportController.CharactersPerTeam), side by side or one under the
+    other. compact shows
     only their icons. A game without any shows the ones it would take
     (GameReportController.CarriedCharacters) in italics (dimmed, compact),
     if it's the game being played."""
@@ -217,7 +224,7 @@ class CharacterCombos(QWidget):
         if not vertical:
             layout.setAlignment(align)
         self.combos = []
-        for _ in range(controller.PlayersPerTeam()):
+        for _ in range(controller.CharactersPerTeam()):
             combo = IconCharacterCombo() if compact else CharacterCombo()
             combo.setModel(GameAssetManager.instance.characterModel)
             combo.setIconSize(CHARACTER_ICON)
@@ -665,10 +672,11 @@ class GamesSheetPopup(_Popup):
                     (1, 1, Qt.AlignmentFlag.AlignRight),
                     (2, 3, Qt.AlignmentFlag.AlignLeft),
                 ]:
-                    # Several characters a team: only their icons, so the
-                    # pop-up doesn't grow as wide as four dropdowns
+                    # Several characters a team (players or characters a
+                    # player): only their icons, so the pop-up doesn't grow
+                    # as wide as four dropdowns
                     combos = CharacterCombos(
-                        controller, team, align, compact=controller.PlayersPerTeam() > 1
+                        controller, team, align, compact=controller.CharactersPerTeam() > 1
                     )
                     combos.SetGame(i)
                     self.grid.addWidget(combos, r, column)
