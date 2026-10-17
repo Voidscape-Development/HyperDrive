@@ -13,7 +13,8 @@ from src.ColorButton import ColorButton
 from src.ColorPicker import GameColorSwatchGroups
 
 from .GameAssetManager import GameAssetManager
-from .GameReportWidget import GameReportWidget
+from .GameReportController import GameReportController
+from .GamesPopup import GamePopup, GamesSheetPopup
 from .GamesTracker import GamesTracker
 from .Helpers.DictHelper import deep_get
 from .Helpers.DirHelper import ResolvePath
@@ -474,37 +475,30 @@ class ScoreboardWidget(QWidget):
         self.applyingProviderData = False
 
         # Games of the set, and reporting it to start.gg
-        self.gameReport = GameReportWidget(self)
+        self.gameReport = GameReportController(self)
         self.gameReport.signals.scoreChanged.connect(self.StageResultsToScore)
         self.gameReport.signals.setReported.connect(self.SetOver)
+        # The games pop-up open (GamePopup or GamesSheetPopup), if any
+        self.gamesPopup = None
 
-        # The games of the set, in a window of their own
-        self.gamesWindow = QDialog(self)
-        self.gamesWindow.setWindowTitle(
-            QApplication.translate("app", "Games - Scoreboard {0}").format(self.scoreboardNumber)
-        )
-        self.gamesWindow.setLayout(QVBoxLayout())
-        self.gamesWindow.layout().addWidget(self.gameReport)
-        self.gamesWindow.resize(900, 600)
-
-        self.btGames = QPushButton(QApplication.translate("app", "GAMES"))
+        self.btGames = QPushButton(QApplication.translate("app", "Games"))
         self.btGames.setIcon(ThemedIcon("assets/icons/list.svg"))
         self.btGames.setToolTip(
             QApplication.translate(
-                "app", "The result, stage and characters of each game of the set"
+                "app", "Who won each game of the set and with which characters, and reporting it"
             )
         )
         self.btGames.clicked.connect(self.OpenGames)
         self.scoreColumn.findChild(QGroupBox, "scoreGroupBox").layout().addWidget(self.btGames)
 
         # A square per game under the score, in the color of the team that
-        # won it; clicking one opens it in the Games window
+        # won it; clicking one opens that game's pop-up
         self.gamesTracker = GamesTracker(
             tooltip=self.gameReport.GameTooltip, teamName=self.gameReport.TeamName
         )
         self.gamesTracker.setObjectName("gamesTracker")
         self.gamesTracker.gameClicked.connect(self.OpenGame)
-        self.gamesTracker.winnerPicked.connect(self.gameReport.SetWinnerFromTracker)
+        self.gamesTracker.winnerPicked.connect(self.gameReport.SetWinner)
         scoreLayout = self.scoreColumn.findChild(QGroupBox, "scoreGroupBox").layout()
         scoresRow = self.scoreColumn.findChild(QHBoxLayout, "horizontalLayout_2")
         scoreLayout.insertWidget(scoreLayout.indexOf(scoresRow) + 1, self.gamesTracker)
@@ -1005,16 +999,27 @@ class ScoreboardWidget(QWidget):
     # =====================================================
     # GAMES
     # =====================================================
+    def ShowGamesPopup(self, popup, anchor):
+        if self.gamesPopup is not None:
+            self.gamesPopup.close()
+        self.gamesPopup = popup
+        popup.destroyed.connect(lambda _=None, p=popup: self.GamesPopupClosed(p))
+        popup.Open(anchor)
+
+    def GamesPopupClosed(self, popup):
+        if self.gamesPopup is popup:
+            self.gamesPopup = None
+
     def OpenGames(self):
-        self.gamesWindow.show()
-        self.gamesWindow.raise_()
-        self.gamesWindow.activateWindow()
+        """Every game of the set, under the Games button."""
+        anchor = QRect(self.btGames.mapToGlobal(QPoint(0, 0)), self.btGames.size())
+        self.ShowGamesPopup(GamesSheetPopup(self.gameReport, self), anchor)
 
     def OpenGame(self, index):
-        """Opens the Games window on a game (a games tracker square)."""
-        self.OpenGames()
-        # Once the window is laid out, so the row's place is known
-        QTimer.singleShot(50, lambda: self.gameReport.FocusGame(index))
+        """A game, under its games tracker square."""
+        rect = self.gamesTracker.SquareRect(index)
+        anchor = QRect(self.gamesTracker.mapToGlobal(rect.topLeft()), rect.size())
+        self.ShowGamesPopup(GamePopup(self.gameReport, index, self), anchor)
 
     def UpdateGamesTracker(self):
         self.gamesTracker.SetColors(self.colorButton1.color(), self.colorButton2.color())

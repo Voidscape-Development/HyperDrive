@@ -16,8 +16,9 @@ change shows up on the layouts right away.
 | **Reset score** | Sets both scores to 0 |
 | **Clear all** | Clears the players, scores, phase and match, and unlinks the loaded set |
 
-The squares under the score are the set's games: click one to open it in the
-[Games window](games-and-reporting.md), right-click it to set who won it.
+The squares under the score are the set's games: click one to open it, right-click it to
+set who won it. **Games** shows every game at once (see
+[Games and reporting](games-and-reporting.md)).
 
 The phase and match dropdowns list the usual names. You can rename them, or add your own,
 in [Settings › Match & Phase Names](hyperdrive://open/settings/match-names).

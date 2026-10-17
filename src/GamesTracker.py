@@ -3,7 +3,7 @@
 A game won by a team is filled with that team's color, a draw is split
 between both colors, and a game not played yet is an empty outline. The
 game being played is outlined in the theme's highlight color. Clicking a
-square opens the game in the Games window; right-clicking sets who won it.
+square opens the game's pop-up; right-clicking sets who won it.
 """
 
 from qtpy.QtCore import *
@@ -100,6 +100,11 @@ class GamesTracker(QWidget):
         height = self.heightForWidth(max(self.width(), SQUARE))
         if self.height() != height or self.minimumHeight() != height:
             self.setFixedHeight(height)
+
+    def SquareRect(self, index):
+        """Where a game's square is, or the whole tracker for a game it doesn't show."""
+        rects = self.Rects()
+        return rects[index] if 0 <= index < len(rects) else self.rect()
 
     def IndexAt(self, pos):
         for i, rect in enumerate(self.Rects()):
@@ -210,7 +215,7 @@ class GamesTracker(QWidget):
             action.triggered.connect(lambda _c=False, v=value: self.winnerPicked.emit(index, v))
         menu.addSeparator()
         menu.addAction(
-            QApplication.translate("app", "Open in the Games window"),
+            QApplication.translate("app", "Open this game"),
             lambda: self.gameClicked.emit(index),
         )
         menu.exec(event.globalPos())

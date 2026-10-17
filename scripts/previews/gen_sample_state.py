@@ -97,7 +97,7 @@ def set_scoreboard():
 
 
 def set_games():
-    """The stages and characters of the set's games so far (the Games window)"""
+    """The stages and characters of the set's games so far (the games pop-ups)"""
     games = ScoreboardManager.instance.GetScoreboard(1).gameReport
     for i, game in enumerate(SAMPLE["scoreboard"]["games"]):
         games.report.SetStage(i, game["stage"])
