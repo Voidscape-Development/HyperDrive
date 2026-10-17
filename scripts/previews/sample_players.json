@@ -17,6 +17,52 @@
     "players": [
       1,
       2
+    ],
+    "games": [
+      {
+        "stage": "BattleField",
+        "characters": [
+          [
+            "Palutena"
+          ],
+          [
+            "Sonic"
+          ]
+        ]
+      },
+      {
+        "stage": "Poke_Stadium2",
+        "characters": [
+          [
+            "Palutena"
+          ],
+          [
+            "Sonic"
+          ]
+        ]
+      },
+      {
+        "stage": "Animal_Village",
+        "characters": [
+          [
+            "Palutena"
+          ],
+          [
+            "Joker"
+          ]
+        ]
+      },
+      {
+        "stage": "Fzero_Porttown",
+        "characters": [
+          [
+            "Sonic"
+          ],
+          [
+            "Joker"
+          ]
+        ]
+      }
     ]
   },
   "team_battle": {
@@ -58,13 +104,20 @@
       "gamerTag": "Caster One",
       "name": "Alex Doe",
       "twitter": "casterone",
-      "pronoun": "they/them"
+      "pronoun": "they/them",
+      "socials": {
+        "twitch": "casterone",
+        "youtube": "@casterone"
+      }
     },
     {
       "gamerTag": "Caster Two",
       "name": "Sam Roe",
       "twitter": "castertwo",
-      "pronoun": "she/her"
+      "pronoun": "she/her",
+      "socials": {
+        "bluesky": "castertwo.bsky.social"
+      }
     }
   ],
   "players": [
@@ -87,6 +140,11 @@
             2
           ]
         ]
+      },
+      "socials": {
+        "twitch": "azure_hd",
+        "youtube": "@azurehd",
+        "bluesky": "azure.bsky.social"
       }
     },
     {
@@ -108,6 +166,11 @@
             1
           ]
         ]
+      },
+      "socials": {
+        "twitch": "kestrelgg",
+        "tiktok": "@kestrel_gg",
+        "instagram": "kestrel.gg"
       }
     },
     {
@@ -124,6 +187,9 @@
             3
           ]
         ]
+      },
+      "socials": {
+        "bluesky": "marlowe.bsky.social"
       }
     },
     {
@@ -145,6 +211,9 @@
             4
           ]
         ]
+      },
+      "socials": {
+        "twitch": "quill_nx"
       }
     },
     {

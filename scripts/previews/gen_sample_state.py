@@ -96,6 +96,16 @@ def set_scoreboard():
     )
 
 
+def set_games():
+    """The stages and characters of the set's games so far (the Games window)"""
+    games = ScoreboardManager.instance.GetScoreboard(1).gameReport
+    for i, game in enumerate(SAMPLE["scoreboard"]["games"]):
+        games.report.SetStage(i, game["stage"])
+        for team, characters in enumerate(game["characters"], start=1):
+            games.report.SetCharacters(i, team, characters)
+    games.Edited(fromScoreboard=True)
+
+
 def set_stats():
     """What HyperDrive would fetch from start.gg for the players on the scoreboard"""
     stats = ScoreboardManager.instance.GetScoreboard(1).stats
@@ -242,6 +252,7 @@ def main():
         set_game,
         set_tournament_info,
         set_scoreboard,
+        set_games,
         set_stats,
         set_commentary,
         lambda: set_player_list(window),

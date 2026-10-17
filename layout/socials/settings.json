@@ -1,0 +1,7 @@
+{
+  "mode": "rotate",
+  "platforms": ["twitter", "bluesky", "twitch", "youtube", "tiktok", "instagram", "kick", "discord", "steam", "xbox"],
+  "show_pronoun": true,
+  "show_avatar": true,
+  "twitter_at": true
+}

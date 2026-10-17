@@ -1,0 +1,17 @@
+{
+  "assets": {
+    "default": {}
+  },
+  "stock_icon": {
+    "default": {
+      "asset_key": "base_files/icon"
+    }
+  },
+  "hide_after_decided": true,
+  "show_upcoming": true,
+  "show_stage_name": true,
+  "game_label": "Game",
+  "current_label": "Now",
+  "draw_label": "Draw",
+  "show_records": true
+}

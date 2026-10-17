@@ -1608,17 +1608,1652 @@
       },
       "type": "DOUBLE_ELIMINATION"
     },
+    "channels": {
+      "main": {
+        "bracket": {
+          "fromStartgg": false,
+          "limitExportNumber": null,
+          "name": "Top 16",
+          "progressionsOut": 0,
+          "results": [
+            {
+              "id": 1,
+              "name": "Azure",
+              "order": 1
+            },
+            {
+              "id": 2,
+              "name": "Kestrel",
+              "order": 2
+            },
+            {
+              "id": 3,
+              "name": "Marlowe",
+              "order": 3
+            },
+            {
+              "id": 4,
+              "name": "Quill",
+              "order": 4
+            },
+            {
+              "id": 5,
+              "name": "Ember",
+              "order": 5
+            },
+            {
+              "id": 6,
+              "name": "Tundra",
+              "order": 6
+            },
+            {
+              "id": 7,
+              "name": "Pixel",
+              "order": 7
+            },
+            {
+              "id": 8,
+              "name": "Saffron",
+              "order": 8
+            },
+            {
+              "id": 9,
+              "name": "Bolt",
+              "order": 9
+            },
+            {
+              "id": 10,
+              "name": "Cinder",
+              "order": 10
+            },
+            {
+              "id": 11,
+              "name": "Drift",
+              "order": 11
+            },
+            {
+              "id": 12,
+              "name": "Echo",
+              "order": 12
+            },
+            {
+              "id": 13,
+              "name": "Flint",
+              "order": 13
+            },
+            {
+              "id": 14,
+              "name": "Gale",
+              "order": 14
+            },
+            {
+              "id": 15,
+              "name": "Harbor",
+              "order": 15
+            },
+            {
+              "id": 16,
+              "name": "Iris",
+              "order": 16
+            }
+          ],
+          "sets": {
+            "m1": {
+              "column": 1,
+              "completed": true,
+              "id": "m1",
+              "identifier": "A",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": {
+                "set": "m16",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m9",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 1,
+                  "manual": false,
+                  "name": "Azure",
+                  "pending": false,
+                  "seed": 1,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 16,
+                  "manual": false,
+                  "name": "Iris",
+                  "pending": false,
+                  "seed": 16,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Round 1",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m10": {
+              "column": 2,
+              "completed": true,
+              "id": "m10",
+              "identifier": "N",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 9,
+              "nextLose": {
+                "set": "m22",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m13",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 4,
+                  "manual": false,
+                  "name": "Quill",
+                  "pending": false,
+                  "seed": 4,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 5,
+                  "manual": false,
+                  "name": "Ember",
+                  "pending": false,
+                  "seed": 5,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Quarter-Final",
+              "row": 1,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m11": {
+              "column": 2,
+              "completed": true,
+              "id": "m11",
+              "identifier": "O",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 9,
+              "nextLose": {
+                "set": "m21",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m14",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 2,
+                  "manual": false,
+                  "name": "Kestrel",
+                  "pending": false,
+                  "seed": 2,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 7,
+                  "manual": false,
+                  "name": "Pixel",
+                  "pending": false,
+                  "seed": 7,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Quarter-Final",
+              "row": 2,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m12": {
+              "column": 2,
+              "completed": true,
+              "id": "m12",
+              "identifier": "P",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 9,
+              "nextLose": {
+                "set": "m20",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m14",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 3,
+                  "manual": false,
+                  "name": "Marlowe",
+                  "pending": false,
+                  "seed": 3,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 6,
+                  "manual": false,
+                  "name": "Tundra",
+                  "pending": false,
+                  "seed": 6,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Quarter-Final",
+              "row": 3,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m13": {
+              "column": 3,
+              "completed": true,
+              "id": "m13",
+              "identifier": "U",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 5,
+              "nextLose": {
+                "set": "m26",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m15",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 1,
+                  "manual": false,
+                  "name": "Azure",
+                  "pending": false,
+                  "seed": 1,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 4,
+                  "manual": false,
+                  "name": "Quill",
+                  "pending": false,
+                  "seed": 4,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Semi-Final",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m14": {
+              "column": 3,
+              "completed": true,
+              "id": "m14",
+              "identifier": "V",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 5,
+              "nextLose": {
+                "set": "m27",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m15",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 2,
+                  "manual": false,
+                  "name": "Kestrel",
+                  "pending": false,
+                  "seed": 2,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 3,
+                  "manual": false,
+                  "name": "Marlowe",
+                  "pending": false,
+                  "seed": 3,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Semi-Final",
+              "row": 1,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m15": {
+              "column": 4,
+              "completed": true,
+              "id": "m15",
+              "identifier": "Y",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 3,
+              "nextLose": {
+                "set": "m29",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m30",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 1,
+                  "manual": false,
+                  "name": "Azure",
+                  "pending": false,
+                  "seed": 1,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 2,
+                  "manual": false,
+                  "name": "Kestrel",
+                  "pending": false,
+                  "seed": 2,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Final",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m16": {
+              "column": 1,
+              "completed": true,
+              "id": "m16",
+              "identifier": "I",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m20",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 16,
+                  "manual": false,
+                  "name": "Iris",
+                  "pending": false,
+                  "seed": 16,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 9,
+                  "manual": false,
+                  "name": "Bolt",
+                  "pending": false,
+                  "seed": 9,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 1",
+              "row": 0,
+              "score": [
+                2,
+                3
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 1
+            },
+            "m17": {
+              "column": 1,
+              "completed": true,
+              "id": "m17",
+              "identifier": "J",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m21",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 13,
+                  "manual": false,
+                  "name": "Flint",
+                  "pending": false,
+                  "seed": 13,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 12,
+                  "manual": false,
+                  "name": "Echo",
+                  "pending": false,
+                  "seed": 12,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 1",
+              "row": 1,
+              "score": [
+                2,
+                3
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 1
+            },
+            "m18": {
+              "column": 1,
+              "completed": true,
+              "id": "m18",
+              "identifier": "K",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m22",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 15,
+                  "manual": false,
+                  "name": "Harbor",
+                  "pending": false,
+                  "seed": 15,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 10,
+                  "manual": false,
+                  "name": "Cinder",
+                  "pending": false,
+                  "seed": 10,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 1",
+              "row": 2,
+              "score": [
+                2,
+                3
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 1
+            },
+            "m19": {
+              "column": 1,
+              "completed": true,
+              "id": "m19",
+              "identifier": "L",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m23",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 14,
+                  "manual": false,
+                  "name": "Gale",
+                  "pending": false,
+                  "seed": 14,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 11,
+                  "manual": false,
+                  "name": "Drift",
+                  "pending": false,
+                  "seed": 11,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 1",
+              "row": 3,
+              "score": [
+                2,
+                3
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 1
+            },
+            "m2": {
+              "column": 1,
+              "completed": true,
+              "id": "m2",
+              "identifier": "B",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": {
+                "set": "m16",
+                "slot": 1
+              },
+              "nextWin": {
+                "set": "m9",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 8,
+                  "manual": false,
+                  "name": "Saffron",
+                  "pending": false,
+                  "seed": 8,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 9,
+                  "manual": false,
+                  "name": "Bolt",
+                  "pending": false,
+                  "seed": 9,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Round 1",
+              "row": 1,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m20": {
+              "column": 2,
+              "completed": true,
+              "id": "m20",
+              "identifier": "Q",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 9,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m24",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 6,
+                  "manual": false,
+                  "name": "Tundra",
+                  "pending": false,
+                  "seed": 6,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 9,
+                  "manual": false,
+                  "name": "Bolt",
+                  "pending": false,
+                  "seed": 9,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 2",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m21": {
+              "column": 2,
+              "completed": true,
+              "id": "m21",
+              "identifier": "R",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 9,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m24",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 7,
+                  "manual": false,
+                  "name": "Pixel",
+                  "pending": false,
+                  "seed": 7,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 12,
+                  "manual": false,
+                  "name": "Echo",
+                  "pending": false,
+                  "seed": 12,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 2",
+              "row": 1,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m22": {
+              "column": 2,
+              "completed": true,
+              "id": "m22",
+              "identifier": "S",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 9,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m25",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 5,
+                  "manual": false,
+                  "name": "Ember",
+                  "pending": false,
+                  "seed": 5,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 10,
+                  "manual": false,
+                  "name": "Cinder",
+                  "pending": false,
+                  "seed": 10,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 2",
+              "row": 2,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m23": {
+              "column": 2,
+              "completed": true,
+              "id": "m23",
+              "identifier": "T",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 9,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m25",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 8,
+                  "manual": false,
+                  "name": "Saffron",
+                  "pending": false,
+                  "seed": 8,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 11,
+                  "manual": false,
+                  "name": "Drift",
+                  "pending": false,
+                  "seed": 11,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 2",
+              "row": 3,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m24": {
+              "column": 3,
+              "completed": true,
+              "id": "m24",
+              "identifier": "W",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 7,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m26",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 6,
+                  "manual": false,
+                  "name": "Tundra",
+                  "pending": false,
+                  "seed": 6,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 7,
+                  "manual": false,
+                  "name": "Pixel",
+                  "pending": false,
+                  "seed": 7,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 3",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m25": {
+              "column": 3,
+              "completed": true,
+              "id": "m25",
+              "identifier": "X",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 7,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m27",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 5,
+                  "manual": false,
+                  "name": "Ember",
+                  "pending": false,
+                  "seed": 5,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 8,
+                  "manual": false,
+                  "name": "Saffron",
+                  "pending": false,
+                  "seed": 8,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Round 3",
+              "row": 1,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m26": {
+              "column": 4,
+              "completed": true,
+              "id": "m26",
+              "identifier": "Z",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 5,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m28",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 4,
+                  "manual": false,
+                  "name": "Quill",
+                  "pending": false,
+                  "seed": 4,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 6,
+                  "manual": false,
+                  "name": "Tundra",
+                  "pending": false,
+                  "seed": 6,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Quarter-Final",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m27": {
+              "column": 4,
+              "completed": true,
+              "id": "m27",
+              "identifier": "AA",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 5,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m28",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 3,
+                  "manual": false,
+                  "name": "Marlowe",
+                  "pending": false,
+                  "seed": 3,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 5,
+                  "manual": false,
+                  "name": "Ember",
+                  "pending": false,
+                  "seed": 5,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Quarter-Final",
+              "row": 1,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m28": {
+              "column": 5,
+              "completed": true,
+              "id": "m28",
+              "identifier": "AB",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 4,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m29",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 4,
+                  "manual": false,
+                  "name": "Quill",
+                  "pending": false,
+                  "seed": 4,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 3,
+                  "manual": false,
+                  "name": "Marlowe",
+                  "pending": false,
+                  "seed": 3,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Semi-Final",
+              "row": 0,
+              "score": [
+                2,
+                3
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 1
+            },
+            "m29": {
+              "column": 6,
+              "completed": true,
+              "id": "m29",
+              "identifier": "AC",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 3,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m30",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 2,
+                  "manual": false,
+                  "name": "Kestrel",
+                  "pending": false,
+                  "seed": 2,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 3,
+                  "manual": false,
+                  "name": "Marlowe",
+                  "pending": false,
+                  "seed": 3,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Losers Final",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "losers",
+              "startggId": null,
+              "winner": 0
+            },
+            "m3": {
+              "column": 1,
+              "completed": true,
+              "id": "m3",
+              "identifier": "C",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": {
+                "set": "m17",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m10",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 4,
+                  "manual": false,
+                  "name": "Quill",
+                  "pending": false,
+                  "seed": 4,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 13,
+                  "manual": false,
+                  "name": "Flint",
+                  "pending": false,
+                  "seed": 13,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Round 1",
+              "row": 2,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m30": {
+              "column": 1,
+              "completed": false,
+              "id": "m30",
+              "identifier": "AD",
+              "isGrandFinal": true,
+              "isReset": false,
+              "loserPlacement": 2,
+              "nextLose": null,
+              "nextWin": {
+                "set": "m31",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 1,
+                  "manual": false,
+                  "name": "Azure",
+                  "pending": false,
+                  "seed": 1,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 2,
+                  "manual": false,
+                  "name": "Kestrel",
+                  "pending": false,
+                  "seed": 2,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Grand Final",
+              "row": 0,
+              "score": [
+                0,
+                0
+              ],
+              "side": "grand_final",
+              "startggId": null,
+              "winner": null
+            },
+            "m31": {
+              "column": 2,
+              "completed": true,
+              "id": "m31",
+              "identifier": "AE",
+              "isGrandFinal": false,
+              "isReset": true,
+              "loserPlacement": 2,
+              "nextLose": null,
+              "nextWin": null,
+              "players": [
+                {
+                  "bye": false,
+                  "id": 1,
+                  "manual": false,
+                  "name": "Azure",
+                  "pending": false,
+                  "seed": 1,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 2,
+                  "manual": false,
+                  "name": "Kestrel",
+                  "pending": false,
+                  "seed": 2,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Grand Final Reset",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "grand_final",
+              "startggId": null,
+              "winner": 0
+            },
+            "m4": {
+              "column": 1,
+              "completed": true,
+              "id": "m4",
+              "identifier": "D",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": {
+                "set": "m17",
+                "slot": 1
+              },
+              "nextWin": {
+                "set": "m10",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 5,
+                  "manual": false,
+                  "name": "Ember",
+                  "pending": false,
+                  "seed": 5,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 12,
+                  "manual": false,
+                  "name": "Echo",
+                  "pending": false,
+                  "seed": 12,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Round 1",
+              "row": 3,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m5": {
+              "column": 1,
+              "completed": true,
+              "id": "m5",
+              "identifier": "E",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": {
+                "set": "m18",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m11",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 2,
+                  "manual": false,
+                  "name": "Kestrel",
+                  "pending": false,
+                  "seed": 2,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 15,
+                  "manual": false,
+                  "name": "Harbor",
+                  "pending": false,
+                  "seed": 15,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Round 1",
+              "row": 4,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m6": {
+              "column": 1,
+              "completed": true,
+              "id": "m6",
+              "identifier": "F",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": {
+                "set": "m18",
+                "slot": 1
+              },
+              "nextWin": {
+                "set": "m11",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 7,
+                  "manual": false,
+                  "name": "Pixel",
+                  "pending": false,
+                  "seed": 7,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 10,
+                  "manual": false,
+                  "name": "Cinder",
+                  "pending": false,
+                  "seed": 10,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Round 1",
+              "row": 5,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m7": {
+              "column": 1,
+              "completed": true,
+              "id": "m7",
+              "identifier": "G",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": {
+                "set": "m19",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m12",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 3,
+                  "manual": false,
+                  "name": "Marlowe",
+                  "pending": false,
+                  "seed": 3,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 14,
+                  "manual": false,
+                  "name": "Gale",
+                  "pending": false,
+                  "seed": 14,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Round 1",
+              "row": 6,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m8": {
+              "column": 1,
+              "completed": true,
+              "id": "m8",
+              "identifier": "H",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 13,
+              "nextLose": {
+                "set": "m19",
+                "slot": 1
+              },
+              "nextWin": {
+                "set": "m12",
+                "slot": 1
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 6,
+                  "manual": false,
+                  "name": "Tundra",
+                  "pending": false,
+                  "seed": 6,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 11,
+                  "manual": false,
+                  "name": "Drift",
+                  "pending": false,
+                  "seed": 11,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Round 1",
+              "row": 7,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            },
+            "m9": {
+              "column": 2,
+              "completed": true,
+              "id": "m9",
+              "identifier": "M",
+              "isGrandFinal": false,
+              "isReset": false,
+              "loserPlacement": 9,
+              "nextLose": {
+                "set": "m23",
+                "slot": 0
+              },
+              "nextWin": {
+                "set": "m13",
+                "slot": 0
+              },
+              "players": [
+                {
+                  "bye": false,
+                  "id": 1,
+                  "manual": false,
+                  "name": "Azure",
+                  "pending": false,
+                  "seed": 1,
+                  "source": ""
+                },
+                {
+                  "bye": false,
+                  "id": 8,
+                  "manual": false,
+                  "name": "Saffron",
+                  "pending": false,
+                  "seed": 8,
+                  "source": ""
+                }
+              ],
+              "resetNeeded": true,
+              "roundName": "Winners Quarter-Final",
+              "row": 0,
+              "score": [
+                3,
+                1
+              ],
+              "side": "winners",
+              "startggId": null,
+              "winner": 0
+            }
+          },
+          "sides": {
+            "grand_final": [
+              {
+                "key": "grand_final:1",
+                "name": "Grand Final",
+                "sets": [
+                  "m30"
+                ]
+              },
+              {
+                "key": "grand_final:2",
+                "name": "Grand Final Reset",
+                "sets": [
+                  "m31"
+                ]
+              }
+            ],
+            "losers": [
+              {
+                "key": "losers:1",
+                "name": "Losers Round 1",
+                "sets": [
+                  "m16",
+                  "m17",
+                  "m18",
+                  "m19"
+                ]
+              },
+              {
+                "key": "losers:2",
+                "name": "Losers Round 2",
+                "sets": [
+                  "m20",
+                  "m21",
+                  "m22",
+                  "m23"
+                ]
+              },
+              {
+                "key": "losers:3",
+                "name": "Losers Round 3",
+                "sets": [
+                  "m24",
+                  "m25"
+                ]
+              },
+              {
+                "key": "losers:4",
+                "name": "Losers Quarter-Final",
+                "sets": [
+                  "m26",
+                  "m27"
+                ]
+              },
+              {
+                "key": "losers:5",
+                "name": "Losers Semi-Final",
+                "sets": [
+                  "m28"
+                ]
+              },
+              {
+                "key": "losers:6",
+                "name": "Losers Final",
+                "sets": [
+                  "m29"
+                ]
+              }
+            ],
+            "winners": [
+              {
+                "key": "winners:1",
+                "name": "Winners Round 1",
+                "sets": [
+                  "m1",
+                  "m2",
+                  "m3",
+                  "m4",
+                  "m5",
+                  "m6",
+                  "m7",
+                  "m8"
+                ]
+              },
+              {
+                "key": "winners:2",
+                "name": "Winners Quarter-Final",
+                "sets": [
+                  "m9",
+                  "m10",
+                  "m11",
+                  "m12"
+                ]
+              },
+              {
+                "key": "winners:3",
+                "name": "Winners Semi-Final",
+                "sets": [
+                  "m13",
+                  "m14"
+                ]
+              },
+              {
+                "key": "winners:4",
+                "name": "Winners Final",
+                "sets": [
+                  "m15"
+                ]
+              }
+            ]
+          },
+          "type": "DOUBLE_ELIMINATION"
+        },
+        "phase": "Top 16",
+        "phaseGroup": "",
+        "phaseId": "phase2",
+        "playersPath": "bracket.rosters.local"
+      }
+    },
+    "focus": {
+      "main": {
+        "label": "",
+        "mode": "all",
+        "phase": "phase2",
+        "rounds": [],
+        "sets": []
+      }
+    },
+    "phase": "Top 16",
+    "phaseGroup": "",
     "phases": [
       {
+        "channels": [],
         "current": false,
         "id": "phase1",
         "name": "Phase 1",
+        "phaseGroupId": null,
+        "source": "local",
         "type": "DOUBLE_ELIMINATION"
       },
       {
+        "channels": [
+          "main"
+        ],
         "current": true,
         "id": "phase2",
         "name": "Top 16",
+        "phaseGroupId": null,
+        "source": "local",
         "type": "DOUBLE_ELIMINATION"
       }
     ],
@@ -1680,7 +3315,6 @@
                 "asset": "./assets/country_flag/br.svg",
                 "code": "BR",
                 "display_name": "Brazil",
-                "emoji": "🇧🇷",
                 "en_name": "Brazil",
                 "latitude": "-10.00000000",
                 "longitude": "-55.00000000",
@@ -1704,6 +3338,12 @@
               "pronoun": "she/her",
               "real_name": "Ana Silva",
               "seed": 1,
+              "socials": {
+                "bluesky": "azure.bsky.social",
+                "twitch": "azure_hd",
+                "twitter": "azure_hd",
+                "youtube": "@azurehd"
+              },
               "state": {
                 "asset": "./assets/state_flag/BR/SP.png",
                 "code": "SP",
@@ -1776,7 +3416,6 @@
                 "asset": "./assets/country_flag/kr.svg",
                 "code": "KR",
                 "display_name": "South Korea",
-                "emoji": "🇰🇷",
                 "en_name": "South Korea",
                 "latitude": "37.00000000",
                 "longitude": "127.50000000",
@@ -1796,6 +3435,9 @@
               "online_avatar": null,
               "real_name": "Chloe Park",
               "seed": 10,
+              "socials": {
+                "twitter": "cinder"
+              },
               "state": {
                 "asset": "./assets/state_flag/KR/11.png",
                 "code": "11",
@@ -1867,7 +3509,6 @@
                 "asset": "./assets/country_flag/cl.svg",
                 "code": "CL",
                 "display_name": "Chile",
-                "emoji": "🇨🇱",
                 "en_name": "Chile",
                 "latitude": "-30.00000000",
                 "longitude": "-71.00000000",
@@ -1887,6 +3528,9 @@
               "online_avatar": null,
               "real_name": "Diego Lopez",
               "seed": 11,
+              "socials": {
+                "twitter": "drift"
+              },
               "state": {
                 "asset": "./assets/state_flag/CL/RM.png",
                 "code": "RM",
@@ -1958,7 +3602,6 @@
                 "asset": "./assets/country_flag/au.svg",
                 "code": "AU",
                 "display_name": "Australia",
-                "emoji": "🇦🇺",
                 "en_name": "Australia",
                 "latitude": "-27.00000000",
                 "longitude": "133.00000000",
@@ -1978,6 +3621,9 @@
               "online_avatar": null,
               "real_name": "Emma Clark",
               "seed": 12,
+              "socials": {
+                "twitter": "echo"
+              },
               "state": {
                 "asset": "./assets/state_flag/AU/NSW.png",
                 "code": "NSW",
@@ -2049,7 +3695,6 @@
                 "asset": "./assets/country_flag/de.svg",
                 "code": "DE",
                 "display_name": "Germany",
-                "emoji": "🇩🇪",
                 "en_name": "Germany",
                 "latitude": "51.00000000",
                 "longitude": "9.00000000",
@@ -2069,6 +3714,9 @@
               "online_avatar": null,
               "real_name": "Felix Wagner",
               "seed": 13,
+              "socials": {
+                "twitter": "flint"
+              },
               "state": {
                 "asset": "./assets/state_flag/DE/BE.png",
                 "code": "BE",
@@ -2140,7 +3788,6 @@
                 "asset": "./assets/country_flag/us.svg",
                 "code": "US",
                 "display_name": "United States",
-                "emoji": "🇺🇸",
                 "en_name": "United States",
                 "latitude": "38.00000000",
                 "longitude": "-97.00000000",
@@ -2160,6 +3807,9 @@
               "online_avatar": null,
               "real_name": "Grace Lee",
               "seed": 14,
+              "socials": {
+                "twitter": "gale"
+              },
               "state": {
                 "asset": "./assets/state_flag/US/NY.png",
                 "code": "NY",
@@ -2231,7 +3881,6 @@
                 "asset": "./assets/country_flag/pt.svg",
                 "code": "PT",
                 "display_name": "Portugal",
-                "emoji": "🇵🇹",
                 "en_name": "Portugal",
                 "latitude": "39.50000000",
                 "longitude": "-8.00000000",
@@ -2251,6 +3900,9 @@
               "online_avatar": null,
               "real_name": "Hugo Costa",
               "seed": 15,
+              "socials": {
+                "twitter": "harbor"
+              },
               "state": {
                 "asset": "./assets/state_flag/PT/11.png",
                 "code": "11",
@@ -2322,7 +3974,6 @@
                 "asset": "./assets/country_flag/ca.svg",
                 "code": "CA",
                 "display_name": "Canada",
-                "emoji": "🇨🇦",
                 "en_name": "Canada",
                 "latitude": "60.00000000",
                 "longitude": "-95.00000000",
@@ -2342,6 +3993,9 @@
               "online_avatar": null,
               "real_name": "Ivy Chen",
               "seed": 16,
+              "socials": {
+                "twitter": "iris"
+              },
               "state": {
                 "asset": "./assets/state_flag/CA/QC.png",
                 "code": "QC",
@@ -2413,7 +4067,6 @@
                 "asset": "./assets/country_flag/jp.svg",
                 "code": "JP",
                 "display_name": "Japan",
-                "emoji": "🇯🇵",
                 "en_name": "Japan",
                 "latitude": "36.00000000",
                 "longitude": "138.00000000",
@@ -2437,6 +4090,12 @@
               "pronoun": "he/him",
               "real_name": "Kenji Sato",
               "seed": 2,
+              "socials": {
+                "instagram": "kestrel.gg",
+                "tiktok": "@kestrel_gg",
+                "twitch": "kestrelgg",
+                "twitter": "kestrel_gg"
+              },
               "state": {
                 "asset": "./assets/state_flag/JP/13.png",
                 "code": "13",
@@ -2509,7 +4168,6 @@
                 "asset": "./assets/country_flag/us.svg",
                 "code": "US",
                 "display_name": "United States",
-                "emoji": "🇺🇸",
                 "en_name": "United States",
                 "latitude": "38.00000000",
                 "longitude": "-97.00000000",
@@ -2530,6 +4188,10 @@
               "pronoun": "she/her",
               "real_name": "Mia Lowe",
               "seed": 3,
+              "socials": {
+                "bluesky": "marlowe.bsky.social",
+                "twitter": "marlowe"
+              },
               "state": {
                 "asset": "./assets/state_flag/US/CA.png",
                 "code": "CA",
@@ -2601,7 +4263,6 @@
                 "asset": "./assets/country_flag/ca.svg",
                 "code": "CA",
                 "display_name": "Canada",
-                "emoji": "🇨🇦",
                 "en_name": "Canada",
                 "latitude": "60.00000000",
                 "longitude": "-95.00000000",
@@ -2622,6 +4283,10 @@
               "pronoun": "they/them",
               "real_name": "Quinn Hale",
               "seed": 4,
+              "socials": {
+                "twitch": "quill_nx",
+                "twitter": "quill_nx"
+              },
               "state": {
                 "asset": "./assets/state_flag/CA/ON.png",
                 "code": "ON",
@@ -2694,7 +4359,6 @@
                 "asset": "./assets/country_flag/mx.svg",
                 "code": "MX",
                 "display_name": "Mexico",
-                "emoji": "🇲🇽",
                 "en_name": "Mexico",
                 "latitude": "23.00000000",
                 "longitude": "-102.00000000",
@@ -2715,6 +4379,9 @@
               "pronoun": "she/her",
               "real_name": "Elena Ruiz",
               "seed": 5,
+              "socials": {
+                "twitter": "ember"
+              },
               "state": {
                 "asset": "./assets/state_flag/MX/JAL.png",
                 "code": "JAL",
@@ -2786,7 +4453,6 @@
                 "asset": "./assets/country_flag/se.svg",
                 "code": "SE",
                 "display_name": "Sweden",
-                "emoji": "🇸🇪",
                 "en_name": "Sweden",
                 "latitude": "62.00000000",
                 "longitude": "15.00000000",
@@ -2807,6 +4473,9 @@
               "pronoun": "he/him",
               "real_name": "Tomas Berg",
               "seed": 6,
+              "socials": {
+                "twitter": "tundra_vx"
+              },
               "state": {
                 "asset": "./assets/state_flag/SE/AB.png",
                 "code": "AB",
@@ -2879,7 +4548,6 @@
                 "asset": "./assets/country_flag/fr.svg",
                 "code": "FR",
                 "display_name": "France",
-                "emoji": "🇫🇷",
                 "en_name": "France",
                 "latitude": "46.00000000",
                 "longitude": "2.00000000",
@@ -2900,6 +4568,9 @@
               "pronoun": "he/him",
               "real_name": "Paul Martin",
               "seed": 7,
+              "socials": {
+                "twitter": "pixel"
+              },
               "state": {
                 "asset": "./assets/state_flag/FR/IDF.png",
                 "code": "IDF",
@@ -2971,7 +4642,6 @@
                 "asset": "./assets/country_flag/gb.svg",
                 "code": "GB",
                 "display_name": "United Kingdom",
-                "emoji": "🇬🇧",
                 "en_name": "United Kingdom",
                 "latitude": "54.00000000",
                 "longitude": "-2.00000000",
@@ -2992,6 +4662,9 @@
               "pronoun": "she/her",
               "real_name": "Sara Khan",
               "seed": 8,
+              "socials": {
+                "twitter": "saffron_rb"
+              },
               "state": {
                 "asset": "./assets/state_flag/GB/ENG.png",
                 "code": "ENG",
@@ -3064,7 +4737,6 @@
                 "asset": "./assets/country_flag/us.svg",
                 "code": "US",
                 "display_name": "United States",
-                "emoji": "🇺🇸",
                 "en_name": "United States",
                 "latitude": "38.00000000",
                 "longitude": "-97.00000000",
@@ -3084,6 +4756,9 @@
               "online_avatar": null,
               "real_name": "Ben Ortiz",
               "seed": 9,
+              "socials": {
+                "twitter": "bolt"
+              },
               "state": {
                 "asset": "./assets/state_flag/US/TX.png",
                 "code": "TX",
@@ -3098,6 +4773,1527 @@
           "score": 0,
           "winPercentage": null,
           "wins": null
+        }
+      }
+    },
+    "rosters": {
+      "local": {
+        "slot": {
+          "1": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_palutena_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_palutena_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 280,
+                          "y": 161
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "palutena",
+                    "display_name": "Palutena",
+                    "en_name": "Palutena",
+                    "modded": false,
+                    "name": "Palutena",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/br.svg",
+                  "code": "BR",
+                  "display_name": "Brazil",
+                  "en_name": "Brazil",
+                  "latitude": "-10.00000000",
+                  "longitude": "-55.00000000",
+                  "name": "Brazil"
+                },
+                "custom": {
+                  "bio": "Two-time HyperDrive Invitational champion"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "HD | Azure",
+                "mergedOnlyName": "Azure",
+                "name": "Azure",
+                "online_avatar": null,
+                "pronoun": "she/her",
+                "real_name": "Ana Silva",
+                "seed": 1,
+                "socials": {
+                  "bluesky": "azure.bsky.social",
+                  "twitch": "azure_hd",
+                  "twitter": "azure_hd",
+                  "youtube": "@azurehd"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/BR/SP.png",
+                  "code": "SP",
+                  "latitude": "-23.55051990",
+                  "longitude": "-46.63330940",
+                  "name": "São Paulo",
+                  "original_code": "SP"
+                },
+                "team": "HD",
+                "twitter": "azure_hd"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "10": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_lucina_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_lucina_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 271,
+                          "y": 156
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "lucina",
+                    "display_name": "Lucina",
+                    "en_name": "Lucina",
+                    "modded": false,
+                    "name": "Lucina",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/kr.svg",
+                  "code": "KR",
+                  "display_name": "South Korea",
+                  "en_name": "South Korea",
+                  "latitude": "37.00000000",
+                  "longitude": "127.50000000",
+                  "name": "South Korea"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Cinder",
+                "mergedOnlyName": "Cinder",
+                "name": "Cinder",
+                "online_avatar": null,
+                "real_name": "Chloe Park",
+                "seed": 10,
+                "socials": {
+                  "twitter": "cinder"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/KR/11.png",
+                  "code": "11",
+                  "latitude": "37.56653500",
+                  "longitude": "126.97796920",
+                  "name": "Seoul",
+                  "original_code": "11"
+                },
+                "twitter": "cinder"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "11": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_mario_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_mario_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 207,
+                          "y": 187
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "mario",
+                    "display_name": "Mario",
+                    "en_name": "Mario",
+                    "modded": false,
+                    "name": "Mario",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/cl.svg",
+                  "code": "CL",
+                  "display_name": "Chile",
+                  "en_name": "Chile",
+                  "latitude": "-30.00000000",
+                  "longitude": "-71.00000000",
+                  "name": "Chile"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Drift",
+                "mergedOnlyName": "Drift",
+                "name": "Drift",
+                "online_avatar": null,
+                "real_name": "Diego Lopez",
+                "seed": 11,
+                "socials": {
+                  "twitter": "drift"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/CL/RM.png",
+                  "code": "RM",
+                  "latitude": "-33.57393410",
+                  "longitude": "-70.62055180",
+                  "name": "Región Metropolitana de Santiago",
+                  "original_code": "RM"
+                },
+                "twitter": "drift"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "12": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_inkling_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_inkling_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 251,
+                          "y": 176
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "inkling",
+                    "display_name": "Inkling",
+                    "en_name": "Inkling",
+                    "modded": false,
+                    "name": "Inkling",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/au.svg",
+                  "code": "AU",
+                  "display_name": "Australia",
+                  "en_name": "Australia",
+                  "latitude": "-27.00000000",
+                  "longitude": "133.00000000",
+                  "name": "Australia"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Echo",
+                "mergedOnlyName": "Echo",
+                "name": "Echo",
+                "online_avatar": null,
+                "real_name": "Emma Clark",
+                "seed": 12,
+                "socials": {
+                  "twitter": "echo"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/AU/NSW.png",
+                  "code": "NSW",
+                  "latitude": "-31.87598350",
+                  "longitude": "147.28694930",
+                  "name": "New South Wales",
+                  "original_code": "NSW"
+                },
+                "twitter": "echo"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "13": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_snake_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_snake_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 342,
+                          "y": 143
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "snake",
+                    "display_name": "Snake",
+                    "en_name": "Snake",
+                    "modded": false,
+                    "name": "Snake",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/de.svg",
+                  "code": "DE",
+                  "display_name": "Germany",
+                  "en_name": "Germany",
+                  "latitude": "51.00000000",
+                  "longitude": "9.00000000",
+                  "name": "Germany"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Flint",
+                "mergedOnlyName": "Flint",
+                "name": "Flint",
+                "online_avatar": null,
+                "real_name": "Felix Wagner",
+                "seed": 13,
+                "socials": {
+                  "twitter": "flint"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/DE/BE.png",
+                  "code": "BE",
+                  "latitude": "52.51088500",
+                  "longitude": "13.39893670",
+                  "name": "Berlin",
+                  "original_code": "BE"
+                },
+                "twitter": "flint"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "14": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_zelda_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_zelda_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 244,
+                          "y": 163
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "zelda",
+                    "display_name": "Zelda",
+                    "en_name": "Zelda",
+                    "modded": false,
+                    "name": "Zelda",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/us.svg",
+                  "code": "US",
+                  "display_name": "United States",
+                  "en_name": "United States",
+                  "latitude": "38.00000000",
+                  "longitude": "-97.00000000",
+                  "name": "United States"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Gale",
+                "mergedOnlyName": "Gale",
+                "name": "Gale",
+                "online_avatar": null,
+                "real_name": "Grace Lee",
+                "seed": 14,
+                "socials": {
+                  "twitter": "gale"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/US/NY.png",
+                  "code": "NY",
+                  "latitude": "40.71277530",
+                  "longitude": "-74.00597280",
+                  "name": "New York",
+                  "original_code": "NY"
+                },
+                "twitter": "gale"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "15": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_donkey_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_donkey_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 283,
+                          "y": 151
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "donkey",
+                    "display_name": "Donkey Kong",
+                    "en_name": "Donkey Kong",
+                    "modded": false,
+                    "name": "Donkey Kong",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/pt.svg",
+                  "code": "PT",
+                  "display_name": "Portugal",
+                  "en_name": "Portugal",
+                  "latitude": "39.50000000",
+                  "longitude": "-8.00000000",
+                  "name": "Portugal"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Harbor",
+                "mergedOnlyName": "Harbor",
+                "name": "Harbor",
+                "online_avatar": null,
+                "real_name": "Hugo Costa",
+                "seed": 15,
+                "socials": {
+                  "twitter": "harbor"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/PT/11.png",
+                  "code": "11",
+                  "latitude": "38.70775070",
+                  "longitude": "-9.13659190",
+                  "name": "Lisbon",
+                  "original_code": "11"
+                },
+                "twitter": "harbor"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "16": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_kirby_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_kirby_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 280,
+                          "y": 189
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "kirby",
+                    "display_name": "Kirby",
+                    "en_name": "Kirby",
+                    "modded": false,
+                    "name": "Kirby",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/ca.svg",
+                  "code": "CA",
+                  "display_name": "Canada",
+                  "en_name": "Canada",
+                  "latitude": "60.00000000",
+                  "longitude": "-95.00000000",
+                  "name": "Canada"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Iris",
+                "mergedOnlyName": "Iris",
+                "name": "Iris",
+                "online_avatar": null,
+                "real_name": "Ivy Chen",
+                "seed": 16,
+                "socials": {
+                  "twitter": "iris"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/CA/QC.png",
+                  "code": "QC",
+                  "latitude": "52.47608920",
+                  "longitude": "-71.82586680",
+                  "name": "Quebec",
+                  "original_code": "QC"
+                },
+                "twitter": "iris"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "2": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_sonic_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_sonic_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 255,
+                          "y": 207
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "sonic",
+                    "display_name": "Sonic",
+                    "en_name": "Sonic",
+                    "modded": false,
+                    "name": "Sonic",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/jp.svg",
+                  "code": "JP",
+                  "display_name": "Japan",
+                  "en_name": "Japan",
+                  "latitude": "36.00000000",
+                  "longitude": "138.00000000",
+                  "name": "Japan"
+                },
+                "custom": {
+                  "bio": "Undefeated in winners side this season"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "GG | Kestrel",
+                "mergedOnlyName": "Kestrel",
+                "name": "Kestrel",
+                "online_avatar": null,
+                "pronoun": "he/him",
+                "real_name": "Kenji Sato",
+                "seed": 2,
+                "socials": {
+                  "instagram": "kestrel.gg",
+                  "tiktok": "@kestrel_gg",
+                  "twitch": "kestrelgg",
+                  "twitter": "kestrel_gg"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/JP/13.png",
+                  "code": "13",
+                  "latitude": "35.67686010",
+                  "longitude": "139.76389470",
+                  "name": "Tokyo",
+                  "original_code": "13"
+                },
+                "team": "GG",
+                "twitter": "kestrel_gg"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "3": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pikachu_03.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_pikachu_03.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 246,
+                          "y": 195
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "pikachu",
+                    "display_name": "Pikachu",
+                    "en_name": "Pikachu",
+                    "modded": false,
+                    "name": "Pikachu",
+                    "skin": 3,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/us.svg",
+                  "code": "US",
+                  "display_name": "United States",
+                  "en_name": "United States",
+                  "latitude": "38.00000000",
+                  "longitude": "-97.00000000",
+                  "name": "United States"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Marlowe",
+                "mergedOnlyName": "Marlowe",
+                "name": "Marlowe",
+                "online_avatar": null,
+                "pronoun": "she/her",
+                "real_name": "Mia Lowe",
+                "seed": 3,
+                "socials": {
+                  "bluesky": "marlowe.bsky.social",
+                  "twitter": "marlowe"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/US/CA.png",
+                  "code": "CA",
+                  "latitude": "36.70146310",
+                  "longitude": "-118.75599700",
+                  "name": "California",
+                  "original_code": "CA"
+                },
+                "twitter": "marlowe"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "4": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_wolf_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_wolf_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 245,
+                          "y": 170
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "wolf",
+                    "display_name": "Wolf",
+                    "en_name": "Wolf",
+                    "modded": false,
+                    "name": "Wolf",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/ca.svg",
+                  "code": "CA",
+                  "display_name": "Canada",
+                  "en_name": "Canada",
+                  "latitude": "60.00000000",
+                  "longitude": "-95.00000000",
+                  "name": "Canada"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "NX | Quill",
+                "mergedOnlyName": "Quill",
+                "name": "Quill",
+                "online_avatar": null,
+                "pronoun": "they/them",
+                "real_name": "Quinn Hale",
+                "seed": 4,
+                "socials": {
+                  "twitch": "quill_nx",
+                  "twitter": "quill_nx"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/CA/ON.png",
+                  "code": "ON",
+                  "latitude": "50.00067800",
+                  "longitude": "-86.00097700",
+                  "name": "Ontario",
+                  "original_code": "ON"
+                },
+                "team": "NX",
+                "twitter": "quill_nx"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "5": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_peach_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_peach_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 250,
+                          "y": 178
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "peach",
+                    "display_name": "Peach",
+                    "en_name": "Peach",
+                    "modded": false,
+                    "name": "Peach",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/mx.svg",
+                  "code": "MX",
+                  "display_name": "Mexico",
+                  "en_name": "Mexico",
+                  "latitude": "23.00000000",
+                  "longitude": "-102.00000000",
+                  "name": "Mexico"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Ember",
+                "mergedOnlyName": "Ember",
+                "name": "Ember",
+                "online_avatar": null,
+                "pronoun": "she/her",
+                "real_name": "Elena Ruiz",
+                "seed": 5,
+                "socials": {
+                  "twitter": "ember"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/MX/JAL.png",
+                  "code": "JAL",
+                  "latitude": "20.33333310",
+                  "longitude": "-103.66666710",
+                  "name": "Jalisco",
+                  "original_code": "JAL"
+                },
+                "twitter": "ember"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "6": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_ken_01.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_ken_01.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 244,
+                          "y": 165
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "ken",
+                    "display_name": "Ken",
+                    "en_name": "Ken",
+                    "modded": false,
+                    "name": "Ken",
+                    "skin": 1,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/se.svg",
+                  "code": "SE",
+                  "display_name": "Sweden",
+                  "en_name": "Sweden",
+                  "latitude": "62.00000000",
+                  "longitude": "15.00000000",
+                  "name": "Sweden"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "VX | Tundra",
+                "mergedOnlyName": "Tundra",
+                "name": "Tundra",
+                "online_avatar": null,
+                "pronoun": "he/him",
+                "real_name": "Tomas Berg",
+                "seed": 6,
+                "socials": {
+                  "twitter": "tundra_vx"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/SE/AB.png",
+                  "code": "AB",
+                  "latitude": "59.33361730",
+                  "longitude": "18.02769730",
+                  "name": "Stockholm",
+                  "original_code": "AB"
+                },
+                "team": "VX",
+                "twitter": "tundra_vx"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "7": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pickel_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_pickel_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 262,
+                          "y": 165
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "pickel",
+                    "display_name": "Steve",
+                    "en_name": "Steve",
+                    "modded": false,
+                    "name": "Steve",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/fr.svg",
+                  "code": "FR",
+                  "display_name": "France",
+                  "en_name": "France",
+                  "latitude": "46.00000000",
+                  "longitude": "2.00000000",
+                  "name": "France"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Pixel",
+                "mergedOnlyName": "Pixel",
+                "name": "Pixel",
+                "online_avatar": null,
+                "pronoun": "he/him",
+                "real_name": "Paul Martin",
+                "seed": 7,
+                "socials": {
+                  "twitter": "pixel"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/FR/IDF.png",
+                  "code": "IDF",
+                  "latitude": "48.64430570",
+                  "longitude": "2.75378630",
+                  "name": "Île-de-France",
+                  "original_code": "IDF"
+                },
+                "twitter": "pixel"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "8": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_eflame_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_eflame_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 188,
+                          "y": 177
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "eflame",
+                    "display_name": "Pyra / Mythra",
+                    "en_name": "Pyra / Mythra",
+                    "modded": false,
+                    "name": "Pyra / Mythra",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/gb.svg",
+                  "code": "GB",
+                  "display_name": "United Kingdom",
+                  "en_name": "United Kingdom",
+                  "latitude": "54.00000000",
+                  "longitude": "-2.00000000",
+                  "name": "United Kingdom"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "RB | Saffron",
+                "mergedOnlyName": "Saffron",
+                "name": "Saffron",
+                "online_avatar": null,
+                "pronoun": "she/her",
+                "real_name": "Sara Khan",
+                "seed": 8,
+                "socials": {
+                  "twitter": "saffron_rb"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/GB/ENG.png",
+                  "code": "ENG",
+                  "latitude": "52.53102140",
+                  "longitude": "-1.26490620",
+                  "name": "England",
+                  "original_code": "ENG"
+                },
+                "team": "RB",
+                "twitter": "saffron_rb"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          },
+          "9": {
+            "loses": null,
+            "name": "",
+            "player": {
+              "1": {
+                "avatar": null,
+                "birthday": false,
+                "character": {
+                  "1": {
+                    "assets": {
+                      "base_files/icon": {
+                        "asset": "./user_data/games/ssbu//base_files/icon/chara_2_captain_00.png",
+                        "average_size": {
+                          "x": 64.0,
+                          "y": 64.0
+                        },
+                        "image_size": {
+                          "x": 64,
+                          "y": 64
+                        },
+                        "type": [
+                          "icon"
+                        ]
+                      },
+                      "full": {
+                        "asset": "./user_data/games/ssbu//full/chara_1_captain_00.png",
+                        "average_size": {
+                          "x": 511.8150289017341,
+                          "y": 511.8150289017341
+                        },
+                        "eyesight": {
+                          "x": 249,
+                          "y": 164
+                        },
+                        "image_size": {
+                          "x": 512,
+                          "y": 512
+                        },
+                        "type": [
+                          "full"
+                        ]
+                      }
+                    },
+                    "codename": "captain",
+                    "display_name": "Captain Falcon",
+                    "en_name": "Captain Falcon",
+                    "modded": false,
+                    "name": "Captain Falcon",
+                    "skin": 0,
+                    "variant": {}
+                  }
+                },
+                "country": {
+                  "asset": "./assets/country_flag/us.svg",
+                  "code": "US",
+                  "display_name": "United States",
+                  "en_name": "United States",
+                  "latitude": "38.00000000",
+                  "longitude": "-97.00000000",
+                  "name": "United States"
+                },
+                "mains": {
+                  "1": {
+                    "assets": {},
+                    "name": "",
+                    "skin": -1,
+                    "variant": {}
+                  }
+                },
+                "mergedName": "Bolt",
+                "mergedOnlyName": "Bolt",
+                "name": "Bolt",
+                "online_avatar": null,
+                "real_name": "Ben Ortiz",
+                "seed": 9,
+                "socials": {
+                  "twitter": "bolt"
+                },
+                "state": {
+                  "asset": "./assets/state_flag/US/TX.png",
+                  "code": "TX",
+                  "latitude": "31.26389050",
+                  "longitude": "-98.54561160",
+                  "name": "Texas",
+                  "original_code": "TX"
+                },
+                "twitter": "bolt"
+              }
+            },
+            "score": 0,
+            "winPercentage": null,
+            "wins": null
+          }
         }
       }
     }
@@ -3130,6 +6326,11 @@
       "pronoun": "they/them",
       "real_name": "Alex Doe",
       "seed": 0,
+      "socials": {
+        "twitch": "casterone",
+        "twitter": "casterone",
+        "youtube": "@casterone"
+      },
       "state": {},
       "team": "HD",
       "twitter": "casterone"
@@ -3161,6 +6362,10 @@
       "pronoun": "she/her",
       "real_name": "Sam Roe",
       "seed": 0,
+      "socials": {
+        "bluesky": "castertwo.bsky.social",
+        "twitter": "castertwo"
+      },
       "state": {},
       "twitter": "castertwo"
     }
@@ -3211,13 +6416,51 @@
               "codename": "wolf",
               "en_name": "Wolf",
               "name": "Wolf"
+            },
+            "2": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_fox_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_fox_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 235,
+                    "y": 169
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "fox",
+              "en_name": "Fox",
+              "name": "Fox"
             }
           },
           "country": {
             "asset": "./assets/country_flag/ca.svg",
             "code": "CA",
             "display_name": "Canada",
-            "emoji": "🇨🇦",
             "en_name": "Canada",
             "latitude": "60.00000000",
             "longitude": "-95.00000000",
@@ -3328,7 +6571,6 @@
             "asset": "./assets/country_flag/br.svg",
             "code": "BR",
             "display_name": "Brazil",
-            "emoji": "🇧🇷",
             "en_name": "Brazil",
             "latitude": "-10.00000000",
             "longitude": "-55.00000000",
@@ -3358,7 +6600,7 @@
             "1": {
               "assets": {
                 "base_files/icon": {
-                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_ken_01.png",
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_ken_00.png",
                   "average_size": {
                     "x": 64.0,
                     "y": 64.0
@@ -3372,7 +6614,7 @@
                   ]
                 },
                 "full": {
-                  "asset": "./user_data/games/ssbu//full/chara_1_ken_01.png",
+                  "asset": "./user_data/games/ssbu//full/chara_1_ken_00.png",
                   "average_size": {
                     "x": 511.8150289017341,
                     "y": 511.8150289017341
@@ -3393,13 +6635,51 @@
               "codename": "ken",
               "en_name": "Ken",
               "name": "Ken"
+            },
+            "2": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_ryu_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_ryu_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 246,
+                    "y": 152
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "ryu",
+              "en_name": "Ryu",
+              "name": "Ryu"
             }
           },
           "country": {
             "asset": "./assets/country_flag/se.svg",
             "code": "SE",
             "display_name": "Sweden",
-            "emoji": "🇸🇪",
             "en_name": "Sweden",
             "latitude": "62.00000000",
             "longitude": "15.00000000",
@@ -3471,7 +6751,6 @@
             "asset": "./assets/country_flag/cl.svg",
             "code": "CL",
             "display_name": "Chile",
-            "emoji": "🇨🇱",
             "en_name": "Chile",
             "latitude": "-30.00000000",
             "longitude": "-71.00000000",
@@ -3501,7 +6780,7 @@
             "1": {
               "assets": {
                 "base_files/icon": {
-                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pikachu_03.png",
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_pikachu_00.png",
                   "average_size": {
                     "x": 64.0,
                     "y": 64.0
@@ -3515,7 +6794,7 @@
                   ]
                 },
                 "full": {
-                  "asset": "./user_data/games/ssbu//full/chara_1_pikachu_03.png",
+                  "asset": "./user_data/games/ssbu//full/chara_1_pikachu_00.png",
                   "average_size": {
                     "x": 511.8150289017341,
                     "y": 511.8150289017341
@@ -3542,7 +6821,6 @@
             "asset": "./assets/country_flag/us.svg",
             "code": "US",
             "display_name": "United States",
-            "emoji": "🇺🇸",
             "en_name": "United States",
             "latitude": "38.00000000",
             "longitude": "-97.00000000",
@@ -3608,13 +6886,51 @@
               "codename": "sonic",
               "en_name": "Sonic",
               "name": "Sonic"
+            },
+            "2": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_jack_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_jack_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 239,
+                    "y": 189
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "jack",
+              "en_name": "Joker",
+              "name": "Joker"
             }
           },
           "country": {
             "asset": "./assets/country_flag/jp.svg",
             "code": "JP",
             "display_name": "Japan",
-            "emoji": "🇯🇵",
             "en_name": "Japan",
             "latitude": "36.00000000",
             "longitude": "138.00000000",
@@ -3685,7 +7001,6 @@
             "asset": "./assets/country_flag/us.svg",
             "code": "US",
             "display_name": "United States",
-            "emoji": "🇺🇸",
             "en_name": "United States",
             "latitude": "38.00000000",
             "longitude": "-97.00000000",
@@ -3748,7 +7063,6 @@
             "asset": "./assets/country_flag/kr.svg",
             "code": "KR",
             "display_name": "South Korea",
-            "emoji": "🇰🇷",
             "en_name": "South Korea",
             "latitude": "37.00000000",
             "longitude": "127.50000000",
@@ -3820,7 +7134,6 @@
             "asset": "./assets/country_flag/fr.svg",
             "code": "FR",
             "display_name": "France",
-            "emoji": "🇫🇷",
             "en_name": "France",
             "latitude": "46.00000000",
             "longitude": "2.00000000",
@@ -3877,13 +7190,51 @@
               "codename": "eflame",
               "en_name": "Pyra / Mythra",
               "name": "Pyra / Mythra"
+            },
+            "2": {
+              "assets": {
+                "base_files/icon": {
+                  "asset": "./user_data/games/ssbu//base_files/icon/chara_2_master_00.png",
+                  "average_size": {
+                    "x": 64.0,
+                    "y": 64.0
+                  },
+                  "image_size": {
+                    "x": 64,
+                    "y": 64
+                  },
+                  "type": [
+                    "icon"
+                  ]
+                },
+                "full": {
+                  "asset": "./user_data/games/ssbu//full/chara_1_master_00.png",
+                  "average_size": {
+                    "x": 511.8150289017341,
+                    "y": 511.8150289017341
+                  },
+                  "eyesight": {
+                    "x": 246,
+                    "y": 175
+                  },
+                  "image_size": {
+                    "x": 512,
+                    "y": 512
+                  },
+                  "type": [
+                    "full"
+                  ]
+                }
+              },
+              "codename": "master",
+              "en_name": "Byleth",
+              "name": "Byleth"
             }
           },
           "country": {
             "asset": "./assets/country_flag/gb.svg",
             "code": "GB",
             "display_name": "United Kingdom",
-            "emoji": "🇬🇧",
             "en_name": "United Kingdom",
             "latitude": "54.00000000",
             "longitude": "-2.00000000",
@@ -3954,7 +7305,6 @@
             "asset": "./assets/country_flag/au.svg",
             "code": "AU",
             "display_name": "Australia",
-            "emoji": "🇦🇺",
             "en_name": "Australia",
             "latitude": "-27.00000000",
             "longitude": "133.00000000",
@@ -4026,7 +7376,6 @@
             "asset": "./assets/country_flag/mx.svg",
             "code": "MX",
             "display_name": "Mexico",
-            "emoji": "🇲🇽",
             "en_name": "Mexico",
             "latitude": "23.00000000",
             "longitude": "-102.00000000",
@@ -4097,7 +7446,6 @@
             "asset": "./assets/country_flag/de.svg",
             "code": "DE",
             "display_name": "Germany",
-            "emoji": "🇩🇪",
             "en_name": "Germany",
             "latitude": "51.00000000",
             "longitude": "9.00000000",
@@ -4169,7 +7517,6 @@
             "asset": "./assets/country_flag/ca.svg",
             "code": "CA",
             "display_name": "Canada",
-            "emoji": "🇨🇦",
             "en_name": "Canada",
             "latitude": "60.00000000",
             "longitude": "-95.00000000",
@@ -4240,7 +7587,6 @@
             "asset": "./assets/country_flag/pt.svg",
             "code": "PT",
             "display_name": "Portugal",
-            "emoji": "🇵🇹",
             "en_name": "Portugal",
             "latitude": "39.50000000",
             "longitude": "-8.00000000",
@@ -4312,7 +7658,6 @@
             "asset": "./assets/country_flag/us.svg",
             "code": "US",
             "display_name": "United States",
-            "emoji": "🇺🇸",
             "en_name": "United States",
             "latitude": "38.00000000",
             "longitude": "-97.00000000",
@@ -4332,6 +7677,66 @@
       },
       "winner_team_name": ""
     }
+  },
+  "display": {
+    "folders": {
+      "bracket": true,
+      "bracket_focus": true,
+      "bracket_ultimate": true,
+      "character_gallery": true,
+      "character_line": true,
+      "commentators": true,
+      "completed_sets": true,
+      "last_sets": true,
+      "map": true,
+      "map_world_fighters": true,
+      "player_list": true,
+      "player_presentation": true,
+      "recent_sets": true,
+      "recent_sets_full": true,
+      "ruleset": true,
+      "scoreboard": true,
+      "scoreboard - Halloween": true,
+      "scoreboard - MTF": true,
+      "scoreboard - StationSquare": true,
+      "scoreboard_2xko": true,
+      "scoreboard_4by3": true,
+      "scoreboard_4by3_oneside": true,
+      "scoreboard_JinTracker": true,
+      "scoreboard_WellyRoA": true,
+      "scoreboard_WellySmash": true,
+      "scoreboard_artistic": true,
+      "scoreboard_bottombar": true,
+      "scoreboard_dynamic": true,
+      "scoreboard_mainstagy": true,
+      "scoreboard_pandastic": true,
+      "scoreboard_parrygg": true,
+      "scoreboard_roa2": true,
+      "scoreboard_simple": true,
+      "scoreboard_team_versus": true,
+      "scoreboard_topleft": true,
+      "scoreboard_vgbootcampy": true,
+      "scoreboard_vgbootcampy_classic": true,
+      "scoreboard_vgbootcampy_neo": true,
+      "scoreboard_vgbootcampy_waiting": true,
+      "stage_strike": true,
+      "stage_strike_display": true,
+      "stage_strike_display - MTF": true,
+      "stream_queue": true,
+      "stream_queue_simple": true,
+      "team_battle": true,
+      "top_8": true,
+      "top_8 - MTF": true,
+      "top_8_single_elim": true,
+      "top_n_list": true,
+      "tournament_history": true,
+      "versus_screen": true,
+      "versus_screen_pokken": true,
+      "versus_screen_tekken8": true,
+      "versus_screen_tokkon": true,
+      "versus_screen_tokkon - StationSquare": true
+    },
+    "groups": {}
   },
   "game": {
     "codename": "ssbu",
@@ -6825,10 +10230,6 @@
       "--bracket-winner-color": "#ffb800",
       "--chip-background": "#121212",
       "--chip-text-color": "#ffffff",
-      "--event-stats-characters-count": "10",
-      "--event-stats-performers-count": "5",
-      "--event-stats-stages-count": "6",
-      "--event-stats-upsets-count": "6",
       "--general-background": "#121212",
       "--general-border-radius": "0px",
       "--general-chip-radius": "5px",
@@ -6836,7 +10237,6 @@
       "--general-primary-color": "#ffb800",
       "--general-secondary-color": "#121212",
       "--general-text-color": "#ffffff",
-      "--league-players-count": "16",
       "--stage-strike-selected-color": "#ffb800",
       "--stage-strike-striked-color": "rgba(0, 0, 0, 0.69)",
       "--standings-highlight-top": "0",
@@ -6849,7 +10249,7 @@
       "--versus-team2-sponsor-color": "#000000"
     },
     "name": "Default",
-    "stylesheet": ":root {\n  --general-primary-color: #ffb800;\n  --general-secondary-color: #121212;\n  --general-text-color: #ffffff;\n  --general-background: #121212;\n  --general-font-family: inherit;\n  --general-border-radius: 0px;\n  --general-chip-radius: 5px;\n  --animation-speed: 100%;\n  --teams-team1-color: #e53935;\n  --teams-team2-color: #1e88e5;\n  --teams-team1-score-color: #ffffff;\n  --teams-team2-score-color: #ffffff;\n  --chip-text-color: #ffffff;\n  --chip-background: #121212;\n  --bracket-score-background: #fe3636;\n  --bracket-sponsor-background: #fe3636;\n  --bracket-winner-color: #ffb800;\n  --bracket-lines-color: #000000;\n  --bracket-focus-color: #ffb800;\n  --bracket-focus-dim: 30%;\n  --bracket-focus-max-zoom: 200%;\n  --standings-highlight-top: 0;\n  --stage-strike-striked-color: rgba(0, 0, 0, 0.69);\n  --stage-strike-selected-color: #ffb800;\n  --stream-queue-sets-count: 0;\n  --event-stats-characters-count: 10;\n  --event-stats-stages-count: 6;\n  --event-stats-upsets-count: 6;\n  --event-stats-performers-count: 5;\n  --league-players-count: 16;\n  --versus-team1-sponsor-color: #000000;\n  --versus-team2-sponsor-color: #000000;\n}\n",
+    "stylesheet": ":root {\n  --general-primary-color: #ffb800;\n  --general-secondary-color: #121212;\n  --general-text-color: #ffffff;\n  --general-background: #121212;\n  --general-font-family: inherit;\n  --general-border-radius: 0px;\n  --general-chip-radius: 5px;\n  --animation-speed: 100%;\n  --teams-team1-color: #e53935;\n  --teams-team2-color: #1e88e5;\n  --teams-team1-score-color: #ffffff;\n  --teams-team2-score-color: #ffffff;\n  --chip-text-color: #ffffff;\n  --chip-background: #121212;\n  --bracket-score-background: #fe3636;\n  --bracket-sponsor-background: #fe3636;\n  --bracket-winner-color: #ffb800;\n  --bracket-lines-color: #000000;\n  --bracket-focus-color: #ffb800;\n  --bracket-focus-dim: 30%;\n  --bracket-focus-max-zoom: 200%;\n  --standings-highlight-top: 0;\n  --stage-strike-striked-color: rgba(0, 0, 0, 0.69);\n  --stage-strike-selected-color: #ffb800;\n  --stream-queue-sets-count: 0;\n  --versus-team1-sponsor-color: #000000;\n  --versus-team2-sponsor-color: #000000;\n}\n",
     "values": {
       "animation": {
         "enabled": true,
@@ -7007,7 +10407,6 @@
               "asset": "./assets/country_flag/br.svg",
               "code": "BR",
               "display_name": "Brazil",
-              "emoji": "🇧🇷",
               "en_name": "Brazil",
               "latitude": "-10.00000000",
               "longitude": "-55.00000000",
@@ -7031,6 +10430,12 @@
             "pronoun": "she/her",
             "real_name": "Ana Silva",
             "seed": 1,
+            "socials": {
+              "bluesky": "azure.bsky.social",
+              "twitch": "azure_hd",
+              "twitter": "azure_hd",
+              "youtube": "@azurehd"
+            },
             "state": {
               "asset": "./assets/state_flag/BR/SP.png",
               "code": "SP",
@@ -7103,7 +10508,6 @@
               "asset": "./assets/country_flag/jp.svg",
               "code": "JP",
               "display_name": "Japan",
-              "emoji": "🇯🇵",
               "en_name": "Japan",
               "latitude": "36.00000000",
               "longitude": "138.00000000",
@@ -7127,6 +10531,12 @@
             "pronoun": "he/him",
             "real_name": "Kenji Sato",
             "seed": 2,
+            "socials": {
+              "instagram": "kestrel.gg",
+              "tiktok": "@kestrel_gg",
+              "twitch": "kestrelgg",
+              "twitter": "kestrel_gg"
+            },
             "state": {
               "asset": "./assets/state_flag/JP/13.png",
               "code": "13",
@@ -7199,7 +10609,6 @@
               "asset": "./assets/country_flag/us.svg",
               "code": "US",
               "display_name": "United States",
-              "emoji": "🇺🇸",
               "en_name": "United States",
               "latitude": "38.00000000",
               "longitude": "-97.00000000",
@@ -7220,6 +10629,10 @@
             "pronoun": "she/her",
             "real_name": "Mia Lowe",
             "seed": 3,
+            "socials": {
+              "bluesky": "marlowe.bsky.social",
+              "twitter": "marlowe"
+            },
             "state": {
               "asset": "./assets/state_flag/US/CA.png",
               "code": "CA",
@@ -7291,7 +10704,6 @@
               "asset": "./assets/country_flag/ca.svg",
               "code": "CA",
               "display_name": "Canada",
-              "emoji": "🇨🇦",
               "en_name": "Canada",
               "latitude": "60.00000000",
               "longitude": "-95.00000000",
@@ -7312,6 +10724,10 @@
             "pronoun": "they/them",
             "real_name": "Quinn Hale",
             "seed": 4,
+            "socials": {
+              "twitch": "quill_nx",
+              "twitter": "quill_nx"
+            },
             "state": {
               "asset": "./assets/state_flag/CA/ON.png",
               "code": "ON",
@@ -7384,7 +10800,6 @@
               "asset": "./assets/country_flag/mx.svg",
               "code": "MX",
               "display_name": "Mexico",
-              "emoji": "🇲🇽",
               "en_name": "Mexico",
               "latitude": "23.00000000",
               "longitude": "-102.00000000",
@@ -7405,6 +10820,9 @@
             "pronoun": "she/her",
             "real_name": "Elena Ruiz",
             "seed": 5,
+            "socials": {
+              "twitter": "ember"
+            },
             "state": {
               "asset": "./assets/state_flag/MX/JAL.png",
               "code": "JAL",
@@ -7476,7 +10894,6 @@
               "asset": "./assets/country_flag/se.svg",
               "code": "SE",
               "display_name": "Sweden",
-              "emoji": "🇸🇪",
               "en_name": "Sweden",
               "latitude": "62.00000000",
               "longitude": "15.00000000",
@@ -7497,6 +10914,9 @@
             "pronoun": "he/him",
             "real_name": "Tomas Berg",
             "seed": 6,
+            "socials": {
+              "twitter": "tundra_vx"
+            },
             "state": {
               "asset": "./assets/state_flag/SE/AB.png",
               "code": "AB",
@@ -7569,7 +10989,6 @@
               "asset": "./assets/country_flag/fr.svg",
               "code": "FR",
               "display_name": "France",
-              "emoji": "🇫🇷",
               "en_name": "France",
               "latitude": "46.00000000",
               "longitude": "2.00000000",
@@ -7590,6 +11009,9 @@
             "pronoun": "he/him",
             "real_name": "Paul Martin",
             "seed": 7,
+            "socials": {
+              "twitter": "pixel"
+            },
             "state": {
               "asset": "./assets/state_flag/FR/IDF.png",
               "code": "IDF",
@@ -7661,7 +11083,6 @@
               "asset": "./assets/country_flag/gb.svg",
               "code": "GB",
               "display_name": "United Kingdom",
-              "emoji": "🇬🇧",
               "en_name": "United Kingdom",
               "latitude": "54.00000000",
               "longitude": "-2.00000000",
@@ -7682,6 +11103,9 @@
             "pronoun": "she/her",
             "real_name": "Sara Khan",
             "seed": 8,
+            "socials": {
+              "twitter": "saffron_rb"
+            },
             "state": {
               "asset": "./assets/state_flag/GB/ENG.png",
               "code": "ENG",
@@ -7710,56 +11134,526 @@
       "first_to_text": "First to 3",
       "games": {
         "1": {
+          "characterData": {
+            "1": [
+              {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_palutena_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_palutena_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 280,
+                      "y": 161
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "palutena",
+                "display_name": "Palutena",
+                "en_name": "Palutena",
+                "name": "Palutena"
+              }
+            ],
+            "2": [
+              {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_sonic_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_sonic_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 255,
+                      "y": 207
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "sonic",
+                "display_name": "Sonic",
+                "en_name": "Sonic",
+                "name": "Sonic"
+              }
+            ]
+          },
           "characters": {
-            "1": [],
-            "2": []
+            "1": [
+              "Palutena"
+            ],
+            "2": [
+              "Sonic"
+            ]
           },
           "current": false,
           "game": 1,
-          "stage": null,
-          "stageData": null,
+          "scoreAfter": {
+            "1": 1,
+            "2": 0
+          },
+          "stage": "BattleField",
+          "stageData": {
+            "codename": "BattleField",
+            "display_name": "Battlefield",
+            "en_name": "Battlefield",
+            "locale": {
+              "de": "Schlachtfeld",
+              "en_GB": "Battlefield",
+              "es": "Campo de batalla",
+              "es_LA": "Campo de batalla",
+              "fr": "Champ de Bataille",
+              "fr_CA": "Champ de Bataille",
+              "it": "Le rovine",
+              "ja": "戦場",
+              "ko": "전장",
+              "nl": "Slagveld",
+              "ru": "Поле боя",
+              "zh_CN": "战场",
+              "zh_TW": "戰場"
+            },
+            "name": "Battlefield",
+            "parrygg_slug": "battlefield",
+            "path": "./user_data/games/ssbu/stage_icon/stage_2_BattleField.png",
+            "smashgg_id": "311"
+          },
           "winner": 1
         },
         "2": {
+          "characterData": {
+            "1": [
+              {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_palutena_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_palutena_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 280,
+                      "y": 161
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "palutena",
+                "display_name": "Palutena",
+                "en_name": "Palutena",
+                "name": "Palutena"
+              }
+            ],
+            "2": [
+              {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_sonic_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_sonic_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 255,
+                      "y": 207
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "sonic",
+                "display_name": "Sonic",
+                "en_name": "Sonic",
+                "name": "Sonic"
+              }
+            ]
+          },
           "characters": {
-            "1": [],
-            "2": []
+            "1": [
+              "Palutena"
+            ],
+            "2": [
+              "Sonic"
+            ]
           },
           "current": false,
           "game": 2,
-          "stage": null,
-          "stageData": null,
+          "scoreAfter": {
+            "1": 2,
+            "2": 0
+          },
+          "stage": "Poke_Stadium2",
+          "stageData": {
+            "codename": "Poke_Stadium2",
+            "display_name": "Pokémon Stadium 2",
+            "en_name": "Pokémon Stadium 2",
+            "locale": {
+              "de": "Pokémon Stadium 2",
+              "en_GB": "Pokémon Stadium 2",
+              "es": "Estadio Pokémon 2",
+              "es_LA": "Estadio Pokémon 2",
+              "fr": "Stade Pokémon 2",
+              "fr_CA": "Stade Pokémon 2",
+              "it": "Lo Stadio Pokémon 2",
+              "ja": "ポケモンスタジアム2",
+              "ko": "포켓몬 스타디움 2",
+              "nl": "Pokémon Stadium 2",
+              "ru": "Стадион Покемонов 2",
+              "zh_CN": "Pokémon Stadium 2",
+              "zh_TW": "Pokémon Stadium 2"
+            },
+            "name": "Pokémon Stadium 2",
+            "parrygg_slug": "pok-mon-stadium-2",
+            "path": "./user_data/games/ssbu/stage_icon/stage_2_Poke_Stadium2.png",
+            "smashgg_id": "378"
+          },
           "winner": 1
         },
         "3": {
+          "characterData": {
+            "1": [
+              {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_palutena_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_palutena_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 280,
+                      "y": 161
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "palutena",
+                "display_name": "Palutena",
+                "en_name": "Palutena",
+                "name": "Palutena"
+              }
+            ],
+            "2": [
+              {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_jack_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_jack_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 239,
+                      "y": 189
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "jack",
+                "display_name": "Joker",
+                "en_name": "Joker",
+                "name": "Joker"
+              }
+            ]
+          },
           "characters": {
-            "1": [],
-            "2": []
+            "1": [
+              "Palutena"
+            ],
+            "2": [
+              "Joker"
+            ]
           },
           "current": false,
           "game": 3,
-          "stage": null,
-          "stageData": null,
+          "scoreAfter": {
+            "1": 2,
+            "2": 1
+          },
+          "stage": "Animal_Village",
+          "stageData": {
+            "codename": "Animal_Village",
+            "display_name": "Smashville",
+            "en_name": "Smashville",
+            "locale": {
+              "de": "Smash-Stadt",
+              "en_GB": "Smashville",
+              "es": "Pueblo Smash",
+              "es_LA": "Pueblo Smash",
+              "fr": "Smash Ville",
+              "fr_CA": "Smash Ville",
+              "it": "Smash Village",
+              "ja": "すま村",
+              "ko": "스매시 마을",
+              "nl": "Smashdorp",
+              "ru": "Смешвиль",
+              "zh_CN": "任天村",
+              "zh_TW": "任天村"
+            },
+            "name": "Smashville",
+            "parrygg_slug": "smashville",
+            "path": "./user_data/games/ssbu/stage_icon/stage_2_Animal_Village.png",
+            "smashgg_id": "387"
+          },
           "winner": 2
         },
         "4": {
+          "characterData": {
+            "1": [
+              {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_sonic_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_sonic_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 255,
+                      "y": 207
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "sonic",
+                "display_name": "Sonic",
+                "en_name": "Sonic",
+                "name": "Sonic"
+              }
+            ],
+            "2": [
+              {
+                "assets": {
+                  "base_files/icon": {
+                    "asset": "./user_data/games/ssbu//base_files/icon/chara_2_jack_00.png",
+                    "average_size": {
+                      "x": 64.0,
+                      "y": 64.0
+                    },
+                    "image_size": {
+                      "x": 64,
+                      "y": 64
+                    },
+                    "type": [
+                      "icon"
+                    ]
+                  },
+                  "full": {
+                    "asset": "./user_data/games/ssbu//full/chara_1_jack_00.png",
+                    "average_size": {
+                      "x": 511.8150289017341,
+                      "y": 511.8150289017341
+                    },
+                    "eyesight": {
+                      "x": 239,
+                      "y": 189
+                    },
+                    "image_size": {
+                      "x": 512,
+                      "y": 512
+                    },
+                    "type": [
+                      "full"
+                    ]
+                  }
+                },
+                "codename": "jack",
+                "display_name": "Joker",
+                "en_name": "Joker",
+                "name": "Joker"
+              }
+            ]
+          },
           "characters": {
-            "1": [],
-            "2": []
+            "1": [
+              "Sonic"
+            ],
+            "2": [
+              "Joker"
+            ]
           },
           "current": true,
           "game": 4,
-          "stage": null,
-          "stageData": null,
+          "scoreAfter": null,
+          "stage": "Fzero_Porttown",
+          "stageData": {
+            "codename": "Fzero_Porttown",
+            "display_name": "Port Town Aero Dive",
+            "en_name": "Port Town Aero Dive",
+            "locale": {
+              "de": "Port Town",
+              "en_GB": "Port Town Aero Dive",
+              "es": "Port Town Aero Dive",
+              "es_LA": "Port Town Aero Dive",
+              "fr": "Port Town",
+              "fr_CA": "Port Town Aero Dive",
+              "it": "Port Town",
+              "ja": "ポートタウン エアロダイブ",
+              "ko": "포트 타운 에어로다이브",
+              "nl": "Port Town Aero Dive",
+              "ru": "Аэрогонка Порт-Тауна",
+              "zh_CN": "港口镇 高空俯冲",
+              "zh_TW": "Port Town Aero Dive"
+            },
+            "name": "Port Town Aero Dive",
+            "parrygg_slug": "port-town-aero-dive",
+            "path": "./user_data/games/ssbu/stage_icon/stage_2_Fzero_Porttown.png",
+            "smashgg_id": "379"
+          },
           "winner": null
         },
         "5": {
+          "characterData": {
+            "1": [],
+            "2": []
+          },
           "characters": {
             "1": [],
             "2": []
           },
           "current": false,
           "game": 5,
+          "scoreAfter": null,
           "stage": null,
           "stageData": null,
           "winner": null
@@ -7768,64 +11662,82 @@
       "history_sets": {
         "1": {
           "1": {
+            "bracket_type": null,
             "entrants": 64,
             "event_date_day": "29",
             "event_date_month": "August",
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 1,
+            "seed": null,
+            "spr": null,
             "tournament_name": "HyperDrive Weekly #120",
             "tournament_picture": null
           },
           "2": {
+            "bracket_type": null,
             "entrants": 512,
             "event_date_day": "14",
             "event_date_month": "July",
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 2,
+            "seed": null,
+            "spr": null,
             "tournament_name": "Springfield Major 2026",
             "tournament_picture": null
           },
           "3": {
+            "bracket_type": null,
             "entrants": 58,
             "event_date_day": "15",
             "event_date_month": "August",
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 3,
+            "seed": null,
+            "spr": null,
             "tournament_name": "HyperDrive Weekly #118",
             "tournament_picture": null
           }
         },
         "2": {
           "1": {
+            "bracket_type": null,
             "entrants": 64,
             "event_date_day": "29",
             "event_date_month": "August",
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 1,
+            "seed": null,
+            "spr": null,
             "tournament_name": "HyperDrive Weekly #120",
             "tournament_picture": null
           },
           "2": {
+            "bracket_type": null,
             "entrants": 512,
             "event_date_day": "14",
             "event_date_month": "July",
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 2,
+            "seed": null,
+            "spr": null,
             "tournament_name": "Springfield Major 2026",
             "tournament_picture": null
           },
           "3": {
+            "bracket_type": null,
             "entrants": 58,
             "event_date_day": "15",
             "event_date_month": "August",
             "event_date_year": "2026",
             "event_name": "Ultimate Singles",
             "placement": 3,
+            "seed": null,
+            "spr": null,
             "tournament_name": "HyperDrive Weekly #118",
             "tournament_picture": null
           }
@@ -7932,6 +11844,7 @@
       "phase": "Top 8",
       "phase_size": null,
       "recent_sets": {
+        "request_time": 1,
         "sets": [
           {
             "event": "Ultimate Singles",
@@ -8007,6 +11920,16 @@
       "stage_strike": {
         "canRedo": false,
         "canUndo": true,
+        "characterLock": {
+          "locked": {
+            "1": false,
+            "2": false
+          },
+          "score": [
+            0,
+            0
+          ]
+        },
         "characterSelect": {
           "active": false,
           "game": null,
@@ -8039,10 +11962,8 @@
         ]
       },
       "station_queue": {},
-      "stream_url": "",
       "team": {
         "1": {
-          "": "",
           "color": "#fe3636",
           "losers": false,
           "losersIndicator": "",
@@ -8100,7 +12021,6 @@
                 "asset": "./assets/country_flag/br.svg",
                 "code": "BR",
                 "display_name": "Brazil",
-                "emoji": "🇧🇷",
                 "en_name": "Brazil",
                 "latitude": "-10.00000000",
                 "longitude": "-55.00000000",
@@ -8124,6 +12044,12 @@
               "pronoun": "she/her",
               "real_name": "Ana Silva",
               "seed": 1,
+              "socials": {
+                "bluesky": "azure.bsky.social",
+                "twitch": "azure_hd",
+                "twitter": "azure_hd",
+                "youtube": "@azurehd"
+              },
               "state": {
                 "asset": "./assets/state_flag/BR/SP.png",
                 "code": "SP",
@@ -8140,7 +12066,6 @@
           "teamName": ""
         },
         "2": {
-          "": "",
           "color": "#2e89ff",
           "losers": false,
           "losersIndicator": "",
@@ -8198,7 +12123,6 @@
                 "asset": "./assets/country_flag/jp.svg",
                 "code": "JP",
                 "display_name": "Japan",
-                "emoji": "🇯🇵",
                 "en_name": "Japan",
                 "latitude": "36.00000000",
                 "longitude": "138.00000000",
@@ -8222,6 +12146,12 @@
               "pronoun": "he/him",
               "real_name": "Kenji Sato",
               "seed": 2,
+              "socials": {
+                "instagram": "kestrel.gg",
+                "tiktok": "@kestrel_gg",
+                "twitch": "kestrelgg",
+                "twitter": "kestrel_gg"
+              },
               "state": {
                 "asset": "./assets/state_flag/JP/13.png",
                 "code": "13",
@@ -8264,7 +12194,7 @@
         {
           "best_of": 5,
           "best_of_text": "Best of 5",
-          "eta": 1791766172,
+          "eta": 1792250696,
           "eta_minutes": 0,
           "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
           "id": 1001,
@@ -8287,7 +12217,6 @@
                     "asset": "./assets/country_flag/br.svg",
                     "code": "BR",
                     "display_name": "Brazil",
-                    "emoji": "🇧🇷",
                     "en_name": "Brazil",
                     "latitude": "-10.00000000",
                     "longitude": "-55.00000000",
@@ -8322,7 +12251,6 @@
                     "asset": "./assets/country_flag/ca.svg",
                     "code": "CA",
                     "display_name": "Canada",
-                    "emoji": "🇨🇦",
                     "en_name": "Canada",
                     "latitude": "60.00000000",
                     "longitude": "-95.00000000",
@@ -8354,7 +12282,7 @@
         {
           "best_of": 5,
           "best_of_text": "Best of 5",
-          "eta": 1791767132,
+          "eta": 1792251656,
           "eta_minutes": 16,
           "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
           "id": 1002,
@@ -8377,7 +12305,6 @@
                     "asset": "./assets/country_flag/jp.svg",
                     "code": "JP",
                     "display_name": "Japan",
-                    "emoji": "🇯🇵",
                     "en_name": "Japan",
                     "latitude": "36.00000000",
                     "longitude": "138.00000000",
@@ -8412,7 +12339,6 @@
                     "asset": "./assets/country_flag/us.svg",
                     "code": "US",
                     "display_name": "United States",
-                    "emoji": "🇺🇸",
                     "en_name": "United States",
                     "latitude": "38.00000000",
                     "longitude": "-97.00000000",
@@ -8444,7 +12370,7 @@
         {
           "best_of": 3,
           "best_of_text": "Best of 3",
-          "eta": 1791768092,
+          "eta": 1792252616,
           "eta_minutes": 32,
           "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
           "id": 1003,
@@ -8467,7 +12393,6 @@
                     "asset": "./assets/country_flag/se.svg",
                     "code": "SE",
                     "display_name": "Sweden",
-                    "emoji": "🇸🇪",
                     "en_name": "Sweden",
                     "latitude": "62.00000000",
                     "longitude": "15.00000000",
@@ -8502,7 +12427,6 @@
                     "asset": "./assets/country_flag/us.svg",
                     "code": "US",
                     "display_name": "United States",
-                    "emoji": "🇺🇸",
                     "en_name": "United States",
                     "latitude": "38.00000000",
                     "longitude": "-97.00000000",
@@ -8534,7 +12458,7 @@
         {
           "best_of": 3,
           "best_of_text": "Best of 3",
-          "eta": 1791769052,
+          "eta": 1792253576,
           "eta_minutes": 48,
           "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
           "id": 1004,
@@ -8557,7 +12481,6 @@
                     "asset": "./assets/country_flag/mx.svg",
                     "code": "MX",
                     "display_name": "Mexico",
-                    "emoji": "🇲🇽",
                     "en_name": "Mexico",
                     "latitude": "23.00000000",
                     "longitude": "-102.00000000",
@@ -8592,7 +12515,6 @@
                     "asset": "./assets/country_flag/kr.svg",
                     "code": "KR",
                     "display_name": "South Korea",
-                    "emoji": "🇰🇷",
                     "en_name": "South Korea",
                     "latitude": "37.00000000",
                     "longitude": "127.50000000",
@@ -8626,7 +12548,7 @@
         {
           "best_of": 3,
           "best_of_text": "Best of 3",
-          "eta": 1791766172,
+          "eta": 1792250696,
           "eta_minutes": 0,
           "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
           "id": 1005,
@@ -8649,7 +12571,6 @@
                     "asset": "./assets/country_flag/cl.svg",
                     "code": "CL",
                     "display_name": "Chile",
-                    "emoji": "🇨🇱",
                     "en_name": "Chile",
                     "latitude": "-30.00000000",
                     "longitude": "-71.00000000",
@@ -8684,7 +12605,6 @@
                     "asset": "./assets/country_flag/us.svg",
                     "code": "US",
                     "display_name": "United States",
-                    "emoji": "🇺🇸",
                     "en_name": "United States",
                     "latitude": "38.00000000",
                     "longitude": "-97.00000000",
@@ -8716,7 +12636,7 @@
         {
           "best_of": 3,
           "best_of_text": "Best of 3",
-          "eta": 1791767132,
+          "eta": 1792251656,
           "eta_minutes": 16,
           "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
           "id": 1006,
@@ -8739,7 +12659,6 @@
                     "asset": "./assets/country_flag/au.svg",
                     "code": "AU",
                     "display_name": "Australia",
-                    "emoji": "🇦🇺",
                     "en_name": "Australia",
                     "latitude": "-27.00000000",
                     "longitude": "133.00000000",
@@ -8774,7 +12693,6 @@
                     "asset": "./assets/country_flag/de.svg",
                     "code": "DE",
                     "display_name": "Germany",
-                    "emoji": "🇩🇪",
                     "en_name": "Germany",
                     "latitude": "51.00000000",
                     "longitude": "9.00000000",
@@ -8806,7 +12724,7 @@
         {
           "best_of": 3,
           "best_of_text": "Best of 3",
-          "eta": 1791768092,
+          "eta": 1792252616,
           "eta_minutes": 32,
           "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
           "id": 1007,
@@ -8829,7 +12747,6 @@
                     "asset": "./assets/country_flag/pt.svg",
                     "code": "PT",
                     "display_name": "Portugal",
-                    "emoji": "🇵🇹",
                     "en_name": "Portugal",
                     "latitude": "39.50000000",
                     "longitude": "-8.00000000",
@@ -8864,7 +12781,6 @@
                     "asset": "./assets/country_flag/gb.svg",
                     "code": "GB",
                     "display_name": "United Kingdom",
-                    "emoji": "🇬🇧",
                     "en_name": "United Kingdom",
                     "latitude": "54.00000000",
                     "longitude": "-2.00000000",
@@ -8896,7 +12812,7 @@
       ]
     },
     "currentStream": null,
-    "lastUpdated": 1791766172.1477509,
+    "lastUpdated": 1792250696.788996,
     "streams": [
       {
         "manual": false,
@@ -8906,7 +12822,7 @@
           {
             "best_of": 5,
             "best_of_text": "Best of 5",
-            "eta": 1791766172,
+            "eta": 1792250696,
             "eta_minutes": 0,
             "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
             "id": 1001,
@@ -8929,7 +12845,6 @@
                       "asset": "./assets/country_flag/br.svg",
                       "code": "BR",
                       "display_name": "Brazil",
-                      "emoji": "🇧🇷",
                       "en_name": "Brazil",
                       "latitude": "-10.00000000",
                       "longitude": "-55.00000000",
@@ -8964,7 +12879,6 @@
                       "asset": "./assets/country_flag/ca.svg",
                       "code": "CA",
                       "display_name": "Canada",
-                      "emoji": "🇨🇦",
                       "en_name": "Canada",
                       "latitude": "60.00000000",
                       "longitude": "-95.00000000",
@@ -8996,7 +12910,7 @@
           {
             "best_of": 5,
             "best_of_text": "Best of 5",
-            "eta": 1791767132,
+            "eta": 1792251656,
             "eta_minutes": 16,
             "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
             "id": 1002,
@@ -9019,7 +12933,6 @@
                       "asset": "./assets/country_flag/jp.svg",
                       "code": "JP",
                       "display_name": "Japan",
-                      "emoji": "🇯🇵",
                       "en_name": "Japan",
                       "latitude": "36.00000000",
                       "longitude": "138.00000000",
@@ -9054,7 +12967,6 @@
                       "asset": "./assets/country_flag/us.svg",
                       "code": "US",
                       "display_name": "United States",
-                      "emoji": "🇺🇸",
                       "en_name": "United States",
                       "latitude": "38.00000000",
                       "longitude": "-97.00000000",
@@ -9086,7 +12998,7 @@
           {
             "best_of": 3,
             "best_of_text": "Best of 3",
-            "eta": 1791768092,
+            "eta": 1792252616,
             "eta_minutes": 32,
             "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
             "id": 1003,
@@ -9109,7 +13021,6 @@
                       "asset": "./assets/country_flag/se.svg",
                       "code": "SE",
                       "display_name": "Sweden",
-                      "emoji": "🇸🇪",
                       "en_name": "Sweden",
                       "latitude": "62.00000000",
                       "longitude": "15.00000000",
@@ -9144,7 +13055,6 @@
                       "asset": "./assets/country_flag/us.svg",
                       "code": "US",
                       "display_name": "United States",
-                      "emoji": "🇺🇸",
                       "en_name": "United States",
                       "latitude": "38.00000000",
                       "longitude": "-97.00000000",
@@ -9176,7 +13086,7 @@
           {
             "best_of": 3,
             "best_of_text": "Best of 3",
-            "eta": 1791769052,
+            "eta": 1792253576,
             "eta_minutes": 48,
             "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
             "id": 1004,
@@ -9199,7 +13109,6 @@
                       "asset": "./assets/country_flag/mx.svg",
                       "code": "MX",
                       "display_name": "Mexico",
-                      "emoji": "🇲🇽",
                       "en_name": "Mexico",
                       "latitude": "23.00000000",
                       "longitude": "-102.00000000",
@@ -9234,7 +13143,6 @@
                       "asset": "./assets/country_flag/kr.svg",
                       "code": "KR",
                       "display_name": "South Korea",
-                      "emoji": "🇰🇷",
                       "en_name": "South Korea",
                       "latitude": "37.00000000",
                       "longitude": "127.50000000",
@@ -9273,7 +13181,7 @@
           {
             "best_of": 3,
             "best_of_text": "Best of 3",
-            "eta": 1791766172,
+            "eta": 1792250696,
             "eta_minutes": 0,
             "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
             "id": 1005,
@@ -9296,7 +13204,6 @@
                       "asset": "./assets/country_flag/cl.svg",
                       "code": "CL",
                       "display_name": "Chile",
-                      "emoji": "🇨🇱",
                       "en_name": "Chile",
                       "latitude": "-30.00000000",
                       "longitude": "-71.00000000",
@@ -9331,7 +13238,6 @@
                       "asset": "./assets/country_flag/us.svg",
                       "code": "US",
                       "display_name": "United States",
-                      "emoji": "🇺🇸",
                       "en_name": "United States",
                       "latitude": "38.00000000",
                       "longitude": "-97.00000000",
@@ -9363,7 +13269,7 @@
           {
             "best_of": 3,
             "best_of_text": "Best of 3",
-            "eta": 1791767132,
+            "eta": 1792251656,
             "eta_minutes": 16,
             "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
             "id": 1006,
@@ -9386,7 +13292,6 @@
                       "asset": "./assets/country_flag/au.svg",
                       "code": "AU",
                       "display_name": "Australia",
-                      "emoji": "🇦🇺",
                       "en_name": "Australia",
                       "latitude": "-27.00000000",
                       "longitude": "133.00000000",
@@ -9421,7 +13326,6 @@
                       "asset": "./assets/country_flag/de.svg",
                       "code": "DE",
                       "display_name": "Germany",
-                      "emoji": "🇩🇪",
                       "en_name": "Germany",
                       "latitude": "51.00000000",
                       "longitude": "9.00000000",
@@ -9453,7 +13357,7 @@
           {
             "best_of": 3,
             "best_of_text": "Best of 3",
-            "eta": 1791768092,
+            "eta": 1792252616,
             "eta_minutes": 32,
             "event": "tournament/hyperdrive-invitational-42/event/ultimate-singles",
             "id": 1007,
@@ -9476,7 +13380,6 @@
                       "asset": "./assets/country_flag/pt.svg",
                       "code": "PT",
                       "display_name": "Portugal",
-                      "emoji": "🇵🇹",
                       "en_name": "Portugal",
                       "latitude": "39.50000000",
                       "longitude": "-8.00000000",
@@ -9511,7 +13414,6 @@
                       "asset": "./assets/country_flag/gb.svg",
                       "code": "GB",
                       "display_name": "United Kingdom",
-                      "emoji": "🇬🇧",
                       "en_name": "United Kingdom",
                       "latitude": "54.00000000",
                       "longitude": "-2.00000000",
@@ -9630,6 +13532,12 @@
             "name": "Azure",
             "online_avatar": null,
             "pronoun": "she/her",
+            "socials": {
+              "bluesky": "azure.bsky.social",
+              "twitch": "azure_hd",
+              "twitter": "azure_hd",
+              "youtube": "@azurehd"
+            },
             "state": {
               "asset": "./assets/state_flag/BR/SP.png",
               "code": "SP",
@@ -9712,6 +13620,10 @@
             "name": "Marlowe",
             "online_avatar": null,
             "pronoun": "she/her",
+            "socials": {
+              "bluesky": "marlowe.bsky.social",
+              "twitter": "marlowe"
+            },
             "state": {
               "asset": "./assets/state_flag/US/CA.png",
               "code": "CA",
@@ -9793,6 +13705,9 @@
             "name": "Ember",
             "online_avatar": null,
             "pronoun": "she/her",
+            "socials": {
+              "twitter": "ember"
+            },
             "state": {
               "asset": "./assets/state_flag/MX/JAL.png",
               "code": "JAL",
@@ -9874,6 +13789,9 @@
             "name": "Pixel",
             "online_avatar": null,
             "pronoun": "he/him",
+            "socials": {
+              "twitter": "pixel"
+            },
             "state": {
               "asset": "./assets/state_flag/FR/IDF.png",
               "code": "IDF",
@@ -9967,6 +13885,12 @@
             "name": "Kestrel",
             "online_avatar": null,
             "pronoun": "he/him",
+            "socials": {
+              "instagram": "kestrel.gg",
+              "tiktok": "@kestrel_gg",
+              "twitch": "kestrelgg",
+              "twitter": "kestrel_gg"
+            },
             "state": {
               "asset": "./assets/state_flag/JP/13.png",
               "code": "13",
@@ -10050,6 +13974,10 @@
             "name": "Quill",
             "online_avatar": null,
             "pronoun": "they/them",
+            "socials": {
+              "twitch": "quill_nx",
+              "twitter": "quill_nx"
+            },
             "state": {
               "asset": "./assets/state_flag/CA/ON.png",
               "code": "ON",
@@ -10132,6 +14060,9 @@
             "name": "Tundra",
             "online_avatar": null,
             "pronoun": "he/him",
+            "socials": {
+              "twitter": "tundra_vx"
+            },
             "state": {
               "asset": "./assets/state_flag/SE/AB.png",
               "code": "AB",
@@ -10214,6 +14145,9 @@
             "name": "Saffron",
             "online_avatar": null,
             "pronoun": "she/her",
+            "socials": {
+              "twitter": "saffron_rb"
+            },
             "state": {
               "asset": "./assets/state_flag/GB/ENG.png",
               "code": "ENG",
@@ -10236,7 +14170,9 @@
   },
   "tournamentInfo": {
     "address": "1 Example Street, Springfield",
+    "banner": "",
     "eventName": "Ultimate Singles",
+    "logo": "",
     "numEntrants": 128,
     "shortLink": "hd-invitational-42",
     "tournamentName": "HyperDrive Invitational #42"

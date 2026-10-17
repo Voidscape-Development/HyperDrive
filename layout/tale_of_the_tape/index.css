@@ -1,0 +1,290 @@
+/* ═══════════════════════════════════════════════════════════
+   TALE OF THE TAPE — index.css
+   Full screen, face to face:
+     - each side's character art at its edge, over its team color,
+       with the name, flag, real name, pronouns and bio under it
+     - between them, a row per number: P1's | label | P2's, the
+       better one highlighted
+     - under the rows, their last meetings
+   Fonts and design tokens come from ../main.css (loaded first).
+   ═══════════════════════════════════════════════════════════ */
+
+body {
+  font-family: var(--font);
+  font-weight: 700;
+  overflow: hidden;
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  color: var(--text-color);
+  background: var(--bg-color);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.dot {
+  margin: 0 10px;
+  opacity: 0.5;
+}
+
+
+/* ── Sides ───────────────────────────────────────────────── */
+
+.side {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 600px;
+  overflow: hidden;
+}
+
+.p1.side {
+  left: 0;
+  background: linear-gradient(to right, color-mix(in srgb, var(--p1-score-bg-color) 55%, var(--bg-color)), transparent);
+}
+
+.p2.side {
+  right: 0;
+  background: linear-gradient(to left, color-mix(in srgb, var(--p2-score-bg-color) 55%, var(--bg-color)), transparent);
+}
+
+.character {
+  position: absolute;
+  inset: 0 0 160px 0;
+  z-index: 0;
+}
+
+/* The art fades into the name */
+.side::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 520px;
+  background: linear-gradient(to top, var(--bg-color) 38%, transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.identity {
+  position: absolute;
+  left: 50px;
+  right: 50px;
+  bottom: 60px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.p2 .identity {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.name {
+  height: 84px;
+  width: 100%;
+  font-size: 78px;
+}
+
+.details {
+  height: 34px;
+  width: 100%;
+  font-size: 30px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.p1 :is(.name, .details) .text { justify-content: flex-start; }
+.p2 :is(.name, .details) .text { justify-content: flex-end; }
+
+.details .flag {
+  height: 26px;
+  margin-right: 8px;
+  border-radius: 3px;
+}
+
+.bio {
+  max-width: 100%;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.25;
+  opacity: 0.75;
+}
+
+.bio .text {
+  white-space: normal;
+  display: block;
+}
+
+.sponsor {
+  margin-right: 14px;
+}
+
+.p1 .sponsor { color: var(--p1-sponsor-color); }
+.p2 .sponsor { color: var(--p2-sponsor-color); }
+
+.losers {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  font-size: 30px;
+  border-radius: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 0 14px;
+}
+
+.p1 .losers { background: var(--p1-score-bg-color); color: var(--p1-score-color); }
+.p2 .losers { background: var(--p2-score-bg-color); color: var(--p2-score-color); }
+
+
+/* ── Center ──────────────────────────────────────────────── */
+
+.center {
+  position: absolute;
+  top: 60px;
+  bottom: 60px;
+  left: 620px;
+  right: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 34px;
+  z-index: 3;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  height: 74px;
+  max-width: 100%;
+  font-size: 70px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent-color);
+}
+
+.round {
+  height: 32px;
+  max-width: 100%;
+  font-size: 28px;
+  opacity: 0.75;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 220px 1fr;
+  align-items: center;
+  height: 82px;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.label {
+  height: 26px;
+  font-size: 22px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.value {
+  height: 54px;
+  padding: 0 28px;
+  font-size: 48px;
+}
+
+.v1 .text { justify-content: flex-start; }
+.v2 .text { justify-content: flex-end; }
+
+.value.better {
+  color: var(--accent-color);
+}
+
+.ordinal {
+  font-size: 0.6em;
+  align-self: flex-start;
+  margin-top: 0.15em;
+}
+
+.of {
+  font-size: 0.6em;
+  opacity: 0.6;
+  align-self: flex-end;
+  margin-bottom: 0.1em;
+}
+
+.value .dot {
+  margin: 0 8px;
+}
+
+.meetings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.meetings_title {
+  height: 30px;
+  font-size: 26px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.meeting_list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meeting {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  align-items: center;
+  gap: 18px;
+  height: 52px;
+  padding: 0 20px 0 10px;
+  font-size: 24px;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.meeting_score {
+  text-align: center;
+  font-size: 28px;
+}
+
+.won_1 .s1 { color: var(--p1-sponsor-color); }
+.won_2 .s2 { color: var(--p2-sponsor-color); }
+
+.meeting_event {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meeting_round {
+  font-size: 20px;
+  font-weight: 600;
+  opacity: 0.6;
+  white-space: nowrap;
+}
