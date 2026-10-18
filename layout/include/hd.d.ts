@@ -118,6 +118,8 @@ declare namespace HD {
     theme(section: string, field: string, fallback?: any): any;
     shown(): boolean;
     restart(): Promise<void> | undefined;
+    /** Resolves once the <img>s in target have loaded or failed (not CSS backgrounds) */
+    imagesLoaded(target: Target): Promise<unknown>;
     every(seconds: number, fn: (s: Scope) => void): number;
     turns(seconds: number, render: (s: Scope) => void): { pick<T>(items: T[]): T | "" };
     applyDeltas(state: State, deltas: { path: (string | number)[]; action: string; value?: any }[]): State;
