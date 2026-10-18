@@ -19,7 +19,7 @@ body {
   width: 200px;
   font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 2;
+  letter-spacing: 2px;
   height: 28px;
   bottom: 0;
   padding-top: 5px;
@@ -35,7 +35,7 @@ body {
   width: 200px;
   font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 2;
+  letter-spacing: 2px;
   height: 28px;
   top: 0;
   padding-top: 5px;
