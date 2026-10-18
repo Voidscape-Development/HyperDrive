@@ -92,6 +92,8 @@ declare namespace HD {
     subscribe?: string[];
     /** Setting path → theme field; only non-default theme values apply */
     theme?: Record<string, ThemeField>;
+    /** GSAP plugins from include/gsap/ to load and register ("SplitText", "Flip"...), in order */
+    plugins?: string[];
     /** Once, after the settings load, before the first state */
     init?(settings: Record<string, any>): void | Promise<void>;
     /** Each state (coalesced: one at a time, with the latest) */

@@ -30,19 +30,22 @@ HD.layouts = {};
   ];
   const INCLUDE = document.currentScript.src.replace(/[^/]*$/, "");
 
-  const libraries = Promise.all(
-    SCRIPTS.map(
-      (name) =>
-        new Promise((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = INCLUDE + name;
-          script.async = false;
-          script.onload = resolve;
-          script.onerror = () => reject(new Error(`Couldn't load ${script.src}`));
-          document.head.appendChild(script);
-        }),
-    ),
-  );
+  const loadScripts = (names) =>
+    Promise.all(
+      names.map(
+        (name) =>
+          new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = INCLUDE + name;
+            script.async = false;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error(`Couldn't load ${script.src}`));
+            document.head.appendChild(script);
+          }),
+      ),
+    );
+
+  const libraries = loadScripts(SCRIPTS);
 
   // Hidden until the first state is shown and the intro starts
   document.documentElement.classList.add("hd-loading");
@@ -676,13 +679,18 @@ HD.layouts = {};
 
   let booted = false;
 
-  // def: { settings, theme, subscribe, init(settings), intro(tl, s),
+  // def: { settings, theme, subscribe, plugins, init(settings), intro(tl, s),
   // outro(s), start(s), update(s) }
   HD.layout = async (layout) => {
     if (def) throw new Error("HD.layout() called twice");
     def = layout;
 
     await libraries;
+    // GSAP plugins the layout uses, from include/gsap/ ("SplitText", "Flip"...)
+    const plugins = def.plugins || [];
+    await loadScripts(plugins.map((name) => `gsap/${name}.min.js`));
+    // EasePack's file registers its eases itself
+    gsap.registerPlugin(...plugins.map((name) => window[name]).filter(Boolean));
     await new Promise((resolve) => $(resolve));
     gsap.config({ nullTargetWarn: false, trialWarn: false });
     // Frozen until the first show, so nothing plays before the intro
