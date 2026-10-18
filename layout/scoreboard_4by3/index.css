@@ -73,8 +73,8 @@ body {
 
 .container .name {
   position: absolute;
-  padding-left: 16;
-  padding-right: 16;
+  padding-left: 16px;
+  padding-right: 16px;
   width: 100%;
   top: 0;
   height: 80px;

@@ -30,6 +30,38 @@ const browser = Object.fromEntries(
   ].map((name) => [name, "readonly"]),
 );
 
+// The GSAP plugins in include/gsap/, which HD.layout({ plugins }) loads
+const gsapPlugins = Object.fromEntries(
+  [
+    "CSSRulePlugin",
+    "CustomBounce",
+    "CustomEase",
+    "CustomWiggle",
+    "Draggable",
+    "DrawSVGPlugin",
+    "EaselPlugin",
+    "ExpoScaleEase",
+    "Flip",
+    "GSDevTools",
+    "InertiaPlugin",
+    "MorphSVGPlugin",
+    "MotionPathHelper",
+    "MotionPathPlugin",
+    "Observer",
+    "Physics2DPlugin",
+    "PhysicsPropsPlugin",
+    "PixiPlugin",
+    "RoughEase",
+    "ScrambleTextPlugin",
+    "ScrollSmoother",
+    "ScrollToPlugin",
+    "ScrollTrigger",
+    "SlowMo",
+    "SplitText",
+    "TextPlugin",
+  ].map((name) => [name, "readonly"]),
+);
+
 export default [
   {
     ignores: ["**/*.min.js", "**/leaflet/**", "**/proj*.js", "eslint.config.mjs"],
@@ -42,6 +74,7 @@ export default [
       sourceType: "script",
       globals: {
         ...browser,
+        ...gsapPlugins,
         HD: "readonly",
         VS: "readonly",
         HDBracket: "readonly",

@@ -92,6 +92,8 @@ declare namespace HD {
     subscribe?: string[];
     /** Setting path → theme field; only non-default theme values apply */
     theme?: Record<string, ThemeField>;
+    /** GSAP plugins from include/gsap/ to load and register ("SplitText", "Flip"...), in order */
+    plugins?: string[];
     /** Once, after the settings load, before the first state */
     init?(settings: Record<string, any>): void | Promise<void>;
     /** Each state (coalesced: one at a time, with the latest) */
@@ -116,6 +118,8 @@ declare namespace HD {
     theme(section: string, field: string, fallback?: any): any;
     shown(): boolean;
     restart(): Promise<void> | undefined;
+    /** Resolves once the <img>s in target have loaded or failed (not CSS backgrounds) */
+    imagesLoaded(target: Target): Promise<unknown>;
     every(seconds: number, fn: (s: Scope) => void): number;
     turns(seconds: number, render: (s: Scope) => void): { pick<T>(items: T[]): T | "" };
     applyDeltas(state: State, deltas: { path: (string | number)[]; action: string; value?: any }[]): State;

@@ -82,7 +82,7 @@ HD.layout({
         "&.character_name",
         !s.settings.avatar && VS.characterNames(players, !s.isTeams && s.settings.force_variant_last),
       );
-      $(t.sel("&.character_name")).css("font-size", 500 / Math.max(count, 1));
+      $(t.sel("&.character_name")).css("font-size", `${500 / Math.max(count, 1)}px`);
 
       if (s.settings.avatar) {
         VS.art(s, { ...t, sel: () => t.sel("&.character > div") }, slide(t.n === 1 ? 1 : -1));

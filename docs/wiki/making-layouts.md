@@ -18,7 +18,8 @@ HyperDrive's web server with socket.io and calls the functions your page defines
 If the web server can't be reached, `globals.js` falls back to reading
 `out/program_state.json`, which HyperDrive also writes.
 
-`layout/include/` also has the libraries the layouts use: gsap for animations, jQuery and
+`layout/include/` also has the libraries the layouts use: gsap for animations (its plugins
+are in `include/gsap/`; a layout loads the ones it needs with `plugins` in `HD.layout()`), jQuery and
 lodash, and helpers such as `bracket.js` for brackets.
 
 ## What's in the data

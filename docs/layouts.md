@@ -64,6 +64,7 @@ HD.layout({
 | `subscribe` | The state's top-level keys the layout reads (see below). Without it, it gets everything. |
 | `settings` | Default settings |
 | `theme` | Settings the layout theme can change: `{ "setting.path": [section, field, theme default, (value) => setting] }` |
+| `plugins` | GSAP plugins it uses, loaded from `include/gsap/` and registered before `init()`: `["SplitText", "Flip"]`. List a plugin after the ones it needs (`CustomEase` before `CustomBounce`). |
 | `init(settings)` | Once, before the first state: loading files, starting timers |
 | `update(s)` | With each state. One runs at a time; states that arrive meanwhile are folded into the next. |
 | `intro(tl, s)` | Adds the show animation to a GSAP timeline, built again each time the layout is shown |

@@ -51,7 +51,7 @@
     const paint = (target, img) => {
       const apply = () => {
         try {
-          const palette = new ColorThief().getPalette(img, 5);
+          const palette = ColorThief.getPaletteSync(img, { colorCount: 5 })?.map((c) => c.array());
           if (!palette || palette.length === 0) return;
           const [c1, c2] = colors.map((i) => palette[i] || palette[palette.length - 1]);
           $(target).css(

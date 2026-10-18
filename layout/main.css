@@ -108,6 +108,12 @@ body {
   paint-order: stroke fill;
 }
 
+/* Layouts fill the browser source, so percentage heights resolve against it */
+html,
+body {
+  height: 100%;
+}
+
 /* Override browser UA default (content-box) for all images */
 img {
   overflow-clip-margin: border-box;

@@ -19,10 +19,9 @@ HD.layouts = {};
   // Libraries, then the runtime's own parts that use them. Downloaded in
   // parallel; async = false still runs them in this order.
   const SCRIPTS = [
-    "jquery-3.7.1.min.js",
+    "jquery-4.0.0.min.js",
     "gsap.min.js",
     "lodash.min.js",
-    "jquery.waitforimages.min.js",
     "color-thief.min.js",
     "socket.io.min.js",
     "render.js",
@@ -30,19 +29,22 @@ HD.layouts = {};
   ];
   const INCLUDE = document.currentScript.src.replace(/[^/]*$/, "");
 
-  const libraries = Promise.all(
-    SCRIPTS.map(
-      (name) =>
-        new Promise((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = INCLUDE + name;
-          script.async = false;
-          script.onload = resolve;
-          script.onerror = () => reject(new Error(`Couldn't load ${script.src}`));
-          document.head.appendChild(script);
-        }),
-    ),
-  );
+  const loadScripts = (names) =>
+    Promise.all(
+      names.map(
+        (name) =>
+          new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = INCLUDE + name;
+            script.async = false;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error(`Couldn't load ${script.src}`));
+            document.head.appendChild(script);
+          }),
+      ),
+    );
+
+  const libraries = loadScripts(SCRIPTS);
 
   // Hidden until the first state is shown and the intro starts
   document.documentElement.classList.add("hd-loading");
@@ -272,23 +274,36 @@ HD.layouts = {};
   // Once the images and fonts are in, so nothing pops in during the intro
   async function firstShow() {
     await document.fonts.ready;
-    await new Promise((resolve) =>
-      requestAnimationFrame(() =>
-        $(document).waitForImages(() => {
-          display.started = true;
-          gsap.globalTimeline.timeScale(animationScale);
-          // Turned off in Display Controls: stays hidden until turned on
-          if (!displayVisible(applied)) {
-            display.shown = false;
-            gsap.set("body", { autoAlpha: 0 });
-          } else {
-            show();
-          }
-          resolve();
-        }),
-      ),
-    );
+    await new Promise(requestAnimationFrame);
+    await HD.imagesLoaded(document);
+    display.started = true;
+    gsap.globalTimeline.timeScale(animationScale);
+    // Turned off in Display Controls: stays hidden until turned on
+    if (!displayVisible(applied)) {
+      display.shown = false;
+      gsap.set("body", { autoAlpha: 0 });
+    } else {
+      show();
+    }
   }
+
+  // Resolves once the <img>s in target (and target itself, if it's one) have
+  // loaded or failed. CSS background images aren't waited for.
+  HD.imagesLoaded = (target) =>
+    Promise.all(
+      $(target)
+        .find("img")
+        .addBack("img")
+        .get()
+        .filter((img) => !img.complete)
+        .map(
+          (img) =>
+            new Promise((resolve) => {
+              img.addEventListener("load", resolve, { once: true });
+              img.addEventListener("error", resolve, { once: true });
+            }),
+        ),
+    );
 
   function show() {
     document.documentElement.classList.remove("hd-loading");
@@ -549,7 +564,9 @@ HD.layouts = {};
     const img = new Image();
     img.src = "../logo.png";
     img.onload = () => {
-      const [bg, accent] = new ColorThief().getPalette(img, 2);
+      const palette = ColorThief.getPaletteSync(img, { colorCount: 2 });
+      if (!palette) return;
+      const [bg, accent = bg] = palette.map((c) => c.array());
       const contrast = (c) => ((c[0] * 299 + c[1] * 587 + c[2] * 114) / 1000 > 125 ? "0,0,0" : "255,255,255");
       const props = {
         "--text-color": `rgb(${contrast(bg)})`,
@@ -676,13 +693,18 @@ HD.layouts = {};
 
   let booted = false;
 
-  // def: { settings, theme, subscribe, init(settings), intro(tl, s),
+  // def: { settings, theme, subscribe, plugins, init(settings), intro(tl, s),
   // outro(s), start(s), update(s) }
   HD.layout = async (layout) => {
     if (def) throw new Error("HD.layout() called twice");
     def = layout;
 
     await libraries;
+    // GSAP plugins the layout uses, from include/gsap/ ("SplitText", "Flip"...)
+    const plugins = def.plugins || [];
+    await loadScripts(plugins.map((name) => `gsap/${name}.min.js`));
+    // EasePack's file registers its eases itself
+    gsap.registerPlugin(...plugins.map((name) => window[name]).filter(Boolean));
     await new Promise((resolve) => $(resolve));
     gsap.config({ nullTargetWarn: false, trialWarn: false });
     // Frozen until the first show, so nothing plays before the intro

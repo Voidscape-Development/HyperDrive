@@ -22,7 +22,7 @@ HD.layout({
     if (sets.length === 0) return;
 
     // The flags and icons give the sets their width
-    await new Promise((resolve) => track.waitForImages(resolve));
+    await HD.imagesLoaded(track);
 
     // Enough copies to fill the bar while the first one scrolls out
     const width = track.children().first().outerWidth();

@@ -19,7 +19,7 @@ body {
   margin: 0;
   width: 100vw;
   height: 100vh;
-  letter-spacing: 1;
+  letter-spacing: 1px;
 }
 
 .container {
