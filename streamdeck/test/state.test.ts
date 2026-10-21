@@ -115,6 +115,22 @@ describe("team battle", () => {
 		expect(team.players.map((p) => p.dead)).toEqual([true, false, false]);
 		expect(teamBattleTeam(sampleState(), 2)).toBeUndefined();
 	});
+
+	it("reads who's playing, out or on deck", () => {
+		const team = teamBattleTeam(sampleState(), 1)!;
+		// Without the app's statuses and plays, as before: everyone plays
+		expect(team.players.map((p) => p.status)).toEqual(["out", "playing", "on_deck"]);
+		expect(team.limited).toBe(false);
+		expect(team.playsLeft).toBe(2);
+
+		const state = sampleState();
+		state.team_battle.plays = 2;
+		state.team_battle.team["1"].plays_left = 1;
+		state.team_battle.team["1"].player["3"].status = "on_deck";
+		const limited = teamBattleTeam(state, 1)!;
+		expect(limited.limited).toBe(true);
+		expect(limited.playsLeft).toBe(1);
+	});
 });
 
 describe("display controls", () => {

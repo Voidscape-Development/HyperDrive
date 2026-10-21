@@ -284,10 +284,27 @@ class TeamBattleWidget(QDockWidget):
             lambda checked: SettingsManager.Set("team_battle.auto_advance", checked)
         )
 
+        # Off, nobody plays after a reset until each team picks their player
+        self.firstPlayerStarts = QCheckBox(QApplication.translate("app", "First player starts"))
+        self.firstPlayerStarts.setToolTip(
+            QApplication.translate(
+                "app",
+                "After a reset, each team's first player is playing. "
+                "Off, nobody is until the team picks their player",
+            )
+        )
+        self.firstPlayerStarts.setChecked(
+            SettingsManager.Get("team_battle.first_player_starts", False)
+        )
+        self.firstPlayerStarts.toggled.connect(
+            lambda checked: SettingsManager.Set("team_battle.first_player_starts", checked)
+        )
+
         actionsLayout.addWidget(resetValues, 0, 0)
         actionsLayout.addWidget(self.eyeBt, 0, 1, 2, 1, Qt.AlignmentFlag.AlignVCenter)
         actionsLayout.addWidget(resetEverything, 1, 0)
-        actionsLayout.addWidget(self.autoAdvance, 0, 2, 2, 1, Qt.AlignmentFlag.AlignVCenter)
+        actionsLayout.addWidget(self.autoAdvance, 0, 2, Qt.AlignmentFlag.AlignVCenter)
+        actionsLayout.addWidget(self.firstPlayerStarts, 1, 2, Qt.AlignmentFlag.AlignVCenter)
 
         rowLayout.addWidget(actionsCol)
         rowLayout.addStretch()
@@ -443,9 +460,9 @@ class TeamBattleWidget(QDockWidget):
                 pw.SetActiveStatus(False)
             self.ClearBattleTracking()
             self.SetBattleValue(self.DefaultValueForMode())
-            # Each team starts with their first player
+            # Each team starts with their first player, or picks them
             for team in [1, 2]:
-                if self.Players(team):
+                if self.Players(team) and self.firstPlayerStarts.isChecked():
                     self.Players(team)[0].SetActiveStatus(True)
         finally:
             self.bulkUpdate = False
@@ -533,8 +550,8 @@ class TeamBattleWidget(QDockWidget):
         try:
             p.SetBattleMode(self.battleMode)
             p.SetDefaultSpinnerValue(self.livesNumber.value())
-            # A team starts with their first player
-            if len(players) == 1:
+            # A team starts with their first player, or picks them
+            if len(players) == 1 and self.firstPlayerStarts.isChecked():
                 p.SetActiveStatus(True)
         finally:
             self.bulkUpdate = False

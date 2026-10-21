@@ -22,6 +22,7 @@ from src.SettingsManager import SettingsManager
 SettingsManager.SaveSettings = lambda: None
 SettingsManager.Set("general.team_battle_default_stocks", 3)
 SettingsManager.Set("general.team_battle_default_first_to", 2)
+SettingsManager.Set("team_battle.first_player_starts", True)
 
 from src.StateManager import StateManager
 from src.TeamBattleModeEnum import TeamBattleModeEnum
@@ -198,6 +199,22 @@ check(w.playsNumber.value() == 5, "plays keeps following the players")
 w.playsNumber.setValue(3)
 w.playerNumber.setValue(6)
 check(w.playsNumber.value() == 3, "set plays stay when players are added")
+
+# Without "First player starts", nobody plays until the team picks
+w.firstPlayerStarts.setChecked(False)
+w.ResetEverything()
+check(not any(active(2)) and w.ActivePlayer(2) is None, "nobody plays after a reset")
+check(status(2)[:6] == ["on_deck"] * 6, "everyone is on deck")
+check(StateManager.Get("team_battle.team.2.active_player") is None, "no active player exported")
+w.signals.team1_stock_up.emit()
+check(stocks(2) == [3] * 6, "scoring does nothing before the team picks")
+w.signals.team2_set_active_player.emit(2)
+check(active(2)[2] and status(2)[2] == "playing", "the team picks their first player")
+w.signals.team1_stock_up.emit()
+check(stocks(2)[2] == 2, "the picked player loses stocks")
+w.firstPlayerStarts.setChecked(True)
+w.ResetEverything()
+check(active(2)[0], "with First player starts, the first player plays after a reset")
 
 w.modeCombo.setCurrentIndex(1)
 w.ResetEverything()

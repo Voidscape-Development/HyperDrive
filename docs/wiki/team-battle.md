@@ -22,6 +22,8 @@ in [Settings › General](hyperdrive://open/settings/general).
    **Active**, and players who are out **Eliminated**.
 
 **Auto advance** makes a team's next player active when the active player is eliminated.
+**First player starts** makes each team's first player active after a reset; off (the
+default), nobody is playing until each team picks their player.
 **Reset Player Mode Values** resets every player's stocks or wins, and **Reset Battle
 Mode** resets the whole battle.
 

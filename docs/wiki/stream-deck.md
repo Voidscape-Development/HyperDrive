@@ -29,8 +29,8 @@ an alert, as does an action HyperDrive refuses (e.g. nothing to undo).
 | Team Color | Sets a team's color, lit while the team has it | |
 | Load Set | The next set of the stream queue (shown on the key), the set on stream, or the set selector | |
 | Display Controls | Toggles, shows or hides a layout folder, a group or everything. Lit while shown | Turn: pick the layout. Push or touch: show/hide it |
-| Team Battle Score | A team scores (Stock Pool: the other team loses a stock), or undoes a point. Shows the active player | Turn: score or undo. Push or touch: next player |
-| Team Battle Player | Makes the next player, or a given one, active | |
+| Team Battle Score | A team scores (Stock Pool: the other team loses a stock), or undoes a point. Shows the active player, *Pick a player* while the team has to pick who plays, or *Team out* | Turn: score or undo. Push or touch: next player |
+| Team Battle Player | Makes the next player, or a given one, active. A given player's key shows their stocks or wins, *Out*, and when only some of the players play, *On deck* or *Didn't play* | |
 | Team Battle Reset | Every player's stocks, or the whole battle. Held | |
 | Stage Strike | Undo, redo, restart (held), or the winner of rock-paper-scissors or of the game | |
 | Bracket Focus | The whole bracket, next/previous round, the set on a scoreboard, a tour, a player's run, or which phase a focus channel shows | Turn: next/previous round. Push: follow the scoreboard's set. Touch: whole bracket |
