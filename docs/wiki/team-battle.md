@@ -56,4 +56,10 @@ screen and the scoreboard's roster show a slot per play, without the players on 
 mode: `scoreboard_stock.html`, `roster_stock.html`, `versus_stock.html`, and the
 `_first_to` versions.
 
+`layout/Nexus - Teams Overview/` (`stock.html` and `first_to.html`) is an overview of
+both teams: each team's logo, name and stocks (or players) left, the team scores around the
+tournament logo, a card per play with the player's character and stocks or wins (crossed
+out once eliminated, empty until a player comes in), and the players on deck in a
+**Standby** box below.
+
 The [Stream Deck plugin](stream-deck.md) has Team Battle Score, Player and Reset actions.

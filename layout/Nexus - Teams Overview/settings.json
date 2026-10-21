@@ -1,0 +1,12 @@
+{
+  "render": {
+    "default": {
+      "asset_key": "full"
+    }
+  },
+  "stock_icon": {
+    "default": {
+      "asset_key": "base_files/icon"
+    }
+  }
+}

@@ -1,0 +1,376 @@
+/* Nexus - Teams Overview, full screen */
+
+@font-face {
+  font-family: "NexusDisplay";
+  src: url("../fonts/Saira/Saira_Expanded-Black.ttf") format("truetype");
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: "NexusDisplay";
+  src: url("../fonts/Saira/Saira_Expanded-BlackItalic.ttf") format("truetype");
+  font-weight: 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "NexusText";
+  src: url("../fonts/Saira/Saira_Expanded-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+:root {
+  --nx-font: "NexusDisplay", var(--font);
+  --nx-text-font: "NexusText", var(--font);
+  --nx-bg: rgb(23, 22, 30);
+  --nx-panel: rgb(30, 29, 38);
+  --nx-panel-light: rgb(70, 69, 80);
+  --nx-line: rgba(255, 255, 255, 0.1);
+  /* The X over an eliminated player's card: big and grey, like a watermark */
+  --tb-x-color: rgba(255, 255, 255, 0.13);
+}
+
+#nexus {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, 0.05), transparent 60%),
+    var(--nx-bg);
+  font-family: var(--nx-text-font);
+}
+
+/* ── Top: team headers, scores and the tournament logo ───── */
+
+.nx_top {
+  position: absolute;
+  top: 135px;
+  left: 160px;
+  right: 160px;
+  height: 108px;
+  display: grid;
+  grid-template-columns: 1fr 240px 1fr;
+}
+
+.nx_head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  border: 1px solid var(--nx-line);
+  border-bottom: 4px solid var(--team);
+  background: linear-gradient(90deg, var(--team-dark), var(--nx-panel) 75%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.nx_head.t2 {
+  flex-direction: row-reverse;
+  background: linear-gradient(270deg, var(--team-dark), var(--nx-panel) 75%);
+}
+
+.nx_logo {
+  width: 84px;
+  height: 84px;
+  flex: none;
+  font-size: 64px;
+  font-family: var(--nx-font);
+}
+
+.nx_name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--nx-font);
+  font-size: 18px;
+  line-height: 1.25;
+  text-transform: uppercase;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.nx_head.t2 .nx_name {
+  text-align: right;
+}
+
+/* Stocks (or players) left */
+.nx_big {
+  flex: none;
+  font-family: var(--nx-font);
+  font-size: 66px;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.nx_center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.nx_emblem {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  z-index: 1;
+}
+
+/* The team score, in a diamond */
+.nx_diamond {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+}
+
+.nx_diamond::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--nx-panel);
+  border: 2px solid var(--nx-panel-light);
+  transform: rotate(45deg) scale(0.78);
+}
+
+.nx_score {
+  position: relative;
+  font-family: var(--nx-font);
+  font-size: 22px;
+}
+
+/* ── Body: the cards and standby ─────────────────────────── */
+
+.nx_body {
+  position: absolute;
+  top: 262px;
+  left: 160px;
+  right: 160px;
+  bottom: 70px;
+  display: grid;
+  grid-template-columns: 1fr 240px 1fr;
+}
+
+.nx_team {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.nx_cards {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nx_vs {
+  align-self: center;
+  margin-top: -200px;
+  text-align: center;
+  font-family: var(--nx-font);
+  font-style: italic;
+  font-size: 84px;
+  letter-spacing: -3px;
+}
+
+/* A play: the player who came in, or empty */
+.nx_card {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 150px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 30px;
+  overflow: hidden;
+  background: var(--nx-panel);
+  border: 1px solid var(--nx-line);
+  --x-width: 34px;
+  --x-length: 70%;
+  --x-angle: 38deg;
+}
+
+.nx_team.t2 .nx_card {
+  flex-direction: row-reverse;
+}
+
+.nx_card.active {
+  background: linear-gradient(180deg, var(--nx-panel-light), rgb(52, 51, 62));
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Eliminated: a bit narrower, without the border */
+.nx_card.dead {
+  margin: 0 28px;
+  border-color: transparent;
+  background: rgb(36, 35, 44);
+}
+
+.nx_card.empty {
+  background: rgba(20, 19, 27, 0.8);
+}
+
+.nx_render {
+  position: absolute;
+  inset: 0 25% 0 15%;
+  overflow: hidden;
+  isolation: isolate;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 25%, #000 70%, transparent 100%);
+}
+
+.nx_team.t2 .nx_render {
+  inset: 0 15% 0 25%;
+}
+
+.nx_card.dead .nx_render {
+  opacity: 0.35;
+}
+
+/* Stocks left (Stock Pool) or games won (First To) */
+.nx_badge {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  min-width: 46px;
+  padding: 6px 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(20, 19, 27, 0.85);
+  border: 1px solid var(--nx-line);
+  border-radius: 4px;
+}
+
+.nx_badge_value {
+  font-family: var(--nx-font);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.nx_badge_label {
+  font-family: var(--nx-font);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--tb-dim);
+}
+
+.nx_player_name {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  font-family: var(--nx-font);
+  font-size: 26px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.nx_team.t1 .nx_player_name .text {
+  justify-content: flex-end;
+  transform-origin: right;
+}
+
+.nx_team.t2 .nx_player_name .text {
+  justify-content: flex-start;
+  transform-origin: left;
+}
+
+.nx_player_name .sponsor {
+  color: var(--tb-dim);
+}
+
+/* The X: grey, without a glow */
+.nx_card .x_mark::before,
+.nx_card .x_mark::after {
+  box-shadow: none;
+}
+
+/* ── Standby ─────────────────────────────────────────────── */
+
+.nx_standby {
+  position: relative;
+  flex: none;
+  height: 82px;
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: var(--nx-panel);
+  border: 1px solid var(--nx-line);
+}
+
+.nx_standby_label {
+  position: absolute;
+  top: -10px;
+  right: 14px;
+  padding: 3px 10px;
+  font-family: var(--nx-font);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--tb-dim);
+  background: var(--nx-panel);
+  border: 1px solid var(--nx-line);
+}
+
+.nx_team.t2 .nx_standby_label {
+  right: auto;
+  left: 14px;
+}
+
+.nx_standby_list {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.nx_team.t2 .nx_standby_list {
+  justify-content: flex-start;
+}
+
+.nx_chip {
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 0 8px;
+  font-family: var(--nx-font);
+  font-size: 16px;
+  white-space: nowrap;
+  background: rgb(42, 41, 52);
+  border: 1px solid var(--nx-line);
+  border-radius: 3px;
+}
+
+.nx_chip img {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  object-fit: contain;
+}
+
+.nx_chip_name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nx_chip_name .sponsor {
+  color: var(--tb-dim);
+}
+
+/* The team is out without them playing */
+.nx_chip.unused {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
