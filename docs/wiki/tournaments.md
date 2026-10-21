@@ -6,7 +6,7 @@ queue.
 
 ## Loading an event
 
-1. Click [Set tournament](hyperdrive://open/set-tournament) in the top bar.
+1. Click [Load tournament](hyperdrive://open/set-tournament) in the top bar.
 2. Paste one of:
    - the tournament's link, e.g. `https://www.start.gg/tournament/genesis-x`
    - an event's link (that event is selected for you)
@@ -15,8 +15,9 @@ queue.
 3. Pick the event in the list. You can filter it, and it shows each event's game, entrants,
    dates and whether it's online or offline.
 
-The game is selected from the event. **Select event** switches to another event of the same
-tournament later, and ✕ unloads it.
+The game is selected from the event. The top bar then shows the tournament and event; click
+it for **Select event**, which switches to another event of the same tournament, and
+**Unload tournament**.
 
 ### parry.gg
 
@@ -26,15 +27,16 @@ reporting) are start.gg only.
 
 ## Players who registered late
 
-The players are pulled when the event is loaded. **Repull entrants** pulls them again, for
-the ones who registered after. Players already pulled are updated, not removed.
+The players are pulled when the event is loaded. **Repull entrants**, in the tournament's
+menu in the top bar, pulls them again, for the ones who registered after. Players already pulled are updated, not removed.
 
 ## Completed sets
 
-**Pull Latest Completed Sets from StartGG** pulls the sets that just finished, for the
-`completed_sets` layouts (a ticker, a list or cards of recent results). Check **Auto pull**
-to pull them periodically; the interval is in
-[Settings › General](hyperdrive://open/settings/general).
+**Completed sets** in the top bar pulls the sets that just finished, for the
+`completed_sets` layouts (a ticker, a list or cards of recent results). ⟳ next to it pulls
+them now. Click it and check **Auto pull** to pull them periodically; the interval is in
+[Settings › General](hyperdrive://open/settings/general). The bar shows when the next pull
+is.
 
 ## Using the data
 

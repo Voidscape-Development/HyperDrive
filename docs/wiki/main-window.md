@@ -4,18 +4,20 @@ HyperDrive's window has a bar at the top and a set of tabs (*widgets*) below it.
 
 ## The top bar
 
+The bar shows what's loaded and holds what applies to every widget.
+
 | Control | What it does |
 | - | - |
-| **Set tournament** | Loads a tournament from start.gg or parry.gg (see [Tournaments](tournaments.md)) |
-| **Select event** | Switches to another event of the same tournament |
-| **Repull entrants** | Pulls the event's players again, for those who registered after it was loaded |
-| ✕ | Unloads the tournament |
-| **Pull Latest Completed Sets from StartGG** | Pulls the sets that just finished, for the `completed_sets` layouts. **Auto pull** does it periodically |
-| Game dropdown | The game being played. It sets the characters, stages and icons. ⟳ reloads its assets |
-| **Modded content** | Shown for games with modded characters: includes them |
-| **Number of Scoreboards** | How many scoreboards to run, for several streams or stations (see [Scoreboard](scoreboard.md#several-scoreboards)) |
-| **Modify Tab Name** | Renames a scoreboard's tab |
+| Tournament | **Load tournament** loads one from start.gg or parry.gg (see [Tournaments](tournaments.md)). Once it's loaded, it shows the tournament, event and entrants; click it for **Select event** (another event of the same tournament), **Repull entrants** (for players who registered after it was loaded), **Load a different tournament…** and **Unload tournament** |
+| Game dropdown | The game being played. It sets the characters, stages and icons. The arrow next to it has **Reload game assets**, **Download assets** and, for games with modded characters, **Modded content** |
+| **Completed sets** | Whether the sets that just finished are being pulled, for the `completed_sets` layouts, and when the next pull is. Click it for **Auto pull** and to pull now; ⟳ also pulls now |
+| Workspace (layers icon) | Saves the way the widgets are arranged under a name, and switches between saved arrangements. **Reset to default arrangement** puts every widget back |
+| Widgets (grid icon) | Shows or hides each widget. The number next to it is how many are hidden |
+| Player database (cylinder icon) | Your saved players (see [Player database](player-database.md)) |
 | ☰ | The menu (see below) |
+
+When the window is narrow, the bar drops some labels to stay on one row. Their tooltips
+still have them.
 
 ## The widgets
 
@@ -34,7 +36,7 @@ both at once. HyperDrive remembers where you put them.
 | [Display Controls](hyperdrive://open/display-controls) | [Display controls](display-controls.md) |
 | [Crew/Team Battle](hyperdrive://open/team-battle) | [Crew/team battle](team-battle.md) |
 
-Closed a widget by mistake? Bring it back from ☰ › **Toggle widgets**.
+Closed a widget by mistake? Bring it back from the Widgets button (grid icon) in the top bar.
 
 ## The menu (☰)
 
@@ -44,7 +46,6 @@ Closed a widget by mistake? Bring it back from ☰ › **Toggle widgets**.
 | **Download assets** | Character and stage icons for your games (see [Game assets](game-assets.md)) |
 | **Player database** | Your saved players (see [Player database](player-database.md)) |
 | **Seed editor** | Seeds set by hand (see [Player database](player-database.md#seeds)) |
-| **Toggle widgets** | Shows or hides each widget |
 | **Layout themes** | Colors, fonts and options shared by the layouts (see [Layout themes](layout-themes.md)) |
 | **Program Language** | HyperDrive's language (needs a restart) |
 | **Game Asset Language** | The language of character and stage names |
