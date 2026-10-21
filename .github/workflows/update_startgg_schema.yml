@@ -1,0 +1,51 @@
+name: Update start.gg schema
+
+# Introspects start.gg's GraphQL APIs and commits their schemas to docs/startgg/,
+# so there's an up-to-date local reference for the queries HyperDrive sends.
+# The public API schema needs a token: set the STARTGG_TOKEN repository secret to
+# a start.gg developer token to update it too.
+
+on:
+  schedule:
+    - cron: '43 5 * * *' # Daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-startgg-schema
+  cancel-in-progress: false
+
+jobs:
+  update_schema:
+    name: Update start.gg schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Generate docs/startgg
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+        run: uv run ./scripts/gen_startgg_schema.py
+
+      - name: Commit schema
+        id: commit
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./docs/startgg
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Update start.gg schema"
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push schema
+        if: steps.commit.outputs.committed == 'true'
+        run: ./scripts/push_with_retry.sh main

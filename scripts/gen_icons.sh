@@ -2,6 +2,7 @@
 
 # Renders the app icon and splash screen from their SVG sources:
 #   assets/icons/icon.svg   -> assets/icons/icon.png, assets/icons/icon.ico,
+#                              layout/logo.png (the default tournament logo),
 #                              stage_strike_app/public/favicon.ico
 #   assets/icons/splash.svg -> assets/icons/splash.png (drawn at 2x)
 #
@@ -35,6 +36,7 @@ for size in 16 24 32 48 64 128 256; do
     "PNG32:$TMP/icon_$size.png"
 done
 cp "$TMP/icon_256.png" "$ICONS/icon.png"
+cp "$TMP/icon_256.png" "$DIR/layout/logo.png"
 convert "$TMP"/icon_{16,24,32,48,64,128,256}.png "$ICONS/icon.ico"
 convert "$TMP"/icon_{16,24,32,48,64}.png "$DIR/stage_strike_app/public/favicon.ico"
 
