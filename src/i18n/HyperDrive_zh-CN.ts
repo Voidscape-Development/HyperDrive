@@ -147,12 +147,12 @@
 <context>
     <name>Form</name>
     <message>
+        <location filename="../layout/ScoreboardStage.ui" line="14"/>
         <location filename="../layout/ScoreboardScore.ui" line="20"/>
         <location filename="../layout/ScoreboardPlayer.ui" line="25"/>
-        <location filename="../layout/ScoreboardStage.ui" line="14"/>
-        <location filename="../layout/BattleTeam.ui" line="26"/>
-        <location filename="../layout/ScoreboardTeam.ui" line="20"/>
         <location filename="../layout/TeamPlayer.ui" line="25"/>
+        <location filename="../layout/ScoreboardTeam.ui" line="20"/>
+        <location filename="../layout/BattleTeam.ui" line="26"/>
         <source>Form</source>
         <translation>界面</translation>
     </message>
@@ -385,8 +385,8 @@
         <location filename="../PlayerListSlotWidget.py" line="55"/>
         <location filename="../PlayerListSlotWidget.py" line="56"/>
         <location filename="../PlayerListSlotWidget.py" line="121"/>
-        <location filename="../layout/BattleTeam.ui" line="60"/>
         <location filename="../layout/ScoreboardTeam.ui" line="73"/>
+        <location filename="../layout/BattleTeam.ui" line="60"/>
         <source>Team Name</source>
         <translation>队伍名称</translation>
     </message>
@@ -588,7 +588,17 @@
         <translation>眼部偏移：({0}，{1})</translation>
     </message>
     <message>
-        <location filename="../layout/BattleTeam.ui" line="87"/>
+        <location filename="../layout/BattleTeam.ui" line="75"/>
+        <source>A short name for the layouts with little room, like USCU. Empty, they make one from the team name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../layout/BattleTeam.ui" line="78"/>
+        <source>Short name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../layout/BattleTeam.ui" line="103"/>
         <source>SPONSORS?</source>
         <translation>赞助商？</translation>
     </message>
@@ -771,8 +781,8 @@
         <translation>缩略图设置</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="164"/>
         <location filename="../HyperDrive.py" line="382"/>
+        <location filename="../BracketWidget.py" line="164"/>
         <source>Bracket</source>
         <translation>对阵表</translation>
     </message>
@@ -1035,19 +1045,19 @@
         <translation>关闭窗口</translation>
     </message>
     <message>
-        <location filename="../AssetDownloaderWindow.py" line="347"/>
         <location filename="../ScoreboardStageWidget.py" line="472"/>
+        <location filename="../AssetDownloaderWindow.py" line="347"/>
         <location filename="../HyperDrive.py" line="1259"/>
         <source>Update</source>
         <translation>更新</translation>
     </message>
     <message>
-        <location filename="../SelectStationWindow.py" line="745"/>
         <location filename="../AssetDownloaderWindow.py" line="484"/>
         <location filename="../AssetDownloaderWindow.py" line="751"/>
-        <location filename="../SelectSetWindow.py" line="752"/>
-        <location filename="../TournamentDataManager.py" line="227"/>
         <location filename="../HyperDrive.py" line="1261"/>
+        <location filename="../SelectStationWindow.py" line="745"/>
+        <location filename="../TournamentDataManager.py" line="227"/>
+        <location filename="../SelectSetWindow.py" line="752"/>
         <location filename="../Helpers/DownloadHelper.py" line="217"/>
         <source>Cancel</source>
         <translation>取消</translation>
@@ -1608,14 +1618,14 @@
         <translation>下载失败：</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="741"/>
         <location filename="../PlayerListWidget.py" line="71"/>
+        <location filename="../BracketWidget.py" line="741"/>
         <source>Number of slots</source>
         <translation>选手/队伍数量</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="744"/>
         <location filename="../PlayerListWidget.py" line="79"/>
+        <location filename="../BracketWidget.py" line="744"/>
         <source>Players per slot</source>
         <translation>每个队伍的选手数量</translation>
     </message>
@@ -1635,10 +1645,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="749"/>
+        <location filename="../CommentaryWidget.py" line="58"/>
         <location filename="../PlayerListWidget.py" line="87"/>
         <location filename="../ScoreboardWidget.py" line="188"/>
-        <location filename="../CommentaryWidget.py" line="58"/>
+        <location filename="../BracketWidget.py" line="749"/>
         <source>Characters per player</source>
         <translation>每位选手使用的角色数量</translation>
     </message>
@@ -1791,9 +1801,9 @@
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="100"/>
-        <location filename="../ScoreboardWidget.py" line="235"/>
-        <location filename="../DisplayOptions.py" line="30"/>
         <location filename="../CommentaryWidget.py" line="91"/>
+        <location filename="../DisplayOptions.py" line="30"/>
+        <location filename="../ScoreboardWidget.py" line="235"/>
         <source>Additional information</source>
         <translation>附加信息</translation>
     </message>
@@ -1818,7 +1828,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="101"/>
+        <location filename="../TeamPlayerWidget.py" line="113"/>
         <location filename="../ScoreboardPlayerWidget.py" line="141"/>
         <location filename="../AssetDownloaderWindow.py" line="977"/>
         <source>Clear</source>
@@ -1934,11 +1944,11 @@
         <translation>生成缩略图</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="219"/>
-        <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../CommentaryWidget.py" line="75"/>
+        <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../PlayerDBWindow.py" line="218"/>
         <location filename="../PlayerDBWindow.py" line="313"/>
+        <location filename="../ScoreboardWidget.py" line="219"/>
         <source>Real Name</source>
         <translation>真实姓名</translation>
     </message>
@@ -1947,68 +1957,68 @@
         <translation type="obsolete">不带@输入</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="302"/>
         <location filename="../PlayerDBWindow.py" line="223"/>
+        <location filename="../PlayerListWidget.py" line="302"/>
         <source>Twitter</source>
         <translation>推特（X）</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1434"/>
         <location filename="../ScoreboardPlayerWidget.py" line="83"/>
-        <location filename="../PlayerListWidget.py" line="298"/>
-        <location filename="../ScoreboardWidget.py" line="225"/>
-        <location filename="../DisplayOptions.py" line="20"/>
         <location filename="../CommentaryWidget.py" line="81"/>
+        <location filename="../DisplayOptions.py" line="20"/>
         <location filename="../PlayerDBWindow.py" line="713"/>
         <location filename="../PlayerDBWindow.py" line="802"/>
+        <location filename="../PlayerListWidget.py" line="298"/>
+        <location filename="../ScoreboardWidget.py" line="225"/>
+        <location filename="../BracketWidget.py" line="1434"/>
         <source>Seed</source>
         <translation>种子位</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="226"/>
-        <location filename="../DisplayOptions.py" line="21"/>
         <location filename="../CommentaryWidget.py" line="82"/>
+        <location filename="../DisplayOptions.py" line="21"/>
+        <location filename="../ScoreboardWidget.py" line="226"/>
         <source>Birthday</source>
         <translation>生日</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="229"/>
         <location filename="../TeamPlayerWidget.py" line="65"/>
         <location filename="../ScoreboardPlayerWidget.py" line="88"/>
-        <location filename="../ScoreboardWidget.py" line="228"/>
-        <location filename="../DisplayOptions.py" line="23"/>
         <location filename="../CommentaryWidget.py" line="84"/>
+        <location filename="../DisplayOptions.py" line="23"/>
+        <location filename="../ScoreboardWidget.py" line="228"/>
+        <location filename="../TeamBattleWidget.py" line="257"/>
         <source>Location</source>
         <translation>位置</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="224"/>
-        <location filename="../ScoreboardWidget.py" line="221"/>
-        <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../CommentaryWidget.py" line="77"/>
-        <location filename="../SocialsWidget.py" line="36"/>
+        <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../PlayerDBWindow.py" line="316"/>
+        <location filename="../ScoreboardWidget.py" line="221"/>
+        <location filename="../TeamBattleWidget.py" line="252"/>
+        <location filename="../SocialsWidget.py" line="36"/>
         <source>Socials</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="159"/>
-        <location filename="../TeamBattleWidget.py" line="233"/>
+        <location filename="../CommentaryWidget.py" line="88"/>
+        <location filename="../DisplayOptions.py" line="27"/>
         <location filename="../PlayerListWidget.py" line="300"/>
         <location filename="../ScoreboardWidget.py" line="232"/>
-        <location filename="../DisplayOptions.py" line="27"/>
-        <location filename="../CommentaryWidget.py" line="88"/>
+        <location filename="../TeamBattleWidget.py" line="180"/>
+        <location filename="../TeamBattleWidget.py" line="261"/>
         <source>Characters</source>
         <translation>角色</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="234"/>
-        <location filename="../PlayerListWidget.py" line="303"/>
-        <location filename="../ScoreboardWidget.py" line="233"/>
-        <location filename="../DisplayOptions.py" line="28"/>
         <location filename="../CommentaryWidget.py" line="89"/>
+        <location filename="../DisplayOptions.py" line="28"/>
         <location filename="../PlayerDBWindow.py" line="221"/>
         <location filename="../PlayerDBWindow.py" line="314"/>
+        <location filename="../PlayerListWidget.py" line="303"/>
+        <location filename="../ScoreboardWidget.py" line="233"/>
+        <location filename="../TeamBattleWidget.py" line="262"/>
         <source>Pronouns</source>
         <translation>代词</translation>
     </message>
@@ -2041,9 +2051,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="121"/>
         <location filename="../SelectSetWindow.py" line="434"/>
         <location filename="../SelectSetWindow.py" line="503"/>
+        <location filename="../BracketFocusBar.py" line="121"/>
         <source>Round</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2164,14 +2174,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="256"/>
         <location filename="../GamesPopup.py" line="799"/>
+        <location filename="../GameReportController.py" line="256"/>
         <source>Clear games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="296"/>
         <location filename="../GamesPopup.py" line="638"/>
+        <location filename="../PlayerListWidget.py" line="296"/>
         <source>Game</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2272,10 +2282,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../GamesPopup.py" line="757"/>
         <location filename="../GamesTracker.py" line="207"/>
         <location filename="../GamesTracker.py" line="208"/>
         <location filename="../GameReportController.py" line="191"/>
-        <location filename="../GamesPopup.py" line="757"/>
         <source>Won by {0}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2418,8 +2428,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="554"/>
         <location filename="../GamesPopup.py" line="120"/>
+        <location filename="../GameReportController.py" line="554"/>
         <source>Reported to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2505,8 +2515,8 @@
         <translation>从{0}中加载对局</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="253"/>
         <location filename="../CommentaryWidget.py" line="109"/>
+        <location filename="../ScoreboardWidget.py" line="253"/>
         <source>Compact player cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2583,8 +2593,8 @@
         <translation>赛台</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="89"/>
         <location filename="../HyperDrive.py" line="394"/>
+        <location filename="../TeamBattleWidget.py" line="92"/>
         <source>Crew/Team Battle</source>
         <translation>团体战</translation>
     </message>
@@ -2605,42 +2615,62 @@
         <translation>对战模式</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="330"/>
-        <location filename="../TeamBattleWidget.py" line="191"/>
         <location filename="../StreamQueueWidget.py" line="93"/>
+        <location filename="../TeamBattleWidget.py" line="219"/>
+        <location filename="../BracketWidget.py" line="330"/>
         <location filename="../SelectSetWindow.py" line="504"/>
         <location filename="../SelectSetWindow.py" line="681"/>
         <source>Phase</source>
         <translation>阶段</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="192"/>
         <location filename="../StreamQueueWidget.py" line="94"/>
         <location filename="../StreamQueueWidget.py" line="194"/>
         <location filename="../StreamQueueWidget.py" line="415"/>
+        <location filename="../TeamBattleWidget.py" line="220"/>
         <location filename="../SelectSetWindow.py" line="433"/>
         <source>Match</source>
         <translation>对局</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="106"/>
-        <location filename="../TeamBattleWidget.py" line="376"/>
+        <location filename="../TeamBattleWidget.py" line="113"/>
+        <source>How many of a team&apos;s players play. The others wait on deck until the team picks them; a team is out once this many of its players are eliminated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="127"/>
+        <location filename="../TeamBattleWidget.py" line="426"/>
         <source>Stocks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="135"/>
+        <location filename="../TeamBattleWidget.py" line="156"/>
         <source>Reset Player Mode Values</source>
         <translation>重置选手模式数值</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="139"/>
+        <location filename="../TeamBattleWidget.py" line="160"/>
         <source>Reset Battle Mode</source>
         <translation>重置对战模式</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="160"/>
+        <location filename="../TeamBattleWidget.py" line="181"/>
         <source>Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="203"/>
+        <source>Plays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="288"/>
+        <source>First player starts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamBattleWidget.py" line="290"/>
+        <source>After a reset, each team&apos;s first player is playing. Off, nobody is until the team picks their player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2649,9 +2679,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="138"/>
         <location filename="../PlayerDBWindow.py" line="134"/>
         <location filename="../PlayerDBWindow.py" line="724"/>
+        <location filename="../PlayerMediaTabs.py" line="138"/>
         <source>Search players...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2687,30 +2717,30 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../PlayerDBWindow.py" line="188"/>
         <location filename="../PlayerMediaTabs.py" line="260"/>
         <location filename="../PlayerMediaTabs.py" line="703"/>
         <location filename="../PlayerMediaTabs.py" line="818"/>
         <location filename="../PlayerMediaTabs.py" line="929"/>
-        <location filename="../PlayerDBWindow.py" line="188"/>
         <source>Delete</source>
         <translation type="unfinished">删除</translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="182"/>
         <location filename="../PlayerDBWindow.py" line="214"/>
+        <location filename="../PlayerMediaTabs.py" line="182"/>
         <source>Sponsor</source>
         <translation type="unfinished">赞助商</translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="184"/>
         <location filename="../PlayerDBWindow.py" line="216"/>
+        <location filename="../PlayerMediaTabs.py" line="184"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="299"/>
         <location filename="../PlayerDBWindow.py" line="231"/>
         <location filename="../PlayerDBWindow.py" line="315"/>
+        <location filename="../PlayerListWidget.py" line="299"/>
         <source>Country</source>
         <translation type="unfinished">地区</translation>
     </message>
@@ -2730,8 +2760,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="294"/>
         <location filename="../PlayerDBWindow.py" line="265"/>
+        <location filename="../PlayerMediaTabs.py" line="294"/>
         <source>Save</source>
         <translation type="unfinished">保存</translation>
     </message>
@@ -2768,8 +2798,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="225"/>
         <location filename="../GamesPopup.py" line="766"/>
+        <location filename="../BracketView.py" line="225"/>
         <source>Not needed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2789,10 +2819,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="315"/>
-        <location filename="../BracketFocusBar.py" line="125"/>
         <location filename="../PlayerDBWindow.py" line="312"/>
         <location filename="../PlayerDBWindow.py" line="800"/>
+        <location filename="../BracketView.py" line="315"/>
+        <location filename="../BracketFocusBar.py" line="125"/>
         <source>Player</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2813,8 +2843,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="360"/>
         <location filename="../GamesPopup.py" line="639"/>
+        <location filename="../BracketView.py" line="360"/>
         <source>Winner</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2946,8 +2976,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="755"/>
         <location filename="../PlayerDBWindow.py" line="638"/>
+        <location filename="../PlayerMediaTabs.py" line="755"/>
         <source>Unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3017,8 +3047,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="373"/>
         <location filename="../PlayerDBWindow.py" line="825"/>
+        <location filename="../PlayerMediaTabs.py" line="373"/>
         <source>Not in the player database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3048,14 +3078,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="35"/>
         <location filename="../PlayerDBWindow.py" line="943"/>
+        <location filename="../PlayerMediaTabs.py" line="35"/>
         <source>Player media</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="221"/>
         <location filename="../PlayerDBWindow.py" line="950"/>
+        <location filename="../PlayerMediaTabs.py" line="221"/>
         <source>Sponsor logos</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3070,30 +3100,30 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="407"/>
-        <location filename="../BracketWidget.py" line="605"/>
-        <location filename="../TeamBattleWidget.py" line="158"/>
-        <location filename="../TeamBattleWidget.py" line="220"/>
         <location filename="../StreamQueueWidget.py" line="95"/>
         <location filename="../StreamQueueWidget.py" line="195"/>
         <location filename="../DisplayOptions.py" line="71"/>
         <location filename="../PlayerDBWindow.py" line="929"/>
+        <location filename="../TeamBattleWidget.py" line="179"/>
+        <location filename="../TeamBattleWidget.py" line="248"/>
+        <location filename="../BracketWidget.py" line="407"/>
+        <location filename="../BracketWidget.py" line="605"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="659"/>
         <location filename="../PlayerDBWindow.py" line="936"/>
+        <location filename="../BracketWidget.py" line="659"/>
         <source>Seeds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="247"/>
+        <location filename="../TeamBattleWidget.py" line="275"/>
         <source>Auto advance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="249"/>
+        <location filename="../TeamBattleWidget.py" line="277"/>
         <source>When the active player is eliminated, make the team&apos;s next player in line active</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3102,7 +3132,7 @@
         <translation type="obsolete">赞助商？</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="378"/>
+        <location filename="../TeamBattleWidget.py" line="428"/>
         <source>First To</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3277,14 +3307,24 @@
         <translation type="obsolete">已淘汰</translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="381"/>
+        <location filename="../TeamPlayerWidget.py" line="393"/>
         <source>STOCKS/LIVES</source>
         <translation>生命数</translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="383"/>
+        <location filename="../TeamPlayerWidget.py" line="395"/>
         <source>GAMES WON</source>
         <translation>获胜场次</translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="491"/>
+        <source>ON DECK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TeamPlayerWidget.py" line="492"/>
+        <source>DIDN&apos;T PLAY</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Stock Pool (Smash)</source>
@@ -3347,22 +3387,22 @@
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="59"/>
-        <location filename="../SelectEventWindow.py" line="109"/>
         <location filename="../SelectSetWindow.py" line="67"/>
         <location filename="../SelectSetWindow.py" line="660"/>
+        <location filename="../SelectEventWindow.py" line="109"/>
         <source>In progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="111"/>
         <location filename="../SelectSetWindow.py" line="70"/>
         <location filename="../SelectSetWindow.py" line="661"/>
+        <location filename="../SelectEventWindow.py" line="111"/>
         <source>Completed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="112"/>
         <location filename="../SelectSetWindow.py" line="69"/>
+        <location filename="../SelectEventWindow.py" line="112"/>
         <source>Upcoming</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3554,10 +3594,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="583"/>
         <location filename="../StreamQueueWidget.py" line="235"/>
         <location filename="../StreamQueueWidget.py" line="476"/>
         <location filename="../PlayerMediaTabs.py" line="214"/>
+        <location filename="../BracketWidget.py" line="583"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3704,10 +3744,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1123"/>
         <location filename="../BracketView.py" line="170"/>
         <location filename="../BracketView.py" line="331"/>
         <location filename="../BracketView.py" line="336"/>
+        <location filename="../BracketWidget.py" line="1123"/>
         <source>Bye</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3758,14 +3798,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1436"/>
         <location filename="../BracketView.py" line="201"/>
+        <location filename="../BracketWidget.py" line="1436"/>
         <source>W</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1437"/>
         <location filename="../BracketView.py" line="203"/>
+        <location filename="../BracketWidget.py" line="1437"/>
         <source>L</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3791,17 +3831,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1875"/>
         <location filename="../StreamQueueWidget.py" line="781"/>
         <location filename="../StreamQueueWidget.py" line="796"/>
+        <location filename="../BracketWidget.py" line="1875"/>
         <source>start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1440"/>
         <location filename="../AssetDownloaderWindow.py" line="891"/>
-        <location filename="../ScoreboardWidget.py" line="484"/>
         <location filename="../GamesPopup.py" line="576"/>
+        <location filename="../ScoreboardWidget.py" line="484"/>
+        <location filename="../BracketWidget.py" line="1440"/>
         <source>Games</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3885,8 +3925,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="938"/>
         <location filename="../StreamQueueWidget.py" line="127"/>
+        <location filename="../BracketWidget.py" line="938"/>
         <source>No tournament loaded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4126,8 +4166,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="2008"/>
         <location filename="../StreamQueueWidget.py" line="745"/>
+        <location filename="../BracketWidget.py" line="2008"/>
         <source>Updating...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4435,10 +4475,10 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="264"/>
-        <location filename="../PlayerMediaTabs.py" line="822"/>
         <location filename="../AssetDownloaderWindow.py" line="360"/>
         <location filename="../AssetDownloaderWindow.py" line="923"/>
+        <location filename="../PlayerMediaTabs.py" line="264"/>
+        <location filename="../PlayerMediaTabs.py" line="822"/>
         <source>Open folder</source>
         <translation type="unfinished"></translation>
     </message>
