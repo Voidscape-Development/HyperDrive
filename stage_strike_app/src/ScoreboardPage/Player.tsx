@@ -87,7 +87,7 @@ const formFromPlayer = (player: HDPlayerInfo) => ({
  * the field loses focus, Enter is pressed or typing stops for a moment, and
  * picks (a player from the database, a character, a country) right away.
  */
-export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, player, showHeading}: {
+export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, player, showHeading, onSave}: {
     scoreboardNumber: number;
     hdTeamId: string;
     teamId: string;
@@ -95,6 +95,9 @@ export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, pla
     player: HDPlayerInfo;
     // With more than one player on the team, each gets a heading
     showHeading: boolean;
+    // Where the player goes, for a player that isn't on a scoreboard
+    // (a commentator, a player list slot): the scoreboard's otherwise
+    onSave?: (data: Record<string, unknown>) => Promise<unknown>;
 }) {
     const [detailsOpen, setDetailsOpen] = React.useState(false);
 
@@ -152,7 +155,7 @@ export default function Player({scoreboardNumber, hdTeamId, teamId, teamKey, pla
 
     const {values, setField, flush} = useAutoSaveForm(
         formFromPlayer(player),
-        (form) => api.updatePlayer(scoreboardNumber, hdTeamId, teamKey, payload(form)),
+        (form) => onSave ? onSave(payload(form)) : api.updatePlayer(scoreboardNumber, hdTeamId, teamKey, payload(form)),
     );
 
     const text = (field: "team" | "realName" | "twitter" | "pronoun", label: string) => (

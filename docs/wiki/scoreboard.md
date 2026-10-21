@@ -86,9 +86,9 @@ URL (see [Adding layouts to OBS](obs-setup.md#layouts-with-options-use-a-url)).
 
 ## Editing the scoreboard from a phone
 
-The link under the buttons, `http://<address>:5500/scoreboard`, opens a remote scoreboard in
-any browser on your network: handy for a producer, or a second screen. See
-[Web pages](web-pages.md).
+The link under the buttons, `http://<address>:5500/scoreboard`, opens the scoreboard in any
+browser on your network: handy for a producer, or a second screen. It's also the Scoreboard
+section of the [web dashboard](web-pages.md#the-dashboard).
 
 - Tap a side to give it a point. Each side has **−** below it to take one away, and every
   score change shows a toast with **Undo**.

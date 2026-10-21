@@ -46,6 +46,14 @@ export default defineConfig(({ mode }) => {
     '/pull-stream',
     '/set-current-stage',
     '/commentary-preview',
+    // The dashboard's API, and the older endpoints its pages use
+    '/dashboard-api',
+    '/display/',
+    '/team-battle',
+    '/update-commentary',
+    '/load-commentator',
+    '/stream-queue',
+    '^/bracket-focus(/|$)',
   ];
 
   const silenceECONNRESET = (proxy) => {

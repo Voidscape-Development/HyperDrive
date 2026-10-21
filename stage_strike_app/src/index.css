@@ -30,6 +30,13 @@
   --pick: oklch(0.723 0.219 149.579);
   --ban: oklch(0.637 0.237 25.331);
   --warning: oklch(0.769 0.188 70.08);
+
+  /* The HyperDrive accent. The dashboard sets these (and the rest) from the
+     desktop app's theme; these are its default. */
+  --brand: #ffb800;
+  --brand-text: #fac43c;
+  --brand-soft: #4e401e;
+  --live: #3fbf6f;
 }
 
 @theme inline {
@@ -60,6 +67,10 @@
   --color-pick: var(--pick);
   --color-ban: var(--ban);
   --color-warning: var(--warning);
+  --color-brand: var(--brand);
+  --color-brand-text: var(--brand-text);
+  --color-brand-soft: var(--brand-soft);
+  --color-live: var(--live);
 }
 
 @layer base {

@@ -8,6 +8,7 @@ link below to open it directly.
 | Setting | |
 | - | - |
 | Webserver Port | The port of HyperDrive's [web pages](web-pages.md) (5500). Takes effect on restart |
+| Web dashboard PIN | Locks the [web dashboard](web-pages.md#locking-the-dashboard) behind a PIN. Empty: no PIN |
 | Enable profanity filter | Masks offensive words in the tags, sponsors, names and handles of players loaded from a tournament |
 | Completed sets auto pull interval | How often **Auto pull** pulls completed sets |
 | Bracket auto update interval | How often the [bracket](bracket.md)'s **Auto update** runs |

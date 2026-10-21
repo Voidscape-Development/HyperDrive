@@ -5,7 +5,8 @@ can help run the stream. Open these at `http://<HyperDrive's address>:5500`:
 
 | Page | What it does |
 | - | - |
-| `/scoreboard` | Remote scoreboard: scores, players, characters and sets |
+| `/` | The dashboard: everything HyperDrive does, from a browser (see below) |
+| `/scoreboard` | The dashboard's scoreboard on its own, full screen |
 | `/stage-strike-app` | Stage strike for the players (see [Stage strike](stage-strike.md)) |
 | `/character-select` | Character select for the players |
 | `/bracket-focus-app` | What the bracket focus layout zooms to (see [Bracket](bracket.md#bracket-focus)) |
@@ -13,6 +14,44 @@ can help run the stream. Open these at `http://<HyperDrive's address>:5500`:
 | `/admin` | Player database editor (see [Player database](player-database.md)) |
 | `/wiki` | This guide |
 | `/api/docs` | Every endpoint of the web server, for developers |
+
+## The dashboard
+
+`http://<HyperDrive's address>:5500` opens the dashboard, which runs the event from a
+laptop, a tablet or a phone. It looks like HyperDrive, in the theme picked in
+[Settings › Appearance](hyperdrive://open/settings/appearance).
+
+The sidebar on the left has:
+
+- **Event**: the tournament (click it to switch events, repull the entrants, load another
+  tournament or unload it), the game, and the completed sets (**Auto pull** and ⟳ to pull
+  now). Changes show up in HyperDrive right away.
+- **Overview**: the set on stream with its score, what's up next, which layouts are shown,
+  the latest results, the commentators and the tournament.
+- A section for each of HyperDrive's tabs: Scoreboard, Stage strike, Character select,
+  Commentary, Display Controls, Crew/Team Battle, Stream Queue, Bracket, Bracket focus, Player
+  List and Tournament Info.
+
+The eye next to a section hides it in this browser only, e.g. so a commentator's tablet
+shows just Commentary. **Ctrl+B** collapses the sidebar to icons. On a phone, ☰ opens it.
+
+The **Scoreboard** section has a tab per scoreboard: double-click a tab to rename it,
+**+ Scoreboard** adds one and **−** removes the last. Q and P add a point to the left and
+right team (Shift takes one away), and S swaps them.
+
+Some things stay in HyperDrive itself: building brackets by hand, editing rulesets,
+players' media files, and workspaces.
+
+### Locking the dashboard
+
+Anyone on your network can open the dashboard. To lock it, set a **Web dashboard PIN** in
+[Settings › General](hyperdrive://open/settings/general): each browser then asks for it
+once and remembers it, until the PIN changes or someone clicks the lock at the bottom of
+the sidebar. After five wrong PINs, a device has to wait 30 seconds.
+
+The PIN locks the dashboard and `/scoreboard`. The players' pages (stage strike, character
+select), the commentary dashboard and the links a [Stream Deck](stream-deck.md) or other
+tools use ([Remote control](remote-control.md)) stay open, so they keep working.
 
 ## Finding HyperDrive's address
 

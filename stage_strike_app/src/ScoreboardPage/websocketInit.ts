@@ -79,12 +79,13 @@ export default function websocketInit() {
     });
 
     // This can't be set up twice because of the initialization guard at the top of the function.
+    // Often enough that a change made on a page shows there without a lag
     setInterval(() => {
         const state = hdStore.getState();
         if (state.websocketInfo.status === "connected" && state.hdState?.stateDeltas.length > 0) {
             hdStore.dispatch(hdStateSlice.actions.applySavedDeltas());
         }
-    }, 1000);
+    }, 200);
 }
 
 // Todo, maybe move this to a thunk or something.
