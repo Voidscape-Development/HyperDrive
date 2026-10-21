@@ -46,7 +46,7 @@ OBS runs on another computer, use HyperDrive's computer's address instead of `12
 | `bracket`, `bracket_ultimate`, `bracket_focus` | Brackets, standings and a zooming bracket (see [Bracket](bracket.md)) |
 | `top_8`, `top_8_single_elim`, `top_n_list` | Final results (see [Player list](player-list.md)) |
 | `stream_queue`, `stream_queue_simple` | Upcoming sets (see [Stream queue](stream-queue.md)) |
-| `completed_sets` | Sets that just finished: a ticker, a list or cards, and an alert for upsets (`upset_alert.html`) |
+| `completed_sets` | Sets that just finished: a ticker, a list, a full-screen scrolling list (for a vertical stream or a venue screen) or cards, and an alert for upsets (`upset_alert.html`) |
 | `game_log` | The set's games so far: stages, characters and who won each, as a strip, a column or a full screen recap |
 | `last_sets`, `recent_sets`, `recent_sets_full`, `tournament_history` | Player stats: recent sets, head-to-head and past results |
 | `tale_of_the_tape` | Both players' stats face to face before their set: seeds, head-to-head, finishes and last meetings |

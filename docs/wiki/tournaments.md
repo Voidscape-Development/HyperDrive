@@ -33,7 +33,7 @@ menu in the top bar, pulls them again, for the ones who registered after. Player
 ## Completed sets
 
 **Completed sets** in the top bar pulls the sets that just finished, for the
-`completed_sets` layouts (a ticker, a list or cards of recent results). ⟳ next to it pulls
+`completed_sets` layouts (a ticker, a list, a scrolling list or cards of recent results). ⟳ next to it pulls
 them now. Click it and check **Auto pull** to pull them periodically; the interval is in
 [Settings › General](hyperdrive://open/settings/general). The bar shows when the next pull
 is.

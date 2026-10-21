@@ -13,6 +13,7 @@
   "title": "RECENT RESULTS",
   "card_interval": 6,
   "ticker_speed": 90,
+  "scroll_speed": 60,
   "alert_seconds": 8,
   "show_latest": false,
   "upset_factor_label": "Upset factor",

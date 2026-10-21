@@ -199,7 +199,7 @@ unchanged.
 
 The event's last 10 completed sets, from "Pull Latest Completed Sets"
 (start.gg or parry.gg), most recent first, keyed `"1"`, `"2"`... Shown by
-`layout/completed_sets/` (`list.html`, `ticker.html`, `card.html` and
+`layout/completed_sets/` (`list.html`, `ticker.html`, `scroll.html`, `card.html` and
 `column.html`, and `upset_alert.html` for new upsets; see its `settings.json`).
 
 | Key | |
