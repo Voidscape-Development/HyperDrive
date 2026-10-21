@@ -146,7 +146,11 @@ export type BattlePlayer = {
 	value: number;
 	active: boolean;
 	dead: boolean;
+	/** "unused": the team is out without them playing */
+	status: BattlePlayerStatus;
 };
+
+export type BattlePlayerStatus = "playing" | "out" | "on_deck" | "unused";
 
 export type BattleTeam = {
 	name: string;
@@ -158,7 +162,13 @@ export type BattleTeam = {
 	mode: "STOCK_POOL" | "FIRST_TO";
 	/** Stocks per player (Stock Pool) or games to win (First To) */
 	battleValue: number;
+	/** Only some of the players play, the others waiting on deck */
+	limited: boolean;
+	/** How many more of the team's players can play, the one playing included */
+	playsLeft: number;
 };
+
+const STATUSES: BattlePlayerStatus[] = ["playing", "out", "on_deck", "unused"];
 
 export function teamBattleTeam(state: State, team: number): BattleTeam | undefined {
 	const battle = get<State>(state, "team_battle");
@@ -168,15 +178,19 @@ export function teamBattleTeam(state: State, team: number): BattleTeam | undefin
 	}
 	const players: BattlePlayer[] = numericKeys(data.player).map((n) => {
 		const p = data.player[n] ?? {};
+		const active = p.active === true;
+		const dead = p.dead === true;
 		return {
 			number: n,
 			name: typeof p.name === "string" ? p.name : "",
 			value: Number(p.dynamic_spinner) || 0,
-			active: p.active === true,
-			dead: p.dead === true,
+			active,
+			dead,
+			status: STATUSES.includes(p.status) ? p.status : dead ? "out" : active ? "playing" : "on_deck",
 		};
 	});
 	const activeNumber = Number(data.active_player);
+	const plays = Math.min(Number(battle?.plays) || players.length, players.length);
 	return {
 		name: (typeof data.sponsor === "string" && data.sponsor.trim()) || "",
 		color: validColor(data.color),
@@ -185,6 +199,8 @@ export function teamBattleTeam(state: State, team: number): BattleTeam | undefin
 		total: Number(battle?.[`team${team}_spinner-total`]) || players.reduce((sum, p) => sum + p.value, 0),
 		mode: battle?.battle_mode === "FIRST_TO" ? "FIRST_TO" : "STOCK_POOL",
 		battleValue: Number(battle?.battle_value) || 0,
+		limited: plays < players.length,
+		playsLeft: Number(data.plays_left ?? Math.max(plays - players.filter((p) => p.dead).length, 0)),
 	};
 }
 

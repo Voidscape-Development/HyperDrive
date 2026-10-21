@@ -311,6 +311,12 @@ body.first_to .sb_pips {
   visibility: hidden;
 }
 
+/* A play the team hasn't picked a player for yet */
+.mini.empty {
+  background: rgba(10, 10, 16, 0.35);
+  border: 2px dashed rgba(255, 255, 255, 0.45);
+}
+
 .mini.active {
   border-color: var(--team-light);
   background: var(--team);

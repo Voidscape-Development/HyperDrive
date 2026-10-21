@@ -78,6 +78,9 @@ class TeamBattleWidget(QDockWidget):
         # First To: the opposing player each player eliminated by reaching
         # the "First To" amount, until the opponent's next player comes in
         self.firstToVictims: dict[TeamPlayerWidget, TeamPlayerWidget] = {}
+        # Each team's players in the order they came in to play, for the
+        # layouts when only some of the players play (see IsLimited)
+        self.playOrder: dict[int, list[TeamPlayerWidget]] = {1: [], 2: []}
 
         # Set while players swap places or many values change at once, so
         # their checkboxes don't set off auto advance or eliminations
@@ -98,6 +101,24 @@ class TeamBattleWidget(QDockWidget):
         self.playerNumber.setObjectName("playerNumber")
         self.playerNumber.setFixedWidth(50)
         self.playerNumber.valueChanged.connect(lambda val: self.SetPlayersPerTeam(val))
+
+        # How many of a team's players get to play. Under the number of
+        # players, the others wait on deck until the team picks them, and a
+        # team is out once this many of its players are eliminated.
+        self.playsNumber = QSpinBox()
+        self.playsNumber.setObjectName("playsNumber")
+        self.playsNumber.setFixedWidth(50)
+        self.playsNumber.setMinimum(1)
+        self.playsNumber.setToolTip(
+            QApplication.translate(
+                "app",
+                "How many of a team's players play. The others wait on deck until the team "
+                "picks them; a team is out once this many of its players are eliminated",
+            )
+        )
+        # Plays goes up and down with the players until it's set lower
+        self.playsFollowPlayers = True
+        self.playsNumber.valueChanged.connect(self.SetPlays)
 
         self.characterNumber = QSpinBox()
         self.characterNumber.setFixedWidth(50)
@@ -179,6 +200,13 @@ class TeamBattleWidget(QDockWidget):
             self.livesNumber, 1, 3, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         )
 
+        playsLabel = QLabel(QApplication.translate("app", "Plays"))
+        playsLabel.setToolTip(self.playsNumber.toolTip())
+        rulesLayout.addWidget(
+            playsLabel, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        rulesLayout.addWidget(self.playsNumber, 0, 5, Qt.AlignmentFlag.AlignVCenter)
+
         rowLayout.addWidget(rulesCol)
 
         # Group 2: Tournament Info (Phase, Match)
@@ -256,10 +284,27 @@ class TeamBattleWidget(QDockWidget):
             lambda checked: SettingsManager.Set("team_battle.auto_advance", checked)
         )
 
+        # Off, nobody plays after a reset until each team picks their player
+        self.firstPlayerStarts = QCheckBox(QApplication.translate("app", "First player starts"))
+        self.firstPlayerStarts.setToolTip(
+            QApplication.translate(
+                "app",
+                "After a reset, each team's first player is playing. "
+                "Off, nobody is until the team picks their player",
+            )
+        )
+        self.firstPlayerStarts.setChecked(
+            SettingsManager.Get("team_battle.first_player_starts", False)
+        )
+        self.firstPlayerStarts.toggled.connect(
+            lambda checked: SettingsManager.Set("team_battle.first_player_starts", checked)
+        )
+
         actionsLayout.addWidget(resetValues, 0, 0)
         actionsLayout.addWidget(self.eyeBt, 0, 1, 2, 1, Qt.AlignmentFlag.AlignVCenter)
         actionsLayout.addWidget(resetEverything, 1, 0)
-        actionsLayout.addWidget(self.autoAdvance, 0, 2, 2, 1, Qt.AlignmentFlag.AlignVCenter)
+        actionsLayout.addWidget(self.autoAdvance, 0, 2, Qt.AlignmentFlag.AlignVCenter)
+        actionsLayout.addWidget(self.firstPlayerStarts, 1, 2, Qt.AlignmentFlag.AlignVCenter)
 
         rowLayout.addWidget(actionsCol)
         rowLayout.addStretch()
@@ -321,6 +366,11 @@ class TeamBattleWidget(QDockWidget):
         self.widgetArea.layout().addWidget(self.team2column)
 
         self.widget.layout().addWidget(scrollArea, 1)
+
+        for team in [1, 2]:
+            self.TeamColumn(team).findChild(QLineEdit, "teamShortName").editingFinished.connect(
+                lambda team=team: self.TeamShortNameExport(team)
+            )
 
         self.team1score.valueChanged.connect(self.Team1TotalScoreExport)
         self.team2score.valueChanged.connect(self.Team2TotalScoreExport)
@@ -396,6 +446,7 @@ class TeamBattleWidget(QDockWidget):
     def ClearBattleTracking(self):
         self.advanceHistory = {1: [], 2: []}
         self.firstToVictims = {}
+        self.playOrder = {1: [], 2: []}
 
     def ResetAllStocks(self):
         self.bulkUpdate = True
@@ -414,9 +465,9 @@ class TeamBattleWidget(QDockWidget):
                 pw.SetActiveStatus(False)
             self.ClearBattleTracking()
             self.SetBattleValue(self.DefaultValueForMode())
-            # Each team starts with their first player
+            # Each team starts with their first player, or picks them
             for team in [1, 2]:
-                if self.Players(team):
+                if self.Players(team) and self.firstPlayerStarts.isChecked():
                     self.Players(team)[0].SetActiveStatus(True)
         finally:
             self.bulkUpdate = False
@@ -483,6 +534,12 @@ class TeamBattleWidget(QDockWidget):
         p.instanceSignals.toggleDeathTrigger.connect(
             lambda reached, p=p, team=team: self.PlayerReachedFirstTo(team, p, reached)
         )
+        # Who's playing, out or on deck changes with them
+        for signal in [
+            p.instanceSignals.activeStatus_changed,
+            p.instanceSignals.deathStatus_changed,
+        ]:
+            signal.connect(lambda _, team=team: self.TeamTotalScoreExport(team))
 
         p.btMoveUp.clicked.connect(
             lambda checked=False, p=p, team=team: self.MovePlayer(team, p, -1)
@@ -498,8 +555,8 @@ class TeamBattleWidget(QDockWidget):
         try:
             p.SetBattleMode(self.battleMode)
             p.SetDefaultSpinnerValue(self.livesNumber.value())
-            # A team starts with their first player
-            if len(players) == 1:
+            # A team starts with their first player, or picks them
+            if len(players) == 1 and self.firstPlayerStarts.isChecked():
                 p.SetActiveStatus(True)
         finally:
             self.bulkUpdate = False
@@ -515,6 +572,7 @@ class TeamBattleWidget(QDockWidget):
         players.remove(player)
 
         self.advanceHistory[team] = [w for w in self.advanceHistory[team] if w is not player]
+        self.playOrder[team] = [w for w in self.playOrder[team] if w is not player]
         self.firstToVictims = {
             winner: victim
             for winner, victim in self.firstToVictims.items()
@@ -524,6 +582,10 @@ class TeamBattleWidget(QDockWidget):
         player.deleteLater()
 
     def SetPlayersPerTeam(self, number):
+        self.playsNumber.setMaximum(max(number, 1))
+        if self.playsFollowPlayers:
+            self.playsNumber.setValue(number)
+
         while len(self.team1playerWidgets) < number:
             self.AddPlayer(1)
             self.AddPlayer(2)
@@ -562,9 +624,11 @@ class TeamBattleWidget(QDockWidget):
 
         for team in [1, 2]:
             self.advanceHistory[team] = [swapped(w) for w in self.advanceHistory[team]]
+            self.playOrder[team] = [swapped(w) for w in self.playOrder[team]]
         self.firstToVictims = {
             swapped(winner): swapped(victim) for winner, victim in self.firstToVictims.items()
         }
+        self.TotalScoreExport()
 
     def ApplyVisibility(self, pw):
         if hasattr(self, "elements"):
@@ -629,8 +693,22 @@ class TeamBattleWidget(QDockWidget):
                 self.SetActiveIndex(team, -1)
             return
 
-        newPlayer = self.ActivePlayer(team) is not p
+        previous = self.ActivePlayer(team)
+        newPlayer = previous is not p
         self.SetActiveIndex(team, players.index(p))
+
+        # When only some players play, the team picks who replaces an
+        # eliminated player: remember who it was, so undoing their last
+        # stock or game brings them back
+        if (
+            newPlayer
+            and previous is not None
+            and previous.IsEliminated()
+            and self.IsLimited()
+            and not self.swapping
+            and not self.bulkUpdate
+        ):
+            self.advanceHistory[team].append(previous)
 
         # A team has one active player at a time
         for other in players:
@@ -653,6 +731,8 @@ class TeamBattleWidget(QDockWidget):
         back to the first player after the last one. Returns whether the
         active player changed."""
         players = self.Players(team)
+        if self.TeamIsOut(team):
+            return False
         start = self.GetActiveIndex(team)
         for step in range(1, len(players) + 1):
             index = (start + step) % len(players)
@@ -672,9 +752,80 @@ class TeamBattleWidget(QDockWidget):
     def PlayerEliminatedChanged(self, team: int, p: TeamPlayerWidget, dead: bool):
         if self.swapping or self.bulkUpdate:
             return
+        # When only some players play, the team picks who's next from the
+        # players on deck, so nobody comes in on their own
+        if self.IsLimited():
+            return
         if dead and p is self.ActivePlayer(team) and self.autoAdvance.isChecked():
             if self.NextActivePlayer(team):
                 self.advanceHistory[team].append(p)
+
+    # =====================================================
+    # PLAYS: WHEN ONLY SOME OF THE PLAYERS PLAY
+    # =====================================================
+    def SetPlays(self, value: int):
+        self.playsFollowPlayers = value >= self.playerNumber.value()
+        self.TotalScoreExport()
+
+    def IsLimited(self) -> bool:
+        """Whether only some of each team's players play, the others waiting
+        on deck."""
+        return self.playsNumber.value() < len(self.team1playerWidgets)
+
+    def Eliminations(self, team: int) -> int:
+        return sum(1 for p in self.Players(team) if p.IsEliminated())
+
+    def PlaysLeft(self, team: int) -> int:
+        """How many more of the team's players can still play, the one
+        playing included."""
+        return max(self.playsNumber.value() - self.Eliminations(team), 0)
+
+    def TeamIsOut(self, team: int) -> bool:
+        return bool(self.Players(team)) and self.PlaysLeft(team) == 0
+
+    def PlayerStatus(self, team: int, p: TeamPlayerWidget) -> str:
+        """The player's status: "playing", "out", "on_deck" (hasn't played
+        yet, or is waiting to play again) or "unused" (the team is out without
+        them playing)."""
+        if p.IsEliminated():
+            return "out"
+        if p.IsActive():
+            return "playing"
+        if self.TeamIsOut(team):
+            return "unused"
+        return "on_deck"
+
+    def UpdatePlayOrder(self, team: int):
+        """Players come into the order when they first play, and leave it if
+        they go back on deck without having played (a mistaken pick)."""
+        order = [p for p in self.playOrder[team] if p in self.Players(team) and p.HasPlayed()]
+        order += [p for p in self.Players(team) if p.HasPlayed() and p not in order]
+        self.playOrder[team] = order
+
+    def StocksLeft(self, team: int) -> int:
+        """Every player's stocks (or games won) added up. When only some
+        players play, only the players who can still play count: the ones
+        who played first, then the players on deck."""
+        players = self.Players(team)
+        if not self.IsLimited():
+            return sum(p.GetSpinnerValue() for p in players)
+        alive = [p for p in players if not p.IsEliminated()]
+        alive.sort(key=lambda p: not p.HasPlayed())
+        return sum(p.GetSpinnerValue() for p in alive[: self.PlaysLeft(team)])
+
+    def ExportTeamStatus(self, team: int):
+        # Halfway through a swap the players' data is half swapped:
+        # SwapPlayers exports once it's done
+        if self.swapping:
+            return
+        self.UpdatePlayOrder(team)
+        limited = self.IsLimited()
+        for p in self.Players(team):
+            order = self.playOrder[team]
+            p.SetPlayStatus(
+                self.PlayerStatus(team, p), order.index(p) + 1 if p in order else None, limited
+            )
+        StateManager.Set(f"team_battle.team.{team}.plays_left", self.PlaysLeft(team))
 
     # =====================================================
     # FIRST TO
@@ -776,6 +927,10 @@ class TeamBattleWidget(QDockWidget):
         SponsorHelper.ExportValidSponsors(name, path)
         self.ExportTeamLogo(team, name)
 
+    def TeamShortNameExport(self, team: int):
+        name = self.TeamColumn(team).findChild(QLineEdit, "teamShortName").text().strip()
+        StateManager.Set(f"team_battle.team.{team}.short_name", name)
+
     def ExportTeamLogo(self, team: int, name: str):
         logo = MediaHelper.TeamLogoPath(name) if name else None
         StateManager.Set(
@@ -796,19 +951,18 @@ class TeamBattleWidget(QDockWidget):
     def TotalScoreExport(self):
         # The Stocks or First To amount every player starts from
         StateManager.Set("team_battle.battle_value", self.livesNumber.value())
+        StateManager.Set("team_battle.plays", self.playsNumber.value())
         self.Team1TotalScoreExport()
         self.Team2TotalScoreExport()
 
+    def TeamTotalScoreExport(self, team: int):
+        score = self.team1score if team == 1 else self.team2score
+        StateManager.Set(f"team_battle.team{team}_spinner-total", self.StocksLeft(team))
+        StateManager.Set(f"team_battle.team{team}_total-score", score.value())
+        self.ExportTeamStatus(team)
+
     def Team1TotalScoreExport(self):
-        scoreCount = 0
-        for player in self.team1playerWidgets:
-            scoreCount += player.GetSpinnerValue()
-        StateManager.Set("team_battle.team1_spinner-total", scoreCount)
-        StateManager.Set("team_battle.team1_total-score", self.team1score.value())
+        self.TeamTotalScoreExport(1)
 
     def Team2TotalScoreExport(self):
-        scoreCount = 0
-        for player in self.team2playerWidgets:
-            scoreCount += player.GetSpinnerValue()
-        StateManager.Set("team_battle.team2_spinner-total", scoreCount)
-        StateManager.Set("team_battle.team2_total-score", self.team2score.value())
+        self.TeamTotalScoreExport(2)

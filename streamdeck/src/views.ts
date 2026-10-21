@@ -183,6 +183,23 @@ function battleValue(t: Translate, team: hd.BattleTeam, value: number): string {
 	return team.mode === "FIRST_TO" ? t("wins", { count: value }) : t("stocks", { count: value });
 }
 
+/**
+ * Why a team has nobody to score for: it's out, or it has to pick who plays
+ * (after a reset, or when only some players play and theirs was eliminated)
+ */
+function battleWaiting(t: Translate, team: hd.BattleTeam): string | undefined {
+	if (!team.players.length) {
+		return undefined;
+	}
+	if (team.playsLeft === 0) {
+		return t("teamOut");
+	}
+	if (!team.active || (team.limited && team.active.dead)) {
+		return t("pickPlayer");
+	}
+	return undefined;
+}
+
 export function battleScoreKey(t: Translate, s: BattleScoreSettings, state: State): Look {
 	const teamNumber = teamOf(s.team);
 	const team = hd.teamBattleTeam(state, teamNumber);
@@ -190,6 +207,10 @@ export function battleScoreKey(t: Translate, s: BattleScoreSettings, state: Stat
 		return { icon: s.direction === "down" ? "minus" : "plus", top: t("team", { team: teamNumber }), bottom: t("noTeamBattle") };
 	}
 	const active = team.active;
+	const waiting = battleWaiting(t, team);
+	if (waiting) {
+		return { color: team.color, icon: s.direction === "down" ? "minus" : "plus", top: teamLabel(t, team.name, teamNumber), bottom: waiting };
+	}
 	return {
 		color: team.color,
 		icon: s.direction === "down" ? "minus" : "plus",
@@ -207,6 +228,10 @@ export function battleStrip(t: Translate, s: BattleScoreSettings, state: State):
 	}
 	const active = team.active;
 	const max = team.mode === "STOCK_POOL" ? team.battleValue : 0;
+	const waiting = battleWaiting(t, team);
+	if (waiting) {
+		return { color: team.color, icon: team.mode === "FIRST_TO" ? "trophy" : "stocks", top: teamLabel(t, team.name, teamNumber), main: waiting };
+	}
 	return {
 		color: team.color,
 		icon: team.mode === "FIRST_TO" ? "trophy" : "stocks",
@@ -229,19 +254,36 @@ export function battlePlayerKey(t: Translate, s: BattlePlayerSettings, state: St
 			color: team?.color,
 			icon: "next",
 			top: teamLabel(t, team?.name, teamNumber),
-			main: team?.active ? team.active.name || t("player", { player: team.active.number }) : undefined,
+			main:
+				(team && battleWaiting(t, team)) ??
+				(team?.active ? team.active.name || t("player", { player: team.active.number }) : undefined),
 			bottom: t("nextPlayer"),
 		};
 	}
 	const number = num(s.player, 1);
 	const player = team?.players.find((p) => p.number === number);
+	// Out, or never got to play: dimmed
+	const off = player?.dead || player?.status === "unused";
+	let bottom = "";
+	if (player) {
+		if (player.dead) {
+			bottom = t("eliminated");
+		} else if (player.status === "unused") {
+			bottom = t("didntPlay");
+		} else if (team!.limited && player.status === "on_deck") {
+			// Waiting for the team to pick them
+			bottom = t("onDeck");
+		} else {
+			bottom = battleValue(t, team!, player.value);
+		}
+	}
 	return {
-		color: player?.dead ? undefined : team?.color,
+		color: off ? undefined : team?.color,
 		icon: "user",
 		top: teamLabel(t, team?.name, teamNumber),
 		main: player?.name || t("player", { player: number }),
-		bottom: player ? (player.dead ? t("eliminated") : battleValue(t, team!, player.value)) : "",
-		state: player?.dead ? "off" : player?.active || team?.active?.number === number ? "on" : undefined,
+		bottom,
+		state: off ? "off" : player?.active || team?.active?.number === number ? "on" : undefined,
 	};
 }
 

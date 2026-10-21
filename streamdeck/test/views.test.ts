@@ -67,6 +67,32 @@ describe("views", () => {
 		expect(views.battleScoreKey(t, { team: "2" }, state).bottom).toBe("No team battle");
 	});
 
+	it("shows who's on deck when only some team battle players play", () => {
+		const player = (name: string, extra = {}) => ({ name, dynamic_spinner: 3, ...extra });
+		const crew = (players: Record<string, object>, extra = {}) => ({
+			team_battle: { battle_mode: "STOCK_POOL", battle_value: 3, plays: 2, team: { "1": { sponsor: "Crew", player: players, ...extra } } },
+		});
+		const picking: State = crew(
+			{ "1": player("Ace", { dead: true, dynamic_spinner: 0, status: "out", active: true }), "2": player("Bolt", { status: "on_deck" }), "3": player("Cyan", { status: "on_deck" }) },
+			{ active_player: 1, plays_left: 1 },
+		);
+		expect(views.battlePlayerKey(t, { team: "1", mode: "player", player: "2" }, picking)).toMatchObject({ bottom: "On deck", state: undefined });
+		expect(views.battleScoreKey(t, { team: "1" }, picking)).toMatchObject({ top: "Crew", bottom: "Pick a player" });
+		expect(views.battleStrip(t, { team: "1" }, picking).main).toBe("Pick a player");
+		expect(views.battlePlayerKey(t, { team: "1" }, picking).main).toBe("Pick a player");
+
+		const out: State = crew(
+			{ "1": player("Ace", { dead: true, status: "out" }), "2": player("Bolt", { dead: true, status: "out" }), "3": player("Cyan", { status: "unused" }) },
+			{ plays_left: 0 },
+		);
+		expect(views.battlePlayerKey(t, { team: "1", mode: "player", player: "3" }, out)).toMatchObject({ bottom: "Didn't play", state: "off", color: undefined });
+		expect(views.battleScoreKey(t, { team: "1" }, out).bottom).toBe("Team out");
+
+		// Everyone plays: on deck players show their stocks, as before
+		const everyone: State = { team_battle: { ...crew({ "1": player("Ace", { active: true }), "2": player("Bolt") }).team_battle, plays: 2 } };
+		expect(views.battlePlayerKey(t, { team: "1", mode: "player", player: "2" }, everyone).bottom).toBe("3 stocks");
+	});
+
 	it("doesn't repeat the bracket focus mode", () => {
 		expect(views.focusStrip(t, {}, state)).toMatchObject({ main: "Whole bracket", bottom: "" });
 		expect(views.focusKey(t, { mode: "all" }, state).state).toBe("on");

@@ -22,13 +22,53 @@ in [Settings › General](hyperdrive://open/settings/general).
    **Active**, and players who are out **Eliminated**.
 
 **Auto advance** makes a team's next player active when the active player is eliminated.
+**First player starts** makes each team's first player active after a reset; off (the
+default), nobody is playing until each team picks their player.
 **Reset Player Mode Values** resets every player's stocks or wins, and **Reset Battle
 Mode** resets the whole battle.
+
+## Players on deck
+
+A team can bring more players than get to play: for example, a crew of 7 where only 4
+play. Set **Players** to the size of the crews (7) and **Plays** to how many of them play
+(4). Plays follows Players until you set it lower; when they're the same, everyone plays,
+as usual.
+
+With fewer plays than players:
+
+- There are no starters. Players who haven't played are **On deck**, and when the playing
+  player is eliminated, the team picks who's next from them: tick that player's **Active**
+  box (or use the Stream Deck's Team Battle Player action). Nobody comes in on their own,
+  even with Auto advance on.
+- A team is out once Plays of its players are eliminated. The players who never got to
+  play show **Didn't play**.
+- The team's stocks are the stocks of the players who can still play: the one playing, and
+  a full set for each play left.
+- Undoing the last stock (or game) of a player who was replaced brings them back in.
+
+On the layouts, the roster board shows a card per play, filled as players come in, and the
+players on deck in an **On Deck** strip below (dimmed once the team is out). The versus
+screen and the scoreboard's roster show a slot per play, without the players on deck.
 
 ## Layouts
 
 `layout/team_battle/` has an in-game scoreboard, a roster board and a versus screen for each
 mode: `scoreboard_stock.html`, `roster_stock.html`, `versus_stock.html`, and the
 `_first_to` versions.
+
+`layout/Nexus - Teams Overview/` (`stock.html` and `first_to.html`) is an overview of
+both teams: each team's logo, name and stocks (or players) left, the team scores around the
+tournament logo, a card per play with the player's character and stocks or wins (crossed
+out once eliminated, empty until a player comes in), and the players on deck in a
+**Standby** box below.
+
+`layout/Nexus - Battle/` (`stock.html` and `first_to.html`) is the in-game overlay to go with
+it. At the top: each team's logo, stocks (or players) left and short name (the **Short name** typed next to
+the team's name, else the name, or its initials when it's longer than 8 characters:
+"University of South Carolina Upstate" is USCU), the team scores around the tournament logo, and a slot per play under
+each team, slashed once its player is out and lit while they play. At the bottom right: the
+player playing for each team, with their character and stocks or games won, or *Picking…*
+while the team picks who's next. `stock_wings.html` and `first_to_wings.html` have each
+team's player on a wing above the bar, out on its side, instead of at the bottom right.
 
 The [Stream Deck plugin](stream-deck.md) has Team Battle Score, Player and Reset actions.

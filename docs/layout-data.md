@@ -279,10 +279,11 @@ The Crew/Team Battle window:
 | - | - |
 | `battle_mode` | `STOCK_POOL` or `FIRST_TO` |
 | `battle_value` | The stocks every player starts with (Stock Pool), or the games to win (First To) |
+| `plays` | How many of each team's players play. Under the number of players, the others wait on deck until their team picks them |
 | `phase`, `match` | |
-| `team.T` | `{sponsor, color, logo, sponsor_logo, active_player, player}`: `sponsor` is the team's name, `logo` its logo from `user_data/team_logo/` (or `null`), `active_player` the number of the player playing |
-| `team.T.player.P` | A player, as on the scoreboard, plus `dynamic_spinner` (their stocks left, or games won against the current opponent), `active` and `dead` (eliminated) |
-| `team1_spinner-total`, `team2_spinner-total` | Every player's `dynamic_spinner`, added up |
+| `team.T` | `{sponsor, short_name, color, logo, sponsor_logo, active_player, plays_left, player}`: `sponsor` is the team's name, `short_name` the short name typed for it (or empty), `logo` its logo from `user_data/team_logo/` (or `null`), `active_player` the number of the player playing, `plays_left` how many more of its players can play (the one playing included) |
+| `team.T.player.P` | A player, as on the scoreboard, plus `dynamic_spinner` (their stocks left, or games won against the current opponent), `active`, `dead` (eliminated), `status` (`playing`, `out`, `on_deck`, or `unused` when their team is out without them playing) and `play_order` (their place in the order the team's players came in, `null` before they play) |
+| `team1_spinner-total`, `team2_spinner-total` | Every player's `dynamic_spinner`, added up. With fewer `plays` than players, only the players who can still play count |
 | `team1_total-score`, `team2_total-score` | The team scores set in the window |
 
 The layouts in [`layout/team_battle`](../layout/team_battle) show it: a scoreboard
