@@ -26,6 +26,9 @@
   --nx-panel: rgb(30, 29, 38);
   --nx-panel-light: rgb(70, 69, 80);
   --nx-line: rgba(255, 255, 255, 0.1);
+  /* Straight boxes: no slant on the team logo's box (without a logo), as
+     team_battle.css has */
+  --tb-skew: 0deg;
 }
 
 #nexus {
