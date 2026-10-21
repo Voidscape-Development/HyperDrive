@@ -63,11 +63,12 @@ out once eliminated, empty until a player comes in), and the players on deck in 
 **Standby** box below.
 
 `layout/Nexus - Battle/` (`stock.html` and `first_to.html`) is the in-game overlay to go with
-it. At the top: each team's logo, stocks (or players) left and short name (the team's
-name, or its initials when it's longer than 8 characters: "University of South Carolina
-Upstate" is USCU), the team scores around the tournament logo, and a slot per play under
+it. At the top: each team's logo, stocks (or players) left and short name (the **Short name** typed next to
+the team's name, else the name, or its initials when it's longer than 8 characters:
+"University of South Carolina Upstate" is USCU), the team scores around the tournament logo, and a slot per play under
 each team, slashed once its player is out and lit while they play. At the bottom right: the
 player playing for each team, with their character and stocks or games won, or *Picking…*
-while the team picks who's next.
+while the team picks who's next. `stock_wings.html` and `first_to_wings.html` have each
+team's player on a wing above the bar, out on its side, instead of at the bottom right.
 
 The [Stream Deck plugin](stream-deck.md) has Team Battle Score, Player and Reset actions.

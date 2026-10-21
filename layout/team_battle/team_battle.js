@@ -85,6 +85,8 @@ const TB = {
       t,
       name: team.sponsor || "",
       displayName: team.sponsor || `Team ${t}`,
+      // Typed in the Crew/Team Battle window, for layouts with little room
+      shortName: (team.short_name || "").trim(),
       color: team.color || TB.DEFAULT_COLORS[t],
       logo: HD.asset(team.logo),
       players,

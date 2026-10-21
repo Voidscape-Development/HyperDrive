@@ -367,6 +367,11 @@ class TeamBattleWidget(QDockWidget):
 
         self.widget.layout().addWidget(scrollArea, 1)
 
+        for team in [1, 2]:
+            self.TeamColumn(team).findChild(QLineEdit, "teamShortName").editingFinished.connect(
+                lambda team=team: self.TeamShortNameExport(team)
+            )
+
         self.team1score.valueChanged.connect(self.Team1TotalScoreExport)
         self.team2score.valueChanged.connect(self.Team2TotalScoreExport)
 
@@ -921,6 +926,10 @@ class TeamBattleWidget(QDockWidget):
         StateManager.Set(path + ".sponsor", name)
         SponsorHelper.ExportValidSponsors(name, path)
         self.ExportTeamLogo(team, name)
+
+    def TeamShortNameExport(self, team: int):
+        name = self.TeamColumn(team).findChild(QLineEdit, "teamShortName").text().strip()
+        StateManager.Set(f"team_battle.team.{team}.short_name", name)
 
     def ExportTeamLogo(self, team: int, name: str):
         logo = MediaHelper.TeamLogoPath(name) if name else None

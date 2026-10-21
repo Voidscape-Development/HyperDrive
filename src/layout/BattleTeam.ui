@@ -64,6 +64,22 @@
       </layout>
      </item>
      <item>
+      <widget class="QLineEdit" name="teamShortName">
+       <property name="maximumSize">
+        <size>
+         <width>90</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>A short name for the layouts with little room, like USCU. Empty, they make one from the team name</string>
+       </property>
+       <property name="placeholderText">
+        <string>Short name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QCheckBox" name="separateSponsors">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">

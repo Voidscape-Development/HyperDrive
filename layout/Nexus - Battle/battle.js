@@ -3,8 +3,12 @@
 // left and short name, the team scores around the tournament logo, and a
 // track of the team's plays under it (used ones slashed, the one playing
 // lit). At the bottom right, the matchup: each team's player playing, with
-// their character and stocks or games won. Uses the Team Battle layouts'
-// team_battle.js.
+// their character and stocks or games won. The _wings pages have each
+// team's player on a wing above the bar, out on its side, instead. Uses the
+// Team Battle layouts' team_battle.js.
+
+// The _wings pages (body class "wings")
+const wings = () => document.body.classList.contains("wings");
 
 // ---------------------------------------------------------------------
 // Markup
@@ -37,10 +41,12 @@ const twoDigits = (n) => String(n).padStart(2, "0");
 // Words left out of a team's initials
 const MINOR_WORDS = new Set(["of", "the", "and", "at", "de", "&", "-"]);
 
-// A short name for the team under its number: the name when it's short,
-// else its initials ("University of South Carolina Upstate": "USCU")
-function shortName(name) {
-  const trimmed = name.trim();
+// A short name for the team under its number: the one typed for it, else
+// the name when it's short, else its initials ("University of South
+// Carolina Upstate": "USCU")
+function shortName(team) {
+  if (team.shortName) return team.shortName;
+  const trimmed = team.displayName.trim();
   if (trimmed.length <= 8) return trimmed;
   const words = trimmed.split(/\s+/).filter((w) => !MINOR_WORDS.has(w.toLowerCase()));
   if (words.length < 2) return trimmed;
@@ -83,10 +89,10 @@ function updateRow(team, animate) {
   else TB.setHtml(stocks, "");
 
   if (animate && swapped) {
-    // The next player comes in
+    // The next player comes in, from the outside on a wing
     gsap.fromTo(
       row.querySelector(".nb_row_inner"),
-      { x: 60, autoAlpha: 0 },
+      { x: wings() && team.t === 1 ? -60 : 60, autoAlpha: 0 },
       { x: 0, autoAlpha: 1, duration: 0.45, ease: "power3.out", overwrite: true },
     );
     if (p) TB.sweep(row.querySelector(".sweep"), 0.15);
@@ -103,6 +109,7 @@ HD.layout({
       "#battle",
       HD.html`
         <div class="nb_top">
+          ${wings() && HD.html`<div class="nb_wing t1">${matchRow(1)}</div>`}
           <div class="nb_bar">
             ${topSide(1)}
             <div class="nb_center">
@@ -112,9 +119,10 @@ HD.layout({
             </div>
             ${topSide(2)}
           </div>
+          ${wings() && HD.html`<div class="nb_wing t2">${matchRow(2)}</div>`}
           <div class="nb_tracks"><div class="nb_track t1"></div><div class="nb_track t2"></div></div>
         </div>
-        <div class="nb_match">${matchRow(1)}${matchRow(2)}</div>`,
+        ${!wings() && HD.html`<div class="nb_match">${matchRow(1)}${matchRow(2)}</div>`}`,
     );
   },
 
@@ -124,7 +132,10 @@ HD.layout({
       .from(".nb_emblem", { duration: 0.45, scale: 0, ease: "back.out(2)" }, 0.3)
       .from(".nb_diamond", { duration: 0.4, scale: 0, stagger: 0.08, ease: "back.out(2)" }, 0.4)
       .from(".nb_slot", { duration: 0.3, scale: 0, autoAlpha: 0, stagger: 0.03, ease: "back.out(2)" }, 0.55)
-      .from(".nb_row", { duration: 0.5, x: 340, stagger: 0.1, ease }, 0.3);
+      .from(".nb_match .nb_row", { duration: 0.5, x: 340, stagger: 0.1, ease }, 0.3)
+      // Wings spread out from behind the bar
+      .from(".nb_wing.t1", { duration: 0.5, x: 260, autoAlpha: 0, ease }, 0.45)
+      .from(".nb_wing.t2", { duration: 0.5, x: -260, autoAlpha: 0, ease }, 0.45);
   },
 
   update(s) {
@@ -135,7 +146,7 @@ HD.layout({
     for (const team of teams) {
       const side = document.querySelector(`.nb_side.t${team.t}`);
       TB.setHtml(side.querySelector(".nb_logo"), TB.logo(team));
-      HD.set(side.querySelector(".nb_short"), shortName(team.displayName));
+      HD.set(side.querySelector(".nb_short"), shortName(team));
       const big = side.querySelector(".nb_big");
       if (big.dataset.value !== String(team.big)) {
         big.dataset.value = team.big;

@@ -281,3 +281,91 @@
   color: rgba(255, 255, 255, 0.45);
   font-style: italic;
 }
+
+/* ── Wings (the _wings pages): each team's player above the bar ── */
+
+/* The bar a row down, each team's wing on the row above, out on its side,
+   meeting the bar at its corner */
+body.wings .nb_top {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: start;
+  gap: 0;
+  top: 10px;
+}
+
+body.wings .nb_bar {
+  grid-column: 2;
+  grid-row: 2;
+  margin-top: -12px;
+  z-index: 1;
+}
+
+body.wings .nb_tracks {
+  grid-column: 2;
+  grid-row: 3;
+  justify-self: center;
+  margin-top: 8px;
+}
+
+.nb_wing {
+  grid-row: 1;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+}
+
+.nb_wing.t1 {
+  grid-column: 1;
+  margin-right: -40px;
+}
+
+.nb_wing.t2 {
+  grid-column: 3;
+  margin-left: -40px;
+}
+
+/* A slanted band, fading in from the outside: the character out at the
+   end, then the tag, then the stocks by the bar */
+.nb_wing .nb_row {
+  width: 360px;
+  height: 50px;
+  border: none;
+  border-bottom: 3px solid var(--team);
+}
+
+.nb_wing.t1 .nb_row {
+  background: linear-gradient(90deg, var(--team-dark), var(--nx-panel) 70%);
+  clip-path: polygon(26px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.nb_wing.t2 .nb_row {
+  background: linear-gradient(270deg, var(--team-dark), var(--nx-panel) 70%);
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 100%, 0 100%);
+}
+
+.nb_wing .nb_row_inner {
+  padding: 0 52px 0 30px;
+}
+
+.nb_wing.t2 .nb_row_inner {
+  flex-direction: row-reverse;
+  padding: 0 30px 0 52px;
+}
+
+.nb_wing .nb_char {
+  order: -1;
+  width: 38px;
+  height: 38px;
+}
+
+.nb_wing.t2 .nb_tag .text {
+  justify-content: flex-end;
+  transform-origin: right;
+}
+
+.nb_wing.t2 .nb_stocks {
+  flex-direction: row-reverse;
+}
+
+.nb_wing .nb_row.picking {
+  background: var(--nx-panel);
+}
