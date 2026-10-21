@@ -133,6 +133,16 @@ def catchtime(msg=""):
 # autopep8: off
 from src.AboutWidget import AboutWidget
 from src.AssetDownloader import AssetDownloader
+from src.CommandBar import (
+    STATUS_BUSY,
+    STATUS_OFF,
+    STATUS_OK,
+    BarButton,
+    CommandBar,
+    ContextChip,
+    StatusPill,
+    Workspaces,
+)
 from src.WebServer import WebServer
 
 from .AlertNotification import AlertNotification
@@ -281,6 +291,10 @@ def ExtractUpdate():
         os.remove("update.zip")
     except Exception as e:
         logger.error(traceback.format_exc())
+
+
+# The most scoreboards that can run at once
+MAX_SCOREBOARDS = 10
 
 
 def remove_accents_lower(input_str):
@@ -459,84 +473,118 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, displayControls)
         self.scoreboard.raise_()
 
-        # Game
-        base_layout = QHBoxLayout()
+        # The command bar: what's loaded (tournament, game), the completed
+        # sets' status and the window's own controls
+        pre_base_layout.setContentsMargins(0, 0, 0, 0)
+        self.commandBar = CommandBar()
+        pre_base_layout.addWidget(self.commandBar)
 
-        group_box = QWidget()
-        group_box.setLayout(QVBoxLayout())
-        group_box.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
-        base_layout.layout().addWidget(group_box)
+        logo = QLabel()
+        logo.setPixmap(QIcon("assets/icons/icon.svg").pixmap(28, 28))
+        logo.setToolTip("HyperDrive")
+        self.commandBar.AddWidget(logo)
 
-        # Set tournament
-        hbox = QHBoxLayout()
-        group_box.layout().addLayout(hbox)
-
-        self.setTournamentBt = QPushButton(QApplication.translate("app", "Set tournament"))
-        hbox.addWidget(self.setTournamentBt)
-        self.setTournamentBt.clicked.connect(
-            lambda bt=None, s=self: TournamentDataManager.instance.SetStartggEventSlug(s)
+        # Without a tournament the chip is a button that loads one; with one
+        # it opens the tournament's actions
+        self.tournamentChip = self.commandBar.AddWidget(ContextChip())
+        self.tournamentChip.clicked.connect(
+            lambda: (
+                TournamentDataManager.instance.SetStartggEventSlug(self)
+                if TournamentDataManager.instance.provider is None
+                else None
+            )
         )
+        self.tournamentMenu = QMenu(self.tournamentChip)
 
         # Switch to another event of the same tournament
-        self.selectEventBt = QPushButton(QApplication.translate("app", "Select event"))
-        self.selectEventBt.setIcon(ThemedIcon("./assets/icons/swap.svg"))
-        self.selectEventBt.setToolTip(
+        self.selectEventAction = self.tournamentMenu.addAction(
+            ThemedIcon("./assets/icons/swap.svg"), QApplication.translate("app", "Select event")
+        )
+        self.selectEventAction.setToolTip(
             QApplication.translate("app", "Switch to another event of the same tournament")
         )
-        self.selectEventBt.clicked.connect(
-            lambda bt=None, s=self: TournamentDataManager.instance.SelectEvent(s)
+        self.selectEventAction.triggered.connect(
+            lambda: TournamentDataManager.instance.SelectEvent(self)
         )
-        hbox.addWidget(self.selectEventBt)
 
         # For entrants who registered after the event was loaded
-        self.repullEntrantsBt = QPushButton(QApplication.translate("app", "Repull entrants"))
-        self.repullEntrantsBt.setIcon(ThemedIcon("./assets/icons/people.svg"))
-        self.repullEntrantsBt.setToolTip(
+        self.repullEntrantsAction = self.tournamentMenu.addAction(
+            ThemedIcon("./assets/icons/people.svg"),
+            QApplication.translate("app", "Repull entrants"),
+        )
+        self.repullEntrantsAction.setToolTip(
             QApplication.translate(
                 "app",
                 "Pull the event's entrants again, to get players who registered after it was loaded",
             )
         )
-        self.repullEntrantsBt.clicked.connect(
+        self.repullEntrantsAction.triggered.connect(
             lambda: TournamentDataManager.instance.RepullEntrants()
         )
-        hbox.addWidget(self.repullEntrantsBt)
+        self.tournamentMenu.setToolTipsVisible(True)
 
-        self.unsetTournamentBt = QPushButton()
-        self.unsetTournamentBt.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-        self.unsetTournamentBt.setIcon(ThemedIcon("./assets/icons/cancel.svg"))
-        self.unsetTournamentBt.clicked.connect(
-            lambda: [TournamentDataManager.instance.SetTournament(None)]
+        self.tournamentMenu.addSeparator()
+        action = self.tournamentMenu.addAction(
+            QApplication.translate("app", "Load a different tournament...")
         )
-        hbox.addWidget(self.unsetTournamentBt)
+        action.triggered.connect(lambda: TournamentDataManager.instance.SetStartggEventSlug(self))
+        action = self.tournamentMenu.addAction(
+            ThemedIcon("./assets/icons/cancel.svg"),
+            QApplication.translate("app", "Unload tournament"),
+        )
+        action.triggered.connect(lambda: TournamentDataManager.instance.SetTournament(None))
+
+        TournamentDataManager.instance.signals.tournament_data_updated.connect(
+            self.UpdateTournamentChip
+        )
+
+        # The game select and its options, added below once they're set up
+        self.gameSlot = self.commandBar.AddLayout(QHBoxLayout())
+        self.gameSlot.setSpacing(2)
+
+        self.commandBar.AddStretch()
 
         # Completed Sets Feature
-        hbox = QHBoxLayout()
-        group_box.layout().addLayout(hbox)
-        self.btPullCompletedSets = QPushButton(
-            QApplication.translate("app", "Pull Latest Completed Sets from StartGG")
+        self.completedSetsPill = self.commandBar.AddWidget(
+            StatusPill(QApplication.translate("app", "Completed sets"))
         )
-        self.btPullCompletedSets.setIcon(ThemedIcon("./assets/icons/startgg.svg"))
-        # Manual pulls go through the scheduler too, so they can't overlap
-        # an automatic one and they push the next automatic one back
-        self.btPullCompletedSets.clicked.connect(
-            lambda: Scheduler.instance.TriggerNow("completed_sets")
+        self.completedSetsPill.setToolTip(
+            QApplication.translate(
+                "app", "The latest completed sets, for the completed_sets layouts"
+            )
         )
-        hbox.addWidget(self.btPullCompletedSets)
+        completedSetsMenu = QMenu(self.completedSetsPill)
+        completedSetsMenu.setToolTipsVisible(True)
+        self.completedSetsPill.setMenu(completedSetsMenu)
 
-        self.cbAutoPullCompletedSets = QCheckBox(QApplication.translate("app", "Auto pull"))
-        self.cbAutoPullCompletedSets.setToolTip(
+        self.autoPullCompletedSetsAction = completedSetsMenu.addAction(
+            QApplication.translate("app", "Auto pull")
+        )
+        self.autoPullCompletedSetsAction.setCheckable(True)
+        self.autoPullCompletedSetsAction.setToolTip(
             QApplication.translate(
                 "app",
                 "Pull the latest completed sets periodically. The interval can be changed in Settings > General.",
             )
         )
-        self.cbAutoPullCompletedSets.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-        hbox.addWidget(self.cbAutoPullCompletedSets)
 
-        self.labelCompletedSetsTimer = QLabel()
-        self.labelCompletedSetsTimer.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-        hbox.addWidget(self.labelCompletedSetsTimer)
+        # Manual pulls go through the scheduler too, so they can't overlap
+        # an automatic one and they push the next automatic one back
+        self.pullCompletedSetsAction = completedSetsMenu.addAction(
+            QApplication.translate("app", "Pull Latest Completed Sets from StartGG")
+        )
+        self.pullCompletedSetsAction.triggered.connect(
+            lambda: Scheduler.instance.TriggerNow("completed_sets")
+        )
+        self.btPullCompletedSets = self.commandBar.AddWidget(
+            BarButton(
+                ThemedIcon("./assets/icons/refresh.svg"),
+                QApplication.translate("app", "Pull Latest Completed Sets from StartGG"),
+            )
+        )
+        self.btPullCompletedSets.clicked.connect(
+            lambda: Scheduler.instance.TriggerNow("completed_sets")
+        )
 
         Scheduler.instance.Register(
             "completed_sets",
@@ -554,10 +602,10 @@ class Window(QMainWindow):
 
         # No tournament is loaded yet, so the first pull happens when it is
         autoPull = SettingsManager.Get("general.completed_sets_auto_pull", False)
-        self.cbAutoPullCompletedSets.setChecked(autoPull)
+        self.autoPullCompletedSetsAction.setChecked(autoPull)
         if autoPull:
             Scheduler.instance.Start("completed_sets")
-        self.cbAutoPullCompletedSets.toggled.connect(self.ToggleCompletedSetsAutoPull)
+        self.autoPullCompletedSetsAction.toggled.connect(self.ToggleCompletedSetsAutoPull)
 
         # Keeps the players' avatars, sponsor logos and custom data up to
         # date as their files change
@@ -586,16 +634,59 @@ class Window(QMainWindow):
         self.UpdateTournamentButtons()
         self.UpdateCompletedSetsTimer()
 
+        self.commandBar.AddSeparator()
+
+        # Named arrangements of the widgets
+        self.qtSettings = QSettings("Voidscape Development", "HyperDrive")
+        self.workspaces = Workspaces(self, self.qtSettings)
+        self.workspaceBt = self.commandBar.AddWidget(
+            BarButton(
+                ThemedIcon("assets/icons/workspace.svg"),
+                QApplication.translate("app", "Workspace"),
+            )
+        )
+        workspaceMenu = QMenu(self.workspaceBt)
+        workspaceMenu.aboutToShow.connect(lambda: self.workspaces.FillMenu(workspaceMenu))
+        self.workspaceBt.setMenu(workspaceMenu)
+        self.workspaces.changed.connect(self.UpdateWorkspaceButton)
+        self.UpdateWorkspaceButton()
+
+        # Shows or hides each widget
+        self.widgetsBt = self.commandBar.AddWidget(
+            BarButton(
+                ThemedIcon("assets/icons/widgets.svg"), QApplication.translate("app", "Widgets")
+            )
+        )
+        widgetsMenu = QMenu(self.widgetsBt)
+        self.widgetsBt.setMenu(widgetsMenu)
+        for dock in [
+            self.scoreboard,
+            self.stageWidget,
+            commentary,
+            tournamentInfo,
+            teamBattle,
+            playerList,
+            bracket,
+            streamQueue,
+            displayControls,
+        ]:
+            widgetsMenu.addAction(dock.toggleViewAction())
+            dock.toggleViewAction().toggled.connect(self.UpdateWidgetsButton)
+        self.UpdateWidgetsButton()
+
+        self.playerDBBt = self.commandBar.AddWidget(
+            BarButton(
+                ThemedIcon("assets/icons/db.svg"),
+                QApplication.translate("app", "Player database"),
+            )
+        )
+        self.playerDBBt.clicked.connect(lambda: self.playerDBWindow.Open(0))
+
         # Settings
         menu_margin = " " * 6
-        self.optionsBt = QToolButton()
-        self.optionsBt.setIcon(ThemedIcon("assets/icons/menu.svg"))
-        self.optionsBt.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-        self.optionsBt.setPopupMode(QToolButton.InstantPopup)
-        base_layout.addWidget(self.optionsBt)
-        self.optionsBt.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-        self.optionsBt.setFixedSize(QSize(32, 32))
-        self.optionsBt.setIconSize(QSize(32, 32))
+        self.optionsBt = self.commandBar.AddWidget(
+            BarButton(ThemedIcon("assets/icons/menu.svg"), QApplication.translate("app", "Menu"))
+        )
         menu = QMenu()
         self.optionsBt.setMenu(menu)
         action = menu.addAction(QApplication.translate("app", "Always on top"))
@@ -617,20 +708,6 @@ class Window(QMainWindow):
         action = self.optionsBt.menu().addAction(QApplication.translate("app", "Seed editor"))
         action.setIcon(ThemedIcon("assets/icons/list.svg"))
         action.triggered.connect(lambda: self.playerDBWindow.Open(1))
-
-        toggleWidgets = QMenu(
-            QApplication.translate("app", "Toggle widgets") + menu_margin, self.optionsBt.menu()
-        )
-        self.optionsBt.menu().addMenu(toggleWidgets)
-        toggleWidgets.addAction(self.scoreboard.toggleViewAction())
-        toggleWidgets.addAction(self.stageWidget.toggleViewAction())
-        toggleWidgets.addAction(commentary.toggleViewAction())
-        toggleWidgets.addAction(tournamentInfo.toggleViewAction())
-        toggleWidgets.addAction(teamBattle.toggleViewAction())
-        toggleWidgets.addAction(playerList.toggleViewAction())
-        toggleWidgets.addAction(bracket.toggleViewAction())
-        toggleWidgets.addAction(streamQueue.toggleViewAction())
-        toggleWidgets.addAction(displayControls.toggleViewAction())
 
         self.optionsBt.menu().addSeparator()
 
@@ -824,10 +901,7 @@ class Window(QMainWindow):
             }
         )
 
-        # Game Select and Scoreboard Count
-        hbox = QHBoxLayout()
-        group_box.layout().addLayout(hbox)
-
+        # Game Select
         self.gameSelect = QComboBox()
         self.gameSelect.setEditable(True)
         self.gameSelect.completer().setFilterMode(Qt.MatchFlag.MatchContains)
@@ -851,26 +925,37 @@ class Window(QMainWindow):
         TournamentDataManager.instance.signals.tournament_changed.connect(self.SetGame)
         TournamentDataManager.instance.signals.tournament_url_update.connect(self.Signal_GameChange)
 
-        label_margin = " " * 5
-
-        # Modded content UI
-        self.moddedContentWidget = QWidget()
-        moddedContentLayout = QHBoxLayout()
-        self.moddedContentWidget.setLayout(moddedContentLayout)
-        self.moddedContentCheck = QCheckBox()
-        self.moddedContentWidget.setVisible(False)
-        self.moddedContentCheck.setChecked(False)
-        moddedContentCheckLabel = QLabel()
-        moddedContentCheckLabel.setText(
-            label_margin + QApplication.translate("app", "Modded content")
+        # The game's options: reload its assets, modded content, download
+        # assets
+        self.gameOptionsBt = BarButton(
+            ThemedIcon("assets/icons/chevron_down.svg"),
+            QApplication.translate("app", "Game options"),
         )
-        self.moddedContentWidget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-        moddedContentLayout.addWidget(moddedContentCheckLabel)
-        moddedContentLayout.addWidget(self.moddedContentCheck)
+        gameMenu = QMenu(self.gameOptionsBt)
+        self.gameOptionsBt.setMenu(gameMenu)
+
+        self.gameReloadAction = gameMenu.addAction(
+            ThemedIcon("assets/icons/refresh.svg"),
+            QApplication.translate("app", "Reload game assets"),
+        )
+
+        # Modded content UI: only for games with modded characters
+        self.moddedContentCheck = gameMenu.addAction(
+            QApplication.translate("app", "Modded content")
+        )
+        self.moddedContentCheck.setCheckable(True)
+        self.moddedContentCheck.setVisible(False)
+        self.moddedContentCheck.setChecked(False)
+
+        action = gameMenu.addAction(
+            ThemedIcon("assets/icons/download.svg"),
+            QApplication.translate("app", "Download assets"),
+        )
+        action.triggered.connect(lambda: AssetDownloader.instance.DownloadAssets(self))
 
         def _on_game_load():
-            self.moddedContentWidget.setVisible(GameAssetManager.instance.has_modded_content)
-            # Block stateChanged so setting the checkbox programmatically doesn't trigger a reload
+            self.moddedContentCheck.setVisible(GameAssetManager.instance.has_modded_content)
+            # Block toggled so setting the action programmatically doesn't trigger a reload
             with QSignalBlocker(self.moddedContentCheck):
                 self.moddedContentCheck.setChecked(
                     StateManager.Get("game").get("mods_active", False)
@@ -880,14 +965,14 @@ class Window(QMainWindow):
 
         GameAssetManager.instance.signals.onLoad.connect(
             lambda x=None: [
-                self.moddedContentWidget.setVisible(GameAssetManager.instance.has_modded_content),
+                self.moddedContentCheck.setVisible(GameAssetManager.instance.has_modded_content),
                 self.moddedContentCheck.setChecked(
                     StateManager.Get("game").get("mods_active", False)
                 ),
             ]
         )
 
-        self.moddedContentCheck.stateChanged.connect(
+        self.moddedContentCheck.toggled.connect(
             lambda x=None: [
                 print("Checked: " + str(self.moddedContentCheck.isChecked())),
                 GameAssetManager.instance.LoadGameAssets(
@@ -903,13 +988,7 @@ class Window(QMainWindow):
             lambda x=None: self.moddedContentCheck.setChecked(False)
         )
 
-        self.gameReloadBtn = QPushButton()
-        self.gameReloadBtn.setIcon(
-            QApplication.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)
-        )
-        self.gameReloadBtn.setToolTip(QApplication.translate("app", "Reload game assets"))
-        self.gameReloadBtn.setFixedSize(24, 24)
-        self.gameReloadBtn.clicked.connect(
+        self.gameReloadAction.triggered.connect(
             lambda: GameAssetManager.instance.LoadGameAssets(
                 self.gameSelect.currentData(),
                 mods_active=self.moddedContentCheck.isChecked(),
@@ -917,38 +996,18 @@ class Window(QMainWindow):
             )
         )
 
-        pre_base_layout.addLayout(base_layout)
-        hbox.addWidget(self.gameSelect)
-        hbox.addWidget(self.gameReloadBtn)
-        hbox.addWidget(self.moddedContentWidget)
-
-        self.scoreboardAmount = QSpinBox()
-        self.scoreboardAmount.setMaximumWidth(100)
-        self.scoreboardAmount.lineEdit().setReadOnly(True)
-        self.scoreboardAmount.setMinimum(1)
-        self.scoreboardAmount.setMaximum(10)
-
-        self.scoreboardAmount.valueChanged.connect(
-            lambda val: ScoreboardManager.instance.signals.ScoreboardAmountChanged.emit(val)
-        )
-
-        label = QLabel(label_margin + QApplication.translate("app", "Number of Scoreboards"))
-        label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-
-        self.btLoadModifyTabName = QPushButton(QApplication.translate("app", "Modify Tab Name"))
-        self.btLoadModifyTabName.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-        self.btLoadModifyTabName.clicked.connect(self.ChangeTab)
-
-        hbox.addWidget(label)
-        hbox.addWidget(self.scoreboardAmount)
-        hbox.addWidget(self.btLoadModifyTabName)
+        self.gameSelect.setMinimumContentsLength(16)
+        self.gameSlot.addWidget(self.gameSelect)
+        self.gameSlot.addWidget(self.gameOptionsBt)
 
         ScoreboardManager.instance.UpdateAmount(1)
+        self.SetupScoreboardTabs()
 
         self.CheckForUpdates(True)
         self.ReloadGames()
 
-        self.qtSettings = QSettings("Voidscape Development", "HyperDrive")
+        # Reset to default arrangement goes back to this
+        self.workspaces.SetDefault(self.saveState())
 
         if self.qtSettings.value("geometry"):
             self.restoreGeometry(self.qtSettings.value("geometry"))
@@ -1117,23 +1176,21 @@ class Window(QMainWindow):
 
     def UpdateCompletedSetsTimer(self):
         scheduler = Scheduler.instance
-        if not scheduler.IsEnabled("completed_sets"):
-            self.labelCompletedSetsTimer.setVisible(False)
-            return
-        self.labelCompletedSetsTimer.setVisible(True)
-        if not self._CompletedSetsSupported():
-            self.labelCompletedSetsTimer.setText(
-                QApplication.translate("app", "Waiting for a tournament")
-            )
-        elif scheduler.IsRunning("completed_sets"):
-            self.labelCompletedSetsTimer.setText(QApplication.translate("app", "Pulling..."))
+        pill = self.completedSetsPill
+        if scheduler.IsRunning("completed_sets"):
+            pill.SetStatus(STATUS_BUSY, QApplication.translate("app", "Pulling..."))
+        elif not scheduler.IsEnabled("completed_sets"):
+            pill.SetStatus(STATUS_OFF, QApplication.translate("app", "Auto pull off"))
+        elif not self._CompletedSetsSupported():
+            pill.SetStatus(STATUS_OFF, QApplication.translate("app", "Waiting for a tournament"))
         else:
             remaining = scheduler.RemainingMs("completed_sets")
             if remaining is not None:
-                self.labelCompletedSetsTimer.setText(
+                pill.SetStatus(
+                    STATUS_OK,
                     QApplication.translate("app", "Next pull in {0}s").format(
                         round(remaining / 1000)
-                    )
+                    ),
                 )
 
     def LoadCompletedSetsClicked(self, data):
@@ -1143,24 +1200,80 @@ class Window(QMainWindow):
     # TOURNAMENT BUTTONS
     # =====================================================
     def UpdateLastSetsButton(self):
-        self.btPullCompletedSets.setEnabled(self._CompletedSetsSupported())
+        supported = self._CompletedSetsSupported()
+        self.btPullCompletedSets.setEnabled(supported)
+        self.pullCompletedSetsAction.setEnabled(supported)
 
         # start.gg's text and icon until an event is loaded
         provider = self._CompletedSetsProvider()
         if provider is None or not provider.COMPLETED_SETS_BUTTON:
             provider = StartGGDataProvider
-        self.btPullCompletedSets.setText(
-            QApplication.translate("app", provider.COMPLETED_SETS_BUTTON)
-        )
-        self.btPullCompletedSets.setIcon(
+        text = QApplication.translate("app", provider.COMPLETED_SETS_BUTTON)
+        self.btPullCompletedSets.setToolTip(text)
+        self.pullCompletedSetsAction.setText(text)
+        self.pullCompletedSetsAction.setIcon(
             ThemedIcon(provider.ICON) if provider.ICON_THEMED else QIcon(provider.ICON)
         )
 
     def UpdateTournamentButtons(self):
-        # Both need an event loaded
-        loaded = TournamentDataManager.instance.provider is not None
-        self.selectEventBt.setEnabled(loaded)
-        self.repullEntrantsBt.setEnabled(loaded)
+        # Without an event the chip loads one; with one it opens its actions
+        provider = TournamentDataManager.instance.provider
+        chip = self.tournamentChip
+        chip.setMenu(None if provider is None else self.tournamentMenu)
+        chip.SetPrimary(provider is None)
+        if provider is None:
+            chip.SetIcon(QIcon())
+            chip.SetCaption("")
+            chip.SetTitle(QApplication.translate("app", "Load tournament"))
+        else:
+            chip.SetIcon(
+                ThemedIcon(provider.ICON) if provider.ICON_THEMED else QIcon(provider.ICON)
+            )
+            # The event's link until its names arrive, which they may not
+            # if pulling them fails
+            chip.SetCaption(
+                (provider.HOST or "") + " · " + QApplication.translate("app", "Loading...")
+            )
+            chip.SetTitle(provider.url or "")
+
+    def UpdateTournamentChip(self, data):
+        provider = TournamentDataManager.instance.provider
+        if provider is None or not data:
+            return
+        title = " › ".join(
+            name for name in [data.get("tournamentName"), data.get("eventName")] if name
+        )
+        self.tournamentChip.SetTitle(title or provider.url)
+        caption = provider.HOST or ""
+        if data.get("numEntrants"):
+            caption += " · " + QApplication.translate("app", "{0} entrants").format(
+                data.get("numEntrants")
+            )
+        self.tournamentChip.SetCaption(caption)
+
+    def UpdateWorkspaceButton(self):
+        current = self.workspaces.Current()
+        self.workspaceBt.SetLabel(current)
+        self.workspaceBt.setToolTip(
+            QApplication.translate("app", "Workspace")
+            + (QApplication.translate("punctuation", ":") + " " + current if current else "")
+        )
+
+    def UpdateWidgetsButton(self):
+        # How many widgets are hidden, next to the button
+        hidden = [action for action in self.widgetsBt.menu().actions() if not action.isChecked()]
+        self.widgetsBt.SetLabel(str(len(hidden)) if hidden else "")
+        self.widgetsBt.setToolTip(
+            QApplication.translate("app", "Widgets")
+            + (
+                " "
+                + QApplication.translate("punctuation", "(")
+                + QApplication.translate("app", "{0} hidden").format(len(hidden))
+                + QApplication.translate("punctuation", ")")
+                if hidden
+                else ""
+            )
+        )
 
     # =====================================================
     # UPDATES
@@ -1317,34 +1430,64 @@ class Window(QMainWindow):
             self.setWindowFlag(Qt.WindowStaysOnTopHint, False)
         self.show()
 
-    def ChangeTab(self):
-        tabNameWindow = QDialog(self)
-        tabNameWindow.setWindowTitle(QApplication.translate("app", "Change Tab Title"))
-        tabNameWindow.setMinimumWidth(400)
-        vbox = QVBoxLayout()
-        tabNameWindow.setLayout(vbox)
-        hbox = QHBoxLayout()
-        label = QLabel(QApplication.translate("app", "Scoreboard Number"))
-        number = QSpinBox()
-        number.setMinimum(1)
-        number.setMaximum(ScoreboardManager.instance.GetTabAmount())
-        hbox.addWidget(label)
-        hbox.addWidget(number)
-        vbox.addLayout(hbox)
-        name = QLineEdit()
-        vbox.addWidget(name)
+    def SetupScoreboardTabs(self):
+        """Scoreboards are added, removed and renamed on the Scoreboard
+        Manager's own tabs"""
+        tabs = ScoreboardManager.instance.tabs
+        corner = QWidget()
+        layout = QHBoxLayout(corner)
+        layout.setContentsMargins(0, 0, 4, 0)
+        layout.setSpacing(4)
 
-        setSelection = QPushButton(text=QApplication.translate("app", "Set Tab Title"))
+        self.removeScoreboardBt = QToolButton()
+        self.removeScoreboardBt.setText("−")
+        self.removeScoreboardBt.setToolTip(
+            QApplication.translate("app", "Remove the last scoreboard")
+        )
+        self.removeScoreboardBt.clicked.connect(
+            lambda: self.SetScoreboardAmount(ScoreboardManager.instance.GetTabAmount() - 1)
+        )
+        layout.addWidget(self.removeScoreboardBt)
 
-        def UpdateTabName():
-            ScoreboardManager.instance.SetTabName(number.value(), name.text())
-            tabNameWindow.close()
+        self.addScoreboardBt = QToolButton()
+        self.addScoreboardBt.setText("+ " + QApplication.translate("app", "Scoreboard"))
+        self.addScoreboardBt.setToolTip(
+            QApplication.translate("app", "Add a scoreboard, for another stream or station")
+        )
+        self.addScoreboardBt.clicked.connect(
+            lambda: self.SetScoreboardAmount(ScoreboardManager.instance.GetTabAmount() + 1)
+        )
+        layout.addWidget(self.addScoreboardBt)
 
-        setSelection.clicked.connect(UpdateTabName)
+        tabs.setCornerWidget(corner, Qt.Corner.TopRightCorner)
+        tabs.tabBar().setToolTip(QApplication.translate("app", "Double-click a tab to rename it"))
+        tabs.tabBar().tabBarDoubleClicked.connect(self.RenameScoreboardTab)
+        self.UpdateScoreboardButtons()
 
-        vbox.addWidget(setSelection)
+    def SetScoreboardAmount(self, amount):
+        amount = max(1, min(MAX_SCOREBOARDS, amount))
+        if amount != ScoreboardManager.instance.GetTabAmount():
+            ScoreboardManager.instance.signals.ScoreboardAmountChanged.emit(amount)
+        self.UpdateScoreboardButtons()
 
-        tabNameWindow.show()
+    def UpdateScoreboardButtons(self):
+        amount = ScoreboardManager.instance.GetTabAmount()
+        self.removeScoreboardBt.setEnabled(amount > 1)
+        self.addScoreboardBt.setEnabled(amount < MAX_SCOREBOARDS)
+
+    def RenameScoreboardTab(self, index):
+        if index < 0:
+            return
+        name, ok = QInputDialog.getText(
+            self,
+            QApplication.translate("app", "Change Tab Title"),
+            QApplication.translate("app", "Name of scoreboard {0}:").format(index + 1)
+            + "\n"
+            + QApplication.translate("app", "Leave it empty for the default name."),
+            text=ScoreboardManager.instance.GetTabName(index + 1),
+        )
+        if ok:
+            ScoreboardManager.instance.SetTabName(index + 1, name.strip())
 
     def OpenLayoutThemes(self):
         # Built on first use: it lists every installed font

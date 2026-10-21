@@ -60,6 +60,16 @@ class SettingsWindow(QDialog):
             )
         )
 
+        # Locks the web dashboard (not the players' pages) behind a PIN
+        generalSettings.append(
+            (
+                QApplication.translate("settings.general", "Web dashboard PIN (empty: no PIN)"),
+                "dashboard_pin",
+                "password",
+                "",
+            )
+        )
+
         generalSettings.append(
             (
                 QApplication.translate("settings.general", "Enable profanity filter"),

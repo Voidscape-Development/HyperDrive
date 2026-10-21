@@ -24,6 +24,9 @@ DEFAULT_THEME = THEME_DARK
 # logo uses a deeper amber, so the light theme does too.
 DEFAULT_ACCENT = "#ffb800"
 DEFAULT_ACCENT_ON_LIGHT = "#f0a500"
+# A status light that's on (the command bar's completed sets). It's only a
+# dot, so one green does for dark and light themes.
+STATUS_OK_COLOR = "#3fbf6f"
 DEFAULT_UI_SCALE = 100
 UI_SCALES = [80, 90, 100, 110, 125, 150, 175, 200]
 
@@ -844,5 +847,30 @@ class Theme:
 
         QCheckBox, QRadioButton {{ spacing: 6px; }}
         QStatusBar {{ background: {c["window"]}; color: {c["muted"]}; }}
+
+        /* The main window's command bar (CommandBar.py) */
+        QFrame#commandBar {{ background: {c["surface"]}; border-bottom: 1px solid {c["border"]}; }}
+        QFrame#barSeparator {{ background: {c["border"]}; }}
+        QToolButton#contextChip {{
+            background: {c["surface"]}; border: 1px solid {c["border"]};
+            border-radius: {r + 2}px; padding: 0px;
+        }}
+        QToolButton#contextChip:hover {{ background: {c["raised"]}; border-color: {c["muted"]}; }}
+        QToolButton#contextChip[primary="true"] {{ background: {c["accent"]}; border-color: {c["accent"]}; }}
+        QToolButton#contextChip[primary="true"]:hover {{ background: {c["accentHover"]}; }}
+        QToolButton#contextChip[primary="true"] QLabel {{ color: {c["onAccent"]}; }}
+        QToolButton#statusPill {{
+            background: {c["window"]}; border: 1px solid {c["border"]};
+            border-radius: 15px; padding: 0px;
+        }}
+        QToolButton#statusPill:hover {{ background: {c["raised"]}; border-color: {c["muted"]}; }}
+        QToolButton#barButton {{ background: transparent; border: 1px solid transparent; padding: 6px; }}
+        QToolButton#barButton:hover {{ background: {c["raised"]}; border-color: {c["border"]}; }}
+        QToolButton#contextChip::menu-indicator, QToolButton#statusPill::menu-indicator,
+        QToolButton#barButton::menu-indicator {{ image: none; width: 0px; }}
+        QLabel#chipCaption {{ color: {c["muted"]}; }}
+        QLabel#statusDot {{ background: {c["disabled"]}; border-radius: 4px; }}
+        QLabel#statusDot[status="ok"] {{ background: {STATUS_OK_COLOR}; }}
+        QLabel#statusDot[status="busy"] {{ background: {c["accent"]}; }}
         """
         )

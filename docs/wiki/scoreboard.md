@@ -77,17 +77,18 @@ To load the next set automatically when a set ends, use the [Stream queue](strea
 
 ## Several scoreboards
 
-For several streams (or a stream plus a station), raise **Number of Scoreboards** in the
-top bar. Each scoreboard gets its own tab; **Modify Tab Name** renames them.
+For several streams (or a stream plus a station), click **+ Scoreboard** at the right of
+the Scoreboard Manager's tabs. Each scoreboard gets its own tab: double-click a tab to rename
+it. **−** removes the last scoreboard.
 
 Layouts show scoreboard 1. To show another one, add `?scoreboardNumber=2` to the layout's
 URL (see [Adding layouts to OBS](obs-setup.md#layouts-with-options-use-a-url)).
 
 ## Editing the scoreboard from a phone
 
-The link under the buttons, `http://<address>:5500/scoreboard`, opens a remote scoreboard in
-any browser on your network: handy for a producer, or a second screen. See
-[Web pages](web-pages.md).
+The link under the buttons, `http://<address>:5500/scoreboard`, opens the scoreboard in any
+browser on your network: handy for a producer, or a second screen. It's also the Scoreboard
+section of the [web dashboard](web-pages.md#the-dashboard).
 
 - Tap a side to give it a point. Each side has **−** below it to take one away, and every
   score change shows a toast with **Undo**.

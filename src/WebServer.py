@@ -22,6 +22,7 @@ from sqladmin import Admin, ModelView
 from starlette.concurrency import run_in_threadpool
 from starlette.convertors import Convertor, register_url_convertor
 
+from . import WebDashboard
 from .CommentaryWidget import CommentaryWidget
 from .LayoutList import ListLayouts
 from .PlayerDB import PlayerDB
@@ -269,6 +270,8 @@ class WebServer(QThread):
             api.add_api_route(
                 "/admin", lambda: RedirectResponse("/admin/"), include_in_schema=False
             )
+            # The web dashboard's API and pages
+            WebDashboard.Setup(api, parent)
             api.add_api_route("/{filename:path}", WebServer.file_request, methods=["GET", "POST"])
 
     # =====================================================
