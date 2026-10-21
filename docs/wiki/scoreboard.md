@@ -78,8 +78,8 @@ To load the next set automatically when a set ends, use the [Stream queue](strea
 ## Several scoreboards
 
 For several streams (or a stream plus a station), click **+ Scoreboard** at the right of
-the Scoreboard Manager's tabs. Each scoreboard gets its own tab: double-click a tab to rename
-it. **−** removes the last scoreboard.
+the Scoreboard Manager's tabs. Each scoreboard gets its own tab: double-click a tab (or
+right-click it and pick **Rename scoreboard...**) to rename it. **−** removes the last scoreboard.
 
 Layouts show scoreboard 1. To show another one, add `?scoreboardNumber=2` to the layout's
 URL (see [Adding layouts to OBS](obs-setup.md#layouts-with-options-use-a-url)).

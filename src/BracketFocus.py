@@ -253,7 +253,7 @@ class BracketFocus(QObject):
         default) and picks it. Returns its name, or None if the name can't
         be used."""
         name = NormalizeChannelName(name)
-        if not name or name in self.channels:
+        if not name or self._Taken(name):
             return None
         self._Add(name, phase=phase if phase is not None else self.Current().phase)
         self.current = name
@@ -261,6 +261,13 @@ class BracketFocus(QObject):
         self.signals.channelsChanged.emit()
         self.signals.settingsChanged.emit(name)
         return name
+
+    def _Taken(self, name, besides=None):
+        """A channel has the name, give or take its case: "Main" would look
+        like the main channel, which is shown as "Main"."""
+        return any(
+            n.casefold() == name.casefold() for n in [*self.channels, MAIN_CHANNEL] if n != besides
+        )
 
     def RemoveChannel(self, name):
         if name == MAIN_CHANNEL or name not in self.channels:
@@ -280,7 +287,9 @@ class BracketFocus(QObject):
         """Renames a channel, keeping its phase and focus. The layouts
         showing it have to be changed to the new name."""
         new = NormalizeChannelName(new)
-        if name == MAIN_CHANNEL or name not in self.channels or not new or new in self.channels:
+        if name == MAIN_CHANNEL or name not in self.channels or not new:
+            return None
+        if self._Taken(new, besides=name):
             return None
         StateManager.Unset(f"bracket.focus.{name}")
         StateManager.Unset(f"bracket.channels.{name}")

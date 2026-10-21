@@ -113,6 +113,15 @@ def TestSetFields():
     assert StreamName("https://youtube.com/@channel/") == "@channel"
     assert StreamName("twitch.tv/side") == "side"
     assert StreamName(None) == StreamName("") == ""
+    # parry.gg's YouTube streams
+    assert StreamName("https://www.youtube.com/@channel/live") == "@channel"
+
+    assert StreamPlatform("https://twitch.tv/mainstage") == "twitch"
+    assert StreamPlatform("https://www.youtube.com/@channel/live") == "youtube"
+    assert StreamPlatform("youtu.be/x") == "youtube"
+    assert StreamPlatform("https://kick.com/side") == "kick"
+    assert StreamPlatform("https://nottwitch.tv/x") is None
+    assert StreamPlatform("mainstage") is None and StreamPlatform(None) is None
 
     assert StationText({"station": 4}) == "4"
     assert StationText({"station": ""}) == StationText({"station": -1}) == StationText({}) == ""

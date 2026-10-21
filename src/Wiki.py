@@ -362,6 +362,7 @@ def _WebDocument(title, nav, body):
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        '<link rel="icon" href="/favicon.ico">'
         f"<title>{html.escape(title)} - HyperDrive Guide</title>"
         f"<style>{WEB_STYLE}</style></head><body>"
         f'<div class="layout">{nav}<main>{body}</main></div></body></html>'

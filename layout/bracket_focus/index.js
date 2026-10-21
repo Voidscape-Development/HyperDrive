@@ -295,11 +295,14 @@ function moveCamera(s, target, animate) {
   const viewport = $(".viewport");
   const vw = viewport.width();
   const vh = viewport.height();
-  if (!vw || !vh || !target.w || !target.h) return;
+  if (!target.w || !target.h) return;
+  // Kept even while the page has no size yet (a browser source starting
+  // hidden), so it's moved there once it's resized
+  camera = target;
+  if (!vw || !vh) return;
   const label =
     $(".focus_label").hasClass("shown") && !$("body").hasClass("hd-bracket-hide-focus-label") ? LABEL_ROOM : 0;
   const scale = Math.min((vw - PADDING * 2) / target.w, (vh - PADDING * 2 - label) / target.h, maxZoom(s));
-  camera = target;
   const vars = {
     x: vw / 2 - (target.x + target.w / 2) * scale,
     y: (vh - label) / 2 - (target.y + target.h / 2) * scale,
@@ -307,7 +310,12 @@ function moveCamera(s, target, animate) {
     transformOrigin: "0 0",
   };
   if (animate) gsap.to(".world", { ...vars, duration: CAMERA_TIME, ease: "power2.inOut", overwrite: true });
-  else gsap.set(".world", vars);
+  else {
+    // Right away: GSAP's timeline is frozen until the layout is first shown,
+    // and the bracket would show at full size until then
+    gsap.killTweensOf(".world");
+    gsap.set(".world", { ...vars, immediateRender: true });
+  }
 }
 
 const channelOf = (s) => HDBracket.ChannelName(s.settings.channel) || "main";

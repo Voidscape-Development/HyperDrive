@@ -595,6 +595,20 @@ class Bracket:
         placement = self.LoserPlacementOf(m)
         return placement is not None and placement <= n
 
+    def ProgressionMatches(self):
+        """With progressions out, the matches whose winners go on to another
+        bracket, in the order of Results() (winners side first): the nth
+        one's winner goes on nth."""
+        if self.IsPool() or self.progressionsOut <= 0:
+            return []
+        outs = [
+            m
+            for m in self.order
+            if m.nextWin is None and not m.isBye and m.side != SIDE_THIRD_PLACE
+        ]
+        outs.sort(key=lambda m: (SIDES.index(m.side), m.row))
+        return outs
+
     def Results(self):
         """The bracket's players in finishing order, as a list of player ids
         (PENDING where not decided yet). With progressions out, the players
@@ -605,13 +619,7 @@ class Bracket:
             ]
 
         if self.progressionsOut > 0:
-            outs = [
-                m
-                for m in self.order
-                if m.nextWin is None and not m.isBye and m.side != SIDE_THIRD_PLACE
-            ]
-            outs.sort(key=lambda m: (SIDES.index(m.side), m.row))
-            return [m.winner for m in outs]
+            return [m.winner for m in self.ProgressionMatches()]
 
         results = []
         champion = self.Champion()

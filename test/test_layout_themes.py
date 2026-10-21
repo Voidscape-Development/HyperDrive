@@ -22,6 +22,7 @@ from src.StateManager import StateManager
 StateManager.Set = lambda key, value: StateManager.state.__setitem__(key, value)
 
 from src.LayoutOptions.LayoutThemes import (
+    APPLY_COLORS_FIELDS,
     DEFAULT_THEME,
     CssVariables,
     DefaultValues,
@@ -326,8 +327,33 @@ def TestManager():
     print("TestManager: OK")
 
 
+def TestApplyColorsFields():
+    """The fields the theme window says need "apply_colors" are the ones
+    globals.js only sends with it on"""
+    import re
+
+    fields = {(s.key, f.key) for s in LayoutThemeSchema() for f in s.fields}
+    assert APPLY_COLORS_FIELDS <= fields, APPLY_COLORS_FIELDS - fields
+    with open("layout/include/globals.js", encoding="utf-8") as f:
+        globalsJs = f.read()
+    block = re.search(r"const THEME_COLORS = \{(.*?)\};", globalsJs, re.S).group(1)
+    sent = set(re.findall(r'"--[a-z0-9-]+":\s*"(--[a-z0-9-]+)"', block))
+    css = {f"--{s}-{f}".replace("_", "-"): (s, f) for s, f in fields}
+    gated = {css[prop] for prop in sent}
+    # Also behind apply_colors there: the background and the sponsor colors
+    gated |= {
+        ("general", "background"),
+        ("versus", "custom_sponsor_colors"),
+        ("versus", "team1_sponsor_color"),
+        ("versus", "team2_sponsor_color"),
+    }
+    assert gated == APPLY_COLORS_FIELDS, gated ^ APPLY_COLORS_FIELDS
+    print("TestApplyColorsFields: OK")
+
+
 if __name__ == "__main__":
     TestSchema()
+    TestApplyColorsFields()
     TestNormalize()
     TestCss()
     TestLayoutDefaults()

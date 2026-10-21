@@ -128,6 +128,7 @@
     "bracket_focus_unselect": "Unselect",
     "bracket_focus_tbd": "TBD",
     "bracket_focus_channel": "Channel",
+    "bracket_focus_main_channel": "Main",
     "bracket_focus_phase": "Phase",
     "scoreboard_missing_title": "Scoreboard {{value}} isn't open",
     "scoreboard_missing": "This link is for a scoreboard HyperDrive doesn't have open. Open it in HyperDrive, or use the link from its Stage tab.",

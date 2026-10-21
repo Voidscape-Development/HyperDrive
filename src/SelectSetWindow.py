@@ -11,7 +11,7 @@ from qtpy.QtWidgets import *
 
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .Theme import Blend, Theme
+from .Theme import Blend, Theme, ThemedIcon
 from .TournamentDataManager import TournamentDataManager
 
 STATUS_IN_PROGRESS = "in_progress"
@@ -72,11 +72,35 @@ def StatusNames():
 
 
 def StreamName(url):
-    # "https://twitch.tv/name" is shown as "name"
+    # "https://twitch.tv/name" is shown as "name", and
+    # "https://youtube.com/@name/live" (parry.gg's) as "@name"
     if not url:
         return ""
     path = urlparse(url if "://" in url else "https://" + url).path.strip("/")
-    return path.split("/")[-1] if path else url
+    parts = [p for p in path.split("/") if p]
+    if len(parts) > 1 and parts[-1].lower() == "live":
+        parts.pop()
+    return parts[-1] if parts else url
+
+
+# Stream platforms recognized from the stream's address: (host, icon, color)
+PLATFORMS = {
+    "twitch": (("twitch.tv",), "layout/icons/twitch.svg", "#9146ff"),
+    "youtube": (("youtube.com", "youtu.be"), "layout/icons/youtube.svg", "#ff0033"),
+    "kick": (("kick.com",), "layout/icons/kick.svg", "#53fc18"),
+}
+
+
+def StreamPlatform(url):
+    """ "twitch", "youtube" or "kick" from the stream's address, None for
+    anything else"""
+    if not url:
+        return None
+    host = urlparse(url if "://" in url else "https://" + url).hostname or ""
+    for platform, (hosts, _icon, _color) in PLATFORMS.items():
+        if any(host == h or host.endswith("." + h) for h in hosts):
+            return platform
+    return None
 
 
 def StationText(s):
@@ -221,7 +245,7 @@ def Columns(rect):
     """The match, round, stream/station and status columns of a row."""
     left = rect.left() + ROW_PADDING
     width = max(0, rect.width() - 2 * ROW_PADDING - STATUS_COLUMN_WIDTH - 3 * COLUMN_GAP)
-    widths = [round(width * 0.44), round(width * 0.30)]
+    widths = [round(width * 0.38), round(width * 0.30)]
     widths.append(width - sum(widths))
     widths.append(STATUS_COLUMN_WIDTH)
     columns = []
@@ -239,19 +263,49 @@ def ScaledFont(font, scale=1.0, bold=False):
     return font
 
 
-def DrawPill(painter, rect, text, font, background, foreground, border=None):
-    """A rounded label at rect's left, centered on its height. Returns its width."""
+def DrawPill(painter, rect, text, font, background, foreground, border=None, icon=None):
+    """A rounded label at rect's left, centered on its height, with an icon
+    (QIcon) before its text. Returns its width."""
     metrics = QFontMetrics(font)
-    width = metrics.horizontalAdvance(text) + 16
+    iconSize = metrics.height() - 2 if icon is not None else 0
+    iconRoom = iconSize + 4 if icon is not None else 0
+    width = metrics.horizontalAdvance(text) + 16 + iconRoom
     height = metrics.height() + 4
     pill = QRectF(rect.left(), rect.center().y() - height / 2 + 1, width, height)
     painter.setPen(QPen(border, 1) if border is not None else Qt.PenStyle.NoPen)
     painter.setBrush(background if background is not None else Qt.BrushStyle.NoBrush)
     painter.drawRoundedRect(pill.adjusted(0.5, 0.5, -0.5, -0.5), height / 2, height / 2)
+    if icon is not None:
+        iconRect = QRect(
+            round(pill.left() + 8), round(pill.center().y() - iconSize / 2), iconSize, iconSize
+        )
+        icon.paint(painter, iconRect)
     painter.setPen(foreground)
     painter.setFont(font)
-    painter.drawText(pill, Qt.AlignmentFlag.AlignCenter, text)
+    painter.drawText(pill.adjusted(iconRoom, 0, 0, 0), Qt.AlignmentFlag.AlignCenter, text)
     return width
+
+
+_PLATFORM_ICONS = {}
+
+
+def PlatformIcon(platform):
+    """The platform's logo in its color, None for an unknown platform"""
+    if platform not in PLATFORMS:
+        return None
+    if platform not in _PLATFORM_ICONS:
+        _hosts, path, color = PLATFORMS[platform]
+        source = QIcon(path).pixmap(64, 64)
+        pixmap = QPixmap(source.size())
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pixmap)
+        painter.drawPixmap(0, 0, source)
+        # The glyph in the platform's color
+        painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+        painter.fillRect(pixmap.rect(), QColor(color))
+        painter.end()
+        _PLATFORM_ICONS[platform] = QIcon(pixmap)
+    return _PLATFORM_ICONS[platform]
 
 
 class SetRowDelegate(QStyledItemDelegate):
@@ -261,6 +315,8 @@ class SetRowDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.colors = ThemeColors()
+        self.streamIcon = ThemedIcon("assets/icons/online.svg")
+        self.stationIcon = ThemedIcon("assets/icons/station.svg")
 
     def sizeHint(self, option, index):
         lineHeight = option.fontMetrics.height()
@@ -332,12 +388,18 @@ class SetRowDelegate(QStyledItemDelegate):
 
         self.DrawText(painter, roundColumn, s.get("round_name") or "", option.font, colors["text"])
 
-        # Stream and station
+        # Stream and station, with the stream's platform or a station icon
         tags = []
         if StreamName(s.get("stream")):
-            tags.append(StreamName(s.get("stream")))
+            tags.append(
+                (
+                    StreamName(s.get("stream")),
+                    PlatformIcon(StreamPlatform(s.get("stream"))) or self.streamIcon,
+                )
+            )
         if StationText(s):
-            tags.append(QApplication.translate("app", "Station {0}").format(StationText(s)))
+            # Its icon says it's a station, so the number is enough
+            tags.append((StationText(s), self.stationIcon))
         if not tags:
             self.DrawText(
                 painter,
@@ -350,8 +412,10 @@ class SetRowDelegate(QStyledItemDelegate):
         painter.setClipRect(whereColumn)
         tagRect = QRect(whereColumn)
         tagFont = ScaledFont(option.font, 0.88)
-        for tag in tags:
-            width = DrawPill(painter, tagRect, tag, tagFont, colors["raised"], colors["text"])
+        for tag, icon in tags:
+            width = DrawPill(
+                painter, tagRect, tag, tagFont, colors["raised"], colors["text"], icon=icon
+            )
             tagRect.setLeft(tagRect.left() + width + 6)
         painter.restore()
 

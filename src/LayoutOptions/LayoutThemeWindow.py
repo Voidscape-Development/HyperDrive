@@ -9,6 +9,7 @@ from qtpy.QtWidgets import *
 from ..ColorButton import ColorButton
 from ..Theme import ThemedIcon
 from .LayoutThemes import (
+    APPLY_COLORS_FIELDS,
     DEFAULT_THEME,
     FIELD_CHECKBOX,
     FIELD_COLOR,
@@ -249,14 +250,39 @@ class LayoutThemeWindow(QDialog):
         layout.addWidget(splitter, 1)
 
         self.editors = {}
+        # Labels of the fields that need "Use this theme's colors in layouts",
+        # and the notes saying so, dimmed and shown while it's off
+        self.colorLabels = []
+        self.colorNotes = []
         for section in LayoutThemeSchema():
             self.sectionList.addItem(section.label)
             page = QWidget()
             grid = QGridLayout(page)
             grid.setAlignment(Qt.AlignmentFlag.AlignTop)
-            for row, field in enumerate(section.fields):
+            first = 0
+            if any((section.key, f.key) in APPLY_COLORS_FIELDS for f in section.fields):
+                note = QLabel(
+                    QApplication.translate(
+                        "layout_themes",
+                        'The dimmed options only reach the layouts with "Use this theme\'s colors in layouts" on, in General.',
+                    )
+                )
+                note.setWordWrap(True)
+                grid.addWidget(note, 0, 0, 1, 3)
+                self.colorNotes.append(note)
+                first = 1
+            for row, field in enumerate(section.fields, first):
                 editor = FieldEditor(field, lambda s=section.key, f=field: self.Edited(s, f))
-                grid.addWidget(QLabel(field.label), row, 0)
+                label = QLabel(field.label)
+                if (section.key, field.key) in APPLY_COLORS_FIELDS:
+                    label.setToolTip(
+                        QApplication.translate(
+                            "layout_themes",
+                            'Only reaches the layouts with "Use this theme\'s colors in layouts" on, in General',
+                        )
+                    )
+                    self.colorLabels.append(label)
+                grid.addWidget(label, row, 0)
                 grid.addWidget(editor.widget, row, 1, Qt.AlignmentFlag.AlignLeft)
                 resetButton = QPushButton(QApplication.translate("settings", "Default"))
                 resetButton.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
@@ -303,7 +329,14 @@ class LayoutThemeWindow(QDialog):
             editor.Fill(theme["values"][sectionKey][fieldKey])
             editor.widget.setEnabled(not builtin)
             resetButton.setEnabled(not builtin)
+        self.UpdateColorHints(theme["values"]["general"]["apply_colors"])
         self.updating = False
+
+    def UpdateColorHints(self, applyColors):
+        for label in self.colorLabels:
+            label.setEnabled(applyColors)
+        for note in self.colorNotes:
+            note.setVisible(not applyColors)
 
     # =====================================================
     # THEME SELECTION
@@ -327,6 +360,8 @@ class LayoutThemeWindow(QDialog):
             return
         editor, _ = self.editors[(sectionKey, field.key)]
         self.editing["values"][sectionKey][field.key] = NormalizeValue(field, editor.get())
+        if (sectionKey, field.key) == ("general", "apply_colors"):
+            self.UpdateColorHints(self.editing["values"]["general"]["apply_colors"])
         self.applyTimer.start()
 
     def Reset(self, sectionKey, field):

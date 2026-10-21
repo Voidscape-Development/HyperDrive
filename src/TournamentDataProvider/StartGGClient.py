@@ -135,6 +135,13 @@ class StartGGClient:
                     f"start.gg {(jsonParams or {}).get('operationName', url)} returned {data.status_code}"
                 )
             data = orjson.loads(data.text)
+            # Callers read it as a dict: a null or a list (an error page,
+            # a proxy) counts as a failed request
+            if not isinstance(data, dict):
+                logger.warning(
+                    f"start.gg {(jsonParams or {}).get('operationName', url)} returned {data.__class__.__name__}"
+                )
+                return {}
             # GraphQL errors (e.g. the complexity cap) come back as a 200,
             # so they'd otherwise look like an empty result
             if isinstance(data, dict) and data.get("errors"):

@@ -11,6 +11,17 @@ def deep_get(dictionary, keys, default=None):
     )
 
 
+def as_dict(value):
+    """value if it's a dict, otherwise {}. APIs send null for missing
+    objects, which .get(key, {}) returns as is."""
+    return value if isinstance(value, dict) else {}
+
+
+def as_list(value):
+    """value's items that aren't None if it's a list, otherwise []"""
+    return [item for item in value if item is not None] if isinstance(value, list) else []
+
+
 def _parent(dictionary, keys):
     """The dict holding the last key of keys (created if missing), and that key"""
     *path, last = keys.split(".")
