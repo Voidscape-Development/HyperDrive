@@ -402,6 +402,33 @@ def LayoutThemeSchema():
     ]
 
 
+# The fields that only reach the layouts with "apply_colors" on (globals.js's
+# THEME_COLORS), as (section, field)
+APPLY_COLORS_FIELDS = {
+    ("general", "primary_color"),
+    ("general", "secondary_color"),
+    ("general", "text_color"),
+    ("general", "background"),
+    ("general", "border_radius"),
+    ("general", "chip_radius"),
+    ("teams", "team1_color"),
+    ("teams", "team2_color"),
+    ("teams", "team1_score_color"),
+    ("teams", "team2_score_color"),
+    ("chip", "text_color"),
+    ("chip", "background"),
+    ("bracket", "score_background"),
+    ("bracket", "sponsor_background"),
+    ("bracket", "winner_color"),
+    ("bracket", "lines_color"),
+    ("stage_strike", "striked_color"),
+    ("stage_strike", "selected_color"),
+    ("versus", "custom_sponsor_colors"),
+    ("versus", "team1_sponsor_color"),
+    ("versus", "team2_sponsor_color"),
+}
+
+
 def DefaultValues(schema=None):
     return {
         section.key: {field.key: _Copy(field.default) for field in section.fields}

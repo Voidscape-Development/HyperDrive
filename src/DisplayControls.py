@@ -198,6 +198,9 @@ class DisplayControlsWidget(QDockWidget):
 
         self.tree = QTreeWidget()
         self.tree.setHeaderHidden(True)
+        # Rows a bit taller than the checkboxes, which otherwise touch the
+        # ones above and below
+        self.tree.setStyleSheet("QTreeView::item { padding: 3px 0px; }")
         self.tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.ContextMenu)
         self.tree.itemChanged.connect(self.ItemChanged)

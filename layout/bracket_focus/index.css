@@ -170,6 +170,10 @@ body.hd-bracket-hide-round-names .bf_round_name {
 
 .player.container {
   position: relative;
+  /* Its own stacking context, so the characters (z-index -999) stay above
+     the set's background instead of only while the row is dimmed (the
+     filter made one) */
+  isolation: isolate;
   width: 100%;
   height: calc(var(--player-height) * 1px);
   transition: filter 0.4s linear;

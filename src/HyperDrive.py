@@ -302,6 +302,21 @@ def remove_accents_lower(input_str):
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
 
 
+class TabCorner(QWidget):
+    """A tab widget's corner as tall as its tab bar, which is all the room
+    the tab widget gives it: taller and it's cut off."""
+
+    def __init__(self, tabBar):
+        super().__init__()
+        self.tabBar = tabBar
+
+    def sizeHint(self):
+        return QSize(super().sizeHint().width(), max(0, self.tabBar.sizeHint().height() - 2))
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
+
+
 class WindowSignals(QObject):
     StopTimer = Signal()
     ExportStageStrike = Signal(object)
@@ -1082,6 +1097,8 @@ class Window(QMainWindow):
         )
         if index is not None:
             self.gameSelect.setCurrentIndex(index)
+            # The start of a name too long to fit, not its end
+            self.gameSelect.lineEdit().setCursorPosition(0)
             self.signals.GameChanged.emit()
 
     def Signal_GameChange(self, url):
@@ -1120,7 +1137,23 @@ class Window(QMainWindow):
             view.setStyleSheet("QListView::item { height: 32px; }")
             self.gameSelect.setView(view)
             self.gameSelect.model().sort(0)
+            self.FitGameSelect()
             self.SetGame()
+
+    def FitGameSelect(self):
+        """Wide enough for the longest game name next to its logo, so names
+        like Super Smash Bros. Ultimate aren't cut off"""
+        metrics = self.gameSelect.fontMetrics()
+        longest = max(
+            (
+                metrics.horizontalAdvance(self.gameSelect.itemText(i))
+                for i in range(self.gameSelect.count())
+            ),
+            default=0,
+        )
+        # The logo, the arrow and the field's padding
+        width = longest + self.gameSelect.iconSize().width() + 60
+        self.gameSelect.setMinimumWidth(min(width, 360))
 
     def DetectGameFromId(self, id):
         def detect_smashgg_id_match(games, game, id):
@@ -1434,9 +1467,9 @@ class Window(QMainWindow):
         """Scoreboards are added, removed and renamed on the Scoreboard
         Manager's own tabs"""
         tabs = ScoreboardManager.instance.tabs
-        corner = QWidget()
+        corner = TabCorner(tabs.tabBar())
         layout = QHBoxLayout(corner)
-        layout.setContentsMargins(0, 0, 4, 0)
+        layout.setContentsMargins(0, 2, 4, 2)
         layout.setSpacing(4)
 
         self.removeScoreboardBt = QToolButton()
@@ -1459,9 +1492,20 @@ class Window(QMainWindow):
         )
         layout.addWidget(self.addScoreboardBt)
 
+        # The corner only gets the tab bar's height (TabCorner), which can be
+        # less than the buttons' (fonts, density): they fit it instead of
+        # being cut off
+        for button in (self.removeScoreboardBt, self.addScoreboardBt):
+            button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Ignored)
+
         tabs.setCornerWidget(corner, Qt.Corner.TopRightCorner)
-        tabs.tabBar().setToolTip(QApplication.translate("app", "Double-click a tab to rename it"))
-        tabs.tabBar().tabBarDoubleClicked.connect(self.RenameScoreboardTab)
+        tabBar = tabs.tabBar()
+        tabBar.setToolTip(
+            QApplication.translate("app", "Double-click or right-click a tab to rename it")
+        )
+        tabBar.tabBarDoubleClicked.connect(self.RenameScoreboardTab)
+        tabBar.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        tabBar.customContextMenuRequested.connect(self.ScoreboardTabMenu)
         self.UpdateScoreboardButtons()
 
     def SetScoreboardAmount(self, amount):
@@ -1474,6 +1518,18 @@ class Window(QMainWindow):
         amount = ScoreboardManager.instance.GetTabAmount()
         self.removeScoreboardBt.setEnabled(amount > 1)
         self.addScoreboardBt.setEnabled(amount < MAX_SCOREBOARDS)
+
+    def ScoreboardTabMenu(self, pos):
+        tabBar = ScoreboardManager.instance.tabs.tabBar()
+        index = tabBar.tabAt(pos)
+        if index < 0:
+            return
+        menu = QMenu(self)
+        menu.addAction(
+            QApplication.translate("app", "Rename scoreboard..."),
+            lambda: self.RenameScoreboardTab(index),
+        )
+        menu.exec(tabBar.mapToGlobal(pos))
 
     def RenameScoreboardTab(self, index):
         if index < 0:

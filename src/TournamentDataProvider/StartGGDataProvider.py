@@ -14,7 +14,7 @@ from qtpy.QtCore import QT_TRANSLATE_NOOP
 from ..Helpers import CompletedSetsHelper
 from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
-from ..Helpers.DictHelper import deep_clone, deep_get
+from ..Helpers.DictHelper import as_dict, as_list, deep_clone, deep_get
 from ..Helpers.LocaleHelper import LocaleHelper
 from ..Helpers.SeedPerformance import EventBracketType
 from ..PlayerDBModels import MakeTag
@@ -181,10 +181,10 @@ class StartGGDataProvider(TournamentDataProvider):
                 },
             )
 
-            images = deep_get(data, "data.event.tournament.images", [])
+            images = as_list(deep_get(data, "data.event.tournament.images"))
 
             if len(images) > 0:
-                url = images[0]["url"]
+                url = as_dict(images[0]).get("url")
         except:
             logger.error(traceback.format_exc())
 
@@ -205,7 +205,10 @@ class StartGGDataProvider(TournamentDataProvider):
                 )
 
                 slug = deep_get(data, "data.event.slug", None)
-                url = "https://www.start.gg/" + slug
+                if slug:
+                    url = "https://www.start.gg/" + slug
+                else:
+                    logger.error(f"No event found for {url}")
             except:
                 logger.error(traceback.format_exc())
         self.url = url
@@ -233,10 +236,10 @@ class StartGGDataProvider(TournamentDataProvider):
 
             logger.info(data)
 
-            for phase in deep_get(data, "data.event.phases", []):
+            for phase in as_list(deep_get(data, "data.event.phases")):
                 phaseObj = {"id": phase.get("id"), "name": phase.get("name"), "groups": []}
 
-                for phaseGroup in deep_get(phase, "phaseGroups.nodes", []):
+                for phaseGroup in as_list(deep_get(phase, "phaseGroups.nodes")):
                     phaseObj["groups"].append(
                         {
                             "id": phaseGroup.get("id"),
@@ -393,11 +396,11 @@ class StartGGDataProvider(TournamentDataProvider):
                 seedsResult = result(fetchSeeds)
                 setsResult = result(fetchSets)
 
-            seeds = (seedsResult or {}).get("seeds", [])
+            seeds = as_list((seedsResult or {}).get("seeds"))
             progressionsOut = (seedsResult or {}).get("progressionsOut")
-            sets = (setsResult or {}).get("sets", [])
+            sets = as_list((setsResult or {}).get("sets"))
 
-            seeds.sort(key=lambda s: s.get("seedNum"))
+            seeds.sort(key=lambda s: s.get("seedNum") or 0)
 
             teams = []
 
@@ -405,7 +408,8 @@ class StartGGDataProvider(TournamentDataProvider):
                 team = {}
                 participants = deep_get(seed, "entrant.participants")
 
-                if participants is not None:
+                if isinstance(participants, list):
+                    participants = as_list(participants)
                     if len(participants) > 1:
                         team["name"] = deep_get(seed, "entrant.name")
 
@@ -456,7 +460,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         "winnerSlot": StartGGConvert.SetWinnerSlot(s),
                         "slots": [
                             {
-                                "prereqType": slot.get("prereqType"),
+                                "prereqType": as_dict(slot).get("prereqType"),
                                 "entrantId": str(deep_get(slot, "entrant.id"))
                                 if deep_get(slot, "entrant.id") is not None
                                 else None,
@@ -502,6 +506,9 @@ class StartGGDataProvider(TournamentDataProvider):
 
             # logger.debug(result)
 
+            # A failed or slow one counts as having nothing
+            result = {key: as_dict(value) for key, value in result.items()}
+
             finalResult = {}
             finalResult.update(result["new"])
             finalResult.update(result["old"])
@@ -516,24 +523,23 @@ class StartGGDataProvider(TournamentDataProvider):
                 indicator = LocaleHelper.matchNames.get(indicator)
 
                 winnerProgression = re.sub(r"\s*[\(\{\[].*?[\)\}\]]", "", winnerProgression).strip()
-                finalResult["round_name"] = LocaleHelper.matchNames.get("qualifier").format(
-                    winnerProgression, indicator
-                )
+                qualifier = LocaleHelper.matchNames.get("qualifier")
+                if qualifier:
+                    finalResult["round_name"] = qualifier.format(winnerProgression, indicator)
 
             if result.get("new", {}).get("isOnline") == False:
                 finalResult["bestOf"] = None
 
-            finalResult["entrants"] = result.get("new", {}).get("entrants", [])
+            finalResult["entrants"] = result["new"].get("entrants") or []
 
-            if result.get("old", {}).get("entrants", []) is not None:
-                for t, team in enumerate(result.get("old", {}).get("entrants", [])):
-                    for p, player in enumerate(team):
-                        if player["mains"]:
-                            try:
-                                finalResult["entrants"][t][p]["mains"] = player["mains"]
-                                finalResult["has_selection_data"] = True
-                            except:
-                                logger.debug(traceback.format_exc())
+            for t, team in enumerate(result["old"].get("entrants") or []):
+                for p, player in enumerate(team or []):
+                    if as_dict(player).get("mains"):
+                        try:
+                            finalResult["entrants"][t][p]["mains"] = player["mains"]
+                            finalResult["has_selection_data"] = True
+                        except:
+                            logger.debug(traceback.format_exc())
 
             # logger.debug(f"Final result: {finalResult}")
 
@@ -573,7 +579,11 @@ class StartGGDataProvider(TournamentDataProvider):
                 },
             )
             # logger.debug(data.get("data", {}).get("set", {}))
-            return self.ParseMatchDataNewApi(data.get("data", {}).get("set", {}))
+            _set = deep_get(data, "data.set")
+            if not _set:
+                logger.error(f"start.gg sent no set {setId}: {data.get('errors')}")
+                return {}
+            return self.ParseMatchDataNewApi(_set)
         except Exception as e:
             logger.error(traceback.format_exc())
             return {}
@@ -645,9 +655,9 @@ class StartGGDataProvider(TournamentDataProvider):
 
     def ParseMatchDataNewApi(self, _set):
         try:
-            slots = deep_get(_set, "slots", [])
-            p1 = slots[0] if len(slots) > 0 else {}
-            p2 = slots[1] if len(slots) > 1 else {}
+            slots = deep_get(_set, "slots") or []
+            p1 = as_dict(slots[0] if len(slots) > 0 else None)
+            p2 = as_dict(slots[1] if len(slots) > 1 else None)
 
             # Add Pool identifier if phase has multiple Pools
             phase_name = deep_get(_set, "phaseGroup.phase.name")
@@ -658,18 +668,22 @@ class StartGGDataProvider(TournamentDataProvider):
 
             bracket_type = deep_get(_set, "phaseGroup.phase.bracketType", "")
 
-            isPools = deep_get(_set, "phaseGroup.phase.groupCount", 0) > 1
+            isPools = (deep_get(_set, "phaseGroup.phase.groupCount") or 0) > 1
             if isPools:
-                phase_name += " - " + LocaleHelper.phaseNames.get("group").format(
-                    deep_get(_set, "phaseGroup.displayIdentifier")
+                phase_name = (
+                    (phase_name or "")
+                    + " - "
+                    + LocaleHelper.phaseNames.get("group").format(
+                        deep_get(_set, "phaseGroup.displayIdentifier")
+                    )
                 )
 
             streamUrl = deep_get(_set, "stream.streamName")
             streamSource = deep_get(_set, "stream.streamSource")
 
-            if streamSource == "TWITCH":
+            if streamSource == "TWITCH" and streamUrl:
                 streamUrl = "https://twitch.tv/" + streamUrl
-            if streamSource == "YOUTUBE":
+            if streamSource == "YOUTUBE" and streamUrl:
                 streamUrl = "https://youtube.com/" + streamUrl
 
             setData = {
@@ -716,12 +730,8 @@ class StartGGDataProvider(TournamentDataProvider):
             players = [[], []]
 
             entrants = [
-                p1.get("entrant", {}).get("participants", [])
-                if p1.get("entrant", {}) is not None
-                else [],
-                p2.get("entrant", {}).get("participants", [])
-                if p2.get("entrant", {}) is not None
-                else [],
+                as_list(deep_get(p1, "entrant.participants")),
+                as_list(deep_get(p2, "entrant.participants")),
             ]
 
             for i, team in enumerate(entrants):
@@ -746,7 +756,7 @@ class StartGGDataProvider(TournamentDataProvider):
                             playerData["avatar"] = user.get("images")[0].get("url")
 
                         if user.get("id"):
-                            playerData["id"] = [player.get("id"), user.get("id")]
+                            playerData["id"] = [as_dict(player).get("id"), user.get("id")]
 
                         if user.get("location"):
                             # Country to country code
@@ -776,7 +786,7 @@ class StartGGDataProvider(TournamentDataProvider):
                                 playerData["city"] = user.get("location").get("city")
 
                     if "id" not in playerData:
-                        playerData["id"] = [player.get("id"), 0]
+                        playerData["id"] = [as_dict(player).get("id"), 0]
                     if playerData.get("id") and len(playerData.get("id")) > 0:
                         if playerData["id"][0] is not None:
                             playerData["seed"] = self.player_seeds.get(playerData["id"][0])
@@ -785,16 +795,12 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData["seed"] = setData.get(f"p{i + 1}_seed")
 
                     if i == 0:
-                        standings = deep_get(
-                            p1.get("entrant", {}), "standing.setRecordWithoutByes", {}
-                        )
+                        standings = as_dict(deep_get(p1, "entrant.standing.setRecordWithoutByes"))
                         playerData["wins"] = standings.get("wins", "0")
                         playerData["losses"] = standings.get("losses", "0")
                         playerData["winPercentage"] = standings.get("winPercentage", "N/A")
                     else:
-                        standings = deep_get(
-                            p2.get("entrant", {}), "standing.setRecordWithoutByes", {}
-                        )
+                        standings = as_dict(deep_get(p2, "entrant.standing.setRecordWithoutByes"))
                         playerData["wins"] = standings.get("wins", "0")
                         playerData["losses"] = standings.get("losses", "0")
                         playerData["winPercentage"] = standings.get("winPercentage", "N/A")
@@ -816,13 +822,17 @@ class StartGGDataProvider(TournamentDataProvider):
     # =====================================================
     def ProcessFutureSet(self, _set, eventSlug):
         phase_name = deep_get(_set, "phaseGroup.phase.name")
-        if deep_get(_set, "phaseGroup.phase.groupCount") > 1:
-            phase_name += " - " + LocaleHelper.phaseNames.get("group").format(
-                deep_get(_set, "phaseGroup.displayIdentifier")
+        if (deep_get(_set, "phaseGroup.phase.groupCount") or 0) > 1:
+            phase_name = (
+                (phase_name or "")
+                + " - "
+                + LocaleHelper.phaseNames.get("group").format(
+                    deep_get(_set, "phaseGroup.displayIdentifier")
+                )
             )
 
-        frt = _set.get("fullRoundText", "")
-        total_games = _set.get("totalGames", 0)
+        frt = _set.get("fullRoundText") or ""
+        total_games = _set.get("totalGames") or 0
         seteventSlug = deep_get(_set, "event.slug", "")
 
         setData = {
@@ -842,8 +852,8 @@ class StartGGDataProvider(TournamentDataProvider):
             "isCurrentEvent": seteventSlug == eventSlug,
         }
 
-        for teamIndex, slot in enumerate(_set.get("slots", [])):
-            entrant = slot.get("entrant", None)
+        for teamIndex, slot in enumerate(_set.get("slots") or []):
+            entrant = as_dict(slot).get("entrant")
             if entrant:
                 losers = False
                 if "Gran" in frt:
@@ -859,13 +869,13 @@ class StartGGDataProvider(TournamentDataProvider):
 
                 # TODO : pull the state data
 
-                for playerIndex, participant in enumerate(entrant.get("participants", [])):
+                for playerIndex, participant in enumerate(as_list(entrant.get("participants"))):
                     playerData = StartGGConvert.ProcessEntrantData(
                         participant, gameAssets=self.context.games
                     )
                     if self.UseLocalPlayerData():
                         self.FillFromLocalDB(playerData)
-                    playerName = playerData.get("gamerTag", "")
+                    playerName = playerData.get("gamerTag") or ""
                     team = playerData.get("prefix", "")
 
                     countryCode = playerData.get("country_code", "")
@@ -874,8 +884,9 @@ class StartGGDataProvider(TournamentDataProvider):
                     stateData = {}
                     if countryData:
                         states = countryData.get("states")
-                        if states and stateCode:
-                            stateData = states[stateCode]
+                        if states and stateCode and states.get(stateCode):
+                            # A copy: the countries' data is shared
+                            stateData = dict(states[stateCode])
 
                             path = f"./assets/state_flag/{countryCode}/{'_CON' if stateCode == 'CON' else stateCode}.png"
                             if not os.path.exists(path):
@@ -966,10 +977,10 @@ class StartGGDataProvider(TournamentDataProvider):
                 },
             )
 
-            stations = deep_get(data, "data.event.stations.nodes", [])
-            queues = deep_get(data, "data.event.tournament.streamQueue", [])
+            stations = as_list(deep_get(data, "data.event.stations.nodes"))
+            queues = as_list(deep_get(data, "data.event.tournament.streamQueue"))
 
-            if stations is not None:
+            if stations:
                 for station in stations:
                     stream = ""
 
@@ -993,7 +1004,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         }
                     )
 
-            if queues is not None:
+            if queues:
                 for queue in queues:
                     if queue.get("stream") is not None:
                         stream = queue.get("stream")
@@ -1036,13 +1047,17 @@ class StartGGDataProvider(TournamentDataProvider):
                 logger.info("(No stream queue was found)")
                 return finalData
 
-            for q in queues:
-                streamName = q.get("stream", {}).get("streamName", "")
+            for q in as_list(queues):
+                streamName = deep_get(q, "stream.streamName") or ""
                 queueData = {}
-                for setIndex, _set in enumerate(q.get("sets", [])):
-                    setData = self.ProcessFutureSet(_set, eventSlug)
-
-                    queueData[str(setIndex + 1)] = setData
+                for _set in as_list(q.get("sets")):
+                    try:
+                        setData = self.ProcessFutureSet(_set, eventSlug)
+                    except Exception:
+                        # One set start.gg sent half of doesn't empty the queue
+                        logger.error(traceback.format_exc())
+                        continue
+                    queueData[str(len(queueData) + 1)] = setData
 
                 finalData[streamName] = queueData
 
@@ -1086,21 +1101,23 @@ class StartGGDataProvider(TournamentDataProvider):
 
             eventId = deep_get(data, "data.event.id", None)
 
-            queues = deep_get(data, "data.event.tournament.streamQueue", [])
+            queues = as_list(deep_get(data, "data.event.tournament.streamQueue"))
 
             if queues:
-                lStreamName = streamName.lower()  # """performance"""
+                lStreamName = (streamName or "").lower()  # """performance"""
                 queue = next(
                     (
                         q
                         for q in queues
-                        if q and q.get("stream", {}).get("streamName", "").lower() == lStreamName
+                        if (deep_get(q, "stream.streamName") or "").lower() == lStreamName
                     ),
                     None,
                 )
 
-                if queue and len(queue.get("sets")) > 0:
-                    queueSets = [s for s in queue.get("sets") if deep_get(s, "event.id") == eventId]
+                if queue and as_list(queue.get("sets")):
+                    queueSets = [
+                        s for s in as_list(queue.get("sets")) if deep_get(s, "event.id") == eventId
+                    ]
                     if len(queueSets) > 0:
                         streamSet = queueSets[0]
         except Exception as e:
@@ -1125,7 +1142,7 @@ class StartGGDataProvider(TournamentDataProvider):
                 },
             )
 
-            sets = deep_get(data, "data.event.sets.nodes", [])
+            sets = as_list(deep_get(data, "data.event.sets.nodes"))
 
             sets = [s for s in sets if str(deep_get(s, "station.id", "-1")) == str(stationId)]
 
@@ -1135,9 +1152,9 @@ class StartGGDataProvider(TournamentDataProvider):
         return sets
 
     def GetStationMatchId(self, stationId):
-        sets = self.GetStationMatchsId(self, stationId)
+        sets = self.GetStationMatchsId(stationId)
 
-        return sets[0] if len(sets) > 0 else None
+        return sets[0] if sets else None
 
     def GetStreamsAndStations(self, progress_callback=None, cancel_event=None):
         """The tournament's streams and the event's stations, with the ids
@@ -1188,16 +1205,14 @@ class StartGGDataProvider(TournamentDataProvider):
                 },
             )
 
-            sets = deep_get(data, "data.event.sets.nodes", [])
+            sets = as_list(deep_get(data, "data.event.sets.nodes"))
 
             set_data = []
 
             for set in sets:
-                if not set:
-                    continue
                 if not set.get("winnerId"):
                     continue
-                if len(set.get("slots", [])) < 2:
+                if len(set.get("slots") or []) < 2:
                     continue
 
                 phaseName = ""
@@ -1209,28 +1224,28 @@ class StartGGDataProvider(TournamentDataProvider):
                     phaseIdentifier = deep_get(set, "phaseGroup.displayIdentifier")
                 phaseName = deep_get(set, "phaseGroup.phase.name")
 
-                slot0 = set.get("slots", [{}])[0]
-                slot1 = set.get("slots", [{}, {}])[1]
+                slot0 = as_dict(set["slots"][0])
+                slot1 = as_dict(set["slots"][1])
 
-                player1Info = (
-                    slot0.get("entrant", {}).get("participants", [{}])[0].get("player", {})
-                )
+                def FirstPlayer(slot):
+                    participants = as_list(deep_get(slot, "entrant.participants"))
+                    return as_dict(participants[0].get("player")) if participants else {}
+
+                player1Info = FirstPlayer(slot0)
                 player1Seed = slot0.get("initialSeedNum", 0)
-                slot0_entrant_id = slot0.get("entrant", {}).get("id")
+                slot0_entrant_id = deep_get(slot0, "entrant.id")
 
-                player2Info = (
-                    slot1.get("entrant", {}).get("participants", [{}])[0].get("player", {})
-                )
+                player2Info = FirstPlayer(slot1)
                 player2Seed = slot1.get("initialSeedNum", 0)
-                slot1_entrant_id = slot1.get("entrant", {}).get("id")
+                slot1_entrant_id = deep_get(slot1, "entrant.id")
 
                 # Count character selections per entrant from game data
                 chars_by_entrant = {
                     slot0_entrant_id: Counter(),
                     slot1_entrant_id: Counter(),
                 }
-                for game in set.get("games") or []:
-                    for selection in game.get("selections") or []:
+                for game in as_list(set.get("games")):
+                    for selection in as_list(game.get("selections")):
                         eid = deep_get(selection, "entrant.id")
                         char_id = selection.get("selectionValue")
                         if eid in chars_by_entrant and char_id:
@@ -1307,16 +1322,14 @@ class StartGGDataProvider(TournamentDataProvider):
                 },
             )
 
-            sets = deep_get(data, "data.event.sets.nodes", [])
+            sets = as_list(deep_get(data, "data.event.sets.nodes"))
 
             set_data = []
 
             for set in sets:
-                if not set:
-                    continue
                 if not set.get("winnerId"):
                     continue
-                if len(set.get("slots", [])) < 2:
+                if len(set.get("slots") or []) < 2:
                     continue
 
                 phaseName = ""
@@ -1328,9 +1341,9 @@ class StartGGDataProvider(TournamentDataProvider):
                     phaseIdentifier = deep_get(set, "phaseGroup.displayIdentifier")
                 phaseName = deep_get(set, "phaseGroup.phase.name")
 
-                slots = deep_get(set, "slots", [])
-                p1 = slots[0] if len(slots) > 0 else {}
-                p2 = slots[1] if len(slots) > 1 else {}
+                slots = set.get("slots") or []
+                p1 = as_dict(slots[0] if len(slots) > 0 else None)
+                p2 = as_dict(slots[1] if len(slots) > 1 else None)
 
                 # Pulls "Team" names, only useful if more than 1 player on a team
                 # Else it'll display as "ABC | TestPlayer"
@@ -1347,11 +1360,11 @@ class StartGGDataProvider(TournamentDataProvider):
                 # participant goes to its entrant's only participant.
                 characters = {}
                 participantsByEntrant = {
-                    deep_get(slot, "entrant.id"): deep_get(slot, "entrant.participants") or []
+                    deep_get(slot, "entrant.id"): as_list(deep_get(slot, "entrant.participants"))
                     for slot in slots
                 }
-                for game in set.get("games") or []:
-                    for selection in game.get("selections") or []:
+                for game in as_list(set.get("games")):
+                    for selection in as_list(game.get("selections")):
                         participantId = deep_get(selection, "participant.id")
                         if participantId is None:
                             participants = participantsByEntrant.get(
@@ -1368,7 +1381,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
                 def TeamInfo(slot):
                     team = []
-                    for participant in deep_get(slot, "entrant.participants") or []:
+                    for participant in as_list(deep_get(slot, "entrant.participants")):
                         player = participant.get("player") or {}
                         countryCode, stateCode = StartGGConvert.LocationCodes(
                             deep_get(participant, "user.location")
@@ -1434,48 +1447,52 @@ class StartGGDataProvider(TournamentDataProvider):
                 },
             )
 
-            sets = deep_get(data, "data.player.recentStandings", [])
+            standings = as_list(deep_get(data, "data.player.recentStandings"))
 
             set_data = []
 
-            for set in sets:
-                if not set:
+            for standing in standings:
+                if not standing.get("placement"):
                     continue
-                if not set.get("placement"):
-                    continue
-
-                event = deep_get(set, "entrant.event", [])
-                tournament = deep_get(event, "tournament", [])
-
                 try:
-                    tournamentPicture = tournament.get("images")[0].get("url")
-                except:
-                    tournamentPicture = None
-                    logger.error(
-                        "Failed to get Event Logo for: "
-                        + tournament.get("name")
-                        + " - "
-                        + event.get("name")
-                    )
-
-                player_history = {
-                    "placement": set.get("placement"),
-                    "event_name": event.get("name"),
-                    "tournament_name": tournament.get("name"),
-                    "tournament_picture": tournamentPicture,
-                    "entrants": event.get("numEntrants"),
-                    "event_date": event.get("startAt"),
-                    "seed": deep_get(set, "entrant.initialSeedNum"),
-                    "bracket_type": EventBracketType(
-                        [phase.get("bracketType") for phase in event.get("phases") or [] if phase]
-                    ),
-                }
-
-                set_data.append(player_history)
+                    entry = self._ParseHistoryStanding(standing)
+                except Exception:
+                    logger.error(traceback.format_exc())
+                    entry = None
+                if entry:
+                    set_data.append(entry)
 
             callback.emit({"playerNumber": playerNumber, "history_sets": set_data})
         except Exception as e:
+            logger.error(traceback.format_exc())
             callback.emit({"playerNumber": playerNumber, "history_sets": []})
+
+    def _ParseHistoryStanding(self, standing):
+        """A placement of the player's tournament history, None when start.gg
+        sent it without its event (deleted or hidden events)"""
+        event = as_dict(deep_get(standing, "entrant.event"))
+        if not event:
+            logger.warning(f"Tournament history: placement without an event: {standing}")
+            return None
+        tournament = as_dict(event.get("tournament"))
+
+        images = as_list(tournament.get("images"))
+        tournamentPicture = as_dict(images[0]).get("url") if images else None
+        if not tournamentPicture:
+            logger.info(f"No logo for {tournament.get('name') or '?'} - {event.get('name') or '?'}")
+
+        return {
+            "placement": standing.get("placement"),
+            "event_name": event.get("name"),
+            "tournament_name": tournament.get("name"),
+            "tournament_picture": tournamentPicture,
+            "entrants": event.get("numEntrants"),
+            "event_date": event.get("startAt"),
+            "seed": deep_get(standing, "entrant.initialSeedNum"),
+            "bracket_type": EventBracketType(
+                [phase.get("bracketType") for phase in as_list(event.get("phases"))]
+            ),
+        }
 
     def GetSetDurations(self, count=40, progress_callback=None, cancel_event=None):
         """The event's last completed sets, for how long sets take:
@@ -1772,7 +1789,7 @@ class StartGGDataProvider(TournamentDataProvider):
             eventSlug = self.url.split("start.gg/")[1]
             logger.info("Starting Entrant Import")
             firstPage = self._FetchEntrantsPage(eventSlug, 1)
-            totalPages = deep_get(firstPage, "data.event.entrants.pageInfo.totalPages", 0)
+            totalPages = deep_get(firstPage, "data.event.entrants.pageInfo.totalPages") or 0
             logger.info(f"Entrant pages: {totalPages}")
 
             # Page 1 tells us how many pages there are; fetch the rest in
@@ -1792,9 +1809,9 @@ class StartGGDataProvider(TournamentDataProvider):
                 return []
 
             for data in pages:
-                for team in deep_get(data, "data.event.entrants.nodes", []) or []:
+                for team in as_list(deep_get(data, "data.event.entrants.nodes")):
                     seed = team.get("initialSeedNum", 0)
-                    for entrant in team.get("participants", []) or []:
+                    for entrant in as_list(team.get("participants")):
                         playerData = StartGGConvert.ProcessEntrantData(
                             entrant, gameAssets=self.context.games
                         )
@@ -2039,7 +2056,7 @@ class StartGGDataProvider(TournamentDataProvider):
             for standing in standings:
                 team = {}
 
-                participants = deep_get(standing, "entrant.participants") or []
+                participants = as_list(deep_get(standing, "entrant.participants"))
 
                 if len(participants) > 1:
                     team["name"] = deep_get(standing, "entrant.name")

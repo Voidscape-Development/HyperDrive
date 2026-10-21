@@ -40,7 +40,7 @@ window, then **New phase**:
 | **Name**, **Type** | The phase's name, and double elimination, single elimination, round robin or swiss |
 | **Starting in losers** | How many of the last seeds start on the losers side |
 | **Grand final reset**, **3rd place match** | Extra sets |
-| **Players going on** | How many players go on to another phase instead of playing to a champion |
+| **Players going on** | How many players go on to another phase instead of playing to a champion. The bracket shows an arrow out of the sets they go on from, with the phase that takes them |
 | **Seeds** | The players, in seed order. ▲ ▼ move them |
 | **Take from phases…** | Seeds this phase with the top players of other phases (e.g. pools), spread out so players from the same pool don't meet early |
 | **Player list order** | Seeds it with the player list, in its order |

@@ -10,7 +10,7 @@ from loguru import logger
 
 from ..Helpers import SocialsHelper
 from ..Helpers.CountryHelper import CountryHelper
-from ..Helpers.DictHelper import deep_get
+from ..Helpers.DictHelper import as_dict, as_list, deep_get
 from ..Helpers.LocaleHelper import LocaleHelper
 from .ProviderContext import AppContext
 
@@ -99,9 +99,11 @@ def ParseSetGames(_set, entrantIds, gameAssets=None):
 
 
 def ParseMatchDataOldApi(respTasks, gameAssets):
-    entities = respTasks.get("entities", {})
-    sets = entities.get("sets", {})
-    tasks = entities.get("setTask", [])
+    entities = as_dict(as_dict(respTasks).get("entities"))
+    sets = as_dict(entities.get("sets"))
+    tasks = [as_dict(task) for task in as_list(entities.get("setTask"))]
+    for task in tasks:
+        task["metadata"] = as_dict(task.get("metadata"))
 
     selectedCharMap = {}
     entrant1Id = str(sets.get("entrant1Id"))
@@ -109,15 +111,15 @@ def ParseMatchDataOldApi(respTasks, gameAssets):
 
     for task in reversed(tasks):
         if task.get("action") in ["setup_character", "setup_strike", "setup_ban"]:
-            selectedCharMap = task.get("metadata", {}).get("charSelections", {})
+            selectedCharMap = as_dict(task.get("metadata", {}).get("charSelections"))
             if len(selectedCharMap) > 0:
                 break
         elif task.get("action") in ["report"]:
-            allSelections = task.get("metadata", {}).get("report", {}).get("selections", [])
+            allSelections = deep_get(task, "metadata.report.selections")
 
             if isinstance(allSelections, list):
-                for selection in allSelections:
-                    if selection.get("selectionType") == "character":
+                for selection in as_list(allSelections):
+                    if as_dict(selection).get("selectionType") == "character":
                         selectedCharMap[str(selection.get("entrantId"))] = [
                             selection.get("selectionValue")
                         ]
@@ -140,8 +142,8 @@ def ParseMatchDataOldApi(respTasks, gameAssets):
             continue
         if task.get("active"):
             continue
-        if task.get("metadata", {}).get("report", {}).get("winnerId", None) is not None:
-            latestWinner = int(task.get("metadata", {}).get("report", {}).get("winnerId"))
+        if deep_get(task, "metadata.report.winnerId") is not None:
+            latestWinner = int(deep_get(task, "metadata.report.winnerId"))
             break
 
     lastWinnerSlot = None
@@ -175,7 +177,7 @@ def ParseMatchDataOldApi(respTasks, gameAssets):
             base = task.get("metadata", {})
 
             if task.get("action") == "report":
-                base = base.get("report", {})
+                base = as_dict(base.get("report"))
 
             if base.get("strikeStages", None) is not None:
                 allStages = base.get("strikeStages")
@@ -195,13 +197,13 @@ def ParseMatchDataOldApi(respTasks, gameAssets):
             # Stages previously won in
             stageWins = [[], []]
             if base.get("stageWins"):
-                for entrantId, stageCodes in base.get("stageWins").items():
+                for entrantId, stageCodes in as_dict(base.get("stageWins")).items():
                     stages = []
 
-                    for stageCode in stageCodes:
-                        stages.append(
-                            gameAssets.GetStageFromStartGGId(int(stageCode))[1].get("codename")
-                        )
+                    for stageCode in as_list(stageCodes):
+                        stage = gameAssets.GetStageFromStartGGId(int(stageCode))
+                        if stage:
+                            stages.append(stage[1].get("codename"))
 
                     if str(entrantId) == entrant1Id:
                         stageWins[0] = stages
@@ -314,8 +316,11 @@ def ParseMatchDataOldApi(respTasks, gameAssets):
     entrants = [[], []]
 
     for i, entrantChars in enumerate(selectedChars):
-        for char in entrantChars:
-            entrants[i].append({"mains": [gameAssets.GetCharacterFromStartGGId(char)[0], 0]})
+        for char in as_list(entrantChars):
+            # Characters the game's assets don't have are left out
+            character = gameAssets.GetCharacterFromStartGGId(char)
+            if character:
+                entrants[i].append({"mains": [character[0], 0]})
 
     # If we don't have mains from the selection data, fallback to the characterIds attribute
     for i in [0, 1]:
@@ -339,7 +344,7 @@ def ParseMatchDataOldApi(respTasks, gameAssets):
     team2losers = False
 
     if sets.get("isGF", False):
-        if "Reset" not in sets.get("fullRoundText", ""):
+        if "Reset" not in (sets.get("fullRoundText") or ""):
             team1losers = False
             team2losers = True
         else:
@@ -395,6 +400,7 @@ def BuildGraphSets(seeds, sets):
         slots = []
 
         for slotIndex, slot in enumerate(s.get("slots") or []):
+            slot = as_dict(slot)
             seedId = deep_get(slot, "seed.id")
             if seedId is None and slot.get("prereqType") == "seed":
                 # A seed slot's prereq is the seed itself
@@ -451,7 +457,8 @@ def RecentSetPlayer1Slot(_set, pid1, pid2):
 
 def ProcessEntrantData(entrant, setData=[], gameAssets=None):
     gameAssets = gameAssets if gameAssets is not None else AppContext().games
-    player = entrant.get("player")
+    entrant = as_dict(entrant)
+    player = as_dict(entrant.get("player"))
     user = entrant.get("user")
 
     playerData = {}
@@ -467,27 +474,20 @@ def ProcessEntrantData(entrant, setData=[], gameAssets=None):
         sets = []
 
         if not setData:
-            sets = deep_get(player, "sets.nodes", [])
+            sets = as_list(deep_get(player, "sets.nodes"))
         else:
-            sets = setData
+            sets = as_list(setData)
 
         playerId = player.get("id")
 
-        if len(sets) > 0:
-            for _set in sets:
-                games = _set.get("games", [])
-                if games and len(games) > 0:
-                    for game in games:
-                        selections = game.get("selections", [])
-                        if selections:
-                            for selection in selections:
-                                participants = selection.get("entrant", {}).get("participants", [])
-                                if len(participants) > 0:
-                                    participantId = (
-                                        participants[0].get("player", {}).get("id", None)
-                                    )
-                                    if participantId and participantId == playerId:
-                                        playerSelections[selection.get("selectionValue")] += 1
+        for _set in sets:
+            for game in as_list(_set.get("games")):
+                for selection in as_list(game.get("selections")):
+                    participants = as_list(deep_get(selection, "entrant.participants"))
+                    if len(participants) > 0:
+                        participantId = deep_get(participants[0], "player.id")
+                        if participantId and participantId == playerId:
+                            playerSelections[selection.get("selectionValue")] += 1
 
         mains = playerSelections.most_common()
 
@@ -505,8 +505,9 @@ def ProcessEntrantData(entrant, setData=[], gameAssets=None):
         if user.get("genderPronoun"):
             playerData["pronoun"] = user.get("genderPronoun")
 
-        if len(user.get("images", [])) > 0:
-            playerData["avatar"] = user.get("images")[0].get("url")
+        images = as_list(user.get("images"))
+        if len(images) > 0:
+            playerData["avatar"] = as_dict(images[0]).get("url")
 
         if user.get("location"):
             # Country to country code

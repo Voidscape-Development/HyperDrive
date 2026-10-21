@@ -56,6 +56,12 @@ def Ordinal(n):
     return QApplication.translate("app", "#{0}").format(n)
 
 
+def ChannelLabel(name):
+    """A channel's name as shown: the main channel is "Main" (translated),
+    while its key and ?channel= value stay "main"."""
+    return QApplication.translate("app", "Main") if name == MAIN_CHANNEL else name
+
+
 class PhasesWindow(QWidget):
     """The phases and players, in a window of their own floating above the
     bracket widget: they're edited now and then, so they don't take room
@@ -379,6 +385,7 @@ class BracketWidget(QDockWidget):
         self.view = BracketView()
         self.view.playerName = lambda player: TeamName(player, self.CurrentRosterPath())
         self.view.rosterIds = lambda: range(1, len(self.CurrentRoster().slotWidgets) + 1)
+        self.view.progressionTarget = self.ProgressionTarget
         self.view.signals.edited.connect(self.BracketEdited)
         self.standingsTable = QTableWidget()
         self.standingsTable.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -888,7 +895,7 @@ class BracketWidget(QDockWidget):
         self.channelMenu.clear()
         focus = BracketFocus.instance
         for index, name in enumerate(focus.channels):
-            action = self.channelMenu.addAction(name)
+            action = self.channelMenu.addAction(ChannelLabel(name))
             action.setCheckable(True)
             action.setChecked(name == focus.current)
             action.triggered.connect(
@@ -1118,6 +1125,22 @@ class BracketWidget(QDockWidget):
     # =====================================================
     # SEEDS
     # =====================================================
+    def ProgressionTarget(self, place):
+        """The name of the phase taking the shown phase's player going on in
+        that place, or None"""
+        phase = self.CurrentPhase()
+        if phase is None:
+            return None
+        for other in self.tournament.phases:
+            for source in other.seedSources:
+                if (
+                    (source or {}).get("type") == "result"
+                    and source.get("phase") == phase.id
+                    and int(source.get("place") or 0) == place
+                ):
+                    return other.name or None
+        return None
+
     def SeedSourceOptions(self, phase):
         """(label, source) for every seed source this phase can take."""
         options = [(QApplication.translate("app", "Bye"), None)]
@@ -1483,7 +1506,7 @@ class BracketWidget(QDockWidget):
         while self.channelTabs.count():
             self.channelTabs.removeTab(0)
         for name in focus.channels:
-            index = self.channelTabs.addTab(name)
+            index = self.channelTabs.addTab(ChannelLabel(name))
             self.channelTabs.setTabData(index, name)
             self.channelTabs.setTabToolTip(
                 index,

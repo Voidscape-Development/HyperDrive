@@ -410,6 +410,9 @@ class BracketView(QGraphicsView):
         # Set by the bracket widget
         self.playerName = lambda player: ""
         self.rosterIds = lambda: []
+        # Name of the phase taking the player going on in nth place (from 1),
+        # or None if no phase takes them
+        self.progressionTarget = lambda place: None
         self.exportLimit = None
 
         self._scene = QGraphicsScene(self)
@@ -617,6 +620,7 @@ class BracketView(QGraphicsView):
             positions.update(losers)
 
         self._DrawLines(positions)
+        self._DrawProgressions(positions)
 
     def _DrawLines(self, positions):
         height = MatchItem.ROW_HEIGHT * 2 + 1
@@ -646,6 +650,48 @@ class BracketView(QGraphicsView):
         color = QApplication.palette().color(QPalette.ColorRole.Mid)
         item = self._scene.addPath(path, QPen(color, 2))
         item.setZValue(0)
+
+    def _DrawProgressions(self, positions):
+        """An arrow out of each set whose winner goes on to another phase,
+        and where to"""
+        height = MatchItem.ROW_HEIGHT * 2 + 1
+        accent = QApplication.palette().color(QPalette.ColorRole.Highlight)
+        path = QPainterPath()
+        for place, m in enumerate(self.bracket.ProgressionMatches(), 1):
+            if m.id not in positions:
+                continue
+            x, y = positions[m.id]
+            start = QPointF(x + MatchItem.WIDTH, y + height / 2)
+            end = QPointF(start.x() + 28, start.y())
+            path.moveTo(start)
+            path.lineTo(end)
+            path.moveTo(end.x() - 7, end.y() - 6)
+            path.lineTo(end)
+            path.lineTo(end.x() - 7, end.y() + 6)
+
+            try:
+                target = self.progressionTarget(place)
+            except Exception:
+                target = None
+            text = QGraphicsSimpleTextItem(
+                QApplication.translate("app", "To {0}").format(target)
+                if target
+                else QApplication.translate("app", "Goes on")
+            )
+            text.setBrush(accent)
+            font = text.font()
+            font.setBold(True)
+            text.setFont(font)
+            text.setPos(end.x() + 6, end.y() - text.boundingRect().height() / 2)
+            text.setToolTip(
+                QApplication.translate("app", "The winner goes on to {0}").format(target)
+                if target
+                else QApplication.translate("app", "The winner goes on to another phase")
+            )
+            self._scene.addItem(text)
+        if not path.isEmpty():
+            item = self._scene.addPath(path, QPen(accent, 2))
+            item.setZValue(0)
 
     def _LayOutPool(self):
         height = MatchItem.ROW_HEIGHT * 2 + 1

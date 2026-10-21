@@ -178,7 +178,7 @@ export default function BracketPage() {
                                 "min-h-9 cursor-pointer rounded-lg border px-3.5 text-[13px]",
                                 c.name === current.name ? "border-brand bg-accent font-semibold text-foreground" : "hover:text-foreground",
                             )}>
-                            {c.name}
+                            {c.name === "main" ? "Main" : c.name}
                         </button>
                     ))}
                 </div>

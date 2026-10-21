@@ -233,7 +233,9 @@ export default function BracketFocusPage() {
                 <Select value={channels.includes(channel) ? channel : undefined} onValueChange={pickChannel}>
                     <SelectTrigger id="bf-channel" className="w-full"><SelectValue/></SelectTrigger>
                     <SelectContent>
-                        {channels.map((name) => <SelectItem key={name} value={name}>{name}</SelectItem>)}
+                        {channels.map((name) => (
+                            <SelectItem key={name} value={name}>{name === "main" ? i18n.t("bracket_focus_main_channel") : name}</SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </Field>

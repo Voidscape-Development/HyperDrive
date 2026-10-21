@@ -264,7 +264,15 @@ class WebServer(QThread):
         if not WebServer.routesAdded:
             WebServer.routesAdded = True
             # Before the file route below, which matches every path
-            Admin(api, engine=GetEngine(), title="HyperDrive Player DB").add_view(PlayerAdmin)
+            Admin(
+                api,
+                engine=GetEngine(),
+                title="HyperDrive Player DB",
+                logo_url="/assets/icons/icon.png",
+                logo_width=32,
+                logo_height=32,
+                favicon_url="/favicon.ico",
+            ).add_view(PlayerAdmin)
             # The admin mount only matches /admin/..., and the file route
             # would take /admin before Starlette's slash redirect
             api.add_api_route(
@@ -1419,6 +1427,16 @@ class WebServer(QThread):
     async def stage_strike_app():
         return FileResponse(
             os.path.join(os.path.abspath("."), "stage_strike_app/build/index.html"),
+            headers={"Cache-Control": "no-cache"},
+        )
+
+    # Browsers ask for it on pages without an icon of their own, and would
+    # keep showing TournamentStreamHelper's from the same address otherwise
+    @api.get("/favicon.ico", include_in_schema=False)
+    async def favicon():
+        return FileResponse(
+            os.path.join(os.path.abspath("."), "assets/icons/icon.ico"),
+            media_type="image/x-icon",
             headers={"Cache-Control": "no-cache"},
         )
 

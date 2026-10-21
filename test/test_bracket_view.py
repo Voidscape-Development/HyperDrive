@@ -28,11 +28,11 @@ sys.modules["src.Helpers.LocaleHelper"] = localeHelper
 
 from qtpy.QtCore import QPoint, QPointF, Qt
 from qtpy.QtGui import QWheelEvent
-from qtpy.QtWidgets import QApplication, QTabWidget, QWidget
+from qtpy.QtWidgets import QApplication, QGraphicsSimpleTextItem, QTabWidget, QWidget
 
 app = QApplication.instance() or QApplication(sys.argv)
 
-from src.BracketModel import TYPE_DOUBLE_ELIMINATION, GenerateBracket
+from src.BracketModel import TYPE_DOUBLE_ELIMINATION, TYPE_SINGLE_ELIMINATION, GenerateBracket
 from src.BracketView import BracketView
 
 
@@ -105,6 +105,31 @@ def TestZoomStopsFit():
     Settle()
     assert not view.autoFit
     assert abs(Zoom(view) - zoomed) < 1e-6
+
+
+def Labels(view):
+    return sorted(
+        item.text()
+        for item in view.scene().items()
+        if isinstance(item, QGraphicsSimpleTextItem) and "goes on" in item.toolTip()
+    )
+
+
+def TestProgressions():
+    # Sets whose winners go on to another phase say so, with the phase
+    # taking them when there's one
+    view = BracketView()
+    view.progressionTarget = lambda place: "Top 8" if place == 1 else None
+    view.SetBracket(GenerateBracket(TYPE_DOUBLE_ELIMINATION, list(range(1, 9)), progressionsOut=2))
+    assert Labels(view) == ["Goes on", "To Top 8"], Labels(view)
+    assert len(view.bracket.ProgressionMatches()) == 2
+
+    view.SetBracket(GenerateBracket(TYPE_SINGLE_ELIMINATION, list(range(1, 9)), progressionsOut=4))
+    assert Labels(view) == ["Goes on"] * 3 + ["To Top 8"], Labels(view)
+
+    # Without progressions out, nothing goes on
+    view.SetBracket(GenerateBracket(TYPE_DOUBLE_ELIMINATION, list(range(1, 9))))
+    assert Labels(view) == [] and view.bracket.ProgressionMatches() == []
 
 
 if __name__ == "__main__":

@@ -3,7 +3,9 @@
 # Renders the app icon and splash screen from their SVG sources:
 #   assets/icons/icon.svg   -> assets/icons/icon.png, assets/icons/icon.ico,
 #                              layout/logo.png (the default tournament logo),
-#                              stage_strike_app/public/favicon.ico
+#                              stage_strike_app/public/favicon.ico,
+#                              stage_strike_app/public/logo192.png, logo512.png
+#                              (the web app's home screen icons)
 #   assets/icons/splash.svg -> assets/icons/splash.png (drawn at 2x)
 #
 # Needs a Chromium/Chrome binary (set CHROME to its path if it isn't on PATH)
@@ -39,6 +41,9 @@ cp "$TMP/icon_256.png" "$ICONS/icon.png"
 cp "$TMP/icon_256.png" "$DIR/layout/logo.png"
 convert "$TMP"/icon_{16,24,32,48,64,128,256}.png "$ICONS/icon.ico"
 convert "$TMP"/icon_{16,24,32,48,64}.png "$DIR/stage_strike_app/public/favicon.ico"
+convert "$TMP/icon512.png" -filter Lanczos -resize 192x192 -strip \
+  "PNG32:$DIR/stage_strike_app/public/logo192.png"
+cp "$TMP/icon512.png" "$DIR/stage_strike_app/public/logo512.png"
 
 render "$ICONS/splash.svg" "$ICONS/splash.png" 540 220 2
 
