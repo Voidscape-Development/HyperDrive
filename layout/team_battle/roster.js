@@ -1,6 +1,8 @@
 // Roster board: both teams' players in two columns, with their character,
 // avatar, flag, pronouns and stocks or games won. The active players are lit
 // and eliminated ones crossed out. Cards shrink to fit any number of players.
+// When only some of the players play, the cards are a slot per play, filled
+// as players come in, and the others are in an On Deck strip below.
 
 // ---------------------------------------------------------------------
 // Markup
@@ -13,6 +15,10 @@ const teamColumn = (t) => HD.html`
       <div class="rs_big"><span class="rs_big_value display">0</span><span class="rs_big_label"></span></div>
     </div>
     <div class="rs_list"></div>
+    <div class="rs_deck">
+      <div class="rs_deck_label"></div>
+      <div class="rs_deck_list"></div>
+    </div>
   </div>`;
 
 const playerCard = (_p, i) => HD.html`
@@ -35,7 +41,7 @@ const playerCard = (_p, i) => HD.html`
 
 // Every card the same height on both sides, as big as fits
 function sizeCards(teams) {
-  const most = Math.max(teams[0].players.length, teams[1].players.length, 1);
+  const most = Math.max(teams[0].lineup.length, teams[1].lineup.length, 1);
   const gap = most > 6 ? 8 : 14;
   const height = Math.floor(Math.min(170, (document.querySelector(".rs_list").clientHeight - gap * (most - 1)) / most));
   const body = document.querySelector(".rs_body");
@@ -45,6 +51,18 @@ function sizeCards(teams) {
 }
 
 function updateCard(card, p, team, animate) {
+  // A slot for a player the team hasn't picked yet
+  card.classList.toggle("empty", !p);
+  if (!p) {
+    HD.set(card.querySelector(".rs_player_name"), "");
+    TB.setHtml(card.querySelector(".rs_chips"), "");
+    card.querySelector(".rs_pips").style.display = "none";
+    TB.setImage(card.querySelector(".rs_avatar"), null);
+    TB.setHtml(card.querySelector(".rs_status"), "");
+    TB.setEliminated(card, false, false);
+    TB.setActive(card, false, false);
+    return;
+  }
   HD.set(card.querySelector(".rs_player_name"), TB.name(p));
   TB.setHtml(card.querySelector(".rs_chips"), TB.chips(p));
   // First To: games won count against the current opponent, so only the
@@ -56,6 +74,25 @@ function updateCard(card, p, team, animate) {
   TB.setHtml(card.querySelector(".rs_status"), p.dead ? "Out" : p.active ? "Playing" : "");
   TB.setEliminated(card, p.dead, animate);
   TB.setActive(card, p.active && !p.dead, animate);
+}
+
+// The players on deck: avatar (or character icon) and tag, dimmed once the
+// team is out without them playing
+function updateDeck(team) {
+  const deck = document.querySelector(`.rs_team.t${team.t} .rs_deck`);
+  deck.style.display = team.limited ? "" : "none";
+  if (!team.limited) return;
+  const unused = team.onDeck.length > 0 && team.onDeck.every((p) => p.status === "unused");
+  deck.querySelector(".rs_deck_label").textContent = unused ? "Didn't play" : "On Deck";
+  TB.setHtml(
+    deck.querySelector(".rs_deck_list"),
+    HD.html`${team.onDeck.map((p) => {
+      const image = TB.avatar(p.data) || TB.characterIcon(p.character);
+      return HD.html`<div class="rs_deck_player${p.status === "unused" ? " unused" : ""}">${
+        image && HD.img(image)
+      }<span class="rs_deck_name">${TB.name(p)}</span></div>`;
+    })}`,
+  );
 }
 
 // ---------------------------------------------------------------------
@@ -106,7 +143,10 @@ HD.layout({
     // Cards again when a team's size changes
     let rebuilt = false;
     for (const team of teams) {
-      if (HD.build(`.rs_team.t${team.t} .rs_list`, team.players.length, () => team.players.map(playerCard)))
+      updateDeck(team);
+      if (
+        HD.build(`.rs_team.t${team.t} .rs_list`, [team.lineup.length, team.limited], () => team.lineup.map(playerCard))
+      )
         rebuilt = true;
     }
     if (rebuilt) sizeCards(teams);
@@ -130,8 +170,8 @@ HD.layout({
         !s.first,
       );
       $(`.rs_team.t${team.t} .rs_card`).each((i, card) => {
-        updateCard(card, team.players[i], team, animate);
-        TB.characterRender(s, card.querySelector(".rs_render"), team.players[i]);
+        updateCard(card, team.lineup[i], team, animate);
+        TB.characterRender(s, card.querySelector(".rs_render"), team.lineup[i]);
       });
     }
   },

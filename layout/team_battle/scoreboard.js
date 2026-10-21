@@ -35,22 +35,25 @@ const sidePanel = (t) => HD.html`
 // Which player each team's plate shows, to slide the next one in
 const activeKeys = {};
 
+// When only some of the players play, an icon per play: the players who
+// came in, and empty ones for the rest
 function updateRoster(t, team, animate) {
   const roster = document.querySelector(`.sb_side.t${t} .sb_roster`);
-  const rebuilt = HD.build(roster, team.players.length, () =>
-    team.players.map(() => HD.html`<div class="mini"><img class="fades_when_dead" /><div class="x_mark"></div></div>`),
+  const rebuilt = HD.build(roster, team.lineup.length, () =>
+    team.lineup.map(() => HD.html`<div class="mini"><img class="fades_when_dead" /><div class="x_mark"></div></div>`),
   );
   // Smaller icons for big teams
   if (rebuilt)
-    roster.style.setProperty("--mini-size", `${Math.max(14, Math.min(28, 260 / Math.max(team.players.length, 1)))}px`);
+    roster.style.setProperty("--mini-size", `${Math.max(14, Math.min(28, 260 / Math.max(team.lineup.length, 1)))}px`);
 
   roster.querySelectorAll(".mini").forEach((mini, i) => {
-    const p = team.players[i];
-    const icon = TB.characterIcon(p.character);
+    const p = team.lineup[i];
+    const icon = p && TB.characterIcon(p.character);
     TB.setImage(mini.querySelector("img"), icon);
     mini.classList.toggle("no_icon", !icon);
-    TB.setEliminated(mini, p.dead, animate && !rebuilt);
-    TB.setActive(mini, p.active, animate && !rebuilt);
+    mini.classList.toggle("empty", !p);
+    TB.setEliminated(mini, !!p && p.dead, animate && !rebuilt && !!p);
+    TB.setActive(mini, !!p && p.active, animate && !rebuilt && !!p);
   });
 }
 

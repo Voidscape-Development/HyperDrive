@@ -25,6 +25,29 @@ in [Settings › General](hyperdrive://open/settings/general).
 **Reset Player Mode Values** resets every player's stocks or wins, and **Reset Battle
 Mode** resets the whole battle.
 
+## Players on deck
+
+A team can bring more players than get to play: for example, a crew of 7 where only 4
+play. Set **Players** to the size of the crews (7) and **Plays** to how many of them play
+(4). Plays follows Players until you set it lower; when they're the same, everyone plays,
+as usual.
+
+With fewer plays than players:
+
+- There are no starters. Players who haven't played are **On deck**, and when the playing
+  player is eliminated, the team picks who's next from them: tick that player's **Active**
+  box (or use the Stream Deck's Team Battle Player action). Nobody comes in on their own,
+  even with Auto advance on.
+- A team is out once Plays of its players are eliminated. The players who never got to
+  play show **Didn't play**.
+- The team's stocks are the stocks of the players who can still play: the one playing, and
+  a full set for each play left.
+- Undoing the last stock (or game) of a player who was replaced brings them back in.
+
+On the layouts, the roster board shows a card per play, filled as players come in, and the
+players on deck in an **On Deck** strip below (dimmed once the team is out). The versus
+screen and the scoreboard's roster show a slot per play, without the players on deck.
+
 ## Layouts
 
 `layout/team_battle/` has an in-game scoreboard, a roster board and a versus screen for each

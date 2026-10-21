@@ -27,28 +27,60 @@ const TB = {
 
   avatar: (player) => HD.asset(player.avatar) || player.online_avatar || null,
 
-  // A team, with its players in order and the numbers the layouts show
+  // A team, with its players in order and the numbers the layouts show.
+  // When only some of the players play (team_battle.plays under the number
+  // of players), lineup is a slot per play, with the players who played in
+  // the order they came in and null for the ones left, and onDeck the
+  // others. Otherwise lineup is every player and onDeck is empty.
   team(data, t) {
     const tb = data.team_battle || {};
     const team = _.get(tb, ["team", t]) || {};
     const players = Object.entries(team.player || {})
       .filter(([, p]) => p)
       .sort(([a], [b]) => a - b)
-      .map(([key, p]) => ({
-        key,
-        data: p,
-        path: ["team_battle", "team", t, "player", key],
-        name: p.name || "",
-        sponsor: p.team || "",
-        value: Math.max(Number(p.dynamic_spinner) || 0, 0),
-        dead: !!p.dead,
-        active: team.active_player != null ? String(team.active_player) === key : !!p.active,
-        character: TB.firstCharacter(p),
-      }));
+      .map(([key, p]) => {
+        const active = team.active_player != null ? String(team.active_player) === key : !!p.active;
+        return {
+          key,
+          data: p,
+          path: ["team_battle", "team", t, "player", key],
+          name: p.name || "",
+          sponsor: p.team || "",
+          value: Math.max(Number(p.dynamic_spinner) || 0, 0),
+          dead: !!p.dead,
+          active,
+          // "playing", "out", "on_deck" or "unused" (the team is out without them playing)
+          status: p.status || (p.dead ? "out" : active ? "playing" : "on_deck"),
+          playOrder: Number(p.play_order) || null,
+          character: TB.firstCharacter(p),
+        };
+      });
     // Players can be given more stocks than the others in the app
     const max = Math.max(Number(tb.battle_value) || 0, ...players.map((p) => p.value), 1);
-    const alive = players.filter((p) => !p.dead).length;
-    const stocks = players.reduce((sum, p) => sum + (p.dead ? 0 : p.value), 0);
+
+    const plays = Math.min(Number(tb.plays) || players.length, players.length);
+    const limited = plays < players.length;
+    const left = Math.max(plays - players.filter((p) => p.dead).length, 0);
+    // The stocks of the players who can still play: the ones who played
+    // first, then the ones on deck
+    const stocks = _.sortBy(
+      players.filter((p) => !p.dead),
+      (p) => p.playOrder == null,
+    )
+      .slice(0, left)
+      .reduce((sum, p) => sum + p.value, 0);
+
+    let lineup = players;
+    let onDeck = [];
+    if (limited) {
+      const played = _.sortBy(
+        players.filter((p) => p.playOrder != null || p.active || p.dead),
+        (p) => (p.playOrder == null ? Infinity : p.playOrder),
+      );
+      lineup = _.range(Math.max(plays, played.length)).map((i) => played[i] || null);
+      onDeck = players.filter((p) => !played.includes(p));
+    }
+
     return {
       t,
       name: team.sponsor || "",
@@ -56,10 +88,13 @@ const TB = {
       color: team.color || TB.DEFAULT_COLORS[t],
       logo: HD.asset(team.logo),
       players,
+      lineup,
+      onDeck,
+      limited,
       max,
       score: Number(tb[`team${t}_total-score`]) || 0,
       active: players.find((p) => p.active) || null,
-      big: TB.isStock() ? stocks : alive,
+      big: TB.isStock() ? stocks : left,
       bigLabel: TB.isStock() ? "Stocks" : "Left",
     };
   },
@@ -231,9 +266,14 @@ const TB = {
     gsap.fromTo(card, { scale: 1.06 }, { scale: 1, duration: 0.5, ease: "back.out(2)", clearProps: "scale" });
   },
 
-  // A card's character render
+  // A card's character render, none for an empty lineup slot
   characterRender: (s, element, player, options = {}) =>
-    s.characters(element, { source: player.path, load_settings_path: "render", slice_character: [0, 1], ...options }),
+    s.characters(element, {
+      source: player ? player.path : ["team_battle", "no_player"],
+      load_settings_path: "render",
+      slice_character: [0, 1],
+      ...options,
+    }),
 
   // The team's header: name, logo, big number and score
   updateHeader(team, { name, logo, big, bigLabel, score }, animate) {

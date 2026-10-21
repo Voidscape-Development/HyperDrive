@@ -366,6 +366,99 @@ body.first_to .rs_pips {
   top: calc(var(--h) * -0.2);
 }
 
+/* A lineup slot for a player the team hasn't picked yet */
+.rs_card.empty .rs_card_bg {
+  background: transparent;
+  border: 3px dashed color-mix(in srgb, var(--team) 60%, transparent);
+}
+
+.rs_card.empty .rs_num {
+  opacity: 0.45;
+}
+
+.rs_card.empty .rs_avatar {
+  display: none;
+}
+
+/* ── On deck ──────────────────────────────────────────────── */
+
+/* The players waiting to be picked, when only some of them play */
+.rs_deck {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 64px;
+  padding: 0 14px;
+}
+
+.t2 .rs_deck {
+  flex-direction: row-reverse;
+}
+
+.rs_deck_label {
+  flex: none;
+  padding: 4px 14px;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: var(--tb-panel);
+  border-bottom: 3px solid var(--team);
+  transform: skewX(var(--tb-skew));
+}
+
+.rs_deck_list {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.t2 .rs_deck_list {
+  flex-direction: row-reverse;
+}
+
+.rs_deck_player {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 12px 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--tb-panel);
+  border-left: 4px solid var(--team);
+}
+
+.rs_deck_player img {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.rs_deck_name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rs_deck_name .sponsor {
+  margin-right: 6px;
+  color: var(--tb-dim);
+}
+
+/* The team is out without them playing */
+.rs_deck_player.unused {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
 /* ── Center ───────────────────────────────────────────────── */
 
 .rs_center {

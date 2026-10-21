@@ -1,5 +1,7 @@
 // Versus splash: the two teams facing off, with big names and logos, and
-// their rosters below as character portraits
+// their rosters below as character portraits. When only some of the players
+// play, a portrait per play: the players who came in, and empty ones for the
+// rest, without the players on deck.
 
 // ---------------------------------------------------------------------
 // Markup
@@ -30,7 +32,7 @@ const portrait = (_p, i) => HD.html`
 
 // The same card width on both sides, as wide as fits
 function sizeCards(teams) {
-  const most = Math.max(teams[0].players.length, teams[1].players.length, 1);
+  const most = Math.max(teams[0].lineup.length, teams[1].lineup.length, 1);
   const gap = most > 6 ? 8 : 14;
   const width = Math.floor(Math.min(200, (document.querySelector(".vs_roster").clientWidth - gap * (most - 1)) / most));
   const rosters = document.querySelector(".vs_rosters");
@@ -80,7 +82,7 @@ HD.layout({
     // Portraits again when a team's size changes
     let rebuilt = false;
     for (const team of teams) {
-      if (HD.build(`.vs_roster.t${team.t}`, team.players.length, () => team.players.map(portrait))) rebuilt = true;
+      if (HD.build(`.vs_roster.t${team.t}`, team.lineup.length, () => team.lineup.map(portrait))) rebuilt = true;
     }
     if (rebuilt) sizeCards(teams);
     const animate = !s.first && !rebuilt;
@@ -88,7 +90,7 @@ HD.layout({
     s.set(".vs_tournament", s.data.tournamentInfo.tournamentName);
     s.set(".vs_phase", TB.phaseMatch(s.data));
     // e.g. "4 v 4 · 3 Stocks each"
-    const sizes = teams.map((t) => t.players.length);
+    const sizes = teams.map((t) => t.lineup.length);
     s.set(".vs_rule", HD.text([Math.max(...sizes) ? sizes.join(" v ") : "", TB.ruleText(teams)], " · "));
 
     for (const team of teams) {
@@ -105,13 +107,15 @@ HD.layout({
         !s.first,
       );
       $(`.vs_roster.t${team.t} .vs_card`).each((i, card) => {
-        const p = team.players[i];
-        HD.set(card.querySelector(".vs_player_name"), TB.name(p));
+        const p = team.lineup[i];
+        // An empty portrait for a player the team hasn't picked yet
+        card.classList.toggle("empty", !p);
+        HD.set(card.querySelector(".vs_player_name"), p ? TB.name(p) : "");
         const pips = card.querySelector(".vs_pips");
-        pips.style.display = TB.isStock() || p.active ? "" : "none";
-        TB.updatePips(pips, p, team, animate);
-        TB.setEliminated(card, p.dead, animate);
-        TB.setActive(card, p.active && !p.dead, animate);
+        pips.style.display = p && (TB.isStock() || p.active) ? "" : "none";
+        if (p) TB.updatePips(pips, p, team, animate);
+        TB.setEliminated(card, !!p && p.dead, animate && !!p);
+        TB.setActive(card, !!p && p.active && !p.dead, animate && !!p);
         TB.characterRender(s, card.querySelector(".vs_render"), p, { custom_center: [0.5, 0.4] });
       });
     }

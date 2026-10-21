@@ -133,6 +133,82 @@ w.playerNumber.setValue(2)
 check(len(w.Players(1)) == 2, "removes players")
 check("3" not in StateManager.Get("team_battle.team.1.player"), "removed players' data")
 
+
+# Plays: only some of the players play, the others wait on deck
+def status(team):
+    return [StateManager.Get(f"team_battle.team.{team}.player.{i + 1}.status") for i in range(7)]
+
+
+def order(team):
+    return [
+        StateManager.Get(f"team_battle.team.{team}.player.{i + 1}.play_order") for i in range(7)
+    ]
+
+
+def kill(team):
+    # The other team scores until the team's active player is out
+    for _ in range(3):
+        w.signals.team1_stock_up.emit() if team == 2 else w.signals.team2_stock_up.emit()
+
+
+w.modeCombo.setCurrentIndex(0)
+w.playerNumber.setValue(7)
+check(w.playsNumber.value() == 7 and not w.IsLimited(), "plays follows the players")
+w.playsNumber.setValue(4)
+check(w.IsLimited(), "fewer plays than players")
+check(StateManager.Get("team_battle.plays") == 4, "exports the plays")
+w.ResetEverything()
+check(status(2) == ["playing"] + ["on_deck"] * 6, "the others are on deck")
+check(StateManager.Get("team_battle.team2_spinner-total") == 12, "only the plays' stocks count")
+check(StateManager.Get("team_battle.team.2.plays_left") == 4, "exports the plays left")
+check(order(2) == [1] + [None] * 6, "exports the order players came in")
+check(w.team2playerWidgets[1].playStatusLabel.text() == "ON DECK", "shows on deck in the window")
+
+w.autoAdvance.setChecked(True)
+kill(2)
+check(eliminated(2)[0] and active(2)[0], "nobody comes in on their own, the team picks")
+check(status(2)[:2] == ["out", "on_deck"], "eliminated players are out")
+check(StateManager.Get("team_battle.team2_spinner-total") == 9, "an eliminated player's stocks")
+w.signals.team2_next_active_player.emit()
+check(active(2)[1], "next player still works when asked for")
+w.signals.team1_stock_down.emit()
+check(active(2)[0] and not eliminated(2)[0] and stocks(2)[0] == 1, "undo brings back the player")
+check(order(2)[1] is None, "a pick that's undone goes back on deck")
+
+w.signals.team1_stock_up.emit()
+w.signals.team2_set_active_player.emit(4)
+check(active(2)[4] and order(2)[4] == 2, "the team picks their next player")
+w.signals.team1_stock_up.emit()
+check(stocks(2)[4] == 2, "the picked player loses stocks")
+for pick in [5, 6]:
+    kill(2)
+    w.signals.team2_set_active_player.emit(pick)
+kill(2)
+check(w.TeamIsOut(2), "the team is out after the plays are used")
+check(status(2) == ["out", "unused", "unused", "unused", "out", "out", "out"], "didn't play")
+check(StateManager.Get("team_battle.team2_spinner-total") == 0, "no stocks left")
+check(not w.NextActivePlayer(2), "nobody else comes in once the team is out")
+check(w.team2playerWidgets[1].playStatusLabel.text() == "DIDN'T PLAY", "shows didn't play")
+
+w.playsNumber.setValue(7)
+check(not w.IsLimited() and status(2)[1] == "on_deck", "everyone plays again")
+check(not w.team2playerWidgets[1].playStatusLabel.isVisibleTo(w), "no status in the window")
+w.playerNumber.setValue(5)
+check(w.playsNumber.value() == 5, "plays keeps following the players")
+w.playsNumber.setValue(3)
+w.playerNumber.setValue(6)
+check(w.playsNumber.value() == 3, "set plays stay when players are added")
+
+w.modeCombo.setCurrentIndex(1)
+w.ResetEverything()
+w.signals.team1_stock_up.emit()
+w.signals.team1_stock_up.emit()
+check(eliminated(2)[0] and active(2)[0], "First To: the team picks too")
+w.signals.team2_set_active_player.emit(3)
+check(stocks(1)[0] == 0, "First To: the winner starts over against the picked player")
+w.playsNumber.setValue(6)
+w.playerNumber.setValue(2)
+
 # Team name and logo
 teamName = w.team1column.findChild(QLineEdit, "teamName")
 teamName.setText("No Logo Team")

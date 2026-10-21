@@ -95,6 +95,18 @@ class TeamPlayerWidget(PlayerWidgetMixin, QGroupBox):
         titleContainer = self.findChild(QHBoxLayout, "titleContainer")
         titleContainer.setSpacing(4)
 
+        # "On deck" or "Didn't play", when only some of the team's players play
+        self.playStatusLabel = QLabel()
+        self.playStatusLabel.setObjectName("playStatus")
+        font = self.playStatusLabel.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        font.setItalic(True)
+        self.playStatusLabel.setFont(font)
+        self.playStatusLabel.setEnabled(False)
+        self.playStatusLabel.hide()
+        titleContainer.insertWidget(0, self.playStatusLabel)
+
         self.clear_bt = QPushButton()
         self.clear_bt.setFixedSize(24, 24)
         self.clear_bt.setIcon(ThemedIcon("assets/icons/undo.svg"))
@@ -461,6 +473,26 @@ class TeamPlayerWidget(PlayerWidgetMixin, QGroupBox):
         self.findChild(QCheckBox, "dead").setChecked(status)
         self.ExportEliminatedStatus()
         return
+
+    def HasPlayed(self):
+        """Whether the player is playing or has played: active, eliminated,
+        or with stocks lost or games won."""
+        start = self.defaultSpinnerValue if self.battleMode is TeamBattleModeEnum.STOCK_POOL else 0
+        return self.IsActive() or self.IsEliminated() or self.GetSpinnerValue() != start
+
+    def SetPlayStatus(self, status: str, order: int | None, limited: bool):
+        """status is "playing", "out", "on_deck" or "unused" (the team is out
+        without them playing), order their place in the order the team's
+        players came in to play. The window shows it when only some of the
+        team's players play."""
+        StateManager.Set(f"{self.path}.status", status)
+        StateManager.Set(f"{self.path}.play_order", order)
+        texts = {
+            "on_deck": QApplication.translate("app", "ON DECK"),
+            "unused": QApplication.translate("app", "DIDN'T PLAY"),
+        }
+        self.playStatusLabel.setText(texts.get(status, ""))
+        self.playStatusLabel.setVisible(limited and status in texts)
 
     def ToggleSponsorDisplay(self):
         if self.findChild(QLineEdit, "team").isHidden():

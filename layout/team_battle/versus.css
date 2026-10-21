@@ -284,6 +284,17 @@
     0 0 34px var(--team);
 }
 
+/* A portrait for a player the team hasn't picked yet */
+.vs_card.empty .vs_card_frame {
+  background: rgba(0, 0, 0, 0.25);
+  border: 3px dashed color-mix(in srgb, var(--team) 60%, transparent);
+  box-shadow: none;
+}
+
+.vs_card.empty .vs_plate {
+  visibility: hidden;
+}
+
 .vs_render {
   position: absolute;
   inset: 0 0 64px 0;
