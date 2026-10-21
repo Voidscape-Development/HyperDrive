@@ -18,6 +18,9 @@
   --nx-panel: rgba(22, 21, 30, 0.92);
   --nx-panel-light: rgb(70, 69, 80);
   --nx-line: rgba(255, 255, 255, 0.12);
+  /* Straight boxes: no slant on the team logo's box (without a logo) or the
+     stocks, as team_battle.css has */
+  --tb-skew: 0deg;
 }
 
 #battle {
@@ -173,7 +176,6 @@
 .nb_slot {
   width: 22px;
   height: 7px;
-  transform: skewX(-20deg);
   background: var(--team);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
@@ -193,7 +195,7 @@
   bottom: -3px;
   width: 2px;
   background: #ff2a3d;
-  transform: translateX(-50%) skewX(-20deg);
+  transform: translateX(-50%) rotate(30deg);
 }
 
 .nb_slot.playing {
@@ -323,8 +325,8 @@ body.wings .nb_tracks {
   margin-left: -40px;
 }
 
-/* A slanted band, fading in from the outside: the character out at the
-   end, then the tag, then the stocks by the bar */
+/* A band fading in from the outside: the character out at the end, then
+   the tag, then the stocks by the bar */
 .nb_wing .nb_row {
   width: 360px;
   height: 50px;
@@ -334,21 +336,19 @@ body.wings .nb_tracks {
 
 .nb_wing.t1 .nb_row {
   background: linear-gradient(90deg, var(--team-dark), var(--nx-panel) 70%);
-  clip-path: polygon(26px 0, 100% 0, 100% 100%, 0 100%);
 }
 
 .nb_wing.t2 .nb_row {
   background: linear-gradient(270deg, var(--team-dark), var(--nx-panel) 70%);
-  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 100%, 0 100%);
 }
 
 .nb_wing .nb_row_inner {
-  padding: 0 52px 0 30px;
+  padding: 0 52px 0 14px;
 }
 
 .nb_wing.t2 .nb_row_inner {
   flex-direction: row-reverse;
-  padding: 0 30px 0 52px;
+  padding: 0 14px 0 52px;
 }
 
 .nb_wing .nb_char {
