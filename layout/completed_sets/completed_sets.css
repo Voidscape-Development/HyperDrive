@@ -263,10 +263,26 @@ body.hd-hide-state-flag .cs-state-flag {
   z-index: 1;
 }
 
+/* The sets fade in at the right edge and out by the title */
 .cs-ticker .cs-viewport {
+  --cs-fade: 80px;
   flex: 1;
   overflow: hidden;
   position: relative;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--cs-fade),
+    #000 calc(100% - var(--cs-fade)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--cs-fade),
+    #000 calc(100% - var(--cs-fade)),
+    transparent
+  );
 }
 
 .cs-ticker .cs-track {
@@ -334,6 +350,88 @@ body.hd-hide-state-flag .cs-state-flag {
 /* The ticker reads "winner 3 – 1 loser" */
 .cs-ticker .cs-loser .cs-score {
   order: 98;
+}
+
+/* ── scroll.html: a full-screen column scrolling up ───── */
+
+.cs-scroll {
+  --cs-icon: 48px;
+  --cs-flag: 26px;
+}
+
+.cs-scroll .cs-container {
+  position: absolute;
+  inset: 0;
+  padding: 48px 48px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.cs-scroll .cs-title {
+  flex: none;
+  align-self: center;
+  font-size: 52px;
+}
+
+/* The sets fade in at the bottom and out at the top */
+.cs-scroll .cs-viewport {
+  --cs-fade: 120px;
+  flex: 1;
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--cs-fade),
+    #000 calc(100% - var(--cs-fade)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--cs-fade),
+    #000 calc(100% - var(--cs-fade)),
+    transparent
+  );
+}
+
+/* Starts below the top fade */
+.cs-scroll .cs-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--cs-fade);
+}
+
+/* The bottom padding spaces a copy from the next one like the sets */
+.cs-scroll .cs-run {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 18px;
+}
+
+.cs-scroll .cs-set {
+  gap: 8px;
+  padding: 18px 26px;
+}
+
+.cs-scroll .cs-round {
+  font-size: 26px;
+}
+
+.cs-scroll .cs-upset {
+  font-size: 22px;
+}
+
+.cs-scroll .cs-side {
+  font-size: 42px;
+  gap: 16px;
 }
 
 /* ── card.html: one set at a time ─────────────────────── */

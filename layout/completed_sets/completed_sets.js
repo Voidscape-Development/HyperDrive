@@ -14,6 +14,8 @@ const CS = {
     card_interval: 6,
     // ticker.html: scrolling speed in pixels per second
     ticker_speed: 90,
+    // scroll.html: scrolling speed in pixels per second
+    scroll_speed: 60,
     display: {
       title: true,
       phase: true,
