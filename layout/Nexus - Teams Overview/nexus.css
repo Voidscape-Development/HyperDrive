@@ -26,8 +26,6 @@
   --nx-panel: rgb(30, 29, 38);
   --nx-panel-light: rgb(70, 69, 80);
   --nx-line: rgba(255, 255, 255, 0.1);
-  /* The X over an eliminated player's card: big and grey, like a watermark */
-  --tb-x-color: rgba(255, 255, 255, 0.13);
 }
 
 #nexus {
@@ -285,10 +283,19 @@
   color: var(--tb-dim);
 }
 
-/* The X: grey, without a glow */
+/* The X over an eliminated player's card: big and red like a watermark,
+   under the name. Its two bars are solid and the X is see-through as one
+   (filter, not each bar's color), so it's no brighter where they cross. */
+.nx_card .x_mark {
+  z-index: 1;
+  filter: opacity(0.55);
+}
+
 .nx_card .x_mark::before,
 .nx_card .x_mark::after {
+  background: #ff2a3d;
   box-shadow: none;
+  border-radius: 0;
 }
 
 /* ── Standby ─────────────────────────────────────────────── */
