@@ -5,11 +5,26 @@ the look of every layout at once without editing them, and switch or share whole
 
 Open it from ☰ › [Layout themes](hyperdrive://open/layout-themes).
 
+## Built-in themes
+
+**Default** leaves every layout looking as it was made. The others give all the layouts a
+shared look to get started quickly:
+
+| Theme | Look |
+| - | - |
+| Esports Neon | Dark purple with neon cyan and magenta, gradients, square corners, UPPERCASE, quick animations |
+| Clean Minimal | Slate and soft indigo, rounded corners, no text outline, text as typed, calmer animations |
+| Classic Broadcast | Navy and gold, a TV sports look in Roboto Condensed and UPPERCASE |
+| Daytime | Light backgrounds with dark text and blue highlights, rounded corners |
+
+They only change colors, fonts, corners and animations, never what the layouts show
+(avatars, seeds, pronouns, flags...), so switching between them never hides anything.
+
 ## Making your own theme
 
-The built-in **Default** theme can't be changed. Click **New theme…** to start a theme from
-the one in use, then change anything: changes are saved and sent to the layouts as you make
-them, so you can watch them in OBS.
+Built-in themes can't be changed. Click **New theme…** to start a theme from the one in use
+(a built-in one too), then change anything: changes are saved and sent to the layouts as you
+make them, so you can watch them in OBS.
 
 | Section | What it changes |
 | - | - |

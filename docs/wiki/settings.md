@@ -21,6 +21,11 @@ HyperDrive's own look: **Dark**, **Light** or **Follow system**, the **Accent co
 **UI scale** (on restart), and custom themes with your own colors, corner roundness, spacing
 and font. Also the **Default team colors** of the scoreboard.
 
+Ready-made themes are listed under the first three: **Midnight**, **Graphite** and **OLED
+Black** (dark), **Synthwave** and **Forest** (colorful dark), **Paper** and **Soft Blue**
+(light), and **High Contrast Dark** and **High Contrast Light**. They come with their own
+accent and can't be changed: pick one and click **New custom theme…** to make your own from it.
+
 ## [Scoreboard](hyperdrive://open/settings/scoreboard)
 
 How the [scoreboard](scoreboard.md) follows start.gg: score control from the stage strike

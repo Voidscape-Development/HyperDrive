@@ -11,6 +11,7 @@ from ..Theme import (
     DEFAULT_ACCENT,
     DEFAULT_UI_SCALE,
     MAX_RADIUS,
+    PRESET_PREFIX,
     THEME_DARK,
     THEME_LIGHT,
     THEME_SYSTEM,
@@ -19,6 +20,7 @@ from ..Theme import (
     DefaultColors,
     ExportTheme,
     ImportTheme,
+    PresetNames,
     SpacingLabels,
     Theme,
     ThemedIcon,
@@ -257,6 +259,9 @@ class AppearanceSettings(QWidget):
         self.themeSelect.addItem(
             QApplication.translate("settings.appearance", "Follow system"), THEME_SYSTEM
         )
+        self.themeSelect.insertSeparator(self.themeSelect.count())
+        for key, name in PresetNames().items():
+            self.themeSelect.addItem(name, PRESET_PREFIX + key)
         customThemes = Theme.CustomThemes()
         if customThemes:
             self.themeSelect.insertSeparator(self.themeSelect.count())
@@ -267,9 +272,11 @@ class AppearanceSettings(QWidget):
         custom = Theme.CustomThemeName()
         self.editing = customThemes.get(custom)
         builtin = self.editing is None
-        self.accentLabel.setVisible(builtin)
-        self.accentButton.setVisible(builtin)
-        self.accentReset.setVisible(builtin)
+        # Presets come with their own accent
+        hasAccent = mode in (THEME_DARK, THEME_LIGHT, THEME_SYSTEM)
+        self.accentLabel.setVisible(hasAccent)
+        self.accentButton.setVisible(hasAccent)
+        self.accentReset.setVisible(hasAccent)
         self.accentReset.setEnabled(
             QColor(SettingsManager.Get("appearance.accent_color", DEFAULT_ACCENT))
             != QColor(DEFAULT_ACCENT)

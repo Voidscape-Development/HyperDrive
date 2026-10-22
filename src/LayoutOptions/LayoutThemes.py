@@ -273,13 +273,15 @@ def LayoutThemeSchema():
                     "score_background",
                     _tr("Score background"),
                     FIELD_FILL,
-                    Fill("#fe3636", "#121212"),
+                    # main.css's --bracket-score-bg
+                    Fill("#26272c"),
                 ),
                 Field(
                     "sponsor_background",
                     _tr("Sponsor background"),
                     FIELD_FILL,
-                    Fill("#fe3636", "#121212"),
+                    # None, as in the layouts
+                    Fill("#00000000"),
                 ),
                 Field("winner_color", _tr("Winner highlight"), FIELD_COLOR, "#ffb800"),
                 Field("lines_color", _tr("Bracket lines color"), FIELD_COLOR, "#000000"),
@@ -426,6 +428,149 @@ APPLY_COLORS_FIELDS = {
     ("versus", "custom_sponsor_colors"),
     ("versus", "team1_sponsor_color"),
     ("versus", "team2_sponsor_color"),
+}
+
+
+# The other built-in themes' names in the file start with this, so they can't
+# clash with a user theme's
+BUILTIN_PREFIX = "builtin:"
+
+
+def BuiltinThemeNames():
+    """The ready-made themes after the default one, as {name: label}, in the
+    order they're listed."""
+    return {
+        BUILTIN_PREFIX + "esports_neon": _tr("Esports Neon"),
+        BUILTIN_PREFIX + "clean_minimal": _tr("Clean Minimal"),
+        BUILTIN_PREFIX + "classic_broadcast": _tr("Classic Broadcast"),
+        BUILTIN_PREFIX + "daytime": _tr("Daytime"),
+    }
+
+
+# Their values, over the defaults. They only change how the layouts look
+# (colors, fonts, corners, animations), never what they show. Their fonts
+# are ones layout/main.css loads, so they work without being installed.
+_BUILTIN_VALUES = {
+    BUILTIN_PREFIX + "esports_neon": {
+        "general": {
+            "apply_colors": True,
+            "primary_color": "#00e5ff",
+            "secondary_color": "#0a0618",
+            "text_color": "#ffffff",
+            "background": Fill("#0a0618", "#1a0b3a", True, "to bottom right"),
+            "text_case": "uppercase",
+            "border_radius": 0,
+            "chip_radius": 2,
+        },
+        "animation": {"speed": 150},
+        "teams": {
+            "team1_color": "#ff2bd6",
+            "team2_color": "#00e5ff",
+            "team1_score_color": "#ffffff",
+            "team2_score_color": "#0a0618",
+        },
+        "chip": {
+            "text_color": "#ffffff",
+            "background": Fill("#1a0b3a", "#0a0618", True, "to right"),
+        },
+        "bracket": {
+            "score_background": Fill("#ff2bd6", "#7a00ff", True, "to right"),
+            "sponsor_background": Fill("#7a00ff", "#0a0618", True, "to right"),
+            "winner_color": "#00e5ff",
+            "lines_color": "#ff2bd6",
+            "focus_color": "#00e5ff",
+        },
+        "stage_strike": {"striked_color": "#c00a0618", "selected_color": "#00e5ff"},
+    },
+    BUILTIN_PREFIX + "clean_minimal": {
+        "general": {
+            "apply_colors": True,
+            "primary_color": "#a5b4fc",
+            "secondary_color": "#1e293b",
+            "text_color": "#f1f5f9",
+            "background": Fill("#0f172a"),
+            "font_family": "NotoSans",
+            "text_case": "none",
+            "text_outline": False,
+            "border_radius": 12,
+            "chip_radius": 8,
+        },
+        "animation": {"speed": 85},
+        "teams": {
+            "team1_color": "#f87171",
+            "team2_color": "#60a5fa",
+            "team1_score_color": "#0f172a",
+            "team2_score_color": "#0f172a",
+        },
+        "chip": {"text_color": "#f1f5f9", "background": Fill("#1e293b")},
+        "bracket": {
+            "score_background": Fill("#334155"),
+            "sponsor_background": Fill("#475569"),
+            "winner_color": "#a5b4fc",
+            "lines_color": "#475569",
+            "focus_color": "#a5b4fc",
+        },
+        "stage_strike": {"striked_color": "#b30f172a", "selected_color": "#a5b4fc"},
+    },
+    BUILTIN_PREFIX + "classic_broadcast": {
+        "general": {
+            "apply_colors": True,
+            "primary_color": "#d4a017",
+            "secondary_color": "#0b1f3a",
+            "text_color": "#ffffff",
+            "background": Fill("#132f57", "#0b1f3a", True, "to bottom"),
+            "font_family": "RobotoCondensed",
+            "text_case": "uppercase",
+            "border_radius": 2,
+            "chip_radius": 2,
+        },
+        "teams": {
+            "team1_color": "#c8102e",
+            "team2_color": "#1d4ed8",
+            "team1_score_color": "#ffffff",
+            "team2_score_color": "#ffffff",
+        },
+        "chip": {
+            "text_color": "#ffffff",
+            "background": Fill("#132f57", "#0b1f3a", True, "to bottom"),
+        },
+        "bracket": {
+            "score_background": Fill("#d4a017", "#a87c0c", True, "to bottom"),
+            "sponsor_background": Fill("#132f57"),
+            "winner_color": "#d4a017",
+            "lines_color": "#3a5a85",
+            "focus_color": "#d4a017",
+        },
+        "stage_strike": {"striked_color": "#c00b1f3a", "selected_color": "#d4a017"},
+    },
+    BUILTIN_PREFIX + "daytime": {
+        "general": {
+            "apply_colors": True,
+            "primary_color": "#2563eb",
+            "secondary_color": "#e2e8f0",
+            "text_color": "#0f172a",
+            "background": Fill("#ffffff", "#f1f5f9", True, "to bottom"),
+            "font_family": "NotoSans",
+            "text_outline": False,
+            "border_radius": 8,
+            "chip_radius": 6,
+        },
+        "teams": {
+            "team1_color": "#dc2626",
+            "team2_color": "#2563eb",
+            "team1_score_color": "#ffffff",
+            "team2_score_color": "#ffffff",
+        },
+        "chip": {"text_color": "#0f172a", "background": Fill("#ffffff")},
+        "bracket": {
+            "score_background": Fill("#2563eb"),
+            "sponsor_background": Fill("#e2e8f0"),
+            "winner_color": "#f59e0b",
+            "lines_color": "#94a3b8",
+            "focus_color": "#2563eb",
+        },
+        "stage_strike": {"striked_color": "#b3ffffff", "selected_color": "#2563eb"},
+    },
 }
 
 
@@ -636,7 +781,7 @@ class LayoutThemes:
     def UserThemes():
         themes = {}
         for name, data in LayoutThemes.data["themes"].items():
-            if name == DEFAULT_THEME:
+            if LayoutThemes.IsBuiltin(name) or name.startswith(BUILTIN_PREFIX):
                 continue
             try:
                 themes[name] = NormalizeLayoutTheme(data, name)
@@ -649,6 +794,8 @@ class LayoutThemes:
         theme = NormalizeLayoutTheme(theme)
         if not theme["name"] or theme["name"] == DEFAULT_THEME:
             raise ValueError("A layout theme needs a name")
+        if theme["name"].startswith(BUILTIN_PREFIX):
+            raise ValueError("Built-in layout themes can't be changed")
         themes = LayoutThemes.data["themes"]
         if oldName and oldName != theme["name"]:
             themes.pop(oldName, None)
@@ -671,10 +818,9 @@ class LayoutThemes:
     @staticmethod
     def UniqueName(name):
         name = (name or "").strip() or _tr("Custom theme")
-        taken = set(LayoutThemes.UserThemes()) | {
-            DEFAULT_THEME,
-            LayoutThemes.DisplayName(DEFAULT_THEME),
-        }
+        taken = set(LayoutThemes.UserThemes())
+        for builtin in LayoutThemes.BuiltinNames():
+            taken |= {builtin, LayoutThemes.DisplayName(builtin)}
         if name not in taken:
             return name
         i = 2
@@ -690,12 +836,25 @@ class LayoutThemes:
         return {"name": DEFAULT_THEME, "values": DefaultValues()}
 
     @staticmethod
+    def BuiltinNames():
+        """The default theme and the ready-made ones, in the order they're listed."""
+        return [DEFAULT_THEME, *BuiltinThemeNames()]
+
+    @staticmethod
+    def BuiltinTheme(name):
+        if name == DEFAULT_THEME:
+            return LayoutThemes.DefaultTheme()
+        return NormalizeLayoutTheme({"values": _BUILTIN_VALUES[name]}, name)
+
+    @staticmethod
     def DisplayName(name):
-        return _tr("Default") if name == DEFAULT_THEME else name
+        if name == DEFAULT_THEME:
+            return _tr("Default")
+        return BuiltinThemeNames().get(name, name)
 
     @staticmethod
     def IsBuiltin(name):
-        return name == DEFAULT_THEME
+        return name == DEFAULT_THEME or name in _BUILTIN_VALUES
 
     # =====================================================
     # ACTIVE THEME
@@ -703,7 +862,7 @@ class LayoutThemes:
     @staticmethod
     def ActiveName():
         active = LayoutThemes.data.get("active")
-        if active in LayoutThemes.UserThemes():
+        if LayoutThemes.IsBuiltin(active) or active in LayoutThemes.UserThemes():
             return active
         return DEFAULT_THEME
 
@@ -711,13 +870,14 @@ class LayoutThemes:
     def Active():
         """The theme in use, as a theme dict."""
         name = LayoutThemes.ActiveName()
-        if name == DEFAULT_THEME:
-            return LayoutThemes.DefaultTheme()
+        if LayoutThemes.IsBuiltin(name):
+            return LayoutThemes.BuiltinTheme(name)
         return LayoutThemes.UserThemes()[name]
 
     @staticmethod
     def SetActive(name):
-        LayoutThemes.data["active"] = name if name in LayoutThemes.UserThemes() else DEFAULT_THEME
+        known = LayoutThemes.IsBuiltin(name) or name in LayoutThemes.UserThemes()
+        LayoutThemes.data["active"] = name if known else DEFAULT_THEME
         LayoutThemes.Save()
         LayoutThemes.ExportToState()
 

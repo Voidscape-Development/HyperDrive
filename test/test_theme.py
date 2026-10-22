@@ -18,12 +18,14 @@ from src.SettingsManager import SettingsManager
 SettingsManager.SaveSettings = lambda: None
 
 from src.Theme import (
+    _PRESETS,
     COLOR_KEYS,
     DEFAULT_ACCENT,
     DEFAULT_ACCENT_ON_LIGHT,
     DEFAULT_RADIUS,
     DEFAULT_SPACING,
     MAX_RADIUS,
+    PRESET_PREFIX,
     THEME_DARK,
     THEME_LIGHT,
     BuiltinTheme,
@@ -31,6 +33,8 @@ from src.Theme import (
     ExportTheme,
     ImportTheme,
     NormalizeTheme,
+    PresetNames,
+    PresetTheme,
     Theme,
 )
 
@@ -171,6 +175,36 @@ def TestMode():
 
     Settings({"theme": "nonsense"})
     assert Theme.Mode() == THEME_DARK
+
+
+def TestPresets():
+    names = PresetNames()
+    assert list(names) == list(_PRESETS)
+    for key in _PRESETS:
+        # Every value is valid, so nothing was filled in from a built-in theme
+        theme = PresetTheme(key)
+        preset = _PRESETS[key]
+        assert theme["name"] == names[key]
+        assert theme["colors"] == preset["colors"], key
+
+        # Text and secondary text read on the background and on panels
+        c = theme["colors"]
+        minimum = 15 if key.startswith("high_contrast") else 7
+        for background in (c["window"], c["surface"]):
+            assert Contrast(c["text"], background) >= minimum, key
+            assert Contrast(c["muted"], background) >= 4.5, key
+
+        Settings({"theme": PRESET_PREFIX + key, "accent_color": "#123456"})
+        assert Theme.Mode() == PRESET_PREFIX + key
+        assert Theme.PresetName() == key
+        assert Theme.CustomThemeName() is None
+        # A preset keeps its own accent
+        assert Theme.Current() == theme
+
+    # A preset that's gone falls back to the default
+    Settings({"theme": PRESET_PREFIX + "gone"})
+    assert Theme.Mode() == THEME_DARK
+    assert Theme.PresetName() is None
 
 
 def TestAccent():

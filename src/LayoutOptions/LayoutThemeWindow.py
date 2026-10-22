@@ -226,7 +226,7 @@ class LayoutThemeWindow(QDialog):
         self.builtinNotice = QLabel(
             QApplication.translate(
                 "layout_themes",
-                "The default theme can't be changed. Create a new theme to customize it.",
+                "Built-in themes can't be changed. Create a new theme to customize one.",
             )
         )
         self.builtinNotice.setWordWrap(True)
@@ -309,7 +309,10 @@ class LayoutThemeWindow(QDialog):
         active = LayoutThemes.ActiveName()
 
         self.themeSelect.clear()
-        self.themeSelect.addItem(LayoutThemes.DisplayName(DEFAULT_THEME), DEFAULT_THEME)
+        for name in LayoutThemes.BuiltinNames():
+            self.themeSelect.addItem(LayoutThemes.DisplayName(name), name)
+            if name == DEFAULT_THEME:
+                self.themeSelect.insertSeparator(self.themeSelect.count())
         userThemes = LayoutThemes.UserThemes()
         if userThemes:
             self.themeSelect.insertSeparator(self.themeSelect.count())

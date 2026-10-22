@@ -197,6 +197,11 @@ img {
   --accent-color: #ffb800;
   --on-accent-color: #111214;
   --accent-secondary-color: #121212;
+
+  /* Bracket scores that aren't a win: the brand's neutral Trail, so the
+     amber winners stand out. Team colors are only for the two sides of a
+     scoreboard */
+  --bracket-score-bg: #26272c;
 }
 
 

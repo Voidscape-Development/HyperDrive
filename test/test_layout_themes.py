@@ -22,8 +22,11 @@ from src.StateManager import StateManager
 StateManager.Set = lambda key, value: StateManager.state.__setitem__(key, value)
 
 from src.LayoutOptions.LayoutThemes import (
+    _BUILTIN_VALUES,
     APPLY_COLORS_FIELDS,
+    BUILTIN_PREFIX,
     DEFAULT_THEME,
+    BuiltinThemeNames,
     CssVariables,
     DefaultValues,
     ExportLayoutTheme,
@@ -150,7 +153,8 @@ def TestCss():
     assert css["--general-font-family"] == '"BadFont"'
     assert css["--chip-text-color"] == "rgba(255, 0, 0, 0.502)"
     assert css["--chip-background"] == "linear-gradient(to bottom, #000000, #ffffff)"
-    assert css["--bracket-score-background"] == "#fe3636"
+    assert css["--bracket-score-background"] == "#26272c"
+    assert css["--bracket-sponsor-background"] == "rgba(0, 0, 0, 0.0)"
     # Toggles aren't CSS
     assert "--chip-pronouns-display" not in css
 
@@ -204,6 +208,26 @@ def TestLayoutDefaults():
     assert values["general"]["text_case"] == "layout"
     assert values["animation"] == {"enabled": True, "speed": 100}
     assert all(values["chip"][k] is True for k in values["chip"] if k.endswith("_display"))
+
+    # Its colors are the layouts' own (main.css), so turning "Use this
+    # theme's colors" on doesn't change the look, and they change together
+    import re
+
+    with open("layout/main.css", encoding="utf-8") as f:
+        root = re.search(r":root \{(.*?)\n\}", f.read(), re.S).group(1)
+    tokens = dict(re.findall(r"(--[a-z0-9-]+):\s*(#[0-9a-f]{6});", root))
+    for token, (section, field) in {
+        "--accent-color": ("general", "primary_color"),
+        "--accent-secondary-color": ("general", "secondary_color"),
+        "--text-color": ("general", "text_color"),
+        "--p1-score-bg-color": ("teams", "team1_color"),
+        "--p2-score-bg-color": ("teams", "team2_color"),
+        "--bracket-score-bg": ("bracket", "score_background"),
+    }.items():
+        value = values[section][field]
+        value = value["color"] if isinstance(value, dict) else value
+        assert tokens[token] == value, (token, tokens[token], value)
+    assert values["bracket"]["winner_color"] == tokens["--accent-color"]
 
     theme = NormalizeLayoutTheme(
         {
@@ -351,9 +375,77 @@ def TestApplyColorsFields():
     print("TestApplyColorsFields: OK")
 
 
+def TestBuiltinThemes():
+    import re
+
+    assert list(BuiltinThemeNames()) == list(_BUILTIN_VALUES)
+    schema = {s.key: {f.key: f for f in s.fields} for s in LayoutThemeSchema()}
+    defaults = DefaultValues()
+    with open("layout/main.css", encoding="utf-8") as f:
+        fonts = set(re.findall(r'font-family:\s*"([^"]+)"', f.read()))
+
+    for name, values in _BUILTIN_VALUES.items():
+        theme = LayoutThemes.BuiltinTheme(name)
+        assert theme["name"] == name
+        for sectionKey, fields in values.items():
+            for fieldKey, value in fields.items():
+                # Every value is valid, so none was replaced by its default
+                assert fieldKey in schema[sectionKey], (name, sectionKey, fieldKey)
+                assert theme["values"][sectionKey][fieldKey] == value, (name, fieldKey)
+                # They change the look only
+                assert schema[sectionKey][fieldKey].type != "checkbox" or fieldKey in (
+                    "apply_colors",
+                    "text_outline",
+                ), (name, fieldKey)
+        assert theme["values"]["general"]["apply_colors"] is True
+        # What isn't set is the default
+        for sectionKey, fields in defaults.items():
+            for fieldKey, value in fields.items():
+                if fieldKey not in values.get(sectionKey, {}):
+                    assert theme["values"][sectionKey][fieldKey] == value, (name, fieldKey)
+        # The layouts can load the font
+        font = theme["values"]["general"]["font_family"]
+        assert not font or font in fonts, (name, font)
+
+    with tempfile.TemporaryDirectory() as folder:
+        path = os.path.join(folder, "user_data", "layout_themes.json")
+        LayoutThemes.Load(path)
+        builtins = LayoutThemes.BuiltinNames()
+        assert builtins[0] == DEFAULT_THEME and builtins[1:] == list(_BUILTIN_VALUES)
+
+        name = BUILTIN_PREFIX + "esports_neon"
+        assert LayoutThemes.IsBuiltin(name)
+        LayoutThemes.SetActive(name)
+        assert LayoutThemes.ActiveName() == name
+        assert StateManager.state["layout_theme"]["name"] == "Esports Neon"
+        assert StateManager.state["layout_theme"]["css"]["--general-primary-color"] == "#00e5ff"
+        # Kept in the file, but not as a user theme
+        LayoutThemes.Load(path)
+        assert LayoutThemes.ActiveName() == name
+        assert LayoutThemes.UserThemes() == {}
+
+        # Built-in themes can't be overwritten, and their names are taken
+        for taken in (name, BUILTIN_PREFIX + "new"):
+            try:
+                LayoutThemes.SaveTheme({"name": taken, "values": {}})
+                raise AssertionError(taken)
+            except ValueError:
+                pass
+        assert LayoutThemes.UniqueName("Esports Neon") == "Esports Neon (2)"
+
+        # A file edited by hand can't sneak a user theme in under a built-in name
+        with open(path, "w") as f:
+            json.dump({"active": name, "themes": {name: {"values": {}}}}, f)
+        LayoutThemes.Load(path)
+        assert LayoutThemes.UserThemes() == {}
+        assert LayoutThemes.Active()["values"]["general"]["primary_color"] == "#00e5ff"
+    print("TestBuiltinThemes: OK")
+
+
 if __name__ == "__main__":
     TestSchema()
     TestApplyColorsFields()
+    TestBuiltinThemes()
     TestNormalize()
     TestCss()
     TestLayoutDefaults()

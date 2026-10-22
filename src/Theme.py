@@ -18,6 +18,8 @@ THEME_LIGHT = "light"
 THEME_SYSTEM = "system"
 # appearance.theme is "custom:<name>" for a custom theme
 CUSTOM_PREFIX = "custom:"
+# and "preset:<key>" for one of the built-in presets
+PRESET_PREFIX = "preset:"
 
 DEFAULT_THEME = THEME_DARK
 # The HyperDrive logo's amber (assets/BRAND.md). On a light background the
@@ -83,6 +85,120 @@ _BUILTIN_COLORS = {
         "border": "#c9cdd9",
         "text": "#1b1d27",
         "muted": "#5c6275",
+    },
+}
+
+# Ready-made themes to start from. They can't be edited, but "New custom
+# theme..." copies the one in use. Names are in PresetNames().
+_PRESETS = {
+    "midnight": {
+        "colors": {
+            "window": "#0b1020",
+            "surface": "#121a2e",
+            "raised": "#1b2540",
+            "border": "#2a3658",
+            "text": "#e6ebf7",
+            "muted": "#8f9bbd",
+            "accent": "#4f8cff",
+        },
+        "radius": 8,
+    },
+    "graphite": {
+        "colors": {
+            "window": "#1a1a1a",
+            "surface": "#232323",
+            "raised": "#2e2e2e",
+            "border": "#3d3d3d",
+            "text": "#ececec",
+            "muted": "#a3a3a3",
+            "accent": "#ff7a1a",
+        },
+        "radius": 4,
+    },
+    "oled": {
+        "colors": {
+            "window": "#000000",
+            "surface": "#0a0a0a",
+            "raised": "#161616",
+            "border": "#2a2a2a",
+            "text": "#f2f2f2",
+            "muted": "#9a9a9a",
+            "accent": DEFAULT_ACCENT,
+        },
+    },
+    "synthwave": {
+        "colors": {
+            "window": "#1a1029",
+            "surface": "#231538",
+            "raised": "#2f1d4a",
+            "border": "#4a2d6e",
+            "text": "#f3e8ff",
+            "muted": "#b49ad6",
+            "accent": "#ff4fd8",
+        },
+        "radius": 10,
+    },
+    "forest": {
+        "colors": {
+            "window": "#0f1a14",
+            "surface": "#15231b",
+            "raised": "#1d3026",
+            "border": "#2c4638",
+            "text": "#e4f2e9",
+            "muted": "#93b3a0",
+            "accent": "#4ade80",
+        },
+    },
+    "paper": {
+        "colors": {
+            "window": "#f4efe6",
+            "surface": "#fbf8f2",
+            "raised": "#ebe4d6",
+            "border": "#d4c9b4",
+            "text": "#2b2620",
+            "muted": "#665d50",
+            "accent": "#c2410c",
+        },
+    },
+    "soft_blue": {
+        "colors": {
+            "window": "#eef3fb",
+            "surface": "#ffffff",
+            "raised": "#e1e9f6",
+            "border": "#c3d0e6",
+            "text": "#1a2433",
+            "muted": "#526077",
+            "accent": "#2563eb",
+        },
+        "radius": 8,
+    },
+    # Borders in the text color and square corners, so every control's edge
+    # stands out
+    "high_contrast_dark": {
+        "colors": {
+            "window": "#000000",
+            "surface": "#000000",
+            "raised": "#1a1a1a",
+            "border": "#ffffff",
+            "text": "#ffffff",
+            "muted": "#e0e0e0",
+            "accent": "#ffff00",
+        },
+        "radius": 0,
+        "spacing": SPACING_COMFORTABLE,
+    },
+    "high_contrast_light": {
+        "colors": {
+            "window": "#ffffff",
+            "surface": "#ffffff",
+            "raised": "#f0f0f0",
+            "border": "#000000",
+            "text": "#000000",
+            "muted": "#262626",
+            "accent": "#0033cc",
+        },
+        "radius": 0,
+        "spacing": SPACING_COMFORTABLE,
     },
 }
 
@@ -166,6 +282,25 @@ def BuiltinTheme(mode, accent=DEFAULT_ACCENT):
         "spacing": DEFAULT_SPACING,
         "font": "",
     }
+
+
+def PresetNames():
+    """The presets' keys and names, in the order they're listed."""
+    return {
+        "midnight": QApplication.translate("settings.appearance", "Midnight"),
+        "graphite": QApplication.translate("settings.appearance", "Graphite"),
+        "oled": QApplication.translate("settings.appearance", "OLED Black"),
+        "synthwave": QApplication.translate("settings.appearance", "Synthwave"),
+        "forest": QApplication.translate("settings.appearance", "Forest"),
+        "paper": QApplication.translate("settings.appearance", "Paper"),
+        "soft_blue": QApplication.translate("settings.appearance", "Soft Blue"),
+        "high_contrast_dark": QApplication.translate("settings.appearance", "High Contrast Dark"),
+        "high_contrast_light": QApplication.translate("settings.appearance", "High Contrast Light"),
+    }
+
+
+def PresetTheme(key):
+    return NormalizeTheme(_PRESETS[key], PresetNames()[key])
 
 
 def ClosestBuiltinMode(colors):
@@ -507,10 +642,22 @@ class Theme:
     # CURRENT THEME
     # =====================================================
     @staticmethod
+    def PresetName():
+        mode = Theme.Mode()
+        return mode[len(PRESET_PREFIX) :] if mode.startswith(PRESET_PREFIX) else None
+
+    @staticmethod
     def Mode():
-        """The theme the user picked: dark, light, system or custom:<name>."""
+        """The theme the user picked: dark, light, system, preset:<key> or
+        custom:<name>."""
         mode = SettingsManager.Get("appearance.theme", None)
         if mode in (THEME_DARK, THEME_LIGHT, THEME_SYSTEM):
+            return mode
+        if (
+            isinstance(mode, str)
+            and mode.startswith(PRESET_PREFIX)
+            and mode[len(PRESET_PREFIX) :] in _PRESETS
+        ):
             return mode
         if (
             isinstance(mode, str)
@@ -535,6 +682,9 @@ class Theme:
         custom = Theme.CustomThemeName()
         if custom:
             return Theme.CustomThemes()[custom]
+        preset = Theme.PresetName()
+        if preset:
+            return PresetTheme(preset)
         if mode == THEME_SYSTEM:
             mode = THEME_DARK if Theme.SystemIsDark() else THEME_LIGHT
         return BuiltinTheme(mode, SettingsManager.Get("appearance.accent_color", DEFAULT_ACCENT))
@@ -669,6 +819,8 @@ class Theme:
             "upDisabled": ThemeIcon("chevron-up", c["disabled"]),
             "check": ThemeIcon("check", c["onAccent"]),
             "dot": ThemeIcon("dot", c["onAccent"]),
+            "checkDisabled": ThemeIcon("check", c["disabled"]),
+            "dotDisabled": ThemeIcon("dot", c["disabled"]),
         }
         c = {k: v.name() for k, v in c.items()}
         return (
@@ -698,6 +850,13 @@ class Theme:
         }}
         QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {{
             background: {c["window"]}; border-color: {c["raised"]};
+        }}
+        /* Still shows what's checked, e.g. in a built-in layout theme */
+        QCheckBox::indicator:checked:disabled {{
+            border-color: {c["disabled"]}; image: url({icons["checkDisabled"]});
+        }}
+        QRadioButton::indicator:checked:disabled {{
+            border-color: {c["disabled"]}; image: url({icons["dotDisabled"]});
         }}
 
         QToolTip {{
