@@ -157,12 +157,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Form</name>
     <message>
+        <location filename="../layout/ScoreboardStage.ui" line="14"/>
         <location filename="../layout/ScoreboardScore.ui" line="20"/>
         <location filename="../layout/ScoreboardPlayer.ui" line="25"/>
-        <location filename="../layout/ScoreboardStage.ui" line="14"/>
-        <location filename="../layout/BattleTeam.ui" line="26"/>
-        <location filename="../layout/ScoreboardTeam.ui" line="20"/>
         <location filename="../layout/TeamPlayer.ui" line="25"/>
+        <location filename="../layout/ScoreboardTeam.ui" line="20"/>
+        <location filename="../layout/BattleTeam.ui" line="26"/>
         <source>Form</source>
         <translation>フォーム</translation>
     </message>
@@ -175,8 +175,8 @@ p, li { white-space: pre-wrap; }
         <location filename="../PlayerListSlotWidget.py" line="55"/>
         <location filename="../PlayerListSlotWidget.py" line="56"/>
         <location filename="../PlayerListSlotWidget.py" line="121"/>
-        <location filename="../layout/BattleTeam.ui" line="60"/>
         <location filename="../layout/ScoreboardTeam.ui" line="73"/>
+        <location filename="../layout/BattleTeam.ui" line="60"/>
         <source>Team Name</source>
         <translation>チーム名</translation>
     </message>
@@ -779,11 +779,11 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../StreamQueueWidget.py" line="173"/>
         <location filename="../StreamQueueWidget.py" line="449"/>
+        <location filename="../HyperDrive.py" line="1486"/>
         <location filename="../ScoreboardManager.py" line="59"/>
         <location filename="../ScoreboardManager.py" line="98"/>
         <location filename="../ScoreboardManager.py" line="111"/>
         <location filename="../BracketFocusBar.py" line="173"/>
-        <location filename="../HyperDrive.py" line="1486"/>
         <source>Scoreboard</source>
         <translation>スコアボード</translation>
     </message>
@@ -916,8 +916,8 @@ p, li { white-space: pre-wrap; }
         <translation>プログラムを閉じます。</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="170"/>
         <location filename="../HyperDrive.py" line="411"/>
+        <location filename="../BracketWidget.py" line="170"/>
         <source>Bracket</source>
         <translation>トーナメント表</translation>
     </message>
@@ -941,19 +941,19 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AssetDownloaderWindow.py" line="347"/>
         <location filename="../ScoreboardStageWidget.py" line="472"/>
+        <location filename="../AssetDownloaderWindow.py" line="347"/>
         <location filename="../HyperDrive.py" line="1405"/>
         <source>Update</source>
         <translation>アップデート</translation>
     </message>
     <message>
-        <location filename="../SelectStationWindow.py" line="745"/>
         <location filename="../AssetDownloaderWindow.py" line="484"/>
         <location filename="../AssetDownloaderWindow.py" line="751"/>
-        <location filename="../SelectSetWindow.py" line="816"/>
-        <location filename="../TournamentDataManager.py" line="227"/>
         <location filename="../HyperDrive.py" line="1407"/>
+        <location filename="../SelectStationWindow.py" line="745"/>
+        <location filename="../TournamentDataManager.py" line="227"/>
+        <location filename="../SelectSetWindow.py" line="816"/>
         <location filename="../Helpers/DownloadHelper.py" line="217"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
@@ -1218,16 +1218,16 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="59"/>
-        <location filename="../SelectEventWindow.py" line="109"/>
         <location filename="../SelectSetWindow.py" line="67"/>
         <location filename="../SelectSetWindow.py" line="724"/>
+        <location filename="../SelectEventWindow.py" line="109"/>
         <source>In progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="111"/>
         <location filename="../SelectSetWindow.py" line="70"/>
         <location filename="../SelectSetWindow.py" line="725"/>
+        <location filename="../SelectEventWindow.py" line="111"/>
         <source>Completed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1243,9 +1243,9 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="121"/>
         <location filename="../SelectSetWindow.py" line="498"/>
         <location filename="../SelectSetWindow.py" line="567"/>
+        <location filename="../BracketFocusBar.py" line="121"/>
         <source>Round</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1331,14 +1331,14 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="112"/>
         <location filename="../SelectSetWindow.py" line="69"/>
+        <location filename="../SelectEventWindow.py" line="112"/>
         <source>Upcoming</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectEventWindow.py" line="212"/>
         <location filename="../HyperDrive.py" line="1282"/>
+        <location filename="../SelectEventWindow.py" line="212"/>
         <source>{0} entrants</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1836,14 +1836,14 @@ p, li { white-space: pre-wrap; }
         <translation>解説者{0}</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="748"/>
         <location filename="../PlayerListWidget.py" line="71"/>
+        <location filename="../BracketWidget.py" line="748"/>
         <source>Number of slots</source>
         <translation>スロットの数</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="751"/>
         <location filename="../PlayerListWidget.py" line="79"/>
+        <location filename="../BracketWidget.py" line="751"/>
         <source>Players per slot</source>
         <translation>各スロットのプレイヤー数</translation>
     </message>
@@ -1863,10 +1863,10 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="756"/>
+        <location filename="../CommentaryWidget.py" line="58"/>
         <location filename="../PlayerListWidget.py" line="87"/>
         <location filename="../ScoreboardWidget.py" line="188"/>
-        <location filename="../CommentaryWidget.py" line="58"/>
+        <location filename="../BracketWidget.py" line="756"/>
         <source>Characters per player</source>
         <translation>各プレイヤーの使用キャラクター数</translation>
     </message>
@@ -2014,9 +2014,9 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="100"/>
-        <location filename="../ScoreboardWidget.py" line="235"/>
-        <location filename="../DisplayOptions.py" line="30"/>
         <location filename="../CommentaryWidget.py" line="91"/>
+        <location filename="../DisplayOptions.py" line="30"/>
+        <location filename="../ScoreboardWidget.py" line="235"/>
         <source>Additional information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2239,25 +2239,25 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="92"/>
         <location filename="../HyperDrive.py" line="423"/>
+        <location filename="../TeamBattleWidget.py" line="92"/>
         <source>Crew/Team Battle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="336"/>
-        <location filename="../TeamBattleWidget.py" line="219"/>
         <location filename="../StreamQueueWidget.py" line="93"/>
+        <location filename="../TeamBattleWidget.py" line="219"/>
+        <location filename="../BracketWidget.py" line="336"/>
         <location filename="../SelectSetWindow.py" line="568"/>
         <location filename="../SelectSetWindow.py" line="745"/>
         <source>Phase</source>
         <translation>フェーズ</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="220"/>
         <location filename="../StreamQueueWidget.py" line="94"/>
         <location filename="../StreamQueueWidget.py" line="194"/>
         <location filename="../StreamQueueWidget.py" line="415"/>
+        <location filename="../TeamBattleWidget.py" line="220"/>
         <location filename="../SelectSetWindow.py" line="497"/>
         <source>Match</source>
         <translation>ラウンド</translation>
@@ -2299,9 +2299,9 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="138"/>
         <location filename="../PlayerDBWindow.py" line="134"/>
         <location filename="../PlayerDBWindow.py" line="724"/>
+        <location filename="../PlayerMediaTabs.py" line="138"/>
         <source>Search players...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2337,30 +2337,30 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../PlayerDBWindow.py" line="188"/>
         <location filename="../PlayerMediaTabs.py" line="260"/>
         <location filename="../PlayerMediaTabs.py" line="703"/>
         <location filename="../PlayerMediaTabs.py" line="818"/>
         <location filename="../PlayerMediaTabs.py" line="929"/>
-        <location filename="../PlayerDBWindow.py" line="188"/>
         <source>Delete</source>
         <translation type="unfinished">ルールを削除</translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="182"/>
         <location filename="../PlayerDBWindow.py" line="214"/>
+        <location filename="../PlayerMediaTabs.py" line="182"/>
         <source>Sponsor</source>
         <translation type="unfinished">スポンサー</translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="184"/>
         <location filename="../PlayerDBWindow.py" line="216"/>
+        <location filename="../PlayerMediaTabs.py" line="184"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="299"/>
         <location filename="../PlayerDBWindow.py" line="231"/>
         <location filename="../PlayerDBWindow.py" line="315"/>
+        <location filename="../PlayerListWidget.py" line="299"/>
         <source>Country</source>
         <translation type="unfinished">国</translation>
     </message>
@@ -2380,8 +2380,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="294"/>
         <location filename="../PlayerDBWindow.py" line="265"/>
+        <location filename="../PlayerMediaTabs.py" line="294"/>
         <source>Save</source>
         <translation type="unfinished">ルールを保存</translation>
     </message>
@@ -2509,8 +2509,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="225"/>
         <location filename="../GamesPopup.py" line="766"/>
+        <location filename="../BracketView.py" line="225"/>
         <source>Not needed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2540,10 +2540,10 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="315"/>
-        <location filename="../BracketFocusBar.py" line="125"/>
         <location filename="../PlayerDBWindow.py" line="312"/>
         <location filename="../PlayerDBWindow.py" line="800"/>
+        <location filename="../BracketView.py" line="315"/>
+        <location filename="../BracketFocusBar.py" line="125"/>
         <source>Player</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2564,8 +2564,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketView.py" line="360"/>
         <location filename="../GamesPopup.py" line="639"/>
+        <location filename="../BracketView.py" line="360"/>
         <source>Winner</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2717,8 +2717,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="755"/>
         <location filename="../PlayerDBWindow.py" line="638"/>
+        <location filename="../PlayerMediaTabs.py" line="755"/>
         <source>Unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2788,8 +2788,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="373"/>
         <location filename="../PlayerDBWindow.py" line="825"/>
+        <location filename="../PlayerMediaTabs.py" line="373"/>
         <source>Not in the player database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2819,14 +2819,14 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="35"/>
         <location filename="../PlayerDBWindow.py" line="943"/>
+        <location filename="../PlayerMediaTabs.py" line="35"/>
         <source>Player media</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="221"/>
         <location filename="../PlayerDBWindow.py" line="950"/>
+        <location filename="../PlayerMediaTabs.py" line="221"/>
         <source>Sponsor logos</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2841,20 +2841,20 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="414"/>
-        <location filename="../BracketWidget.py" line="612"/>
-        <location filename="../TeamBattleWidget.py" line="179"/>
-        <location filename="../TeamBattleWidget.py" line="248"/>
         <location filename="../StreamQueueWidget.py" line="95"/>
         <location filename="../StreamQueueWidget.py" line="195"/>
         <location filename="../DisplayOptions.py" line="71"/>
         <location filename="../PlayerDBWindow.py" line="929"/>
+        <location filename="../TeamBattleWidget.py" line="179"/>
+        <location filename="../TeamBattleWidget.py" line="248"/>
+        <location filename="../BracketWidget.py" line="414"/>
+        <location filename="../BracketWidget.py" line="612"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="666"/>
         <location filename="../PlayerDBWindow.py" line="936"/>
+        <location filename="../BracketWidget.py" line="666"/>
         <source>Seeds</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2911,22 +2911,22 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="256"/>
         <location filename="../GamesPopup.py" line="799"/>
+        <location filename="../GameReportController.py" line="256"/>
         <source>Clear games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="296"/>
         <location filename="../GamesPopup.py" line="638"/>
+        <location filename="../PlayerListWidget.py" line="296"/>
         <source>Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../GamesPopup.py" line="757"/>
         <location filename="../GamesTracker.py" line="207"/>
         <location filename="../GamesTracker.py" line="208"/>
         <location filename="../GameReportController.py" line="191"/>
-        <location filename="../GamesPopup.py" line="757"/>
         <source>Won by {0}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3065,8 +3065,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="554"/>
         <location filename="../GamesPopup.py" line="120"/>
+        <location filename="../GameReportController.py" line="554"/>
         <source>Reported to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3118,11 +3118,11 @@ p, li { white-space: pre-wrap; }
         <translation>各チームのプレイヤー数</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="219"/>
-        <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../CommentaryWidget.py" line="75"/>
+        <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../PlayerDBWindow.py" line="218"/>
         <location filename="../PlayerDBWindow.py" line="313"/>
+        <location filename="../ScoreboardWidget.py" line="219"/>
         <source>Real Name</source>
         <translation>本名</translation>
     </message>
@@ -3131,68 +3131,68 @@ p, li { white-space: pre-wrap; }
         <translation type="obsolete">ユーザー名のみ</translation>
     </message>
     <message>
-        <location filename="../PlayerListWidget.py" line="302"/>
         <location filename="../PlayerDBWindow.py" line="223"/>
+        <location filename="../PlayerListWidget.py" line="302"/>
         <source>Twitter</source>
         <translation>ツイッター</translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1457"/>
         <location filename="../ScoreboardPlayerWidget.py" line="83"/>
-        <location filename="../PlayerListWidget.py" line="298"/>
-        <location filename="../ScoreboardWidget.py" line="225"/>
-        <location filename="../DisplayOptions.py" line="20"/>
         <location filename="../CommentaryWidget.py" line="81"/>
+        <location filename="../DisplayOptions.py" line="20"/>
         <location filename="../PlayerDBWindow.py" line="713"/>
         <location filename="../PlayerDBWindow.py" line="802"/>
+        <location filename="../PlayerListWidget.py" line="298"/>
+        <location filename="../ScoreboardWidget.py" line="225"/>
+        <location filename="../BracketWidget.py" line="1457"/>
         <source>Seed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="226"/>
-        <location filename="../DisplayOptions.py" line="21"/>
         <location filename="../CommentaryWidget.py" line="82"/>
+        <location filename="../DisplayOptions.py" line="21"/>
+        <location filename="../ScoreboardWidget.py" line="226"/>
         <source>Birthday</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="257"/>
         <location filename="../TeamPlayerWidget.py" line="65"/>
         <location filename="../ScoreboardPlayerWidget.py" line="88"/>
-        <location filename="../ScoreboardWidget.py" line="228"/>
-        <location filename="../DisplayOptions.py" line="23"/>
         <location filename="../CommentaryWidget.py" line="84"/>
+        <location filename="../DisplayOptions.py" line="23"/>
+        <location filename="../ScoreboardWidget.py" line="228"/>
+        <location filename="../TeamBattleWidget.py" line="257"/>
         <source>Location</source>
         <translation>本拠地</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="252"/>
-        <location filename="../ScoreboardWidget.py" line="221"/>
-        <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../CommentaryWidget.py" line="77"/>
-        <location filename="../SocialsWidget.py" line="36"/>
+        <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../PlayerDBWindow.py" line="316"/>
+        <location filename="../ScoreboardWidget.py" line="221"/>
+        <location filename="../TeamBattleWidget.py" line="252"/>
+        <location filename="../SocialsWidget.py" line="36"/>
         <source>Socials</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="180"/>
-        <location filename="../TeamBattleWidget.py" line="261"/>
+        <location filename="../CommentaryWidget.py" line="88"/>
+        <location filename="../DisplayOptions.py" line="27"/>
         <location filename="../PlayerListWidget.py" line="300"/>
         <location filename="../ScoreboardWidget.py" line="232"/>
-        <location filename="../DisplayOptions.py" line="27"/>
-        <location filename="../CommentaryWidget.py" line="88"/>
+        <location filename="../TeamBattleWidget.py" line="180"/>
+        <location filename="../TeamBattleWidget.py" line="261"/>
         <source>Characters</source>
         <translation>使用キャラクター</translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="262"/>
-        <location filename="../PlayerListWidget.py" line="303"/>
-        <location filename="../ScoreboardWidget.py" line="233"/>
-        <location filename="../DisplayOptions.py" line="28"/>
         <location filename="../CommentaryWidget.py" line="89"/>
+        <location filename="../DisplayOptions.py" line="28"/>
         <location filename="../PlayerDBWindow.py" line="221"/>
         <location filename="../PlayerDBWindow.py" line="314"/>
+        <location filename="../PlayerListWidget.py" line="303"/>
+        <location filename="../ScoreboardWidget.py" line="233"/>
+        <location filename="../TeamBattleWidget.py" line="262"/>
         <source>Pronouns</source>
         <translation>代名詞</translation>
     </message>
@@ -3202,8 +3202,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="253"/>
         <location filename="../CommentaryWidget.py" line="109"/>
+        <location filename="../ScoreboardWidget.py" line="253"/>
         <source>Compact player cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3576,10 +3576,10 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="590"/>
         <location filename="../StreamQueueWidget.py" line="235"/>
         <location filename="../StreamQueueWidget.py" line="476"/>
         <location filename="../PlayerMediaTabs.py" line="214"/>
+        <location filename="../BracketWidget.py" line="590"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3726,10 +3726,10 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1146"/>
         <location filename="../BracketView.py" line="170"/>
         <location filename="../BracketView.py" line="331"/>
         <location filename="../BracketView.py" line="336"/>
+        <location filename="../BracketWidget.py" line="1146"/>
         <source>Bye</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3780,14 +3780,14 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1459"/>
         <location filename="../BracketView.py" line="201"/>
+        <location filename="../BracketWidget.py" line="1459"/>
         <source>W</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1460"/>
         <location filename="../BracketView.py" line="203"/>
+        <location filename="../BracketWidget.py" line="1460"/>
         <source>L</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3813,17 +3813,17 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1898"/>
         <location filename="../StreamQueueWidget.py" line="781"/>
         <location filename="../StreamQueueWidget.py" line="796"/>
+        <location filename="../BracketWidget.py" line="1898"/>
         <source>start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1463"/>
         <location filename="../AssetDownloaderWindow.py" line="891"/>
-        <location filename="../ScoreboardWidget.py" line="484"/>
         <location filename="../GamesPopup.py" line="576"/>
+        <location filename="../ScoreboardWidget.py" line="484"/>
+        <location filename="../BracketWidget.py" line="1463"/>
         <source>Games</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3907,8 +3907,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="945"/>
         <location filename="../StreamQueueWidget.py" line="127"/>
+        <location filename="../BracketWidget.py" line="945"/>
         <source>No tournament loaded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4147,8 +4147,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="2031"/>
         <location filename="../StreamQueueWidget.py" line="745"/>
+        <location filename="../BracketWidget.py" line="2031"/>
         <source>Updating...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4456,10 +4456,10 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerMediaTabs.py" line="264"/>
-        <location filename="../PlayerMediaTabs.py" line="822"/>
         <location filename="../AssetDownloaderWindow.py" line="360"/>
         <location filename="../AssetDownloaderWindow.py" line="923"/>
+        <location filename="../PlayerMediaTabs.py" line="264"/>
+        <location filename="../PlayerMediaTabs.py" line="822"/>
         <source>Open folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5185,7 +5185,7 @@ Drop an image here.</source>
     </message>
     <message>
         <location filename="../LayoutOptions/LayoutThemeWindow.py" line="227"/>
-        <source>The default theme can&apos;t be changed. Create a new theme to customize it.</source>
+        <source>Built-in themes can&apos;t be changed. Create a new theme to customize one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5199,60 +5199,60 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="388"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="391"/>
         <source>Theme name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="399"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="402"/>
         <source>New theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="401"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="404"/>
         <source>{0} (custom)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="421"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="424"/>
         <source>Rename theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="435"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="438"/>
         <source>Delete theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="436"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="439"/>
         <source>Delete the theme &quot;{0}&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="452"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="464"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="455"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="467"/>
         <source>Import theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="454"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="482"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="457"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="485"/>
         <source>HyperDrive layout theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="465"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="468"/>
         <source>This file isn&apos;t a HyperDrive layout theme.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="480"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="494"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="483"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="497"/>
         <source>Export theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="495"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="498"/>
         <source>The theme could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5397,238 +5397,283 @@ Drop an image here.</source>
 <context>
     <name>settings.appearance</name>
     <message>
-        <location filename="../Theme.py" line="95"/>
+        <location filename="../Theme.py" line="211"/>
         <source>Background</source>
         <translation type="unfinished">背景</translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="96"/>
+        <location filename="../Theme.py" line="212"/>
         <source>Panels and inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="97"/>
+        <location filename="../Theme.py" line="213"/>
         <source>Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="98"/>
+        <location filename="../Theme.py" line="214"/>
         <source>Borders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="99"/>
+        <location filename="../Theme.py" line="215"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="100"/>
+        <location filename="../Theme.py" line="216"/>
         <source>Secondary text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="101"/>
+        <location filename="../Theme.py" line="217"/>
         <source>Accent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="107"/>
+        <location filename="../Theme.py" line="223"/>
         <source>Compact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="108"/>
+        <location filename="../Theme.py" line="224"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="109"/>
+        <location filename="../Theme.py" line="225"/>
         <source>Comfortable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="161"/>
-        <location filename="../Settings/AppearanceSettings.py" line="253"/>
+        <location filename="../Theme.py" line="277"/>
+        <location filename="../Settings/AppearanceSettings.py" line="255"/>
         <source>Dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="163"/>
-        <location filename="../Settings/AppearanceSettings.py" line="255"/>
+        <location filename="../Theme.py" line="279"/>
+        <location filename="../Settings/AppearanceSettings.py" line="257"/>
         <source>Light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="497"/>
+        <location filename="../Theme.py" line="290"/>
+        <source>Midnight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="291"/>
+        <source>Graphite</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="292"/>
+        <source>OLED Black</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="293"/>
+        <source>Synthwave</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="294"/>
+        <source>Forest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="295"/>
+        <source>Paper</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="296"/>
+        <source>Soft Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="297"/>
+        <source>High Contrast Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="298"/>
+        <source>High Contrast Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Theme.py" line="632"/>
         <source>Custom theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="50"/>
+        <location filename="../Settings/AppearanceSettings.py" line="52"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="55"/>
+        <location filename="../Settings/AppearanceSettings.py" line="57"/>
         <source>Accent color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="63"/>
+        <location filename="../Settings/AppearanceSettings.py" line="65"/>
         <source>Reset the accent color to default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="73"/>
+        <location filename="../Settings/AppearanceSettings.py" line="75"/>
         <source>UI scale (takes effect on next restart)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="99"/>
+        <location filename="../Settings/AppearanceSettings.py" line="101"/>
         <source>New custom theme...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="102"/>
+        <location filename="../Settings/AppearanceSettings.py" line="104"/>
         <source>Starts a custom theme from the one in use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="108"/>
+        <location filename="../Settings/AppearanceSettings.py" line="110"/>
         <source>Import...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="111"/>
+        <location filename="../Settings/AppearanceSettings.py" line="113"/>
         <source>Export...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="113"/>
+        <location filename="../Settings/AppearanceSettings.py" line="115"/>
         <source>Saves the theme in use to a file you can share</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="119"/>
+        <location filename="../Settings/AppearanceSettings.py" line="121"/>
         <source>Rename...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="122"/>
+        <location filename="../Settings/AppearanceSettings.py" line="124"/>
         <source>Delete</source>
         <translation type="unfinished">ルールを削除</translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="141"/>
+        <location filename="../Settings/AppearanceSettings.py" line="143"/>
         <source>Reset &quot;{0}&quot; to default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="155"/>
-        <location filename="../Settings/AppearanceSettings.py" line="360"/>
+        <location filename="../Settings/AppearanceSettings.py" line="157"/>
+        <location filename="../Settings/AppearanceSettings.py" line="367"/>
         <source>Reset all colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="159"/>
+        <location filename="../Settings/AppearanceSettings.py" line="161"/>
         <source>Resets every color to the built-in Dark or Light theme, whichever this theme is closest to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="168"/>
+        <location filename="../Settings/AppearanceSettings.py" line="170"/>
         <source>Corner roundness</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="186"/>
+        <location filename="../Settings/AppearanceSettings.py" line="188"/>
         <source>Spacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="199"/>
+        <location filename="../Settings/AppearanceSettings.py" line="201"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="203"/>
+        <location filename="../Settings/AppearanceSettings.py" line="205"/>
         <source>System default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="216"/>
+        <location filename="../Settings/AppearanceSettings.py" line="218"/>
         <source>Default team colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="258"/>
+        <location filename="../Settings/AppearanceSettings.py" line="260"/>
         <source>Follow system</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="283"/>
+        <location filename="../Settings/AppearanceSettings.py" line="290"/>
         <source>Customize {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="361"/>
+        <location filename="../Settings/AppearanceSettings.py" line="368"/>
         <source>Reset every color of &quot;{0}&quot; to default?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="396"/>
+        <location filename="../Settings/AppearanceSettings.py" line="403"/>
         <source>Theme name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="407"/>
+        <location filename="../Settings/AppearanceSettings.py" line="414"/>
         <source>New custom theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="409"/>
+        <location filename="../Settings/AppearanceSettings.py" line="416"/>
         <source>{0} (custom)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="425"/>
+        <location filename="../Settings/AppearanceSettings.py" line="432"/>
         <source>Rename theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="438"/>
+        <location filename="../Settings/AppearanceSettings.py" line="445"/>
         <source>Delete theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="439"/>
+        <location filename="../Settings/AppearanceSettings.py" line="446"/>
         <source>Delete the theme &quot;{0}&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="457"/>
-        <location filename="../Settings/AppearanceSettings.py" line="469"/>
+        <location filename="../Settings/AppearanceSettings.py" line="464"/>
+        <location filename="../Settings/AppearanceSettings.py" line="476"/>
         <source>Import theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="459"/>
-        <location filename="../Settings/AppearanceSettings.py" line="486"/>
+        <location filename="../Settings/AppearanceSettings.py" line="466"/>
+        <location filename="../Settings/AppearanceSettings.py" line="493"/>
         <source>HyperDrive theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="470"/>
+        <location filename="../Settings/AppearanceSettings.py" line="477"/>
         <source>This file isn&apos;t a HyperDrive theme.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="484"/>
-        <location filename="../Settings/AppearanceSettings.py" line="498"/>
+        <location filename="../Settings/AppearanceSettings.py" line="491"/>
+        <location filename="../Settings/AppearanceSettings.py" line="505"/>
         <source>Export theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="499"/>
+        <location filename="../Settings/AppearanceSettings.py" line="506"/>
         <source>The theme could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5921,7 +5966,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_1_default_color</name>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="223"/>
+        <location filename="../Settings/AppearanceSettings.py" line="225"/>
         <source>Default Color of Team 1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5929,7 +5974,7 @@ Drop an image here.</source>
 <context>
     <name>settings.team_2_default_color</name>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="231"/>
+        <location filename="../Settings/AppearanceSettings.py" line="233"/>
         <source>Default Color of Team 2</source>
         <translation type="unfinished"></translation>
     </message>
