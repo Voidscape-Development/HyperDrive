@@ -9,6 +9,7 @@ two teams of players, played one matchup at a time until a team runs out.
 | - | - |
 | **Stock Pool** | Each player starts with a number of stocks (lives) and plays until they've lost them all, then the team's next player comes in. The team that runs out of stocks loses |
 | **First To** | Each matchup is played to a number of game wins; the loser is out |
+| **Stock Pool (Limited Plays)**, **First To (Limited Plays)** | The same, with only some of each team's players playing: see [Players on deck](#players-on-deck) |
 
 The starting stocks (Stock Pool) and games to win a matchup (First To) default to the values
 in [Settings › General](hyperdrive://open/settings/general).
@@ -22,19 +23,20 @@ in [Settings › General](hyperdrive://open/settings/general).
    **Active**, and players who are out **Eliminated**.
 
 **Auto advance** makes a team's next player active when the active player is eliminated.
-**First player starts** makes each team's first player active after a reset; off (the
-default), nobody is playing until each team picks their player.
+After a reset, nobody is playing until each team picks their player (in the Limited Plays
+modes, **First player starts** makes each team's first player active instead).
 **Reset Player Mode Values** resets every player's stocks or wins, and **Reset Battle
 Mode** resets the whole battle.
 
 ## Players on deck
 
 A team can bring more players than get to play: for example, a crew of 7 where only 4
-play. Set **Players** to the size of the crews (7) and **Plays** to how many of them play
-(4). Plays follows Players until you set it lower; when they're the same, everyone plays,
-as usual.
+play. Pick a **Limited Plays** mode, set **Players** to the size of the crews (7) and
+**Plays** to how many of them play (4). Plays starts one under Players, can't be more than
+Players, and stays where you set it when Players changes. The **Plays** and **First player
+starts** options only show in the Limited Plays modes.
 
-With fewer plays than players:
+In the Limited Plays modes:
 
 - There are no starters. Players who haven't played are **On deck**, and when the playing
   player is eliminated, the team picks who's next from them: tick that player's **Active**

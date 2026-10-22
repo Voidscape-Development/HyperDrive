@@ -102,9 +102,9 @@ class TeamBattleWidget(QDockWidget):
         self.playerNumber.setFixedWidth(50)
         self.playerNumber.valueChanged.connect(lambda val: self.SetPlayersPerTeam(val))
 
-        # How many of a team's players get to play. Under the number of
-        # players, the others wait on deck until the team picks them, and a
-        # team is out once this many of its players are eliminated.
+        # Limited Plays modes: how many of a team's players get to play. The
+        # others wait on deck until the team picks them, and a team is out
+        # once this many of its players are eliminated.
         self.playsNumber = QSpinBox()
         self.playsNumber.setObjectName("playsNumber")
         self.playsNumber.setFixedWidth(50)
@@ -116,8 +116,6 @@ class TeamBattleWidget(QDockWidget):
                 "picks them; a team is out once this many of its players are eliminated",
             )
         )
-        # Plays goes up and down with the players until it's set lower
-        self.playsFollowPlayers = True
         self.playsNumber.valueChanged.connect(self.SetPlays)
 
         self.characterNumber = QSpinBox()
@@ -200,10 +198,10 @@ class TeamBattleWidget(QDockWidget):
             self.livesNumber, 1, 3, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         )
 
-        playsLabel = QLabel(QApplication.translate("app", "Plays"))
-        playsLabel.setToolTip(self.playsNumber.toolTip())
+        self.playsLabel = QLabel(QApplication.translate("app", "Plays"))
+        self.playsLabel.setToolTip(self.playsNumber.toolTip())
         rulesLayout.addWidget(
-            playsLabel, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            self.playsLabel, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
         )
         rulesLayout.addWidget(self.playsNumber, 0, 5, Qt.AlignmentFlag.AlignVCenter)
 
@@ -284,7 +282,8 @@ class TeamBattleWidget(QDockWidget):
             lambda checked: SettingsManager.Set("team_battle.auto_advance", checked)
         )
 
-        # Off, nobody plays after a reset until each team picks their player
+        # Limited Plays modes only. Off, or in the other modes, nobody plays
+        # after a reset until each team picks their player
         self.firstPlayerStarts = QCheckBox(QApplication.translate("app", "First player starts"))
         self.firstPlayerStarts.setToolTip(
             QApplication.translate(
@@ -414,24 +413,37 @@ class TeamBattleWidget(QDockWidget):
     def DefaultValueForMode(self, mode: TeamBattleModeEnum = None):
         """The starting Stocks or First To amount set in the settings."""
         mode = mode or self.battleMode
-        if mode is TeamBattleModeEnum.FIRST_TO:
+        if mode.base is TeamBattleModeEnum.FIRST_TO:
             return SettingsManager.Get("general.team_battle_default_first_to", 2)
         return SettingsManager.Get("general.team_battle_default_stocks", 3)
 
     def SwitchBattleMode(self):
+        wasLimited = self.battleMode.limited
         self.battleMode = TeamBattleModeEnum.MatchToMode(self.modeCombo.currentText())
         logger.info(f"Switching Battle Mode to: {self.battleMode.name}")
 
-        if self.battleMode is TeamBattleModeEnum.STOCK_POOL:
+        if self.battleMode.base is TeamBattleModeEnum.STOCK_POOL:
             self.lifeLabel.setText(QApplication.translate("app", "Stocks"))
-        elif self.battleMode is TeamBattleModeEnum.FIRST_TO:
+        elif self.battleMode.base is TeamBattleModeEnum.FIRST_TO:
             self.lifeLabel.setText(QApplication.translate("app", "First To"))
+
+        # Plays and First player starts only matter when only some play
+        limited = self.battleMode.limited
+        for w in [self.playsLabel, self.playsNumber, self.firstPlayerStarts]:
+            w.setVisible(limited)
+        if limited and not wasLimited:
+            # Starts with one player sitting out
+            self.playsNumber.blockSignals(True)
+            self.playsNumber.setValue(max(self.playerNumber.value() - 1, 1))
+            self.playsNumber.blockSignals(False)
 
         # Players need the new mode before their values are reset, or they
         # reset to the old mode's starting value
         for pw in self.playerWidgets:
-            pw.SetBattleMode(self.battleMode)
-        StateManager.Set("team_battle.battle_mode", self.battleMode.name)
+            pw.SetBattleMode(self.battleMode.base)
+        # Layouts get the scoring mode, and whether only some players play
+        StateManager.Set("team_battle.battle_mode", self.battleMode.base.name)
+        StateManager.Set("team_battle.limited", limited)
 
         self.SetBattleValue(self.DefaultValueForMode())
 
@@ -467,7 +479,7 @@ class TeamBattleWidget(QDockWidget):
             self.SetBattleValue(self.DefaultValueForMode())
             # Each team starts with their first player, or picks them
             for team in [1, 2]:
-                if self.Players(team) and self.firstPlayerStarts.isChecked():
+                if self.Players(team) and self.FirstPlayerStarts():
                     self.Players(team)[0].SetActiveStatus(True)
         finally:
             self.bulkUpdate = False
@@ -553,10 +565,10 @@ class TeamBattleWidget(QDockWidget):
 
         self.bulkUpdate = True
         try:
-            p.SetBattleMode(self.battleMode)
+            p.SetBattleMode(self.battleMode.base)
             p.SetDefaultSpinnerValue(self.livesNumber.value())
             # A team starts with their first player, or picks them
-            if len(players) == 1 and self.firstPlayerStarts.isChecked():
+            if len(players) == 1 and self.FirstPlayerStarts():
                 p.SetActiveStatus(True)
         finally:
             self.bulkUpdate = False
@@ -583,8 +595,6 @@ class TeamBattleWidget(QDockWidget):
 
     def SetPlayersPerTeam(self, number):
         self.playsNumber.setMaximum(max(number, 1))
-        if self.playsFollowPlayers:
-            self.playsNumber.setValue(number)
 
         while len(self.team1playerWidgets) < number:
             self.AddPlayer(1)
@@ -722,7 +732,7 @@ class TeamBattleWidget(QDockWidget):
             newPlayer
             and not self.swapping
             and not self.bulkUpdate
-            and self.battleMode is TeamBattleModeEnum.FIRST_TO
+            and self.battleMode.base is TeamBattleModeEnum.FIRST_TO
         ):
             self.ResetFirstToWinners(self.OtherTeam(team))
 
@@ -764,13 +774,23 @@ class TeamBattleWidget(QDockWidget):
     # PLAYS: WHEN ONLY SOME OF THE PLAYERS PLAY
     # =====================================================
     def SetPlays(self, value: int):
-        self.playsFollowPlayers = value >= self.playerNumber.value()
         self.TotalScoreExport()
 
     def IsLimited(self) -> bool:
-        """Whether only some of each team's players play, the others waiting
-        on deck."""
-        return self.playsNumber.value() < len(self.team1playerWidgets)
+        """Whether only some of each team's players play (a Limited Plays
+        mode), the others waiting on deck."""
+        return self.battleMode.limited
+
+    def Plays(self) -> int:
+        """How many of each team's players play: everyone, unless limited."""
+        if self.IsLimited():
+            return self.playsNumber.value()
+        return len(self.team1playerWidgets)
+
+    def FirstPlayerStarts(self) -> bool:
+        """Whether each team's first player plays after a reset, instead of
+        the team picking them. Only Limited Plays modes have the option."""
+        return self.IsLimited() and self.firstPlayerStarts.isChecked()
 
     def Eliminations(self, team: int) -> int:
         return sum(1 for p in self.Players(team) if p.IsEliminated())
@@ -778,7 +798,7 @@ class TeamBattleWidget(QDockWidget):
     def PlaysLeft(self, team: int) -> int:
         """How many more of the team's players can still play, the one
         playing included."""
-        return max(self.playsNumber.value() - self.Eliminations(team), 0)
+        return max(self.Plays() - self.Eliminations(team), 0)
 
     def TeamIsOut(self, team: int) -> bool:
         return bool(self.Players(team)) and self.PlaysLeft(team) == 0
@@ -833,7 +853,7 @@ class TeamBattleWidget(QDockWidget):
     def PlayerReachedFirstTo(self, team: int, p: TeamPlayerWidget, reached: bool):
         """Reaching the "First To" amount eliminates the opposing active
         player. Going back under it (an undo) brings them back."""
-        if self.battleMode is not TeamBattleModeEnum.FIRST_TO:
+        if self.battleMode.base is not TeamBattleModeEnum.FIRST_TO:
             return
         if self.swapping or self.bulkUpdate:
             return
@@ -869,7 +889,7 @@ class TeamBattleWidget(QDockWidget):
     # STOCK CONTROL
     # =====================================================
     def TeamScored(self, team: int):
-        if self.battleMode is TeamBattleModeEnum.STOCK_POOL:
+        if self.battleMode.base is TeamBattleModeEnum.STOCK_POOL:
             # The other team's active player loses a stock
             target = self.ActivePlayer(self.OtherTeam(team))
         else:
@@ -879,7 +899,7 @@ class TeamBattleWidget(QDockWidget):
             target.IncreaseCall()
 
     def UndoTeamScored(self, team: int):
-        if self.battleMode is TeamBattleModeEnum.STOCK_POOL:
+        if self.battleMode.base is TeamBattleModeEnum.STOCK_POOL:
             otherTeam = self.OtherTeam(team)
             target = self.ActivePlayer(otherTeam)
             history = self.advanceHistory[otherTeam]
@@ -951,7 +971,7 @@ class TeamBattleWidget(QDockWidget):
     def TotalScoreExport(self):
         # The Stocks or First To amount every player starts from
         StateManager.Set("team_battle.battle_value", self.livesNumber.value())
-        StateManager.Set("team_battle.plays", self.playsNumber.value())
+        StateManager.Set("team_battle.plays", self.Plays())
         self.Team1TotalScoreExport()
         self.Team2TotalScoreExport()
 

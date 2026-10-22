@@ -19,6 +19,34 @@ class TeamBattleModeEnum(Enum):
     # [Easiest way to do it without needing to handle for other cases, and can be handled through signal calls]
     FIRST_TO = "First To (First To X Team Individuals)"
 
+    # LIMITED PLAYS
+    # The same as the mode they're named after, but only a set number of each team's players play:
+    # the others wait on deck until the team picks them, and a team is out once that many are eliminated.
+    STOCK_POOL_LIMITED = "Stock Pool (Limited Plays)"
+    FIRST_TO_LIMITED = "First To (Limited Plays)"
+
+    @property
+    def base(self) -> "TeamBattleModeEnum":
+        """The mode the scoring follows: STOCK_POOL or FIRST_TO."""
+        if self is TeamBattleModeEnum.STOCK_POOL_LIMITED:
+            return TeamBattleModeEnum.STOCK_POOL
+        if self is TeamBattleModeEnum.FIRST_TO_LIMITED:
+            return TeamBattleModeEnum.FIRST_TO
+        return self
+
+    @property
+    def limited(self) -> bool:
+        """Whether only some of each team's players play."""
+        return self in (TeamBattleModeEnum.STOCK_POOL_LIMITED, TeamBattleModeEnum.FIRST_TO_LIMITED)
+
+    def WithLimited(self, limited: bool) -> "TeamBattleModeEnum":
+        """The mode with the same scoring, with or without limited plays."""
+        if not limited:
+            return self.base
+        if self.base is TeamBattleModeEnum.FIRST_TO:
+            return TeamBattleModeEnum.FIRST_TO_LIMITED
+        return TeamBattleModeEnum.STOCK_POOL_LIMITED
+
     def translated(self):
         return QApplication.translate("app", self.value)
 

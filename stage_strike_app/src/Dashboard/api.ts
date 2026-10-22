@@ -128,6 +128,9 @@ export interface ResultsText {
 
 export interface TeamBattleOptions {
     mode: "STOCK_POOL" | "FIRST_TO";
+    /** Limited Plays: only `plays` of each team's players play */
+    limited: boolean;
+    plays: number;
     players: number;
     characters: number;
     battleValue: number;
