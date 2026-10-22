@@ -388,7 +388,8 @@ class TeamPlayerWidget(PlayerWidgetMixin, QGroupBox):
     # BATTLE SPECIFIC CALLS
     # =====================================================
     def SetBattleMode(self, mode: TeamBattleModeEnum):
-        self.battleMode = mode
+        # Players only follow the scoring: Stock Pool or First To
+        self.battleMode = mode.base
         if self.battleMode is TeamBattleModeEnum.STOCK_POOL:
             self.SetDynamicSpinnerLabelText(QApplication.translate("app", "STOCKS/LIVES"))
         elif self.battleMode is TeamBattleModeEnum.FIRST_TO:

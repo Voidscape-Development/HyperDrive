@@ -28,8 +28,8 @@ const TB = {
   avatar: (player) => HD.asset(player.avatar) || player.online_avatar || null,
 
   // A team, with its players in order and the numbers the layouts show.
-  // When only some of the players play (team_battle.plays under the number
-  // of players), lineup is a slot per play, with the players who played in
+  // When only some of the players play (a Limited Plays mode, or
+  // team_battle.plays under the number of players), lineup is a slot per play, with the players who played in
   // the order they came in and null for the ones left, and onDeck the
   // others. Otherwise lineup is every player and onDeck is empty.
   team(data, t) {
@@ -59,7 +59,7 @@ const TB = {
     const max = Math.max(Number(tb.battle_value) || 0, ...players.map((p) => p.value), 1);
 
     const plays = Math.min(Number(tb.plays) || players.length, players.length);
-    const limited = plays < players.length;
+    const limited = tb.limited ?? plays < players.length;
     const left = Math.max(plays - players.filter((p) => p.dead).length, 0);
     // The stocks of the players who can still play: the ones who played
     // first, then the ones on deck

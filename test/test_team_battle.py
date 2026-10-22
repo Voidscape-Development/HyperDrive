@@ -59,7 +59,13 @@ check(w.battleMode is TeamBattleModeEnum.STOCK_POOL, "starts in Stock Pool")
 check(w.livesNumber.value() == 3, "starts with the stocks from the settings")
 w.playerNumber.setValue(3)
 check(stocks(1) == [3, 3, 3] and stocks(2) == [3, 3, 3], "new players get the stocks")
-check(active(1) == [True, False, False], "a team starts with their first player")
+check(not any(active(1)) and not any(active(2)), "nobody plays until the team picks")
+check(w.playsNumber.isHidden() and w.firstPlayerStarts.isHidden(), "no plays options")
+check(StateManager.Get("team_battle.limited") is False, "exports that everyone plays")
+check(StateManager.Get("team_battle.plays") == 3, "exports every player as playing")
+w.signals.team1_set_active_player.emit(0)
+w.signals.team2_set_active_player.emit(0)
+check(active(1) == [True, False, False], "the team picks their first player")
 check(StateManager.Get("team_battle.team.1.active_player") == 1, "exports the active player")
 check(StateManager.Get("team_battle.team1_spinner-total") == 9, "exports the stocks left")
 check(StateManager.Get("team_battle.battle_value") == 3, "exports the stocks players start with")
@@ -112,7 +118,9 @@ check(StateManager.Get("team_battle.battle_value") == 2, "exports the First To a
 check(stocks(1) == [0, 0, 0] and eliminated(2) == [False] * 3, "switching resets the players")
 
 w.ResetEverything()
-check(active(1) == [True, False, False], "reset everything starts with the first players")
+check(not any(active(1)), "nobody plays after reset everything, even with First player starts")
+w.signals.team1_set_active_player.emit(0)
+w.signals.team2_set_active_player.emit(0)
 
 w.autoAdvance.setChecked(False)
 w.signals.team1_stock_up.emit()
@@ -135,7 +143,7 @@ check(len(w.Players(1)) == 2, "removes players")
 check("3" not in StateManager.Get("team_battle.team.1.player"), "removed players' data")
 
 
-# Plays: only some of the players play, the others wait on deck
+# Limited Plays: only some of the players play, the others wait on deck
 def status(team):
     return [StateManager.Get(f"team_battle.team.{team}.player.{i + 1}.status") for i in range(7)]
 
@@ -154,9 +162,15 @@ def kill(team):
 
 w.modeCombo.setCurrentIndex(0)
 w.playerNumber.setValue(7)
-check(w.playsNumber.value() == 7 and not w.IsLimited(), "plays follows the players")
+check(not w.IsLimited() and StateManager.Get("team_battle.plays") == 7, "everyone plays")
+w.modeCombo.setCurrentIndex(2)
+check(w.battleMode is TeamBattleModeEnum.STOCK_POOL_LIMITED, "switches to Limited Plays")
+check(w.IsLimited() and w.playsNumber.value() == 6, "starts with one player sitting out")
+check(not w.playsNumber.isHidden() and not w.firstPlayerStarts.isHidden(), "plays options")
+check(StateManager.Get("team_battle.battle_mode") == "STOCK_POOL", "exports the scoring mode")
+check(StateManager.Get("team_battle.limited") is True, "exports that only some play")
+check(w.livesNumber.value() == 3, "uses the Stock Pool amount")
 w.playsNumber.setValue(4)
-check(w.IsLimited(), "fewer plays than players")
 check(StateManager.Get("team_battle.plays") == 4, "exports the plays")
 w.ResetEverything()
 check(status(2) == ["playing"] + ["on_deck"] * 6, "the others are on deck")
@@ -191,14 +205,17 @@ check(StateManager.Get("team_battle.team2_spinner-total") == 0, "no stocks left"
 check(not w.NextActivePlayer(2), "nobody else comes in once the team is out")
 check(w.team2playerWidgets[1].playStatusLabel.text() == "DIDN'T PLAY", "shows didn't play")
 
-w.playsNumber.setValue(7)
+w.modeCombo.setCurrentIndex(0)
 check(not w.IsLimited() and status(2)[1] == "on_deck", "everyone plays again")
 check(not w.team2playerWidgets[1].playStatusLabel.isVisibleTo(w), "no status in the window")
+w.modeCombo.setCurrentIndex(2)
+w.playsNumber.setValue(7)
+check(w.IsLimited() and StateManager.Get("team_battle.plays") == 7, "plays can be every player")
 w.playerNumber.setValue(5)
-check(w.playsNumber.value() == 5, "plays keeps following the players")
-w.playsNumber.setValue(3)
+check(w.playsNumber.value() == 5, "plays can't be more than the players")
 w.playerNumber.setValue(6)
-check(w.playsNumber.value() == 3, "set plays stay when players are added")
+check(w.playsNumber.value() == 5, "plays don't follow the players")
+w.playsNumber.setValue(3)
 
 # Without "First player starts", nobody plays until the team picks
 w.firstPlayerStarts.setChecked(False)
@@ -216,7 +233,11 @@ w.firstPlayerStarts.setChecked(True)
 w.ResetEverything()
 check(active(2)[0], "with First player starts, the first player plays after a reset")
 
-w.modeCombo.setCurrentIndex(1)
+w.modeCombo.setCurrentIndex(3)
+check(
+    w.battleMode.base is TeamBattleModeEnum.FIRST_TO and w.playsNumber.value() == 3, "keeps plays"
+)
+check(w.livesNumber.value() == 2, "uses the First To amount")
 w.ResetEverything()
 w.signals.team1_stock_up.emit()
 w.signals.team1_stock_up.emit()

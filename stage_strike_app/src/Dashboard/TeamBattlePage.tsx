@@ -105,7 +105,7 @@ function TeamCard({number, team, mode, total}: {number: 1 | 2; team?: Team; mode
 /** Crew/Team Battle: two teams, one matchup at a time, until a team runs out */
 export default function TeamBattlePage() {
     const battle = useHd((s) => s.team_battle);
-    const {options, change} = useRemoteOptions<TeamBattleOptions>(dashboard.teamBattle.options, dashboard.teamBattle.setOptions);
+    const {options, change, reload} = useRemoteOptions<TeamBattleOptions>(dashboard.teamBattle.options, dashboard.teamBattle.setOptions);
     const mode = options?.mode ?? "STOCK_POOL";
 
     const total = (n: 1 | 2) => {
@@ -140,7 +140,14 @@ export default function TeamBattlePage() {
                             ))}
                         </span>
                     </span>
-                    <Stepper label="Players per team" value={options.players} min={1} max={16} onChange={(v) => change({players: v})}/>
+                    {/* Plays change with these in the app, so they're loaded again */}
+                    <label className="flex items-center gap-2">
+                        <Switch checked={options.limited} onCheckedChange={(on) => change({limited: on}).then(reload)}/>Limited plays
+                    </label>
+                    <Stepper label="Players per team" value={options.players} min={1} max={16} onChange={(v) => change({players: v}).then(reload)}/>
+                    {options.limited && (
+                        <Stepper label="Plays" value={options.plays} min={1} max={options.players} onChange={(v) => change({plays: v})}/>
+                    )}
                     <Stepper label={mode === "STOCK_POOL" ? "Starting stocks" : "Games to win"} value={options.battleValue} min={1} max={99} onChange={(v) => change({battleValue: v})}/>
                     <Stepper label="Characters" value={options.characters} min={0} max={4} onChange={(v) => change({characters: v})}/>
                     <label className="flex items-center gap-2">

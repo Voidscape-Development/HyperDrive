@@ -199,7 +199,7 @@ export function teamBattleTeam(state: State, team: number): BattleTeam | undefin
 		total: Number(battle?.[`team${team}_spinner-total`]) || players.reduce((sum, p) => sum + p.value, 0),
 		mode: battle?.battle_mode === "FIRST_TO" ? "FIRST_TO" : "STOCK_POOL",
 		battleValue: Number(battle?.battle_value) || 0,
-		limited: plays < players.length,
+		limited: typeof battle?.limited === "boolean" ? battle.limited : plays < players.length,
 		playsLeft: Number(data.plays_left ?? Math.max(plays - players.filter((p) => p.dead).length, 0)),
 	};
 }

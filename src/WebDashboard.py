@@ -610,8 +610,12 @@ class DashboardActions:
             return "NO_TEAM_BATTLE", 404
         from .TeamBattleModeEnum import TeamBattleModeEnum
 
+        mode = TeamBattleModeEnum.MatchToMode(widget.modeCombo.currentText())
         return {
-            "mode": TeamBattleModeEnum.MatchToMode(widget.modeCombo.currentText()).name,
+            # The scoring mode, and whether only some players play
+            "mode": mode.base.name,
+            "limited": mode.limited,
+            "plays": widget.playsNumber.value(),
             "players": widget.playerNumber.value(),
             "characters": widget.characterNumber.value(),
             "battleValue": widget.livesNumber.value(),
@@ -625,11 +629,17 @@ class DashboardActions:
             return "NO_TEAM_BATTLE", 404
         from .TeamBattleModeEnum import TeamBattleModeEnum
 
+        mode = TeamBattleModeEnum.MatchToMode(widget.modeCombo.currentText())
         if data.get("mode") in TeamBattleModeEnum.__members__:
-            mode = TeamBattleModeEnum[data["mode"]]
-            widget.modeCombo.setCurrentIndex(list(TeamBattleModeEnum).index(mode))
+            # A scoring mode keeps limited plays unless "limited" says otherwise
+            mode = TeamBattleModeEnum[data["mode"]].WithLimited(mode.limited)
+        if "limited" in data:
+            mode = mode.WithLimited(bool(data["limited"]))
+        widget.modeCombo.setCurrentIndex(list(TeamBattleModeEnum).index(mode))
         if Number(data.get("players")) is not None:
             widget.playerNumber.setValue(max(1, Number(data["players"])))
+        if Number(data.get("plays")) is not None:
+            widget.playsNumber.setValue(max(1, Number(data["plays"])))
         if Number(data.get("characters")) is not None:
             widget.characterNumber.setValue(max(0, Number(data["characters"])))
         if Number(data.get("battleValue")) is not None:

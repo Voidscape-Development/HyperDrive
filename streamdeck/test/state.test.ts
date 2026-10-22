@@ -130,6 +130,13 @@ describe("team battle", () => {
 		const limited = teamBattleTeam(state, 1)!;
 		expect(limited.limited).toBe(true);
 		expect(limited.playsLeft).toBe(1);
+
+		// A Limited Plays mode says so, even with every player playing
+		state.team_battle.plays = 3;
+		state.team_battle.limited = true;
+		expect(teamBattleTeam(state, 1)!.limited).toBe(true);
+		state.team_battle.limited = false;
+		expect(teamBattleTeam(state, 1)!.limited).toBe(false);
 	});
 });
 

@@ -88,6 +88,8 @@ export interface TeamBattlePlayer extends HDPlayerInfo {
 export interface TeamBattleState {
     battle_mode?: string;
     battle_value?: number;
+    limited?: boolean;
+    plays?: number;
     phase?: string;
     match?: string;
     team?: Record<string, {color?: string; sponsor?: string; active_player?: number; player?: Record<string, TeamBattlePlayer>}>;
