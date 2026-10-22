@@ -153,7 +153,8 @@ def TestCss():
     assert css["--general-font-family"] == '"BadFont"'
     assert css["--chip-text-color"] == "rgba(255, 0, 0, 0.502)"
     assert css["--chip-background"] == "linear-gradient(to bottom, #000000, #ffffff)"
-    assert css["--bracket-score-background"] == "#fe3636"
+    assert css["--bracket-score-background"] == "#26272c"
+    assert css["--bracket-sponsor-background"] == "rgba(0, 0, 0, 0.0)"
     # Toggles aren't CSS
     assert "--chip-pronouns-display" not in css
 
@@ -207,6 +208,26 @@ def TestLayoutDefaults():
     assert values["general"]["text_case"] == "layout"
     assert values["animation"] == {"enabled": True, "speed": 100}
     assert all(values["chip"][k] is True for k in values["chip"] if k.endswith("_display"))
+
+    # Its colors are the layouts' own (main.css), so turning "Use this
+    # theme's colors" on doesn't change the look, and they change together
+    import re
+
+    with open("layout/main.css", encoding="utf-8") as f:
+        root = re.search(r":root \{(.*?)\n\}", f.read(), re.S).group(1)
+    tokens = dict(re.findall(r"(--[a-z0-9-]+):\s*(#[0-9a-f]{6});", root))
+    for token, (section, field) in {
+        "--accent-color": ("general", "primary_color"),
+        "--accent-secondary-color": ("general", "secondary_color"),
+        "--text-color": ("general", "text_color"),
+        "--p1-score-bg-color": ("teams", "team1_color"),
+        "--p2-score-bg-color": ("teams", "team2_color"),
+        "--bracket-score-bg": ("bracket", "score_background"),
+    }.items():
+        value = values[section][field]
+        value = value["color"] if isinstance(value, dict) else value
+        assert tokens[token] == value, (token, tokens[token], value)
+    assert values["bracket"]["winner_color"] == tokens["--accent-color"]
 
     theme = NormalizeLayoutTheme(
         {

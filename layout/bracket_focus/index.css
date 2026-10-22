@@ -287,7 +287,7 @@ body.hd-bracket-hide-round-names .bf_round_name {
 }
 
 .sponsor {
-  color: var(--p1-sponsor-color);
+  color: var(--accent-color);
 }
 
 .seed {

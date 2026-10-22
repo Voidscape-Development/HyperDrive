@@ -273,13 +273,15 @@ def LayoutThemeSchema():
                     "score_background",
                     _tr("Score background"),
                     FIELD_FILL,
-                    Fill("#fe3636", "#121212"),
+                    # main.css's --bracket-score-bg
+                    Fill("#26272c"),
                 ),
                 Field(
                     "sponsor_background",
                     _tr("Sponsor background"),
                     FIELD_FILL,
-                    Fill("#fe3636", "#121212"),
+                    # None, as in the layouts
+                    Fill("#00000000"),
                 ),
                 Field("winner_color", _tr("Winner highlight"), FIELD_COLOR, "#ffb800"),
                 Field("lines_color", _tr("Bracket lines color"), FIELD_COLOR, "#000000"),
