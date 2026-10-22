@@ -2246,7 +2246,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="93"/>
-        <location filename="../TeamBattleWidget.py" line="219"/>
+        <location filename="../TeamBattleWidget.py" line="217"/>
         <location filename="../BracketWidget.py" line="336"/>
         <location filename="../SelectSetWindow.py" line="568"/>
         <location filename="../SelectSetWindow.py" line="745"/>
@@ -2257,7 +2257,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="94"/>
         <location filename="../StreamQueueWidget.py" line="194"/>
         <location filename="../StreamQueueWidget.py" line="415"/>
-        <location filename="../TeamBattleWidget.py" line="220"/>
+        <location filename="../TeamBattleWidget.py" line="218"/>
         <location filename="../SelectSetWindow.py" line="497"/>
         <source>Match</source>
         <translation>ラウンド</translation>
@@ -2268,28 +2268,28 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="127"/>
+        <location filename="../TeamBattleWidget.py" line="125"/>
         <location filename="../TeamBattleWidget.py" line="426"/>
         <source>Stocks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="156"/>
+        <location filename="../TeamBattleWidget.py" line="154"/>
         <source>Reset Player Mode Values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="160"/>
+        <location filename="../TeamBattleWidget.py" line="158"/>
         <source>Reset Battle Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="181"/>
+        <location filename="../TeamBattleWidget.py" line="179"/>
         <source>Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="203"/>
+        <location filename="../TeamBattleWidget.py" line="201"/>
         <source>Plays</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2845,8 +2845,8 @@ p, li { white-space: pre-wrap; }
         <location filename="../StreamQueueWidget.py" line="195"/>
         <location filename="../DisplayOptions.py" line="71"/>
         <location filename="../PlayerDBWindow.py" line="929"/>
-        <location filename="../TeamBattleWidget.py" line="179"/>
-        <location filename="../TeamBattleWidget.py" line="248"/>
+        <location filename="../TeamBattleWidget.py" line="177"/>
+        <location filename="../TeamBattleWidget.py" line="246"/>
         <location filename="../BracketWidget.py" line="414"/>
         <location filename="../BracketWidget.py" line="612"/>
         <source>Players</source>
@@ -2859,22 +2859,22 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="275"/>
+        <location filename="../TeamBattleWidget.py" line="273"/>
         <source>Auto advance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="277"/>
+        <location filename="../TeamBattleWidget.py" line="275"/>
         <source>When the active player is eliminated, make the team&apos;s next player in line active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="288"/>
+        <location filename="../TeamBattleWidget.py" line="287"/>
         <source>First player starts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamBattleWidget.py" line="290"/>
+        <location filename="../TeamBattleWidget.py" line="289"/>
         <source>After a reset, each team&apos;s first player is playing. Off, nobody is until the team picks their player</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3161,7 +3161,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../CommentaryWidget.py" line="84"/>
         <location filename="../DisplayOptions.py" line="23"/>
         <location filename="../ScoreboardWidget.py" line="228"/>
-        <location filename="../TeamBattleWidget.py" line="257"/>
+        <location filename="../TeamBattleWidget.py" line="255"/>
         <source>Location</source>
         <translation>本拠地</translation>
     </message>
@@ -3170,7 +3170,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../PlayerDBWindow.py" line="316"/>
         <location filename="../ScoreboardWidget.py" line="221"/>
-        <location filename="../TeamBattleWidget.py" line="252"/>
+        <location filename="../TeamBattleWidget.py" line="250"/>
         <location filename="../SocialsWidget.py" line="36"/>
         <source>Socials</source>
         <translation type="unfinished"></translation>
@@ -3180,8 +3180,8 @@ p, li { white-space: pre-wrap; }
         <location filename="../DisplayOptions.py" line="27"/>
         <location filename="../PlayerListWidget.py" line="300"/>
         <location filename="../ScoreboardWidget.py" line="232"/>
-        <location filename="../TeamBattleWidget.py" line="180"/>
-        <location filename="../TeamBattleWidget.py" line="261"/>
+        <location filename="../TeamBattleWidget.py" line="178"/>
+        <location filename="../TeamBattleWidget.py" line="259"/>
         <source>Characters</source>
         <translation>使用キャラクター</translation>
     </message>
@@ -3192,7 +3192,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../PlayerDBWindow.py" line="314"/>
         <location filename="../PlayerListWidget.py" line="303"/>
         <location filename="../ScoreboardWidget.py" line="233"/>
-        <location filename="../TeamBattleWidget.py" line="262"/>
+        <location filename="../TeamBattleWidget.py" line="260"/>
         <source>Pronouns</source>
         <translation>代名詞</translation>
     </message>
@@ -3373,22 +3373,22 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="393"/>
+        <location filename="../TeamPlayerWidget.py" line="394"/>
         <source>STOCKS/LIVES</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="395"/>
+        <location filename="../TeamPlayerWidget.py" line="396"/>
         <source>GAMES WON</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="491"/>
+        <location filename="../TeamPlayerWidget.py" line="492"/>
         <source>ON DECK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TeamPlayerWidget.py" line="492"/>
+        <location filename="../TeamPlayerWidget.py" line="493"/>
         <source>DIDN&apos;T PLAY</source>
         <translation type="unfinished"></translation>
     </message>
