@@ -184,6 +184,7 @@ class DashboardActions:
                 for n in ScoreboardManager.instance.GetScoreboardNumbers()
             ],
             "pinSet": bool(Pin()),
+            "reporting": {"pending": WebReporting.Pending()},
         }
 
     # Tournament
@@ -1062,6 +1063,10 @@ async def dashboard_page(path: str = ""):
     )
 
 
+# Imported here: it uses the PIN check above
+from . import WebReporting  # noqa: E402
+
+
 def Setup(api, window):
     """Adds the dashboard's routes to the web server. Before its catch-all
     file route, which would take them."""
@@ -1069,3 +1074,4 @@ def Setup(api, window):
     api.include_router(public)
     api.include_router(router)
     api.include_router(pages)
+    WebReporting.Setup(api)

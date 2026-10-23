@@ -73,6 +73,10 @@ Keys are stored in plain text in `user_data/settings.json`. Don't share that fil
 
 See [Games and reporting](games-and-reporting.md#reporting-settings).
 
+## [Web Reporting](hyperdrive://open/settings/web-reporting)
+
+See [Web reporting](web-reporting.md#settings).
+
 ## [Twitch Predictions](hyperdrive://open/settings/twitch-predictions)
 
 See [Twitch predictions](twitch-predictions.md).

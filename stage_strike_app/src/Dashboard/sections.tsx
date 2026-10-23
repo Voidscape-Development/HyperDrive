@@ -1,5 +1,7 @@
 import {useSyncExternalStore} from "react";
 import {
+    ClipboardCheck,
+    ClipboardList,
     Crosshair,
     Flag,
     Info,
@@ -10,6 +12,7 @@ import {
     ListVideo,
     Mic,
     Network,
+    Send,
     UserRound,
     UsersRound,
     type LucideIcon,
@@ -21,7 +24,7 @@ import {
  * that's kept in the browser, not in HyperDrive.
  */
 
-export type SectionGroup = "on_air" | "tournament_data";
+export type SectionGroup = "on_air" | "tournament_data" | "reporting";
 
 export interface Section {
     id: string;
@@ -45,11 +48,15 @@ export const SECTIONS: Section[] = [
     {id: "bracket-focus", label: "Bracket focus", path: "/dashboard/bracket-focus", icon: Crosshair, group: "tournament_data"},
     {id: "player-list", label: "Player List", path: "/dashboard/player-list", icon: ListOrdered, group: "tournament_data"},
     {id: "tournament-info", label: "Tournament Info", path: "/dashboard/tournament-info", icon: Info, group: "tournament_data"},
+    {id: "reporting", label: "Reporting", path: "/dashboard/reporting", icon: ClipboardList, group: "reporting"},
+    {id: "reporting-approval", label: "Approval", path: "/dashboard/reporting-approval", icon: ClipboardCheck, group: "reporting"},
+    {id: "player-reporting", label: "Player reporting", path: "/dashboard/player-reporting", icon: Send, group: "reporting"},
 ];
 
 export const GROUP_LABELS: Record<SectionGroup, string> = {
     on_air: "On air",
     tournament_data: "Tournament data",
+    reporting: "start.gg reporting",
 };
 
 const HIDDEN_KEY = "hyperdrive-dashboard-hidden";

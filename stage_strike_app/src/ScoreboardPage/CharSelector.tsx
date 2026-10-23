@@ -97,7 +97,7 @@ export function CharSelector({id, label, charName, charSkin, mains = [], onCharN
     );
 }
 
-function characterIcon(char: HDCharacterDbEntry | undefined) {
+export function characterIcon(char: HDCharacterDbEntry | undefined) {
     const icon = char?.skins?.[0]?.assets?.["base_files/icon"]?.asset;
     return icon ? assetUrl(icon) : undefined;
 }

@@ -56,6 +56,9 @@ these from any device on the same network at `http://<HyperDrive's address>:5500
 | `/character-select` | Character select for the players |
 | `/bracket-focus-app` | What the bracket focus layout zooms to: sets, rounds, a player's run, the set on stream or a tour of the rounds |
 | `/commentary-dashboard` | For the commentators: the players' info, notes and stats, the set's games and what's at stake, and what's up next on stream |
+| `/report` | Reporting station: players send their sets' results, for an admin to approve |
+| `/report-admin` | Report sets to start.gg right away: call, start, report, DQ, reset, assign stations and streams |
+| `/report-approval` | Approve or reject the results sent from reporting stations |
 | `/admin` | Player database editor |
 | `/wiki` | The guide (Help > Guide in the app) |
 | `/api/docs` | The web server's endpoints |

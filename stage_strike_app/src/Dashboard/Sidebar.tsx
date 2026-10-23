@@ -69,11 +69,14 @@ function Footer({collapsed}: {collapsed: boolean}) {
 function Sections({collapsed, onNavigate}: {collapsed: boolean; onNavigate?: () => void}) {
     const hidden = useHidden();
     const {pathname} = useLocation();
-    const groups: SectionGroup[] = ["on_air", "tournament_data"];
+    const groups: SectionGroup[] = ["on_air", "tournament_data", "reporting"];
+    // Results from reporting stations waiting for approval
+    const pending = useStatus()?.reporting?.pending ?? 0;
+    const badges: Record<string, number> = {"reporting-approval": pending};
 
     // A plain className, not NavLink's function: the rail's tooltips merge
     // their props into the link, which would turn a function into text
-    const link = (path: string, label: string, Icon: typeof OVERVIEW.icon, dim = false) => {
+    const link = (path: string, label: string, Icon: typeof OVERVIEW.icon, dim = false, badge = 0) => {
         const active = pathname === path;
         return (
         <NavLink
@@ -87,8 +90,14 @@ function Sections({collapsed, onNavigate}: {collapsed: boolean; onNavigate?: () 
                 collapsed && "size-10 flex-none shrink-0 justify-center px-0",
             )}
         >
-            <Icon/>
-            {collapsed ? <span className="sr-only">{label}</span> : <span className="min-w-0 flex-1 truncate">{label}</span>}
+            <span className="relative flex">
+                <Icon/>
+                {collapsed && badge > 0 && <span aria-hidden className="absolute -top-1 -right-1 size-2 rounded-full bg-warning"/>}
+            </span>
+            {collapsed ? <span className="sr-only">{label}{badge > 0 && ` (${badge} waiting)`}</span> : <span className="min-w-0 flex-1 truncate">{label}</span>}
+            {!collapsed && badge > 0 && (
+                <span className="rounded-full bg-warning px-1.5 text-[11px] font-bold text-black tabular-nums" aria-label={`${badge} waiting`}>{badge}</span>
+            )}
         </NavLink>
         );
     };
@@ -109,11 +118,11 @@ function Sections({collapsed, onNavigate}: {collapsed: boolean; onNavigate?: () 
                     {SECTIONS.filter((s) => s.group === group).map((section) => {
                         const isHidden = hidden.includes(section.id);
                         if (collapsed) {
-                            return isHidden ? null : withTooltip(section.label, link(section.path, section.label, section.icon));
+                            return isHidden ? null : withTooltip(section.label, link(section.path, section.label, section.icon, false, badges[section.id]));
                         }
                         return (
                             <div key={section.id} className="flex items-center rounded-lg pr-0.5">
-                                {link(section.path, section.label, section.icon, isHidden)}
+                                {link(section.path, section.label, section.icon, isHidden, badges[section.id])}
                                 <Button
                                     variant="ghost"
                                     size="icon-sm"

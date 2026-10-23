@@ -1,0 +1,45 @@
+query ReportingSetsQuery($eventSlug: String!, $page: Int!, $perPage: Int!, $filters: SetFilters = {}) {
+	event(slug: $eventSlug) {
+		sets(page: $page, perPage: $perPage, sortType: STANDARD, filters: $filters) {
+			pageInfo {
+				totalPages
+			}
+			nodes {
+				id
+				identifier
+				round
+				fullRoundText
+				state
+				totalGames
+				winnerId
+				updatedAt
+				startedAt
+				completedAt
+				entrant1Score
+				entrant2Score
+				station {
+					id
+					number
+				}
+				stream {
+					id
+					streamName
+				}
+				slots {
+					entrant {
+						id
+						name
+					}
+				}
+				phaseGroup {
+					id
+					displayIdentifier
+					phase {
+						id
+						name
+					}
+				}
+			}
+		}
+	}
+}

@@ -592,6 +592,55 @@ class SettingsWindow(QDialog):
             "startgg-reporting",
         )
 
+        # Reporting sets from the web pages, see src/WebReporting.py
+        webReportingSettings = [
+            (
+                QApplication.translate(
+                    "settings.web_reporting",
+                    "Accept results from player reporting stations (/report)",
+                ),
+                "stations_enabled",
+                "checkbox",
+                True,
+                None,
+                QApplication.translate(
+                    "settings.web_reporting",
+                    "Players' results wait on the Approval page until an admin approves them.",
+                ),
+            ),
+            (
+                QApplication.translate(
+                    "settings.web_reporting", "Reporting station PIN (empty: no PIN)"
+                ),
+                "station_pin",
+                "password",
+                "",
+                None,
+                QApplication.translate(
+                    "settings.web_reporting",
+                    "Asked once by each reporting station. The admin pages use the web dashboard PIN of Settings > General.",
+                ),
+            ),
+            (
+                QApplication.translate(
+                    "settings.web_reporting", "Get the sets from start.gg every (seconds)"
+                ),
+                "refresh_interval",
+                "spinbox",
+                30,
+                None,
+                QApplication.translate(
+                    "settings.web_reporting", "While a reporting page is open. At least 10."
+                ),
+                10,
+            ),
+        ]
+        self.add_setting_widget(
+            QApplication.translate("settings", "Web Reporting"),
+            SettingsWidget("web_reporting", webReportingSettings),
+            "web-reporting",
+        )
+
         # Twitch predictions for the set on stream, see src/TwitchPredictions.py
         predictionSettings = [
             (
