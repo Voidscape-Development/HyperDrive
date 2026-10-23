@@ -444,9 +444,8 @@ class ParryGGDataProvider(TournamentDataProvider):
 
     def _resolve_startgg_player_id(self, startgg_slug):
         """Resolve a start.gg user slug to its player.id by running UserSetQuery.
-        StartGG's RecentSetsQuery requires both player_id and user_id; user_id
-        comes from the LinkedAccount, but player_id is per-game and only
-        accessible via UserSetQuery.
+        StartGG's head-to-head query takes player ids; the LinkedAccount only
+        has the user_id, and player_id is only accessible via UserSetQuery.
         """
         if self._startgg_pid_cache is None:
             self._startgg_pid_cache = {}
@@ -494,7 +493,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             return []
 
         # Delegate to StartGG's public GetRecentSets — it owns the
-        # event lookups, head-to-head filtering, and sort.
+        # head-to-head query, filtering, and sort.
         cb = _CapturingCallback()
         self._get_startgg_subquery().GetRecentSets(
             [pid_1, str(link_1["user_id"])],

@@ -1,0 +1,52 @@
+query HeadToHeadQuery($pid1: ID!, $pid2: ID!, $page: Int!, $perPage: Int!) {
+	player(id: $pid1) {
+		sets(opponentId: $pid2, page: $page, perPage: $perPage) {
+			pageInfo {
+				totalPages
+			}
+			nodes {
+				id
+				slots {
+					entrant {
+						id
+						participants {
+							player {
+								id
+							}
+						}
+					}
+				}
+				games {
+					selections {
+						entrant {
+							id
+						}
+						selectionValue
+					}
+				}
+				entrant1Score
+				entrant2Score
+				winnerId
+				fullRoundText
+				phaseGroup {
+					displayIdentifier
+					phase {
+						name
+					}
+				}
+				event {
+					id
+					isOnline
+					name
+					startAt
+					videogame {
+						id
+					}
+					tournament {
+						name
+					}
+				}
+			}
+		}
+	}
+}

@@ -16050,43 +16050,6 @@
   "sets": [
    {
     "event": "Ultimate Singles",
-    "id": 108909602,
-    "online": false,
-    "p1_char": {
-     "character": {
-      "1": {
-       "assets": {},
-       "codename": "hero",
-       "name": "Hero",
-       "skin": 0,
-       "variant": {}
-      }
-     }
-    },
-    "p2_char": {
-     "character": {
-      "1": {
-       "assets": {},
-       "codename": "r_o_b",
-       "name": "R.O.B.",
-       "skin": 0,
-       "variant": {}
-      }
-     }
-    },
-    "phase_id": "",
-    "phase_name": "Bracket",
-    "round": "Grand Final",
-    "score": [
-     3,
-     1
-    ],
-    "timestamp": 1792015200,
-    "tournament": "HyperDrive Test Tournament #111",
-    "winner": 0
-   },
-   {
-    "event": "Ultimate Singles",
     "id": 108909603,
     "online": false,
     "p1_char": {
@@ -16131,6 +16094,43 @@
     "score": [
      3,
      0
+    ],
+    "timestamp": 1792015200,
+    "tournament": "HyperDrive Test Tournament #111",
+    "winner": 0
+   },
+   {
+    "event": "Ultimate Singles",
+    "id": 108909602,
+    "online": false,
+    "p1_char": {
+     "character": {
+      "1": {
+       "assets": {},
+       "codename": "hero",
+       "name": "Hero",
+       "skin": 0,
+       "variant": {}
+      }
+     }
+    },
+    "p2_char": {
+     "character": {
+      "1": {
+       "assets": {},
+       "codename": "r_o_b",
+       "name": "R.O.B.",
+       "skin": 0,
+       "variant": {}
+      }
+     }
+    },
+    "phase_id": "",
+    "phase_name": "Bracket",
+    "round": "Grand Final",
+    "score": [
+     3,
+     1
     ],
     "timestamp": 1792015200,
     "tournament": "HyperDrive Test Tournament #111",
