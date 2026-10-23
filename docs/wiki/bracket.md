@@ -76,6 +76,7 @@ layout shows now is on the right of the bar.
 | **Whole** | Shows everything |
 | **Selected** | Zooms to the sets and rounds you Ctrl+click, and highlights them. **Unselect** clears them |
 | **Round** | Zooms to a round; ◀ ▶ step through the rounds |
+| **Side** | **Winners** zooms to the winners side and the grand final, and dims the losers side; **Losers** zooms to the losers side and dims the rest. **Losers** is off for brackets without a losers side |
 | **Player** | Zooms to every set of the player you pick |
 | **Follow** | Keeps zooming to the set on a **Scoreboard** |
 | **Tour** | Shows the whole bracket, then each round in turn, over and over, **Each step** seconds; ◀ ▶ skip steps |

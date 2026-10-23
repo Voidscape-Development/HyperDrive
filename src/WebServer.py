@@ -1271,6 +1271,7 @@ class WebServer(QThread):
     # =====================================================
     # The same as links, e.g. for a Stream Deck: /bracket-focus/all,
     # /bracket-focus/next-round, /bracket-focus/previous-round,
+    # /bracket-focus/winners, /bracket-focus/losers (a side),
     # /bracket-focus/follow?scoreboard=<n>, /bracket-focus/tour?interval=<s>
     # /bracket-focus/player?id=<player slot> and /bracket-focus/phase?phase=<id>
     # (a phase of the bracket widget the channel shows), each with
@@ -1282,6 +1283,8 @@ class WebServer(QThread):
             "all": {"mode": "all"},
             "next-round": {"move": 1},
             "previous-round": {"move": -1},
+            "winners": {"mode": "side", "side": "winners"},
+            "losers": {"mode": "side", "side": "losers"},
             "follow": {"mode": "follow", "scoreboard": args.get("scoreboard", 1)},
             "tour": {"mode": "tour", "interval": args.get("interval")},
             "player": {"mode": "player", "player": args.get("id")},

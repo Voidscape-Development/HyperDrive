@@ -171,6 +171,50 @@ def TestTour():
     assert Resolve(BRACKET, {"mode": "tour"}, step=len(steps))["step"] == 0
 
 
+def TestSide():
+    assert NormalizeRequest({"mode": "side", "side": "losers"}) == {
+        "mode": MODE_SIDE,
+        "side": "losers",
+    }
+    assert NormalizeRequest({"mode": "side", "side": "nope"})["side"] == SIDE_WINNERS
+    assert NormalizeRequest({"mode": "side"})["side"] == SIDE_WINNERS
+
+    # Winners: the winners side and the grand finals
+    focus = Resolve(BRACKET, {"mode": "side", "side": "winners"})
+    winners = [f"m{i}" for i in range(1, 16)] + ["m30", "m31"]
+    assert focus["sets"] == winners, focus
+    assert focus["rounds"] == [f"winners:{i}" for i in range(1, 5)] + [
+        "grand_final:1",
+        "grand_final:2",
+    ]
+    assert focus["label"] == "Winners Side" and focus["side"] == SIDE_WINNERS
+
+    # Losers: only the losers side
+    focus = Resolve(BRACKET, {"mode": "side", "side": "losers"})
+    assert focus["sets"] == [f"m{i}" for i in range(16, 30)], focus
+    assert focus["rounds"] == [f"losers:{i}" for i in range(1, 7)]
+    assert focus["label"] == "Losers Side"
+
+    # Translated names
+    names = {"losers": "Lado de perdedores"}
+    assert (
+        Resolve(BRACKET, {"mode": "side", "side": "losers"}, names=names)["label"]
+        == names["losers"]
+    )
+    assert SideName("winners", names) == "Winners Side"
+
+    # A bracket without a losers side (single elimination): the whole bracket
+    single = dict(BRACKET, sides={"winners": BRACKET["sides"]["winners"]})
+    assert HasSide(single, SIDE_WINNERS) and not HasSide(single, SIDE_LOSERS)
+    focus = Resolve(single, {"mode": "side", "side": "losers"})
+    assert focus["sets"] == [] and focus["rounds"] == [] and focus["label"] == ""
+    assert Resolve({}, {"mode": "side"})["sets"] == []
+
+    # The arrows go from the side's first round
+    focus = Resolve(BRACKET, {"mode": "side", "side": "losers"})
+    assert NextRound(BRACKET, focus)["rounds"] == ["losers:2"]
+
+
 def TestNextRound():
     assert NextRound(BRACKET, {"sets": []}) == {"mode": MODE_ROUNDS, "rounds": ["winners:1"]}
     assert NextRound(BRACKET, {"sets": []}, -1)["rounds"] == ["grand_final:2"]

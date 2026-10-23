@@ -33,7 +33,7 @@ an alert, as does an action HyperDrive refuses (e.g. nothing to undo).
 | Team Battle Player | Makes the next player, or a given one, active. A given player's key shows their stocks or wins, *Out*, and when only some of the players play, *On deck* or *Didn't play* | |
 | Team Battle Reset | Every player's stocks, or the whole battle. Held | |
 | Stage Strike | Undo, redo, restart (held), or the winner of rock-paper-scissors or of the game | |
-| Bracket Focus | The whole bracket, next/previous round, the set on a scoreboard, a tour, a player's run, or which phase a focus channel shows | Turn: next/previous round. Push: follow the scoreboard's set. Touch: whole bracket |
+| Bracket Focus | The whole bracket, next/previous round, the winners or losers side, the set on a scoreboard, a tour, a player's run, or which phase a focus channel shows | Turn: next/previous round. Push: follow the scoreboard's set. Touch: whole bracket |
 
 The actions with scoreboards have a scoreboard setting, so one profile can run several
 streams.

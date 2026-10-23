@@ -70,7 +70,7 @@ export const stageStrike = {
 	},
 };
 
-export type FocusMode = "all" | "next-round" | "previous-round" | "follow" | "tour" | "player" | "phase";
+export type FocusMode = "all" | "next-round" | "previous-round" | "winners" | "losers" | "follow" | "tour" | "player" | "phase";
 
 export const bracketFocus = {
 	set: (

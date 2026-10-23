@@ -321,6 +321,8 @@ const FOCUS: Record<FocusMode, { icon: IconName; label: string }> = {
 	all: { icon: "expand", label: "focusAll" },
 	"next-round": { icon: "right", label: "nextRound" },
 	"previous-round": { icon: "left", label: "previousRound" },
+	winners: { icon: "up", label: "winnersSide" },
+	losers: { icon: "down", label: "losersSide" },
 	follow: { icon: "follow", label: "followSet" },
 	tour: { icon: "play", label: "tour" },
 	player: { icon: "user", label: "playerRun" },
@@ -335,6 +337,8 @@ export function focusKey(t: Translate, s: FocusSettings, state: State): Look {
 	let active: boolean | undefined;
 	if (focus && (mode === "all" || mode === "tour")) {
 		active = focus.mode === mode;
+	} else if (focus && (mode === "winners" || mode === "losers")) {
+		active = focus.mode === "side" && focus.side === mode;
 	} else if (focus && mode === "follow") {
 		active = focus.mode === "follow" && Number(focus.scoreboard) === num(s.scoreboard, 1);
 	} else if (focus && mode === "player") {
@@ -358,11 +362,13 @@ export function focusKey(t: Translate, s: FocusSettings, state: State): Look {
 export function focusStrip(t: Translate, s: FocusSettings, state: State): StripLook {
 	const channel = s.channel || "main";
 	const focus = hd.bracketFocus(state, channel);
-	const mode = (focus?.mode && focus.mode in FOCUS ? focus.mode : "all") as FocusMode;
+	// The side mode's key is its side's
+	const current = focus?.mode === "side" ? focus.side : focus?.mode;
+	const mode = (current && current in FOCUS ? current : "all") as FocusMode;
 	const modeLabel = t(FOCUS[mode].label);
 	const main = !focus ? t("noBracket") : focus.label || modeLabel;
 	const bottom =
-		mode === "tour" && focus?.steps ? t("tourStep", { step: (focus.step ?? 0) + 1, steps: focus.steps }) : main === modeLabel ? "" : modeLabel;
+		mode === "tour" && focus?.steps ? t("tourStep", { step: (focus.step ?? 0) + 1, steps: focus.steps }) : main.toLowerCase() === modeLabel.toLowerCase() ? "" : modeLabel;
 	return { icon: "bracket", top: channelLabel(t, channel), main, bottom };
 }
 

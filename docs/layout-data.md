@@ -126,10 +126,11 @@ Each channel's focus:
 
 | Key | |
 | - | - |
-| `mode` | `all`, `sets` / `rounds` (picked by hand), `player` (a player's run), `follow` (the set on a scoreboard) or `tour` (the whole bracket, then each round in turn) |
+| `mode` | `all`, `sets` / `rounds` (picked by hand), `side` (the winners or losers side), `player` (a player's run), `follow` (the set on a scoreboard) or `tour` (the whole bracket, then each round in turn) |
 | `sets` | Ids of the sets in focus, in the bracket's order. Empty: the whole bracket. |
 | `rounds` | Keys of the rounds in focus (`winners:2`...) |
 | `label` | What's in focus, e.g. the round's or the player's name |
+| `side` | `side`: `winners` (the winners side and the grand final) or `losers` |
 | `player` | `player`: the player's slot in the channel's player list |
 | `scoreboard` | `follow`: the scoreboard followed. Its set is the one with its start.gg set id, or between its two teams. |
 | `interval`, `step`, `steps` | `tour`: seconds per step, the step shown and how many there are |
@@ -139,11 +140,12 @@ The same can be set from the web server, on the channel in `?channel=<name>`
 (`main` without it; 404 `NO_CHANNEL` for one that doesn't exist): `GET
 /bracket-focus` answers what's in focus, the channels and the rounds, sets
 and players there are to pick from, `POST /bracket-focus` takes `{mode, sets,
-rounds, player, scoreboard, interval}`, `{"move": 1}` (`-1`) for the next
+rounds, side, player, scoreboard, interval}`, `{"move": 1}` (`-1`) for the next
 (previous) round, or `{"phase": <id>}` for the phase it shows (the `GET`
 answer's `phases` lists them, `[{value, label, section}]`, section `local`
 or `startgg`; 404 `NO_PHASE` for one that isn't there). As links, e.g. for a Stream Deck: `/bracket-focus/all`,
 `/bracket-focus/next-round`, `/bracket-focus/previous-round`,
+`/bracket-focus/winners`, `/bracket-focus/losers`,
 `/bracket-focus/follow?scoreboard=<n>`, `/bracket-focus/tour?interval=<seconds>`
 `/bracket-focus/player?id=<slot>` and `/bracket-focus/phase?phase=<id>`, with `&channel=<name>` for a channel
 other than `main`.

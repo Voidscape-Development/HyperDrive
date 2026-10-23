@@ -2,6 +2,8 @@ import {Fragment, useCallback, useEffect, useRef, useState} from "react";
 import {
     ChevronLeft,
     ChevronRight,
+    ChevronsDown,
+    ChevronsUp,
     Focus,
     Maximize,
     Repeat,
@@ -51,7 +53,8 @@ interface FocusState {
     rounds?: FocusRound[];
     players?: {id: string; name: string; seed?: number}[];
     focus?: {
-        mode: "all" | "sets" | "rounds" | "follow" | "tour" | "player";
+        mode: "all" | "sets" | "rounds" | "side" | "follow" | "tour" | "player";
+        side?: "winners" | "losers";
         sets?: string[];
         rounds?: string[];
         label?: string;
@@ -79,8 +82,8 @@ function TipButton({tip, ...props}: React.ComponentProps<typeof Button> & {tip: 
 /**
  * Remote for the bracket focus layout (layout/bracket_focus): what it zooms
  * to, like the bracket widget's "Layout focus" bar. Tap sets (and rounds)
- * to select them, then "Focus selected"; or focus a player's run, follow a
- * scoreboard's set, or tour the rounds. On a focus channel (?channel=<name>,
+ * to select them, then "Focus selected"; or focus the winners or losers side,
+ * a player's run, follow a scoreboard's set, or tour the rounds. On a focus channel (?channel=<name>,
  * "main" by default): each layout shows one.
  */
 export default function BracketFocusPage() {
@@ -211,6 +214,14 @@ export default function BracketFocusPage() {
     const count = selected.size + selectedRounds.size;
     const rounds = state?.rounds ?? [];
     const players = state?.players ?? [];
+    // The sides the bracket has (the grand final goes with winners): no
+    // losers side in single elimination
+    const sides = [
+        {side: "winners", icon: ChevronsUp, label: i18n.t("bracket_focus_winners"), tip: i18n.t("bracket_focus_winners_tip"), sides: ["winners", "grand_final"]},
+        {side: "losers", icon: ChevronsDown, label: i18n.t("bracket_focus_losers"), tip: i18n.t("bracket_focus_losers_tip"), sides: ["losers"]},
+    ] as const;
+    const hasSide = (keys: readonly string[]) =>
+        rounds.some((round) => round.sets.length && keys.includes(round.key.split(":")[0]));
 
     let status = i18n.t("bracket_focus_all");
     if (inFocus.size) {
@@ -285,6 +296,25 @@ export default function BracketFocusPage() {
                     <TipButton variant="outline" size="icon" tip={i18n.t("bracket_focus_next")} onClick={() => send({move: 1})}>
                         <ChevronRight/>
                     </TipButton>
+                </ButtonGroup>
+
+                <ButtonGroup>
+                    {sides.map(({side, icon: Icon, label, tip, sides: keys}) => {
+                        const on = mode === "side" && focus.side === side;
+                        return <Tooltip key={side}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant={on ? "default" : "outline"}
+                                    disabled={!on && !hasSide(keys)}
+                                    onClick={() => send(on ? {mode: "all"} : {mode: "side", side})}
+                                >
+                                    <Icon/>
+                                    {label}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{tip}</TooltipContent>
+                        </Tooltip>;
+                    })}
                 </ButtonGroup>
 
                 <div className="flex items-end gap-2">
