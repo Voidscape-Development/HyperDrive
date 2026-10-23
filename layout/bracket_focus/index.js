@@ -1,8 +1,10 @@
 // Its channel's bracket (bracket.channels.<channel>), drawn once at full
 // size and zoomed to what's in focus on the channel (bracket.focus.<channel>,
-// see docs/layout-data.md): sets and rounds picked in the bracket widget, a
-// player's run, the set on a scoreboard or a tour of the rounds. The sets in
-// focus are outlined, the rest dimmed. Nothing in focus: the whole bracket.
+// see docs/layout-data.md): sets and rounds picked in the bracket widget, the
+// winners or losers side, a player's run, the set on a scoreboard or a tour of
+// the rounds. The sets in focus are outlined (unless the layout theme's "Focus
+// glow" is off for the mode), the rest dimmed. Nothing in focus: the whole
+// bracket.
 // Options, page or URL (?channel=Losers%20cam&max_zoom=150):
 //   channel       the channel shown (default: main), as named in the
 //                 bracket widget's tabs
@@ -323,6 +325,10 @@ const channelOf = (s) => HDBracket.ChannelName(s.settings.channel) || "main";
 const focusOf = (s, data) =>
   (!s.settings.ignore_focus && _.get(data, ["bracket", "focus", channelOf(s)])) || { sets: [], rounds: [] };
 
+// The layout theme's "Focus glow" for the focus mode: off, the sets in focus
+// aren't outlined (they're still zoomed to, and the rest dimmed)
+const glows = (focus) => !focus.mode || HD.theme("bracket", `focus_glow_${focus.mode}`, true) !== false;
+
 function applyFocus(s, data, animate) {
   const focus = focusOf(s, data);
   const inFocus = new Set((focus.sets || []).filter((id) => placed.sets[id]));
@@ -424,6 +430,9 @@ HD.layout({
 
     const standings = HDBracket.IsPool(data.bracket.bracket) ? HDBracket.StandingsHtml(data) : null;
     const standingsChanged = !!standings && HD.build(".bf_standings", String(standings), standings);
+
+    // Every update, so a change to the theme shows right away
+    $("body").toggleClass("no_focus_glow", !glows(focusOf(s, data)));
 
     const focusKey = JSON.stringify([focusOf(s, data), s.settings.ignore_focus, maxZoom(s)]);
     if (built || standingsChanged || focusKey != lastFocus) {

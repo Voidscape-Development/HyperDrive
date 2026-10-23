@@ -323,6 +323,28 @@ def LayoutThemeSchema():
                         "The bracket focus layout's caption, e.g. the round or the player in focus"
                     ),
                 ),
+                # The focus highlight's glow, per focus mode (BracketFocusHelper's
+                # modes): off, the sets in focus are only zoomed to and the rest
+                # dimmed
+                *(
+                    Field(
+                        f"focus_glow_{mode}",
+                        label,
+                        FIELD_CHECKBOX,
+                        True,
+                        tooltip=_tr(
+                            "The outline and glow around the sets the bracket focus layout zooms to, and their lines, in this focus mode"
+                        ),
+                    )
+                    for mode, label in (
+                        ("sets", _tr("Focus glow: selected sets")),
+                        ("rounds", _tr("Focus glow: rounds")),
+                        ("side", _tr("Focus glow: winners/losers side")),
+                        ("player", _tr("Focus glow: player's run")),
+                        ("follow", _tr("Focus glow: followed set")),
+                        ("tour", _tr("Focus glow: tour")),
+                    )
+                ),
             ],
         ),
         Section(
