@@ -823,7 +823,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../ScoreboardManager.py" line="59"/>
         <location filename="../ScoreboardManager.py" line="98"/>
         <location filename="../ScoreboardManager.py" line="111"/>
-        <location filename="../BracketFocusBar.py" line="173"/>
+        <location filename="../BracketFocusBar.py" line="211"/>
         <source>Scoreboard</source>
         <translation>Placar</translation>
     </message>
@@ -1013,7 +1013,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../SelectSetWindow.py" line="498"/>
         <location filename="../SelectSetWindow.py" line="567"/>
-        <location filename="../BracketFocusBar.py" line="121"/>
+        <location filename="../BracketFocusBar.py" line="122"/>
         <source>Round</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1208,7 +1208,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../HyperDrive.py" line="589"/>
         <location filename="../HyperDrive.py" line="597"/>
-        <location filename="../TournamentDataProvider/StartGGDataProvider.py" line="32"/>
+        <location filename="../TournamentDataProvider/StartGGDataProvider.py" line="31"/>
         <source>Pull Latest Completed Sets from StartGG</source>
         <translation>Buscar Últimos Sets Concluídos do StartGG</translation>
     </message>
@@ -2800,7 +2800,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../PlayerDBWindow.py" line="312"/>
         <location filename="../PlayerDBWindow.py" line="800"/>
         <location filename="../BracketView.py" line="315"/>
-        <location filename="../BracketFocusBar.py" line="125"/>
+        <location filename="../BracketFocusBar.py" line="133"/>
         <source>Player</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4289,7 +4289,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="151"/>
-        <location filename="../BracketFocusBar.py" line="463"/>
+        <location filename="../BracketFocusBar.py" line="522"/>
         <source>{0} sets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4467,7 +4467,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="569"/>
-        <location filename="../BracketFocusBar.py" line="188"/>
+        <location filename="../BracketFocusBar.py" line="226"/>
         <source> s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4588,7 +4588,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="92"/>
+        <location filename="../BracketFocusBar.py" line="93"/>
         <source>What the bracket focus layout (layout/bracket_focus) zooms to. Ctrl+click sets and round names to select them.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4605,171 +4605,201 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../BracketWidget.py" line="1544"/>
-        <location filename="../BracketFocusBar.py" line="323"/>
+        <location filename="../BracketFocusBar.py" line="362"/>
         <source>Remove channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="111"/>
+        <location filename="../BracketFocusBar.py" line="112"/>
         <source>Show the whole bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="115"/>
+        <location filename="../BracketFocusBar.py" line="116"/>
         <source>Zoom to the sets and rounds selected with Ctrl+click, and highlight them</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="209"/>
+        <location filename="../BracketFocusBar.py" line="248"/>
         <source>Unselect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="159"/>
-        <location filename="../BracketFocusBar.py" line="436"/>
+        <location filename="../BracketFocusBar.py" line="167"/>
+        <location filename="../BracketFocusBar.py" line="494"/>
         <source>Previous round</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="90"/>
+        <location filename="../BracketFocusBar.py" line="91"/>
         <source>Focus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="110"/>
+        <location filename="../BracketFocusBar.py" line="111"/>
         <source>Whole</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="114"/>
-        <location filename="../BracketFocusBar.py" line="394"/>
+        <location filename="../BracketFocusBar.py" line="115"/>
+        <location filename="../BracketFocusBar.py" line="442"/>
         <source>Selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="122"/>
+        <location filename="../BracketFocusBar.py" line="123"/>
         <source>Zoom to a round; the arrows step through them</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="129"/>
-        <source>Follow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../BracketFocusBar.py" line="130"/>
-        <source>Keep zooming to the set on a scoreboard: the one with its start.gg set, or between its two players</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../BracketFocusBar.py" line="136"/>
-        <source>Tour</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../BracketFocusBar.py" line="163"/>
-        <location filename="../BracketFocusBar.py" line="441"/>
-        <source>Next round</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../BracketFocusBar.py" line="392"/>
-        <source>Selected ({0})</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../BracketFocusBar.py" line="126"/>
-        <location filename="../BracketFocusBar.py" line="169"/>
-        <source>Zoom to every set of a player, and highlight them</source>
+        <source>Side</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="177"/>
-        <source>Scoreboard to follow</source>
+        <location filename="../BracketFocusBar.py" line="127"/>
+        <source>Zoom to the winners side (with the grand final) or the losers side, and dim the other</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../BracketFocusBar.py" line="137"/>
+        <source>Follow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="138"/>
+        <source>Keep zooming to the set on a scoreboard: the one with its start.gg set, or between its two players</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="144"/>
+        <source>Tour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="171"/>
+        <location filename="../BracketFocusBar.py" line="499"/>
+        <source>Next round</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="185"/>
+        <source>Winners</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="186"/>
+        <source>The winners side and the grand final</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="190"/>
+        <source>Losers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="191"/>
+        <source>The losers side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="440"/>
+        <source>Selected ({0})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="134"/>
+        <location filename="../BracketFocusBar.py" line="207"/>
+        <source>Zoom to every set of a player, and highlight them</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="215"/>
+        <source>Scoreboard to follow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocusBar.py" line="145"/>
         <source>Show the whole bracket, then each round in turn, over and over</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="184"/>
+        <location filename="../BracketFocusBar.py" line="222"/>
         <source>Each step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="189"/>
+        <location filename="../BracketFocusBar.py" line="227"/>
         <source>Time on each step of the tour</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="211"/>
+        <location filename="../BracketFocusBar.py" line="250"/>
         <source>Unselect the sets and rounds selected with Ctrl+click</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="290"/>
+        <location filename="../BracketFocusBar.py" line="329"/>
         <source>Name (layouts show it with ?channel=&lt;name&gt; in their URL):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="305"/>
+        <location filename="../BracketFocusBar.py" line="344"/>
         <source>New channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="313"/>
+        <location filename="../BracketFocusBar.py" line="352"/>
         <source>Rename channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="300"/>
+        <location filename="../BracketFocusBar.py" line="339"/>
         <source>Channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="324"/>
+        <location filename="../BracketFocusBar.py" line="363"/>
         <source>Remove the channel &quot;{0}&quot;? Layouts showing it will show nothing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="301"/>
+        <location filename="../BracketFocusBar.py" line="340"/>
         <source>There&apos;s already a channel named &quot;{0}&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="406"/>
+        <location filename="../BracketFocusBar.py" line="454"/>
         <source>Player&apos;s run...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="434"/>
+        <location filename="../BracketFocusBar.py" line="492"/>
         <source>Previous step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="439"/>
+        <location filename="../BracketFocusBar.py" line="497"/>
         <source>Next step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="451"/>
+        <location filename="../BracketFocusBar.py" line="510"/>
         <source>Showing the whole bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="453"/>
+        <location filename="../BracketFocusBar.py" line="512"/>
         <source>Scoreboard {0}&apos;s set isn&apos;t in this bracket: showing the whole bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="457"/>
+        <location filename="../BracketFocusBar.py" line="516"/>
         <source>Tour {0}/{1}: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketFocusBar.py" line="461"/>
+        <location filename="../BracketFocusBar.py" line="520"/>
         <source>Showing: {0}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5409,6 +5439,16 @@ Drop an image here.</source>
         <source>Reset to default arrangement</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../BracketFocus.py" line="22"/>
+        <source>Winners Side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../BracketFocus.py" line="23"/>
+        <source>Losers Side</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>layout_options</name>
@@ -5605,135 +5645,140 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="46"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="48"/>
         <source>Gradient</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="130"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="67"/>
+        <source>Where the two colors meet, from the first color&apos;s side: 50% is an even blend. Lower keeps the first color closer to its side, higher spreads it further.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="148"/>
         <source>Layout default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="164"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="182"/>
         <source>Layout Themes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="178"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="196"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="182"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="200"/>
         <source>The theme the layouts use. Changes are saved and sent to the layouts as you make them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="190"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="208"/>
         <source>New theme...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="193"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="211"/>
         <source>Starts a new theme from the one in use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="197"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="215"/>
         <source>Import...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="200"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="218"/>
         <source>Export...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="202"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="220"/>
         <source>Saves the theme in use to a file you can share</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="208"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="226"/>
         <source>Rename...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="211"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="229"/>
         <source>Delete</source>
         <translation type="unfinished">Deletar</translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="227"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="245"/>
         <source>Built-in themes can&apos;t be changed. Create a new theme to customize one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="265"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="285"/>
         <source>The dimmed options only reach the layouts with &quot;Use this theme&apos;s colors in layouts&quot; on, in General.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="279"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="315"/>
         <source>Only reaches the layouts with &quot;Use this theme&apos;s colors in layouts&quot; on, in General</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="391"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="441"/>
         <source>Theme name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="402"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="452"/>
         <source>New theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="404"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="454"/>
         <source>{0} (custom)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="424"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="474"/>
         <source>Rename theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="438"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="488"/>
         <source>Delete theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="439"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="489"/>
         <source>Delete the theme &quot;{0}&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="455"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="467"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="505"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="517"/>
         <source>Import theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="457"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="485"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="507"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="535"/>
         <source>HyperDrive layout theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="468"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="518"/>
         <source>This file isn&apos;t a HyperDrive layout theme.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="483"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="497"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="533"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="547"/>
         <source>Export theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="498"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="548"/>
         <source>The theme could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5853,7 +5898,7 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="287"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="323"/>
         <location filename="../Settings/SettingsWidget.py" line="39"/>
         <source>Default</source>
         <translation>Padrão</translation>
