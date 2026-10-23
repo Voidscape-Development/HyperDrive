@@ -9,6 +9,7 @@
       "pages": [
         "scoreboard",
         "games-and-reporting",
+        "web-reporting",
         "stage-strike",
         "commentary",
         "stream-queue",

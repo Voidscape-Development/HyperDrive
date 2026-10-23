@@ -78,6 +78,8 @@ export interface DashboardStatus {
     completedSets: JobStatus & {supported: boolean; autoPull: boolean};
     scoreboards: {number: number; name: string}[];
     pinSet: boolean;
+    // Results from reporting stations waiting for approval
+    reporting?: {pending: number};
 }
 
 export interface TournamentEvent {

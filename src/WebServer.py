@@ -1463,11 +1463,12 @@ class WebServer(QThread):
     async def file_request(filename: str):
         filename = filename or "stage_strike_app/build/index.html"
         # The settings hold API keys and passwords (e.g. the start.gg
-        # token used to report sets), so they're never served
+        # token used to report sets), and web reporting's file the addresses
+        # of the devices that reported, so they're never served
         normalized = os.path.normcase(os.path.normpath(filename)).replace("\\", "/").lstrip("./")
-        if os.path.basename(normalized).startswith("settings.json") and normalized.startswith(
-            "user_data/"
-        ):
+        if os.path.basename(normalized).startswith(
+            ("settings.json", "web_reporting.json")
+        ) and normalized.startswith("user_data/"):
             return HTMLResponse("Not allowed", status_code=403)
 
         root = os.path.abspath(".")

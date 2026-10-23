@@ -2,6 +2,7 @@ import React from "react";
 import {Menu} from "lucide-react";
 import {Outlet, useLocation} from "react-router-dom";
 import websocketInit from "../ScoreboardPage/websocketInit";
+import {usePendingToasts} from "../Reporting";
 import {OVERVIEW, SECTIONS} from "./sections";
 import {Sidebar} from "./Sidebar";
 import {Button} from "@/components/ui/button";
@@ -39,6 +40,7 @@ export default function DashboardLayout() {
     const location = useLocation();
 
     const section = [OVERVIEW, ...SECTIONS].find((s) => s.path === location.pathname);
+    usePendingToasts("/dashboard/reporting-approval");
 
     React.useEffect(() => {
         websocketInit();

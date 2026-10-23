@@ -22,6 +22,7 @@ import PlayerListPage from "./Dashboard/PlayerListPage";
 import StreamQueuePage from "./Dashboard/StreamQueuePage";
 import TeamBattlePage from "./Dashboard/TeamBattlePage";
 import TournamentInfoPage from "./Dashboard/TournamentInfoPage";
+import {AdminSection, AdminStandalone, ApprovalSection, ApprovalStandalone, StationPage, StationSection} from "./Reporting";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -44,6 +45,9 @@ root.render(
               <Route path="/dashboard/bracket" element={<BracketPage />} />
               <Route path="/dashboard/player-list" element={<PlayerListPage />} />
               <Route path="/dashboard/tournament-info" element={<TournamentInfoPage />} />
+              <Route path="/dashboard/reporting" element={<AdminSection />} />
+              <Route path="/dashboard/reporting-approval" element={<ApprovalSection />} />
+              <Route path="/dashboard/player-reporting" element={<StationSection />} />
             </Route>
 
             {/* The pages on their own, as before, for players and commentators */}
@@ -52,6 +56,9 @@ root.render(
             <Route path="/scoreboard" element={<ScoreboardPage />} />
             <Route path="/bracket-focus-app" element={<BracketFocusPage />} />
             <Route path="/commentary-dashboard" element={<CommentaryDashboardPage />} />
+            <Route path="/report" element={<StationPage />} />
+            <Route path="/report-admin" element={<AdminStandalone />} />
+            <Route path="/report-approval" element={<ApprovalStandalone />} />
             <Route path="*" element={<Navigate to={"/"} replace={true} />} />
           </Routes>
         </BrowserRouter>

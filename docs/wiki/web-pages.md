@@ -11,6 +11,8 @@ can help run the stream. Open these at `http://<HyperDrive's address>:5500`:
 | `/character-select` | Character select for the players |
 | `/bracket-focus-app` | What the bracket focus layout zooms to (see [Bracket](bracket.md#bracket-focus)) |
 | `/commentary-dashboard` | For the commentators: the players, their stats and what's up next (see [Commentary](commentary.md#commentary-dashboard)) |
+| `/report` | A reporting station: players send their sets' results (see [Web reporting](web-reporting.md)) |
+| `/report-admin`, `/report-approval` | Reporting sets to start.gg, and approving the players' results (see [Web reporting](web-reporting.md)) |
 | `/admin` | Player database editor (see [Player database](player-database.md)) |
 | `/wiki` | This guide |
 | `/api/docs` | Every endpoint of the web server, for developers |
@@ -31,6 +33,8 @@ The sidebar on the left has:
 - A section for each of HyperDrive's tabs: Scoreboard, Stage strike, Character select,
   Commentary, Display Controls, Crew/Team Battle, Stream Queue, Bracket, Bracket focus, Player
   List and Tournament Info.
+- **start.gg reporting**: Reporting, Approval and Player reporting (see
+  [Web reporting](web-reporting.md)).
 
 The eye next to a section hides it in this browser only, e.g. so a commentator's tablet
 shows just Commentary. **Ctrl+B** collapses the sidebar to icons. On a phone, ☰ opens it.
@@ -49,9 +53,10 @@ Anyone on your network can open the dashboard. To lock it, set a **Web dashboard
 once and remembers it, until the PIN changes or someone clicks the lock at the bottom of
 the sidebar. After five wrong PINs, a device has to wait 30 seconds.
 
-The PIN locks the dashboard and `/scoreboard`. The players' pages (stage strike, character
-select), the commentary dashboard and the links a [Stream Deck](stream-deck.md) or other
-tools use ([Remote control](remote-control.md)) stay open, so they keep working.
+The PIN locks the dashboard, `/scoreboard`, `/report-admin` and `/report-approval`. The
+players' pages (stage strike, character select, and `/report`, which has its own PIN), the
+commentary dashboard and the links a [Stream Deck](stream-deck.md) or other tools use
+([Remote control](remote-control.md)) stay open, so they keep working.
 
 ## Finding HyperDrive's address
 

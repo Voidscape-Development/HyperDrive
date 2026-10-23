@@ -226,6 +226,12 @@ mutation ReportBracketSet($setId: ID!, $winnerId: ID, $gameData: [BracketSetGame
   reportBracketSet(setId: $setId, winnerId: $winnerId, gameData: $gameData) { id state }
 }"""
 
+# A DQ: the set is won by winnerId, without games
+REPORT_DQ = """
+mutation ReportBracketSetDQ($setId: ID!, $winnerId: ID!) {
+  reportBracketSet(setId: $setId, winnerId: $winnerId, isDQ: true) { id state }
+}"""
+
 RESET_SET = """
 mutation ResetSet($setId: ID!) {
   resetSet(setId: $setId) { id state }

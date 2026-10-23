@@ -55,6 +55,9 @@ Then, with a set loaded from start.gg:
 
 Without a token, or without a set from start.gg, nothing about start.gg is shown.
 
+To report sets that aren't on a scoreboard, or let players report their own sets for an
+admin to approve, see [Web reporting](web-reporting.md).
+
 ## Reporting settings
 
 In [Settings › start.gg Reporting](hyperdrive://open/settings/startgg-reporting):

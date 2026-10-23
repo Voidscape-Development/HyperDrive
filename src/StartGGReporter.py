@@ -106,6 +106,18 @@ def Send(query, variables, token=None):
     return body.get("data") or {}
 
 
+def SendRetrying(query, variables, token=None, delays=RETRY_DELAYS, cancel_event=None):
+    """Send(), tried again after each of `delays` while the network or
+    start.gg fails. Blocks: run it off the UI thread."""
+    for attempt in range(len(delays) + 1):
+        try:
+            return Send(query, variables, token)
+        except RetryableError:
+            if attempt == len(delays) or (cancel_event and cancel_event.is_set()):
+                raise
+            time.sleep(delays[attempt])
+
+
 class StartGGReporterSignals(QObject):
     # Scoreboard number: its status changed
     status_changed = Signal(int)
@@ -291,17 +303,11 @@ class StartGGReporter(QObject):
         token = Token()
 
         def Run(progress_callback=None, cancel_event=None):
-            for attempt in range(len(RETRY_DELAYS) + 1):
-                try:
-                    Send(query, variables, token)
-                    return (True, "")
-                except RetryableError as e:
-                    if attempt == len(RETRY_DELAYS) or (cancel_event and cancel_event.is_set()):
-                        return (False, str(e))
-                    time.sleep(RETRY_DELAYS[attempt])
-                except Exception as e:
-                    return (False, str(e))
-            return (False, "")
+            try:
+                SendRetrying(query, variables, token, cancel_event=cancel_event)
+                return (True, "")
+            except Exception as e:
+                return (False, str(e))
 
         def Done(result):
             ok, message = result

@@ -1,0 +1,54 @@
+query ReportingSetQuery($id: ID!) {
+	set(id: $id) {
+		id
+		identifier
+		round
+		fullRoundText
+		state
+		totalGames
+		winnerId
+		updatedAt
+		startedAt
+		completedAt
+		entrant1Score
+		entrant2Score
+		event {
+			slug
+		}
+		station {
+			id
+			number
+		}
+		stream {
+			id
+			streamName
+		}
+		slots {
+			entrant {
+				id
+				name
+			}
+		}
+		phaseGroup {
+			id
+			displayIdentifier
+			phase {
+				id
+				name
+			}
+		}
+		games {
+			orderNum
+			winnerId
+			stage {
+				id
+			}
+			selections {
+				entrant {
+					id
+				}
+				selectionValue
+			}
+		}
+	}
+}
