@@ -4568,22 +4568,22 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="164"/>
+        <location filename="../StartGGReporter.py" line="176"/>
         <source>This set can&apos;t be reported: its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="231"/>
+        <location filename="../StartGGReporter.py" line="243"/>
         <source>Set reset on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="248"/>
+        <location filename="../StartGGReporter.py" line="260"/>
         <source>{0} Retrying in {1}s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="284"/>
+        <location filename="../StartGGReporter.py" line="296"/>
         <source>This set can&apos;t be changed: its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5805,7 +5805,12 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="660"/>
+        <location filename="../Settings/SettingsWindow.py" line="639"/>
+        <source>Web Reporting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="709"/>
         <source>Twitch Predictions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6711,53 +6716,86 @@ Drop an image here.</source>
 <context>
     <name>settings.twitch_predictions</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="598"/>
+        <location filename="../Settings/SettingsWindow.py" line="647"/>
         <source>Run Twitch predictions for the set on stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="605"/>
+        <location filename="../Settings/SettingsWindow.py" line="654"/>
         <source>Needs the Twitch token of Settings &gt; API Keys, and a channel that&apos;s a Twitch affiliate or partner.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="611"/>
+        <location filename="../Settings/SettingsWindow.py" line="660"/>
         <source>Scoreboard</source>
         <translation type="unfinished">Placar</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="616"/>
+        <location filename="../Settings/SettingsWindow.py" line="665"/>
         <source>The number of the scoreboard of the stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="621"/>
+        <location filename="../Settings/SettingsWindow.py" line="670"/>
         <source>Start one when a set is loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="629"/>
+        <location filename="../Settings/SettingsWindow.py" line="678"/>
         <source>Resolve it with the winner when the set is over</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="637"/>
+        <location filename="../Settings/SettingsWindow.py" line="686"/>
         <source>Title</source>
         <translation type="unfinished">Título</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="642"/>
+        <location filename="../Settings/SettingsWindow.py" line="691"/>
         <source>{team1}, {team2} and {round} are replaced. Twitch allows 45 characters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="648"/>
+        <location filename="../Settings/SettingsWindow.py" line="697"/>
         <source>Seconds viewers have to predict</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="655"/>
+        <location filename="../Settings/SettingsWindow.py" line="704"/>
         <source>From 30 to 1800</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>settings.web_reporting</name>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="598"/>
+        <source>Accept results from player reporting stations (/report)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="606"/>
+        <source>Players&apos; results wait on the Approval page until an admin approves them.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="612"/>
+        <source>Reporting station PIN (empty: no PIN)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="619"/>
+        <source>Asked once by each reporting station. The admin pages use the web dashboard PIN of Settings &gt; General.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="625"/>
+        <source>Get the sets from start.gg every (seconds)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWindow.py" line="632"/>
+        <source>While a reporting page is open. At least 10.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
