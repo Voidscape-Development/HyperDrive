@@ -250,6 +250,8 @@ class LayoutThemeWindow(QDialog):
         layout.addWidget(splitter, 1)
 
         self.editors = {}
+        # Each field's label, dimmed with its field when enabled_by is off
+        self.fieldLabels = {}
         # Labels of the fields that need "Use this theme's colors in layouts",
         # and the notes saying so, dimmed and shown while it's off
         self.colorLabels = []
@@ -271,9 +273,25 @@ class LayoutThemeWindow(QDialog):
                 grid.addWidget(note, 0, 0, 1, 3)
                 self.colorNotes.append(note)
                 first = 1
-            for row, field in enumerate(section.fields, first):
+            row = first
+            group = None
+            for field in section.fields:
+                # A heading over each group of fields, which are indented
+                # under it
+                if field.group and field.group != group:
+                    heading = QLabel(field.group)
+                    font = heading.font()
+                    font.setBold(True)
+                    heading.setFont(font)
+                    heading.setContentsMargins(0, 10, 0, 0)
+                    grid.addWidget(heading, row, 0, 1, 3)
+                    row += 1
+                group = field.group
                 editor = FieldEditor(field, lambda s=section.key, f=field: self.Edited(s, f))
                 label = QLabel(field.label)
+                if field.group:
+                    label.setContentsMargins(16, 0, 0, 0)
+                self.fieldLabels[(section.key, field.key)] = label
                 if (section.key, field.key) in APPLY_COLORS_FIELDS:
                     label.setToolTip(
                         QApplication.translate(
@@ -291,6 +309,7 @@ class LayoutThemeWindow(QDialog):
                 )
                 grid.addWidget(resetButton, row, 2)
                 self.editors[(section.key, field.key)] = (editor, resetButton)
+                row += 1
             grid.setColumnStretch(1, 1)
             self.sectionStack.addWidget(page)
         self.sectionList.setCurrentRow(0)
@@ -342,9 +361,10 @@ class LayoutThemeWindow(QDialog):
         for (sectionKey, fieldKey), (editor, resetButton) in self.editors.items():
             key = editor.field.enabled_by
             if key:
-                on = bool(theme["values"][sectionKey].get(key)) and not builtin
-                editor.widget.setEnabled(on)
-                resetButton.setEnabled(on)
+                on = bool(theme["values"][sectionKey].get(key))
+                editor.widget.setEnabled(on and not builtin)
+                resetButton.setEnabled(on and not builtin)
+                self.fieldLabels[(sectionKey, fieldKey)].setEnabled(on)
 
     def UpdateColorHints(self, applyColors):
         for label in self.colorLabels:

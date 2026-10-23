@@ -59,6 +59,10 @@ def TestSchema():
                 NormalizeLayoutTheme({"values": DefaultValues()})["values"][section.key][field.key]
                 == field.default
             ), key
+        # A group's fields are together, so its heading shows once
+        groups = [f.group for f in section.fields if f.group]
+        runs = [g for i, g in enumerate(groups) if i == 0 or groups[i - 1] != g]
+        assert len(runs) == len(set(runs)), (section.key, runs)
         # A field enabled by a checkbox: one of its section's
         types = {f.key: f.type for f in section.fields}
         for field in section.fields:

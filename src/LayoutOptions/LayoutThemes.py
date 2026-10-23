@@ -62,6 +62,7 @@ class Field:
         suffix="",
         tooltip=None,
         enabled_by=None,
+        group=None,
     ):
         self.key = key
         self.label = label
@@ -77,6 +78,9 @@ class Field:
         # Key of a checkbox of the same section: the field is only editable
         # (and only used) while it's on
         self.enabled_by = enabled_by
+        # A heading the editor shows over this field and the ones after it
+        # with the same group
+        self.group = group
 
 
 class Section:
@@ -108,36 +112,39 @@ def FocusGlowFields():
     glow on or off, and its own color instead of the focus highlight."""
     fields = []
     for mode, name in (
-        ("sets", _tr("selection (Ctrl+click)")),
-        ("rounds", _tr("round mode")),
-        ("side", _tr("winners/losers side")),
-        ("player", _tr("player's run")),
-        ("follow", _tr("followed set")),
-        ("tour", _tr("tour")),
+        ("sets", _tr("Focus glow: selection (Ctrl+click)")),
+        ("rounds", _tr("Focus glow: round mode")),
+        ("side", _tr("Focus glow: winners/losers side")),
+        ("player", _tr("Focus glow: player's run")),
+        ("follow", _tr("Focus glow: followed set")),
+        ("tour", _tr("Focus glow: tour")),
     ):
         fields += [
             Field(
                 f"focus_glow_{mode}",
-                _tr("Focus glow: {0}").format(name),
+                _tr("Glow"),
                 FIELD_CHECKBOX,
                 True,
                 tooltip=_tr(
                     "The outline and glow around the sets the bracket focus layout zooms to, and their lines, in this focus mode"
                 ),
+                group=name,
             ),
             Field(
                 f"focus_glow_custom_{mode}",
-                _tr("Focus glow: {0}, own color").format(name),
+                _tr("Own color"),
                 FIELD_CHECKBOX,
                 False,
                 tooltip=_tr("Off: the glow takes the focus highlight color"),
+                group=name,
             ),
             Field(
                 f"focus_glow_color_{mode}",
-                _tr("Focus glow: {0}, color").format(name),
+                _tr("Color"),
                 FIELD_COLOR,
                 "#ffb800",
                 enabled_by=f"focus_glow_custom_{mode}",
+                group=name,
             ),
         ]
     return fields
