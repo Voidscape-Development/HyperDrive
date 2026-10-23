@@ -337,8 +337,8 @@ def LayoutThemeSchema():
                         ),
                     )
                     for mode, label in (
-                        ("sets", _tr("Focus glow: selected sets")),
-                        ("rounds", _tr("Focus glow: rounds")),
+                        ("sets", _tr("Focus glow: selection (Ctrl+click)")),
+                        ("rounds", _tr("Focus glow: round mode")),
                         ("side", _tr("Focus glow: winners/losers side")),
                         ("player", _tr("Focus glow: player's run")),
                         ("follow", _tr("Focus glow: followed set")),

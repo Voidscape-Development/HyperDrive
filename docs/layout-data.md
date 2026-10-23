@@ -126,7 +126,7 @@ Each channel's focus:
 
 | Key | |
 | - | - |
-| `mode` | `all`, `sets` / `rounds` (picked by hand), `side` (the winners or losers side), `player` (a player's run), `follow` (the set on a scoreboard) or `tour` (the whole bracket, then each round in turn) |
+| `mode` | `all`, `sets` (sets and/or rounds picked by hand), `rounds` (round mode: a round stepped to with the Round button or the arrows), `side` (the winners or losers side), `player` (a player's run), `follow` (the set on a scoreboard) or `tour` (the whole bracket, then each round in turn) |
 | `sets` | Ids of the sets in focus, in the bracket's order. Empty: the whole bracket. |
 | `rounds` | Keys of the rounds in focus (`winners:2`...) |
 | `label` | What's in focus, e.g. the round's or the player's name |

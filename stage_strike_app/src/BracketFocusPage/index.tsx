@@ -193,8 +193,9 @@ export default function BracketFocusPage() {
     };
 
     const focusSelected = () => {
+        // Always the sets mode, even with only rounds: "rounds" is round mode
         send({
-            mode: selected.size ? "sets" : "rounds",
+            mode: "sets",
             sets: [...selected],
             rounds: [...selectedRounds],
         });

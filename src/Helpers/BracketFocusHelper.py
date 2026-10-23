@@ -5,7 +5,10 @@
 # its own.
 
 MODE_ALL = "all"
+# Sets and rounds picked by hand (Ctrl+click), even rounds alone
 MODE_SETS = "sets"
+# Round mode: a round stepped to (the Round button, the arrows, "focus this
+# round"). Older saved selections of only rounds have it too.
 MODE_ROUNDS = "rounds"
 MODE_PLAYER = "player"
 MODE_FOLLOW = "follow"
@@ -62,7 +65,7 @@ def NormalizeRequest(request):
         mode = MODE_ALL
     result = {"mode": mode}
     if mode in (MODE_SETS, MODE_ROUNDS):
-        # Picked by hand: sets, rounds or both
+        # Sets, rounds or both
         result["sets"] = [str(s) for s in request.get("sets") or [] if s not in (None, "")]
         result["rounds"] = [str(r) for r in request.get("rounds") or [] if r not in (None, "")]
     elif mode == MODE_SIDE:
@@ -88,9 +91,9 @@ def NormalizeRequest(request):
 
 
 def WithoutPicks(request, sets=(), rounds=()):
-    """A request picked by hand with these sets and rounds taken out of it
-    (deselected in the bracket widget), the whole bracket once nothing is
-    left, or None if they weren't in it or it wasn't picked by hand."""
+    """A request of sets or rounds with these sets and rounds taken out of
+    it (deselected in the bracket widget), in the same mode, the whole bracket
+    once nothing is left, or None if they weren't in it or it isn't one."""
     request = NormalizeRequest(request)
     if request["mode"] not in (MODE_SETS, MODE_ROUNDS):
         return None
@@ -101,8 +104,7 @@ def WithoutPicks(request, sets=(), rounds=()):
         return None
     if not keptSets and not keptRounds:
         return {"mode": MODE_ALL}
-    mode = MODE_SETS if keptSets else MODE_ROUNDS
-    return {"mode": mode, "sets": keptSets, "rounds": keptRounds}
+    return {"mode": request["mode"], "sets": keptSets, "rounds": keptRounds}
 
 
 # =====================================================

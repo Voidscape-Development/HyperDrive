@@ -107,16 +107,18 @@ class FocusChannel(QObject):
         self.Set({"mode": MODE_ALL})
 
     def FocusSets(self, ids, rounds=()):
-        """Sets and whole rounds picked by hand."""
+        """Sets and whole rounds picked by hand: the sets mode, even with
+        only rounds, so it's told apart from round mode."""
         ids, rounds = list(ids or []), list(rounds or [])
         if not ids and not rounds:
             self.ShowAll()
         else:
-            mode = MODE_SETS if ids else MODE_ROUNDS
-            self.Set({"mode": mode, "sets": ids, "rounds": rounds})
+            self.Set({"mode": MODE_SETS, "sets": ids, "rounds": rounds})
 
     def FocusRounds(self, keys):
-        self.FocusSets([], keys)
+        """Round mode on these rounds."""
+        keys = list(keys or [])
+        self.Set({"mode": MODE_ROUNDS, "rounds": keys} if keys else {"mode": MODE_ALL})
 
     def FocusSide(self, side):
         """The winners side (with the grand final) or the losers side."""

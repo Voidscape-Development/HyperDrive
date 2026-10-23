@@ -89,13 +89,27 @@ def TestSetsAndRounds():
     assert focus["label"] == ""
 
 
+def TestSelectedRounds():
+    # Rounds picked by hand (sets mode) show the same as round mode, but the
+    # mode tells them apart
+    picked = Resolve(BRACKET, {"mode": "sets", "rounds": ["winners:3"]})
+    stepped = Resolve(BRACKET, {"mode": "rounds", "rounds": ["winners:3"]})
+    assert picked["mode"] == MODE_SETS and stepped["mode"] == MODE_ROUNDS
+    for key in ("sets", "rounds", "label"):
+        assert picked[key] == stepped[key], key
+    # Deselecting keeps the mode
+    assert WithoutPicks({"mode": MODE_ROUNDS, "rounds": ["W1", "W2"]}, [], ["W1"])["mode"] == (
+        MODE_ROUNDS
+    )
+
+
 def TestWithoutPicks():
     request = {"mode": MODE_SETS, "sets": ["m1", "m2"], "rounds": ["W1"]}
     # Deselecting a set in focus takes it out
     assert WithoutPicks(request, ["m1"]) == {"mode": MODE_SETS, "sets": ["m2"], "rounds": ["W1"]}
-    # The last set out leaves the rounds
+    # The last set out leaves the rounds, still picked by hand
     assert WithoutPicks({"mode": MODE_SETS, "sets": ["m1"], "rounds": ["W1"]}, ["m1"]) == {
-        "mode": MODE_ROUNDS,
+        "mode": MODE_SETS,
         "sets": [],
         "rounds": ["W1"],
     }
