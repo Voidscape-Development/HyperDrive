@@ -50,6 +50,8 @@ SDPIComponents.i18n.locales = {
 		focusAll: "Whole bracket",
 		nextRound: "Next round",
 		previousRound: "Previous round",
+		winnersSide: "Winners side (and grand final)",
+		losersSide: "Losers side",
 		follow: "Follow the scoreboard's set",
 		tour: "Tour the bracket",
 		playerRun: "A player's run",

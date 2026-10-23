@@ -2,6 +2,7 @@
 # for objects it doesn't have (a deleted event, a set without a station, an
 # entrant without a user...). A placement, set or player with a null in it
 # is left out or filled in with blanks, without losing the rest of the list.
+# Also how head-to-head sets are paged and filtered.
 # Run from the repository root: python test/test_startgg_nulls.py
 import json
 import os
@@ -286,6 +287,82 @@ def TestClient():
     # A JSON object is the answer
     client = StartGGClient(session=Session('{"data": {}}'), sleep=lambda s: None)
     assert client.Request("https://www.start.gg/api/-/gql", type=requests.post) == {"data": {}}
+
+
+# =====================================================
+# HEAD TO HEAD
+# =====================================================
+def H2HSet(id, startAt, game=H.ULTIMATE_ID, players=("1", "2"), scores=(2, 1)):
+    return {
+        "id": id,
+        "slots": [
+            {"entrant": {"id": f"e{p}", "participants": [{"player": {"id": p}}]}} for p in players
+        ],
+        "games": None,
+        "entrant1Score": scores[0],
+        "entrant2Score": scores[1],
+        "winnerId": f"e{players[0]}",
+        "fullRoundText": "Winners Final",
+        "phaseGroup": None,
+        "event": {
+            "id": startAt,
+            "name": "Singles",
+            "isOnline": False,
+            "startAt": startAt,
+            "videogame": {"id": game},
+            "tournament": {"name": "Weekly"},
+        },
+    }
+
+
+def TestHeadToHead():
+    # Most recent first, the way start.gg sends them
+    sets = [H2HSet(i, 1000 - i) for i in range(30)]
+    sets[3] = H2HSet(3, 997, game=1)  # Another game
+    sets[4] = H2HSet(4, 996, players=("1", "3"))  # Not between the two
+    sets[5] = H2HSet(5, 995, scores=(-1, 0))  # A DQ
+    sets[6] = None
+    asked = []
+
+    provider = H.NewProvider(EVENT, H.SetUpApp())
+
+    def query(url=None, type=None, headers=None, jsonParams=None, params=None, **kwargs):
+        v = jsonParams["variables"]
+        assert jsonParams["operationName"] == "HeadToHeadQuery"
+        assert (v["pid1"], v["pid2"]) == ("1", "2")
+        asked.append((v["page"], v["perPage"]))
+        # Pages of 20 go over the complexity cap
+        if v["perPage"] > 10:
+            return {"errors": [{"message": "Your query complexity is too high."}]}
+        start = (v["page"] - 1) * v["perPage"]
+        page = sets[start : start + v["perPage"]]
+        totalPages = -(-len(sets) // v["perPage"])
+        return {
+            "data": {"player": {"sets": {"pageInfo": {"totalPages": totalPages}, "nodes": page}}}
+        }
+
+    provider.QueryRequests = query
+    callback = H.Callback()
+    provider.GetRecentSets(["1", "u1"], ["2", "u2"], H.ULTIMATE_ID, callback, 7, None, None)
+
+    assert callback.value["request_time"] == 7
+    ids = [s["id"] for s in callback.value["sets"]]
+    assert ids == [i for i in range(30) if i not in (3, 4, 5, 6)], ids
+    # Refused pages of 20 are asked for again as pages of 10
+    assert sorted(asked) == [(1, 10), (1, 20), (2, 10), (2, 20), (3, 10), (4, 10)], asked
+    first = callback.value["sets"][0]
+    assert first["winner"] == 0 and first["score"] == [2, 1] and first["tournament"] == "Weekly"
+
+    # No more than the most recent 100 sets
+    sets = [H2HSet(i, 1000 - i) for i in range(150)]
+    asked.clear()
+    provider.GetRecentSets(["1", "u1"], ["2", "u2"], H.ULTIMATE_ID, callback, 0, None, None)
+    assert [s["id"] for s in callback.value["sets"]] == list(range(100))
+
+    # A failed request: no sets
+    provider.QueryRequests = lambda *args, **kwargs: {}
+    provider.GetRecentSets(["1", "u1"], ["2", "u2"], H.ULTIMATE_ID, callback, 0, None, None)
+    assert callback.value["sets"] == []
 
 
 if __name__ == "__main__":

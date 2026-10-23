@@ -1,15 +1,28 @@
 # What the bracket focus layouts (layout/bracket_focus) zoom to: sets of a
 # channel's bracket (bracket.channels.<channel>, see docs/layout-data.md) picked
-# by hand, whole rounds, a player's run, the set on a scoreboard or a tour of
-# every round. No Qt here, so it can be tested on its own.
+# by hand, whole rounds, one side (winners or losers), a player's run, the set
+# on a scoreboard or a tour of every round. No Qt here, so it can be tested on
+# its own.
 
 MODE_ALL = "all"
+# Sets and rounds picked by hand (Ctrl+click), even rounds alone
 MODE_SETS = "sets"
+# Round mode: a round stepped to (the Round button, the arrows, "focus this
+# round"). Older saved selections of only rounds have it too.
 MODE_ROUNDS = "rounds"
 MODE_PLAYER = "player"
 MODE_FOLLOW = "follow"
 MODE_TOUR = "tour"
-MODES = (MODE_ALL, MODE_SETS, MODE_ROUNDS, MODE_PLAYER, MODE_FOLLOW, MODE_TOUR)
+MODE_SIDE = "side"
+MODES = (MODE_ALL, MODE_SETS, MODE_ROUNDS, MODE_SIDE, MODE_PLAYER, MODE_FOLLOW, MODE_TOUR)
+
+# The side mode's sides, and the bracket sides (bracket.sides) each one
+# shows: the grand final goes with the winners side
+SIDE_WINNERS = "winners"
+SIDE_LOSERS = "losers"
+FOCUS_SIDES = {SIDE_WINNERS: ("winners", "grand_final"), SIDE_LOSERS: ("losers",)}
+# Their names, for the label, when the app doesn't give translated ones
+SIDE_NAMES = {SIDE_WINNERS: "Winners Side", SIDE_LOSERS: "Losers Side"}
 
 # Order the tour goes through the sides
 TOUR_SIDES = ("pool", "winners", "losers", "third_place", "grand_final")
@@ -52,9 +65,12 @@ def NormalizeRequest(request):
         mode = MODE_ALL
     result = {"mode": mode}
     if mode in (MODE_SETS, MODE_ROUNDS):
-        # Picked by hand: sets, rounds or both
+        # Sets, rounds or both
         result["sets"] = [str(s) for s in request.get("sets") or [] if s not in (None, "")]
         result["rounds"] = [str(r) for r in request.get("rounds") or [] if r not in (None, "")]
+    elif mode == MODE_SIDE:
+        side = request.get("side")
+        result["side"] = side if side in FOCUS_SIDES else SIDE_WINNERS
     elif mode == MODE_PLAYER:
         try:
             result["player"] = int(request.get("player"))
@@ -75,9 +91,9 @@ def NormalizeRequest(request):
 
 
 def WithoutPicks(request, sets=(), rounds=()):
-    """A request picked by hand with these sets and rounds taken out of it
-    (deselected in the bracket widget), the whole bracket once nothing is
-    left, or None if they weren't in it or it wasn't picked by hand."""
+    """A request of sets or rounds with these sets and rounds taken out of
+    it (deselected in the bracket widget), in the same mode, the whole bracket
+    once nothing is left, or None if they weren't in it or it isn't one."""
     request = NormalizeRequest(request)
     if request["mode"] not in (MODE_SETS, MODE_ROUNDS):
         return None
@@ -88,8 +104,7 @@ def WithoutPicks(request, sets=(), rounds=()):
         return None
     if not keptSets and not keptRounds:
         return {"mode": MODE_ALL}
-    mode = MODE_SETS if keptSets else MODE_ROUNDS
-    return {"mode": mode, "sets": keptSets, "rounds": keptRounds}
+    return {"mode": request["mode"], "sets": keptSets, "rounds": keptRounds}
 
 
 # =====================================================
@@ -103,6 +118,30 @@ def Columns(bracket):
         for column in sides.get(side) or []:
             columns.append(column)
     return columns
+
+
+def SideColumns(bracket, side):
+    """The columns of a side of the side mode (winners or losers) that
+    have sets, in tour order."""
+    sides = FOCUS_SIDES.get(side, ())
+    return [
+        column
+        for name in TOUR_SIDES
+        if name in sides
+        for column in ((bracket or {}).get("sides") or {}).get(name) or []
+        if column.get("sets")
+    ]
+
+
+def HasSide(bracket, side):
+    """The bracket has sets on the side, e.g. no losers side in single
+    elimination."""
+    return bool(SideColumns(bracket, side))
+
+
+def SideName(side, names=None):
+    """The side's name: names[side], else in English."""
+    return (names or {}).get(side) or SIDE_NAMES.get(side, "")
 
 
 def RoundSets(bracket, keys):
@@ -221,10 +260,11 @@ def TourSteps(bracket):
 # =====================================================
 # RESOLVING A REQUEST
 # =====================================================
-def Resolve(bracket, request, score=None, step=0):
+def Resolve(bracket, request, score=None, step=0, names=None):
     """What the layouts show for a request: bracket.focus. `sets` are the
     sets to zoom to and highlight (none: the whole bracket), `rounds` the
-    rounds to highlight, `label` says what it is."""
+    rounds to highlight, `label` says what it is. names: the sides' names
+    ({side: name}), translated."""
     request = NormalizeRequest(request)
     mode = request["mode"]
     bracket = bracket or {}
@@ -250,6 +290,12 @@ def Resolve(bracket, request, score=None, step=0):
             )
         elif focus["sets"] and len({allSets[id].get("roundName") for id in focus["sets"]}) == 1:
             focus["label"] = allSets[focus["sets"][0]].get("roundName") or ""
+    elif mode == MODE_SIDE:
+        columns = SideColumns(bracket, request["side"])
+        focus["sets"] = [id for c in columns for id in c.get("sets") if id in allSets]
+        if focus["sets"]:
+            focus["rounds"] = [c.get("key") for c in columns]
+            focus["label"] = SideName(request["side"], names)
     elif mode == MODE_PLAYER:
         focus["sets"] = [id for id in PlayerSets(bracket, request["player"]) if id in allSets]
         focus["label"] = PlayerName(bracket, request["player"]) if focus["sets"] else ""

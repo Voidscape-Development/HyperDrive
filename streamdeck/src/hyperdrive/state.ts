@@ -263,6 +263,8 @@ export type BracketFocus = {
 	label?: string;
 	/** player mode: the player's slot */
 	player?: string | number;
+	/** side mode: "winners" (with the grand final) or "losers" */
+	side?: string;
 	scoreboard?: number;
 	step?: number;
 	steps?: number;

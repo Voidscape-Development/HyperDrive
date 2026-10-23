@@ -10,6 +10,7 @@ from ..ColorButton import ColorButton
 from ..Theme import ThemedIcon
 from .LayoutThemes import (
     APPLY_COLORS_FIELDS,
+    DEFAULT_GRADIENT_POSITION,
     DEFAULT_THEME,
     FIELD_CHECKBOX,
     FIELD_COLOR,
@@ -30,7 +31,8 @@ APPLY_DELAY_MS = 150
 
 
 class FillEditor(QWidget):
-    """A color, or a linear gradient between two colors."""
+    """A color, or a linear gradient between two colors, meeting at a
+    position."""
 
     changed = Signal()
 
@@ -56,6 +58,19 @@ class FillEditor(QWidget):
             self.direction.addItem(label, value)
         self.direction.currentIndexChanged.connect(lambda i: self.changed.emit())
         layout.addWidget(self.direction)
+
+        self.position = QSpinBox()
+        self.position.setRange(0, 100)
+        self.position.setSuffix(" %")
+        self.position.setValue(DEFAULT_GRADIENT_POSITION)
+        self.position.setToolTip(
+            QApplication.translate(
+                "layout_themes",
+                "Where the two colors meet, from the first color's side: 50% is an even blend. Lower keeps the first color closer to its side, higher spreads it further.",
+            )
+        )
+        self.position.valueChanged.connect(lambda v: self.changed.emit())
+        layout.addWidget(self.position)
         layout.addStretch()
 
         self.UpdateEnabled()
@@ -69,22 +84,25 @@ class FillEditor(QWidget):
             "color2": self.color2.color(),
             "gradient": self.gradient.isChecked(),
             "direction": self.direction.currentData(),
+            "position": self.position.value(),
         }
 
     def SetValue(self, value):
-        for w in (self.color, self.color2, self.gradient, self.direction):
+        for w in (self.color, self.color2, self.gradient, self.direction, self.position):
             w.blockSignals(True)
         self.color.setColor(value["color"])
         self.color2.setColor(value["color2"])
         self.gradient.setChecked(value["gradient"])
         self.direction.setCurrentIndex(max(self.direction.findData(value["direction"]), 0))
-        for w in (self.color, self.color2, self.gradient, self.direction):
+        self.position.setValue(value.get("position", DEFAULT_GRADIENT_POSITION))
+        for w in (self.color, self.color2, self.gradient, self.direction, self.position):
             w.blockSignals(False)
         self.UpdateEnabled()
 
     def UpdateEnabled(self):
         self.color2.setEnabled(self.gradient.isChecked())
         self.direction.setEnabled(self.gradient.isChecked())
+        self.position.setEnabled(self.gradient.isChecked())
 
 
 class FieldEditor:
@@ -250,6 +268,8 @@ class LayoutThemeWindow(QDialog):
         layout.addWidget(splitter, 1)
 
         self.editors = {}
+        # Each field's label, dimmed with its field when enabled_by is off
+        self.fieldLabels = {}
         # Labels of the fields that need "Use this theme's colors in layouts",
         # and the notes saying so, dimmed and shown while it's off
         self.colorLabels = []
@@ -271,9 +291,25 @@ class LayoutThemeWindow(QDialog):
                 grid.addWidget(note, 0, 0, 1, 3)
                 self.colorNotes.append(note)
                 first = 1
-            for row, field in enumerate(section.fields, first):
+            row = first
+            group = None
+            for field in section.fields:
+                # A heading over each group of fields, which are indented
+                # under it
+                if field.group and field.group != group:
+                    heading = QLabel(field.group)
+                    font = heading.font()
+                    font.setBold(True)
+                    heading.setFont(font)
+                    heading.setContentsMargins(0, 10, 0, 0)
+                    grid.addWidget(heading, row, 0, 1, 3)
+                    row += 1
+                group = field.group
                 editor = FieldEditor(field, lambda s=section.key, f=field: self.Edited(s, f))
                 label = QLabel(field.label)
+                if field.group:
+                    label.setContentsMargins(16, 0, 0, 0)
+                self.fieldLabels[(section.key, field.key)] = label
                 if (section.key, field.key) in APPLY_COLORS_FIELDS:
                     label.setToolTip(
                         QApplication.translate(
@@ -291,6 +327,7 @@ class LayoutThemeWindow(QDialog):
                 )
                 grid.addWidget(resetButton, row, 2)
                 self.editors[(section.key, field.key)] = (editor, resetButton)
+                row += 1
             grid.setColumnStretch(1, 1)
             self.sectionStack.addWidget(page)
         self.sectionList.setCurrentRow(0)
@@ -333,7 +370,19 @@ class LayoutThemeWindow(QDialog):
             editor.widget.setEnabled(not builtin)
             resetButton.setEnabled(not builtin)
         self.UpdateColorHints(theme["values"]["general"]["apply_colors"])
+        self.UpdateEnabledBy(theme)
         self.updating = False
+
+    def UpdateEnabledBy(self, theme):
+        """Fields with enabled_by are only editable while their checkbox is on"""
+        builtin = self.editing is None
+        for (sectionKey, fieldKey), (editor, resetButton) in self.editors.items():
+            key = editor.field.enabled_by
+            if key:
+                on = bool(theme["values"][sectionKey].get(key))
+                editor.widget.setEnabled(on and not builtin)
+                resetButton.setEnabled(on and not builtin)
+                self.fieldLabels[(sectionKey, fieldKey)].setEnabled(on)
 
     def UpdateColorHints(self, applyColors):
         for label in self.colorLabels:
@@ -365,6 +414,7 @@ class LayoutThemeWindow(QDialog):
         self.editing["values"][sectionKey][field.key] = NormalizeValue(field, editor.get())
         if (sectionKey, field.key) == ("general", "apply_colors"):
             self.UpdateColorHints(self.editing["values"]["general"]["apply_colors"])
+        self.UpdateEnabledBy(self.editing)
         self.applyTimer.start()
 
     def Reset(self, sectionKey, field):

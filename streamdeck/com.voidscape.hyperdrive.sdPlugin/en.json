@@ -44,7 +44,7 @@
 	},
 	"com.voidscape.hyperdrive.bracket-focus": {
 		"Name": "Bracket Focus",
-		"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the set on a scoreboard, a tour, a player's run, or which phase a channel shows."
+		"Tooltip": "What the bracket focus layout shows: the whole bracket, a round, the winners or losers side, the set on a scoreboard, a tour, a player's run, or which phase a channel shows."
 	},
 	"Localization": {
 		"team": "Team {team}",
@@ -99,6 +99,8 @@
 		"focusAll": "Whole bracket",
 		"nextRound": "Next round",
 		"previousRound": "Previous round",
+		"winnersSide": "Winners side",
+		"losersSide": "Losers side",
 		"followSet": "Follow set",
 		"followScoreboard": "Follow SB{scoreboard}",
 		"tour": "Tour",

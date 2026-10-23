@@ -59,6 +59,20 @@ def TestSchema():
                 NormalizeLayoutTheme({"values": DefaultValues()})["values"][section.key][field.key]
                 == field.default
             ), key
+        # A group's fields are together, so its heading shows once
+        groups = [f.group for f in section.fields if f.group]
+        runs = [g for i, g in enumerate(groups) if i == 0 or groups[i - 1] != g]
+        assert len(runs) == len(set(runs)), (section.key, runs)
+        # A field enabled by a checkbox: one of its section's
+        types = {f.key: f.type for f in section.fields}
+        for field in section.fields:
+            if field.enabled_by:
+                assert types.get(field.enabled_by) == "checkbox", (section.key, field.key)
+    # Each focus mode has its glow, its own color switch and its color
+    bracket = {f.key for s in LayoutThemeSchema() if s.key == "bracket" for f in s.fields}
+    for mode in ("sets", "rounds", "side", "player", "follow", "tour"):
+        for key in ("focus_glow_{}", "focus_glow_custom_{}", "focus_glow_color_{}"):
+            assert key.format(mode) in bracket, key.format(mode)
     print("TestSchema: OK")
 
 
@@ -110,6 +124,7 @@ def TestNormalize():
         "color2": "#121212",
         "gradient": True,
         "direction": "to right",
+        "position": 50,
     }
     assert values["bracket"]["score_background"] == DefaultValues()["bracket"]["score_background"]
 
@@ -153,6 +168,27 @@ def TestCss():
     assert css["--general-font-family"] == '"BadFont"'
     assert css["--chip-text-color"] == "rgba(255, 0, 0, 0.502)"
     assert css["--chip-background"] == "linear-gradient(to bottom, #000000, #ffffff)"
+
+    # Where the colors meet: a color hint, none for an even blend
+    def Gradient(position):
+        fill = Fill("#000000", "#ffffff", True, "to right", position)
+        theme = NormalizeLayoutTheme({"name": "x", "values": {"chip": {"background": fill}}})
+        return theme["values"]["chip"]["background"], CssVariables(theme)["--chip-background"]
+
+    assert Gradient(30) == (
+        dict(Fill("#000000", "#ffffff", True), position=30),
+        "linear-gradient(to right, #000000, 30%, #ffffff)",
+    )
+    assert Gradient(50)[1] == "linear-gradient(to right, #000000, #ffffff)"
+    # Out of range, not a number or missing (themes from before it)
+    assert Gradient(150)[0]["position"] == 100
+    assert Gradient(-5)[0]["position"] == 0
+    assert Gradient(12.6)[0]["position"] == 13
+    for bad in ("30", True, float("nan"), None):
+        assert Gradient(bad)[0]["position"] == 50, bad
+    before = {"color": "#000000", "color2": "#ffffff", "gradient": True, "direction": "to top"}
+    normalized = NormalizeLayoutTheme({"name": "x", "values": {"chip": {"background": before}}})
+    assert normalized["values"]["chip"]["background"]["position"] == 50
     assert css["--bracket-score-background"] == "#26272c"
     assert css["--bracket-sponsor-background"] == "rgba(0, 0, 0, 0.0)"
     # Toggles aren't CSS

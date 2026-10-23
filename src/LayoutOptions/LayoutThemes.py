@@ -6,6 +6,7 @@
 # use is exported to the program state as "layout_theme": its values, plus
 # ready to use CSS custom properties ("css" and "stylesheet") for layouts.
 import json
+import math
 import os
 
 import orjson
@@ -23,7 +24,7 @@ DEFAULT_THEME = "default"
 
 FIELD_CHECKBOX = "checkbox"
 FIELD_COLOR = "color"
-# A color, or a linear gradient between two colors
+# A color, or a linear gradient between two colors, meeting at a position
 FIELD_FILL = "fill"
 FIELD_DROPDOWN = "dropdown"
 FIELD_NUMBER = "number"
@@ -45,8 +46,19 @@ GRADIENT_DIRECTIONS = [
 # =====================================================
 # SCHEMA
 # =====================================================
-def Fill(color, color2=None, gradient=False, direction="to right"):
-    return {"color": color, "color2": color2 or color, "gradient": gradient, "direction": direction}
+# Where a gradient's two colors meet half and half, in % of the way from the
+# first color's side; 50 is an even blend
+DEFAULT_GRADIENT_POSITION = 50
+
+
+def Fill(color, color2=None, gradient=False, direction="to right", position=None):
+    return {
+        "color": color,
+        "color2": color2 or color,
+        "gradient": gradient,
+        "direction": direction,
+        "position": DEFAULT_GRADIENT_POSITION if position is None else position,
+    }
 
 
 class Field:
@@ -61,6 +73,8 @@ class Field:
         maximum=100,
         suffix="",
         tooltip=None,
+        enabled_by=None,
+        group=None,
     ):
         self.key = key
         self.label = label
@@ -73,6 +87,12 @@ class Field:
         self.maximum = maximum
         self.suffix = suffix
         self.tooltip = tooltip
+        # Key of a checkbox of the same section: the field is only editable
+        # (and only used) while it's on
+        self.enabled_by = enabled_by
+        # A heading the editor shows over this field and the ones after it
+        # with the same group
+        self.group = group
 
 
 class Section:
@@ -97,6 +117,49 @@ def GradientDirectionLabels():
         ("to bottom", _tr("Down")),
         ("to bottom right", _tr("Down and right")),
     ]
+
+
+def FocusGlowFields():
+    """The bracket section's focus glow options: for each focus mode, the
+    glow on or off, and its own color instead of the focus highlight."""
+    fields = []
+    for mode, name in (
+        ("sets", _tr("Focus glow: selection (Ctrl+click)")),
+        ("rounds", _tr("Focus glow: round mode")),
+        ("side", _tr("Focus glow: winners/losers side")),
+        ("player", _tr("Focus glow: player's run")),
+        ("follow", _tr("Focus glow: followed set")),
+        ("tour", _tr("Focus glow: tour")),
+    ):
+        fields += [
+            Field(
+                f"focus_glow_{mode}",
+                _tr("Glow"),
+                FIELD_CHECKBOX,
+                True,
+                tooltip=_tr(
+                    "The outline and glow around the sets the bracket focus layout zooms to, and their lines, in this focus mode"
+                ),
+                group=name,
+            ),
+            Field(
+                f"focus_glow_custom_{mode}",
+                _tr("Own color"),
+                FIELD_CHECKBOX,
+                False,
+                tooltip=_tr("Off: the glow takes the focus highlight color"),
+                group=name,
+            ),
+            Field(
+                f"focus_glow_color_{mode}",
+                _tr("Color"),
+                FIELD_COLOR,
+                "#ffb800",
+                enabled_by=f"focus_glow_custom_{mode}",
+                group=name,
+            ),
+        ]
+    return fields
 
 
 def LayoutThemeSchema():
@@ -323,6 +386,10 @@ def LayoutThemeSchema():
                         "The bracket focus layout's caption, e.g. the round or the player in focus"
                     ),
                 ),
+                # The focus highlight's glow, per focus mode (BracketFocusHelper's
+                # modes): off, the sets in focus are only zoomed to and the rest
+                # dimmed. Its color is the focus highlight's, or the mode's own.
+                *FocusGlowFields(),
             ],
         ),
         Section(
@@ -613,6 +680,14 @@ def NormalizeValue(field, value):
         if not isinstance(value, dict):
             return _Copy(default)
         direction = value.get("direction")
+        position = value.get("position")
+        if (
+            isinstance(position, bool)
+            or not isinstance(position, (int, float))
+            or not math.isfinite(position)
+        ):
+            # Themes from before it: an even blend
+            position = default.get("position", DEFAULT_GRADIENT_POSITION)
         return {
             "color": _Color(value.get("color"), default["color"]),
             "color2": _Color(value.get("color2"), default["color2"]),
@@ -620,6 +695,7 @@ def NormalizeValue(field, value):
             if isinstance(value.get("gradient"), bool)
             else default["gradient"],
             "direction": direction if direction in GRADIENT_DIRECTIONS else default["direction"],
+            "position": max(0, min(100, round(position))),
         }
     if field.type == FIELD_DROPDOWN:
         values = [option[0] for option in field.options]
@@ -678,7 +754,12 @@ def CssValue(field, value):
         return CssColor(value)
     if field.type == FIELD_FILL:
         if value.get("gradient"):
-            return f"linear-gradient({value['direction']}, {CssColor(value['color'])}, {CssColor(value['color2'])})"
+            colors = [CssColor(value["color"]), CssColor(value["color2"])]
+            position = value.get("position", DEFAULT_GRADIENT_POSITION)
+            # A color hint moves where they meet; an even blend needs none
+            if position != DEFAULT_GRADIENT_POSITION:
+                colors.insert(1, f"{position}%")
+            return f"linear-gradient({value['direction']}, {', '.join(colors)})"
         return CssColor(value["color"])
     if field.type == FIELD_NUMBER:
         return f"{value}{field.suffix}"

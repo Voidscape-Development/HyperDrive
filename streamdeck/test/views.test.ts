@@ -99,6 +99,13 @@ describe("views", () => {
 		expect(views.focusKey(t, { mode: "follow", scoreboard: "1" }, state).state).toBeUndefined();
 	});
 
+	it("lights the side in focus", () => {
+		const losers: State = { bracket: { focus: { main: { mode: "side", side: "losers", label: "Losers Side" } } } };
+		expect(views.focusKey(t, { mode: "losers" }, losers)).toMatchObject({ bottom: "Losers side", state: "on" });
+		expect(views.focusKey(t, { mode: "winners" }, losers)).toMatchObject({ bottom: "Winners side", state: undefined });
+		expect(views.focusStrip(t, {}, losers)).toMatchObject({ main: "Losers Side", bottom: "" });
+	});
+
 	it("names the phase a channel shows, lit while it's shown", () => {
 		const pinned: State = {
 			bracket: {
@@ -118,7 +125,7 @@ describe("views", () => {
 		const all: views.Translate = (key, values) => t(key, values);
 		for (const kind of ["scores", "match", "players", "all"] as const) views.resetKey(all, { kind });
 		for (const command of ["undo", "redo", "reset", "rps", "win"] as const) views.strikeKey(all, { command }, state);
-		for (const mode of ["all", "next-round", "previous-round", "follow", "tour", "player"] as const) {
+		for (const mode of ["all", "next-round", "previous-round", "winners", "losers", "follow", "tour", "player"] as const) {
 			views.focusKey(all, { mode }, state);
 		}
 		for (const source of ["queue", "stream", "selector"] as const) views.loadSetKey(all, { source }, state);

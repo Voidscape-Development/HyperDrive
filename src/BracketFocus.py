@@ -2,8 +2,8 @@
 # pool (a phase built there or a start.gg phase group loaded into it), with
 # its own "only show the top N" and its own focus: what the bracket focus
 # layouts (layout/bracket_focus) zoom to, as bracket.focus.<channel>: sets
-# picked in the bracket widget, rounds, a player's run, the set on a
-# scoreboard, or a tour of every round. Channels showing the same phase
+# picked in the bracket widget, rounds, the winners or losers side, a
+# player's run, the set on a scoreboard, or a tour of every round. Channels showing the same phase
 # share its data. The bracket widget has a tab per channel; the
 # /bracket-focus web page and the Stream Deck drive them too.
 #
@@ -14,6 +14,14 @@ from qtpy.QtCore import *
 from .Helpers.BracketFocusHelper import *
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
+
+
+def SideNames():
+    """The side mode's sides' names, for its label on stream"""
+    return {
+        SIDE_WINNERS: QCoreApplication.translate("app", "Winners Side"),
+        SIDE_LOSERS: QCoreApplication.translate("app", "Losers Side"),
+    }
 
 
 class FocusChannelSignals(QObject):
@@ -99,16 +107,22 @@ class FocusChannel(QObject):
         self.Set({"mode": MODE_ALL})
 
     def FocusSets(self, ids, rounds=()):
-        """Sets and whole rounds picked by hand."""
+        """Sets and whole rounds picked by hand: the sets mode, even with
+        only rounds, so it's told apart from round mode."""
         ids, rounds = list(ids or []), list(rounds or [])
         if not ids and not rounds:
             self.ShowAll()
         else:
-            mode = MODE_SETS if ids else MODE_ROUNDS
-            self.Set({"mode": mode, "sets": ids, "rounds": rounds})
+            self.Set({"mode": MODE_SETS, "sets": ids, "rounds": rounds})
 
     def FocusRounds(self, keys):
-        self.FocusSets([], keys)
+        """Round mode on these rounds."""
+        keys = list(keys or [])
+        self.Set({"mode": MODE_ROUNDS, "rounds": keys} if keys else {"mode": MODE_ALL})
+
+    def FocusSide(self, side):
+        """The winners side (with the grand final) or the losers side."""
+        self.Set({"mode": MODE_SIDE, "side": side})
 
     def FocusPlayer(self, player):
         self.Set({"mode": MODE_PLAYER, "player": player} if player else {"mode": MODE_ALL})
@@ -178,7 +192,7 @@ class FocusChannel(QObject):
         score = None
         if self.request.get("mode") == MODE_FOLLOW:
             score = StateManager.Get(f"score.{self.request.get('scoreboard', 1)}", {})
-        focus = Resolve(bracket, self.request, score, self.step)
+        focus = Resolve(bracket, self.request, score, self.step, SideNames())
         if focus.get("mode") == MODE_TOUR:
             self.step = focus.get("step", 0)
         focus["phase"] = self.phase
@@ -354,7 +368,7 @@ class BracketFocus(QObject):
                 }
                 for p in StateManager.Get("bracket.phases", []) or []
             ],
-            "focus": channel.focus or Resolve(bracket, channel.request),
+            "focus": channel.focus or Resolve(bracket, channel.request, names=SideNames()),
             "name": bracket.get("name", ""),
             "rounds": [
                 {

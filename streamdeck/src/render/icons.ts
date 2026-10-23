@@ -27,6 +27,8 @@ export const ICONS = {
 	play: "M7 5l12 7-12 7z",
 	left: "M15 6l-6 6 6 6",
 	right: "M9 6l6 6-6 6",
+	up: "M7 11l5-5 5 5M7 18l5-5 5 5",
+	down: "M7 6l5 5 5-5M7 13l5 5 5-5",
 	expand: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
 	follow: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
 	stocks: "M12 21s-8-5-8-11a5 5 0 0 1 8-3 5 5 0 0 1 8 3c0 6-8 11-8 11z",

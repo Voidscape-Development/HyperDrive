@@ -1,12 +1,12 @@
 # The bracket widget's controls for the bracket focus layout
 # (layout/bracket_focus): zoom it to the sets and rounds selected in the
-# bracket view, a player's run, the set on a scoreboard, or a tour of the
-# rounds. They act on the channel of the widget's current tab; the channels
+# bracket view, the winners or losers side, a player's run, the set on a
+# scoreboard, or a tour of the rounds. They act on the channel of the widget's current tab; the channels
 # are added, renamed and removed from the tabs.
 #
 # The focus modes are one choice, so they're one segmented control; only the
-# setting of the mode in use (the scoreboard to follow, the tour's interval,
-# ...) is shown next to it. What the layout shows is on the right.
+# setting of the mode in use (the side, the scoreboard to follow, the tour's
+# interval, ...) is shown next to it. What the layout shows is on the right.
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
@@ -60,6 +60,7 @@ class BracketFocusBar(QWidget):
         ("all", (MODE_ALL,)),
         ("selected", (MODE_SETS,)),
         ("round", (MODE_ROUNDS,)),
+        ("side", (MODE_SIDE,)),
         ("player", (MODE_PLAYER,)),
         ("follow", (MODE_FOLLOW,)),
         ("tour", (MODE_TOUR,)),
@@ -121,6 +122,13 @@ class BracketFocusBar(QWidget):
                 QApplication.translate("app", "Round"),
                 QApplication.translate("app", "Zoom to a round; the arrows step through them"),
             ),
+            "side": (
+                QApplication.translate("app", "Side"),
+                QApplication.translate(
+                    "app",
+                    "Zoom to the winners side (with the grand final) or the losers side, and dim the other",
+                ),
+            ),
             "player": (
                 QApplication.translate("app", "Player"),
                 QApplication.translate("app", "Zoom to every set of a player, and highlight them"),
@@ -163,6 +171,36 @@ class BracketFocusBar(QWidget):
         self.btNext.setToolTip(QApplication.translate("app", "Next round"))
         self.btNext.clicked.connect(lambda: self.Ch().MoveRound(1))
 
+        # Side mode: which side, a segmented control of its own. Not a button
+        # group: an exclusive one can't have none on, as when the mode changes
+        self.sides = QWidget()
+        self.sides.setObjectName("focusSegments")
+        sidesLayout = QHBoxLayout(self.sides)
+        sidesLayout.setContentsMargins(2, 2, 2, 2)
+        sidesLayout.setSpacing(2)
+        self.sideButtons = {}
+        for side, text, tip in (
+            (
+                SIDE_WINNERS,
+                QApplication.translate("app", "Winners"),
+                QApplication.translate("app", "The winners side and the grand final"),
+            ),
+            (
+                SIDE_LOSERS,
+                QApplication.translate("app", "Losers"),
+                QApplication.translate("app", "The losers side"),
+            ),
+        ):
+            button = QToolButton()
+            button.setText(text)
+            button.setToolTip(tip)
+            button.setCheckable(True)
+            button.setAutoRaise(True)
+            button.setProperty("segment", True)
+            button.clicked.connect(lambda _checked=False, side=side: self.SideClicked(side))
+            sidesLayout.addWidget(button)
+            self.sideButtons[side] = button
+
         self.player = QComboBox()
         self.player.setMinimumWidth(140)
         self.player.setToolTip(
@@ -198,6 +236,7 @@ class BracketFocusBar(QWidget):
         self.settingsGroup = layout.addGroup(
             self.btPrevious,
             self.btNext,
+            self.sides,
             self.player,
             self.scoreboardLabel,
             self.scoreboard,
@@ -246,8 +285,7 @@ class BracketFocusBar(QWidget):
         c = {k: v.name() for k, v in colors.items()}
         radius = Theme.Radius()
         self.title.setStyleSheet(f"color: {c['muted']}; font-weight: bold;")
-        self.segments.setStyleSheet(
-            f"""
+        segmentsStyle = f"""
             QWidget#focusSegments {{
                 background: {c["window"]}; border: 1px solid {c["border"]};
                 border-radius: {radius + 1}px;
@@ -263,7 +301,8 @@ class BracketFocusBar(QWidget):
             }}
             QToolButton[segment="true"]:disabled {{ color: {c["disabled"]}; }}
             """
-        )
+        self.segments.setStyleSheet(segmentsStyle)
+        self.sides.setStyleSheet(segmentsStyle)
         self.statusPill.setStyleSheet(
             f"QFrame#focusStatus {{ background: {c['accentSoft']}; border-radius: 14px; }}"
         )
@@ -344,6 +383,11 @@ class BracketFocusBar(QWidget):
                 focus = channel.focus or {}
                 offset = 0 if focus.get("sets") or focus.get("rounds") else 1
                 channel.Set(NextRound(channel.Bracket(), focus, offset))
+        elif key == "side":
+            if mode != MODE_SIDE:
+                bracket = channel.Bracket()
+                side = SIDE_WINNERS if HasSide(bracket, SIDE_WINNERS) else SIDE_LOSERS
+                channel.FocusSide(side)
         elif key == "player":
             if mode != MODE_PLAYER:
                 # Pick whose run: the segment shows as on once one is picked
@@ -359,6 +403,10 @@ class BracketFocusBar(QWidget):
             if mode != MODE_TOUR:
                 channel.Tour(self.interval.value())
         # The channel's mode decides which segment is on
+        self.UpdateFocus()
+
+    def SideClicked(self, side):
+        self.Ch().FocusSide(side)
         self.UpdateFocus()
 
     def FocusSelected(self):
@@ -427,6 +475,16 @@ class BracketFocusBar(QWidget):
                 spin.blockSignals(False)
         self.UpdatePlayers()
 
+        # The sides the bracket has: no losers side in single elimination
+        bracket = self.Ch().Bracket()
+        hasSide = {side: HasSide(bracket, side) for side in self.sideButtons}
+        self.modeButtons["side"].setEnabled(any(hasSide.values()) or mode == MODE_SIDE)
+        for side, button in self.sideButtons.items():
+            button.blockSignals(True)
+            button.setChecked(mode == MODE_SIDE and request.get("side") == side)
+            button.setEnabled(hasSide[side] or button.isChecked())
+            button.blockSignals(False)
+
         # Only the setting of the mode in use
         self.btPrevious.setVisible(mode in (MODE_ROUNDS, MODE_TOUR))
         self.btNext.setVisible(mode in (MODE_ROUNDS, MODE_TOUR))
@@ -440,6 +498,7 @@ class BracketFocusBar(QWidget):
             if mode == MODE_TOUR
             else QApplication.translate("app", "Next round")
         )
+        self.sides.setVisible(mode == MODE_SIDE)
         self.player.setVisible(mode == MODE_PLAYER)
         self.scoreboardLabel.setVisible(mode == MODE_FOLLOW)
         self.scoreboard.setVisible(mode == MODE_FOLLOW)

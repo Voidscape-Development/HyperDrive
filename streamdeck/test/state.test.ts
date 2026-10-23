@@ -182,6 +182,7 @@ describe("links", () => {
 			"/bracket-focus/follow?scoreboard=2&channel=Losers+cam",
 		);
 		expect(focusLinks.set("all").path).toBe("/bracket-focus/all");
+		expect(focusLinks.set("losers", { channel: "TV 2" }).path).toBe("/bracket-focus/losers?channel=TV+2");
 	});
 });
 

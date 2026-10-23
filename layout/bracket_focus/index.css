@@ -355,15 +355,15 @@ body.has_focus .bf_standings {
   opacity: var(--focus-dim);
 }
 
-body.has_focus .slot.focused {
+body.has_focus:not(.no_focus_glow) .slot.focused {
   box-shadow: 0 0 0 4px var(--focus-color), 0 0 28px 4px var(--focus-color);
 }
 
-body.has_focus .bf_lines path.focused {
+body.has_focus:not(.no_focus_glow) .bf_lines path.focused {
   stroke: var(--focus-color);
 }
 
-.bf_round_name.focused {
+body:not(.no_focus_glow) .bf_round_name.focused {
   box-shadow: inset 0 -4px 0 var(--focus-color);
 }
 

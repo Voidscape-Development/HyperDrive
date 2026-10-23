@@ -76,9 +76,12 @@ layout shows now is on the right of the bar.
 | **Whole** | Shows everything |
 | **Selected** | Zooms to the sets and rounds you Ctrl+click, and highlights them. **Unselect** clears them |
 | **Round** | Zooms to a round; ◀ ▶ step through the rounds |
+| **Side** | **Winners** zooms to the winners side and the grand final, and dims the losers side; **Losers** zooms to the losers side and dims the rest. **Losers** is off for brackets without a losers side |
 | **Player** | Zooms to every set of the player you pick |
 | **Follow** | Keeps zooming to the set on a **Scoreboard** |
 | **Tour** | Shows the whole bracket, then each round in turn, over and over, **Each step** seconds; ◀ ▶ skip steps |
+
+The sets in focus are outlined with a glow. To show some modes without it (e.g. a whole side, where every set would glow), turn off that mode's **Focus glow** in [Layout themes](layout-themes.md), under Bracket. Each mode can also have a glow color of its own (**own color**), otherwise it's the theme's **Focus highlight** color.
 
 The focus can also be driven from a phone at `/bracket-focus-app` (see
 [Web pages](web-pages.md)) or a [Stream Deck](stream-deck.md).

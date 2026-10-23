@@ -5,7 +5,6 @@ import traceback
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 
-import orjson
 import requests
 import requests.adapters
 from loguru import logger
@@ -47,9 +46,7 @@ class StartGGDataProvider(TournamentDataProvider):
     FutureSetQuery = None
     HistorySetsQuery = None
     LastSetsQuery = None
-    RecentSetsQuery = None
-    RecentSetsPlayersQuery = None
-    RecentSetsDetailsQuery = None
+    HeadToHeadQuery = None
     SetQuery = None
     SetsQuery = None
     StationsQuery = None
@@ -68,16 +65,11 @@ class StartGGDataProvider(TournamentDataProvider):
 
     player_seeds = {}
 
-    # Each player's events are listed 250 a request, up to 4 requests
-    _recent_sets_events_per_page = 250
-    _recent_sets_max_event_pages = 4
-    # Sets are looked for in the 30 most recent events both players entered
-    _recent_sets_max_shared_events = 30
-    # Batch sizes keeping each request under start.gg's complexity cap of
-    # 1000 objects: a set costs ~8 when only its players are asked for and
-    # ~30 with its details
-    _recent_sets_events_per_request = 4
-    _recent_sets_sets_per_request = 20
+    # Head-to-head: the 100 most recent sets between two players, 20 a
+    # request, keeping each under start.gg's complexity cap of 1000 objects
+    # (a best of 5 costs ~30)
+    _recent_sets_per_page = 20
+    _recent_sets_max_sets = 100
 
     # The fields that come from the local player DB instead of start.gg with
     # the general.local_player_data setting: the set queries leave them out
@@ -1523,170 +1515,82 @@ class StartGGDataProvider(TournamentDataProvider):
     ):
         try:
             pid1, pid2 = str(id1[0]), str(id2[0])
-            uids = [str(id1[1]), str(id2[1])]
 
             logger.info("Get recent sets start")
 
             def cancelled():
                 return cancel_event is not None and cancel_event.is_set()
 
-            def chunks(items, size):
-                return [items[i : i + size] for i in range(0, len(items), size)]
+            # start.gg gives a player's sets against an opponent (opponentId),
+            # most recent first. It can't be combined with a videogame filter,
+            # so sets of other games are left out here.
+            perPage = self._recent_sets_per_page
+            first = self._FetchHeadToHeadPage(pid1, pid2, 1, perPage)
+            if cancelled():
+                return
 
-            # start.gg can't filter sets down to two players facing each
-            # other (playerIds matches either one), and asking for all of
-            # both players' sets in each event with their details goes over
-            # the complexity cap. So: list both players' events, which is
-            # cheap; look for sets between them only in the events they both
-            # entered, asking for just the players; then get the details of
-            # the sets found.
-            # Keep the worker count low so start.gg doesn't start rate limiting us
-            with ThreadPoolExecutor(max_workers=6) as executor:
-
-                def fetchEventsPage(job):
-                    player, page = job
-                    return self._FetchRecentSetsEventsPage(uids[player], videogame, page)
-
-                # Page 1 tells us how many pages each player has
-                jobs = [(0, 1), (1, 1)]
-                pages = list(executor.map(fetchEventsPage, jobs))
-
-                if cancelled():
-                    return
-
-                rest = []
-                for (player, _), data in zip(jobs, pages):
-                    totalPages = deep_get(data, "data.user.events.pageInfo.totalPages", 1) or 1
-                    rest.extend(
-                        (player, page)
-                        for page in range(2, min(totalPages, self._recent_sets_max_event_pages) + 1)
-                    )
-                jobs.extend(rest)
-                pages.extend(executor.map(fetchEventsPage, rest))
-
-                events = ({}, {})
-                for (player, _), data in zip(jobs, pages):
-                    for event in deep_get(data, "data.user.events.nodes", []) or []:
-                        if event and event.get("id"):
-                            events[player][event.get("id")] = event
-
-                shared = [event for eventId, event in events[0].items() if eventId in events[1]]
-                shared.sort(key=lambda e: e.get("startAt") or 0, reverse=True)
-                shared = shared[: self._recent_sets_max_shared_events]
-
-                if cancelled():
-                    return
-
-                eventBatches = chunks(shared, self._recent_sets_events_per_request)
-                setEvents = {}
-                for batch, results in zip(
-                    eventBatches,
-                    executor.map(
-                        lambda batch: self._FetchRecentSetsAliased(
-                            "RecentSetsPlayersQuery",
-                            "event",
-                            StartGGDataProvider.RecentSetsPlayersQuery,
-                            [event.get("id") for event in batch],
-                            "($pid1: ID!, $pid2: ID!)",
-                            {"pid1": pid1, "pid2": pid2},
-                        ),
-                        eventBatches,
-                    ),
-                ):
-                    for event, result in zip(batch, results):
-                        for _set in deep_get(result, "sets.nodes", []) or []:
-                            if (
-                                _set
-                                and StartGGConvert.RecentSetPlayer1Slot(_set, pid1, pid2)
-                                is not None
-                            ):
-                                setEvents[_set.get("id")] = event
-
-                if cancelled():
-                    return
-
-                setBatches = chunks(list(setEvents), self._recent_sets_sets_per_request)
-                details = []
-                for results in executor.map(
-                    lambda batch: self._FetchRecentSetsAliased(
-                        "RecentSetsDetailsQuery",
-                        "set",
-                        StartGGDataProvider.RecentSetsDetailsQuery,
-                        batch,
-                    ),
-                    setBatches,
-                ):
-                    details.extend(results)
+            totalPages = min(first["totalPages"], self._recent_sets_max_sets // perPage)
+            nodes = list(first["nodes"])
+            if totalPages > 1:
+                # Keep the worker count low so start.gg doesn't start rate limiting us
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    for page in executor.map(
+                        lambda page: self._FetchHeadToHeadPage(pid1, pid2, page, perPage),
+                        range(2, totalPages + 1),
+                    ):
+                        nodes.extend(page["nodes"])
 
             if cancelled():
                 return
 
             recentSets = []
-            for _set in details:
-                if not _set:
+            seen = set()
+            for _set in nodes:
+                if not _set or _set.get("id") in seen:
                     continue
-                entry = self._ParseRecentSet(_set, setEvents.get(_set.get("id")), pid1, pid2)
+                seen.add(_set.get("id"))
+                event = _set.get("event") or {}
+                if str(deep_get(event, "videogame.id")) != str(videogame):
+                    continue
+                entry = self._ParseRecentSet(_set, event, pid1, pid2)
                 if entry:
                     recentSets.append(entry)
 
+            # Sets of the same event keep start.gg's order
             recentSets.sort(key=lambda s: s.get("timestamp") or 0, reverse=True)
-            logger.info(f"Recent sets size: {len(recentSets)} ({len(shared)} shared events)")
+            logger.info(f"Recent sets size: {len(recentSets)}")
             callback.emit({"sets": recentSets, "request_time": requestTime})
         except Exception as e:
             logger.error(traceback.format_exc())
             callback.emit({"sets": [], "request_time": requestTime})
 
-    def _FetchRecentSetsEventsPage(self, uid, videogame, page):
-        return self.QueryRequests(
-            "https://www.start.gg/api/-/gql",
-            type=requests.post,
-            jsonParams={
-                "operationName": "RecentSetsEventsQuery",
-                "variables": {
-                    "uid": uid,
-                    "page": page,
-                    "perPage": self._recent_sets_events_per_page,
-                    "videogameId": videogame,
-                },
-                "query": StartGGDataProvider.RecentSetsQuery,
-            },
-        )
-
-    def _FetchRecentSetsAliased(
-        self, operationName, field, fragment, ids, variableDefs="", variables=None
-    ):
-        # Asks for `field(id: ...)` once per id in a single request, using the
-        # fragment's fields. Returns the results in the order of ids, None
-        # for the ones that couldn't be fetched. If start.gg refuses the
-        # whole request (the complexity cap), the batch is split and retried.
-        if not ids:
-            return []
-
-        fragmentName = fragment.split()[1]
-        fields = "\n".join(
-            f"\ta{i}: {field}(id: {orjson.dumps(id).decode()}) {{ ...{fragmentName} }}"
-            for i, id in enumerate(ids)
-        )
+    def _FetchHeadToHeadPage(self, pid1, pid2, page, perPage):
+        # A page of pid1's sets against pid2: {"totalPages", "nodes"}. If
+        # start.gg refuses it (the complexity cap, e.g. sets with many games),
+        # it's asked for again as two pages of half the size.
         data = self.QueryRequests(
             "https://www.start.gg/api/-/gql",
             type=requests.post,
             jsonParams={
-                "operationName": operationName,
-                "variables": variables or {},
-                "query": f"query {operationName}{variableDefs} {{\n{fields}\n}}\n{fragment}",
+                "operationName": "HeadToHeadQuery",
+                "variables": {"pid1": pid1, "pid2": pid2, "page": page, "perPage": perPage},
+                "query": StartGGDataProvider.HeadToHeadQuery,
             },
         )
-
-        results = (data or {}).get("data") or {}
-        if not results and (data or {}).get("errors") and len(ids) > 1:
-            half = len(ids) // 2
-            return self._FetchRecentSetsAliased(
-                operationName, field, fragment, ids[:half], variableDefs, variables
-            ) + self._FetchRecentSetsAliased(
-                operationName, field, fragment, ids[half:], variableDefs, variables
-            )
-
-        return [results.get(f"a{i}") for i in range(len(ids))]
+        sets = deep_get(data, "data.player.sets")
+        if sets is None and (data or {}).get("errors") and perPage > 1 and perPage % 2 == 0:
+            half = perPage // 2
+            pages = [
+                self._FetchHeadToHeadPage(pid1, pid2, p, half) for p in (page * 2 - 1, page * 2)
+            ]
+            return {
+                "totalPages": (pages[0]["totalPages"] + 1) // 2,
+                "nodes": pages[0]["nodes"] + pages[1]["nodes"],
+            }
+        return {
+            "totalPages": deep_get(sets, "pageInfo.totalPages", 1) or 1,
+            "nodes": deep_get(sets, "nodes", []) or [],
+        }
 
     def _ParseRecentSet(self, _set, event, pid1, pid2):
         try:
@@ -2090,9 +1994,7 @@ StartGGDataProvider.EntrantsQuery = ReadQuery("Entrants")
 StartGGDataProvider.FutureSetQuery = ReadQuery("FutureSet")
 StartGGDataProvider.HistorySetsQuery = ReadQuery("PlayerTournamentHistory")
 StartGGDataProvider.LastSetsQuery = ReadQuery("PlayerLastSets")
-StartGGDataProvider.RecentSetsQuery = ReadQuery("RecentSets")
-StartGGDataProvider.RecentSetsPlayersQuery = ReadQuery("RecentSetsPlayers")
-StartGGDataProvider.RecentSetsDetailsQuery = ReadQuery("RecentSetsDetails")
+StartGGDataProvider.HeadToHeadQuery = ReadQuery("HeadToHead")
 StartGGDataProvider.SetQuery = ReadQuery("Set")
 StartGGDataProvider.SetsQuery = ReadQuery("Sets")
 StartGGDataProvider.StationsQuery = ReadQuery("Stations")
