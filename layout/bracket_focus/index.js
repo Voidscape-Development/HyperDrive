@@ -329,6 +329,13 @@ const focusOf = (s, data) =>
 // aren't outlined (they're still zoomed to, and the rest dimmed)
 const glows = (focus) => !focus.mode || HD.theme("bracket", `focus_glow_${focus.mode}`, true) !== false;
 
+// The mode's own glow color with "own color" on, else the focus highlight's
+// (null)
+const glowColor = (focus) =>
+  focus.mode && HD.theme("bracket", `focus_glow_custom_${focus.mode}`, false) === true
+    ? `var(--bracket-focus-glow-color-${focus.mode})`
+    : null;
+
 function applyFocus(s, data, animate) {
   const focus = focusOf(s, data);
   const inFocus = new Set((focus.sets || []).filter((id) => placed.sets[id]));
@@ -432,7 +439,9 @@ HD.layout({
     const standingsChanged = !!standings && HD.build(".bf_standings", String(standings), standings);
 
     // Every update, so a change to the theme shows right away
-    $("body").toggleClass("no_focus_glow", !glows(focusOf(s, data)));
+    const focus = focusOf(s, data);
+    $("body").toggleClass("no_focus_glow", !glows(focus));
+    document.body.style.setProperty("--focus-color", glowColor(focus));
 
     const focusKey = JSON.stringify([focusOf(s, data), s.settings.ignore_focus, maxZoom(s)]);
     if (built || standingsChanged || focusKey != lastFocus) {

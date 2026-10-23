@@ -61,6 +61,7 @@ class Field:
         maximum=100,
         suffix="",
         tooltip=None,
+        enabled_by=None,
     ):
         self.key = key
         self.label = label
@@ -73,6 +74,9 @@ class Field:
         self.maximum = maximum
         self.suffix = suffix
         self.tooltip = tooltip
+        # Key of a checkbox of the same section: the field is only editable
+        # (and only used) while it's on
+        self.enabled_by = enabled_by
 
 
 class Section:
@@ -97,6 +101,46 @@ def GradientDirectionLabels():
         ("to bottom", _tr("Down")),
         ("to bottom right", _tr("Down and right")),
     ]
+
+
+def FocusGlowFields():
+    """The bracket section's focus glow options: for each focus mode, the
+    glow on or off, and its own color instead of the focus highlight."""
+    fields = []
+    for mode, name in (
+        ("sets", _tr("selection (Ctrl+click)")),
+        ("rounds", _tr("round mode")),
+        ("side", _tr("winners/losers side")),
+        ("player", _tr("player's run")),
+        ("follow", _tr("followed set")),
+        ("tour", _tr("tour")),
+    ):
+        fields += [
+            Field(
+                f"focus_glow_{mode}",
+                _tr("Focus glow: {0}").format(name),
+                FIELD_CHECKBOX,
+                True,
+                tooltip=_tr(
+                    "The outline and glow around the sets the bracket focus layout zooms to, and their lines, in this focus mode"
+                ),
+            ),
+            Field(
+                f"focus_glow_custom_{mode}",
+                _tr("Focus glow: {0}, own color").format(name),
+                FIELD_CHECKBOX,
+                False,
+                tooltip=_tr("Off: the glow takes the focus highlight color"),
+            ),
+            Field(
+                f"focus_glow_color_{mode}",
+                _tr("Focus glow: {0}, color").format(name),
+                FIELD_COLOR,
+                "#ffb800",
+                enabled_by=f"focus_glow_custom_{mode}",
+            ),
+        ]
+    return fields
 
 
 def LayoutThemeSchema():
@@ -325,26 +369,8 @@ def LayoutThemeSchema():
                 ),
                 # The focus highlight's glow, per focus mode (BracketFocusHelper's
                 # modes): off, the sets in focus are only zoomed to and the rest
-                # dimmed
-                *(
-                    Field(
-                        f"focus_glow_{mode}",
-                        label,
-                        FIELD_CHECKBOX,
-                        True,
-                        tooltip=_tr(
-                            "The outline and glow around the sets the bracket focus layout zooms to, and their lines, in this focus mode"
-                        ),
-                    )
-                    for mode, label in (
-                        ("sets", _tr("Focus glow: selection (Ctrl+click)")),
-                        ("rounds", _tr("Focus glow: round mode")),
-                        ("side", _tr("Focus glow: winners/losers side")),
-                        ("player", _tr("Focus glow: player's run")),
-                        ("follow", _tr("Focus glow: followed set")),
-                        ("tour", _tr("Focus glow: tour")),
-                    )
-                ),
+                # dimmed. Its color is the focus highlight's, or the mode's own.
+                *FocusGlowFields(),
             ],
         ),
         Section(

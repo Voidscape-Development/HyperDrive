@@ -59,6 +59,16 @@ def TestSchema():
                 NormalizeLayoutTheme({"values": DefaultValues()})["values"][section.key][field.key]
                 == field.default
             ), key
+        # A field enabled by a checkbox: one of its section's
+        types = {f.key: f.type for f in section.fields}
+        for field in section.fields:
+            if field.enabled_by:
+                assert types.get(field.enabled_by) == "checkbox", (section.key, field.key)
+    # Each focus mode has its glow, its own color switch and its color
+    bracket = {f.key for s in LayoutThemeSchema() if s.key == "bracket" for f in s.fields}
+    for mode in ("sets", "rounds", "side", "player", "follow", "tour"):
+        for key in ("focus_glow_{}", "focus_glow_custom_{}", "focus_glow_color_{}"):
+            assert key.format(mode) in bracket, key.format(mode)
     print("TestSchema: OK")
 
 

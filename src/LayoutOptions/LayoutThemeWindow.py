@@ -333,7 +333,18 @@ class LayoutThemeWindow(QDialog):
             editor.widget.setEnabled(not builtin)
             resetButton.setEnabled(not builtin)
         self.UpdateColorHints(theme["values"]["general"]["apply_colors"])
+        self.UpdateEnabledBy(theme)
         self.updating = False
+
+    def UpdateEnabledBy(self, theme):
+        """Fields with enabled_by are only editable while their checkbox is on"""
+        builtin = self.editing is None
+        for (sectionKey, fieldKey), (editor, resetButton) in self.editors.items():
+            key = editor.field.enabled_by
+            if key:
+                on = bool(theme["values"][sectionKey].get(key)) and not builtin
+                editor.widget.setEnabled(on)
+                resetButton.setEnabled(on)
 
     def UpdateColorHints(self, applyColors):
         for label in self.colorLabels:
@@ -365,6 +376,7 @@ class LayoutThemeWindow(QDialog):
         self.editing["values"][sectionKey][field.key] = NormalizeValue(field, editor.get())
         if (sectionKey, field.key) == ("general", "apply_colors"):
             self.UpdateColorHints(self.editing["values"]["general"]["apply_colors"])
+        self.UpdateEnabledBy(self.editing)
         self.applyTimer.start()
 
     def Reset(self, sectionKey, field):

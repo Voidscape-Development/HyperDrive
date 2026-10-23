@@ -32,7 +32,7 @@ make them, so you can watch them in OBS.
 | Animations | Whether changes animate, and how fast |
 | Teams | Each team's color and score text color |
 | Player chips | What the boxes with a player's name show (pronouns, seed, socials, flags, avatar, the losers [L] badge) and their colors |
-| Bracket, Standings | What the bracket layouts show: avatars, characters, flags, seeds, round names, set letters, and the bracket focus layout's highlight, dimming, zoom and caption. **Focus glow** turns the outline and glow around the sets in focus on or off for each focus mode (Ctrl+click selection, round mode, winners/losers side, player's run, followed set, tour) |
+| Bracket, Standings | What the bracket layouts show: avatars, characters, flags, seeds, round names, set letters, and the bracket focus layout's highlight, dimming, zoom and caption. **Focus glow** turns the outline and glow around the sets in focus on or off for each focus mode (Ctrl+click selection, round mode, winners/losers side, player's run, followed set, tour), and **own color** gives that mode's glow a color of its own instead of the **Focus highlight** color |
 | Stage strike, Stream queue | Those layouts' options |
 | Versus | Custom sponsor colors on versus screens |
 
