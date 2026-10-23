@@ -6,6 +6,7 @@
 # use is exported to the program state as "layout_theme": its values, plus
 # ready to use CSS custom properties ("css" and "stylesheet") for layouts.
 import json
+import math
 import os
 
 import orjson
@@ -23,7 +24,7 @@ DEFAULT_THEME = "default"
 
 FIELD_CHECKBOX = "checkbox"
 FIELD_COLOR = "color"
-# A color, or a linear gradient between two colors
+# A color, or a linear gradient between two colors, meeting at a position
 FIELD_FILL = "fill"
 FIELD_DROPDOWN = "dropdown"
 FIELD_NUMBER = "number"
@@ -45,8 +46,19 @@ GRADIENT_DIRECTIONS = [
 # =====================================================
 # SCHEMA
 # =====================================================
-def Fill(color, color2=None, gradient=False, direction="to right"):
-    return {"color": color, "color2": color2 or color, "gradient": gradient, "direction": direction}
+# Where a gradient's two colors meet half and half, in % of the way from the
+# first color's side; 50 is an even blend
+DEFAULT_GRADIENT_POSITION = 50
+
+
+def Fill(color, color2=None, gradient=False, direction="to right", position=None):
+    return {
+        "color": color,
+        "color2": color2 or color,
+        "gradient": gradient,
+        "direction": direction,
+        "position": DEFAULT_GRADIENT_POSITION if position is None else position,
+    }
 
 
 class Field:
@@ -668,6 +680,14 @@ def NormalizeValue(field, value):
         if not isinstance(value, dict):
             return _Copy(default)
         direction = value.get("direction")
+        position = value.get("position")
+        if (
+            isinstance(position, bool)
+            or not isinstance(position, (int, float))
+            or not math.isfinite(position)
+        ):
+            # Themes from before it: an even blend
+            position = default.get("position", DEFAULT_GRADIENT_POSITION)
         return {
             "color": _Color(value.get("color"), default["color"]),
             "color2": _Color(value.get("color2"), default["color2"]),
@@ -675,6 +695,7 @@ def NormalizeValue(field, value):
             if isinstance(value.get("gradient"), bool)
             else default["gradient"],
             "direction": direction if direction in GRADIENT_DIRECTIONS else default["direction"],
+            "position": max(0, min(100, round(position))),
         }
     if field.type == FIELD_DROPDOWN:
         values = [option[0] for option in field.options]
@@ -733,7 +754,12 @@ def CssValue(field, value):
         return CssColor(value)
     if field.type == FIELD_FILL:
         if value.get("gradient"):
-            return f"linear-gradient({value['direction']}, {CssColor(value['color'])}, {CssColor(value['color2'])})"
+            colors = [CssColor(value["color"]), CssColor(value["color2"])]
+            position = value.get("position", DEFAULT_GRADIENT_POSITION)
+            # A color hint moves where they meet; an even blend needs none
+            if position != DEFAULT_GRADIENT_POSITION:
+                colors.insert(1, f"{position}%")
+            return f"linear-gradient({value['direction']}, {', '.join(colors)})"
         return CssColor(value["color"])
     if field.type == FIELD_NUMBER:
         return f"{value}{field.suffix}"

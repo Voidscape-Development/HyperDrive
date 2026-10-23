@@ -10,6 +10,7 @@ from ..ColorButton import ColorButton
 from ..Theme import ThemedIcon
 from .LayoutThemes import (
     APPLY_COLORS_FIELDS,
+    DEFAULT_GRADIENT_POSITION,
     DEFAULT_THEME,
     FIELD_CHECKBOX,
     FIELD_COLOR,
@@ -30,7 +31,8 @@ APPLY_DELAY_MS = 150
 
 
 class FillEditor(QWidget):
-    """A color, or a linear gradient between two colors."""
+    """A color, or a linear gradient between two colors, meeting at a
+    position."""
 
     changed = Signal()
 
@@ -56,6 +58,19 @@ class FillEditor(QWidget):
             self.direction.addItem(label, value)
         self.direction.currentIndexChanged.connect(lambda i: self.changed.emit())
         layout.addWidget(self.direction)
+
+        self.position = QSpinBox()
+        self.position.setRange(0, 100)
+        self.position.setSuffix(" %")
+        self.position.setValue(DEFAULT_GRADIENT_POSITION)
+        self.position.setToolTip(
+            QApplication.translate(
+                "layout_themes",
+                "Where the two colors meet, from the first color's side: 50% is an even blend. Lower keeps the first color closer to its side, higher spreads it further.",
+            )
+        )
+        self.position.valueChanged.connect(lambda v: self.changed.emit())
+        layout.addWidget(self.position)
         layout.addStretch()
 
         self.UpdateEnabled()
@@ -69,22 +84,25 @@ class FillEditor(QWidget):
             "color2": self.color2.color(),
             "gradient": self.gradient.isChecked(),
             "direction": self.direction.currentData(),
+            "position": self.position.value(),
         }
 
     def SetValue(self, value):
-        for w in (self.color, self.color2, self.gradient, self.direction):
+        for w in (self.color, self.color2, self.gradient, self.direction, self.position):
             w.blockSignals(True)
         self.color.setColor(value["color"])
         self.color2.setColor(value["color2"])
         self.gradient.setChecked(value["gradient"])
         self.direction.setCurrentIndex(max(self.direction.findData(value["direction"]), 0))
-        for w in (self.color, self.color2, self.gradient, self.direction):
+        self.position.setValue(value.get("position", DEFAULT_GRADIENT_POSITION))
+        for w in (self.color, self.color2, self.gradient, self.direction, self.position):
             w.blockSignals(False)
         self.UpdateEnabled()
 
     def UpdateEnabled(self):
         self.color2.setEnabled(self.gradient.isChecked())
         self.direction.setEnabled(self.gradient.isChecked())
+        self.position.setEnabled(self.gradient.isChecked())
 
 
 class FieldEditor:

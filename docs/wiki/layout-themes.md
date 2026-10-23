@@ -38,6 +38,10 @@ make them, so you can watch them in OBS.
 
 **Layout default** (e.g. for the font or text case) means each layout keeps its own.
 
+A background that can be a gradient (**Gradient** ticked) takes a second color, a direction
+and a **%**: where the two colors meet, from the first color's side. 50% is an even blend;
+lower keeps the first color close to its side, higher spreads it further across.
+
 ## Sharing themes
 
 - **Export…** saves the theme in use to a file.
