@@ -2510,7 +2510,7 @@
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="121"/>
-        <location filename="../ScoreboardPlayerWidget.py" line="893"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="829"/>
         <source>Save new player</source>
         <translation>Neuen Spieler speichern</translation>
     </message>
@@ -2550,7 +2550,7 @@
         <translation>Zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="891"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="827"/>
         <source>Update player</source>
         <translation>Spielereintrag aktualisieren</translation>
     </message>

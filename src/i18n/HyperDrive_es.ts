@@ -2597,7 +2597,7 @@
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="121"/>
-        <location filename="../ScoreboardPlayerWidget.py" line="893"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="829"/>
         <source>Save new player</source>
         <translation>Guardar nuevo jugador</translation>
     </message>
@@ -2638,7 +2638,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="891"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="827"/>
         <source>Update player</source>
         <translation>Actualizar jugador</translation>
     </message>

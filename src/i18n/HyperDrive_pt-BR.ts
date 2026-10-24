@@ -2257,7 +2257,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="121"/>
-        <location filename="../ScoreboardPlayerWidget.py" line="893"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="829"/>
         <source>Save new player</source>
         <translation>Salvar novo jogador</translation>
     </message>
@@ -2298,7 +2298,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="891"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="827"/>
         <source>Update player</source>
         <translation>Atualizar jogador</translation>
     </message>
