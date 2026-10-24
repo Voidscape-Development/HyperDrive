@@ -77,9 +77,10 @@ class PlayerWidgetMixin:
     def ApplyMains(self, mains):
         """Puts a player's mains in the character slots, in order. mains is
         either a {game codename: [[name, skin, variant], ...]} dict or a
-        single [name, skin] character (a set's selected character). A
-        character is only ever put in one slot: repeated mains are skipped,
-        and later slots still holding one of them are emptied."""
+        single [name, skin] character (a set's selected character). The
+        characters already in the slots (e.g. the player database's mains)
+        move down after them, so none is lost while there's room, and a
+        character is only ever put in one slot."""
         if isinstance(mains, dict):
             game = GameAssetManager.instance.selectedGame or {}
             codename = game.get("codename")
@@ -89,34 +90,32 @@ class PlayerWidgetMixin:
         else:
             entries = []
 
+        current = []
+        for _, character, color, variant in self.character_elements:
+            data = character.currentData(Qt.ItemDataRole.UserRole)
+            if data and data.get("en_name"):
+                variantData = variant.currentData(Qt.ItemDataRole.UserRole) if variant else None
+                current.append(
+                    [data["en_name"], color.currentIndex(), (variantData or {}).get("en_name")]
+                )
+
         unique = []
-        for main in entries:
+        for main in entries + current:
             if main and main[0] and main[0] not in [m[0] for m in unique]:
                 unique.append(main)
 
-        names = [main[0] for main in unique]
         for i, (_, character, color, variant) in enumerate(self.character_elements):
-            if i < len(unique):
-                main = unique[i]
-                characterIndex = _IndexOf(character, main[0])
-                if character.currentIndex() != characterIndex:
-                    character.setCurrentIndex(characterIndex)
-                skin = int(main[1]) if len(main) > 1 and main[1] is not None else 0
-                if color.currentIndex() != skin:
-                    color.setCurrentIndex(skin)
-                if variant:
-                    variantIndex = _IndexOf(variant, main[2]) if len(main) >= 3 else 0
-                    if variant.currentIndex() != variantIndex:
-                        variant.setCurrentIndex(variantIndex)
-            else:
-                # A slot past the mains keeps its character, unless it's one
-                # the mains just put in an earlier slot
-                current = character.currentData(Qt.ItemDataRole.UserRole)
-                if current and current.get("en_name") in names:
-                    character.setCurrentIndex(0)
-                    color.setCurrentIndex(0)
-                    if variant:
-                        variant.setCurrentIndex(0)
+            main = unique[i] if i < len(unique) else [None]
+            characterIndex = _IndexOf(character, main[0])
+            if character.currentIndex() != characterIndex:
+                character.setCurrentIndex(characterIndex)
+            skin = int(main[1]) if len(main) > 1 and main[1] is not None else 0
+            if color.currentIndex() != skin:
+                color.setCurrentIndex(skin)
+            if variant:
+                variantIndex = _IndexOf(variant, main[2]) if len(main) >= 3 else 0
+                if variant.currentIndex() != variantIndex:
+                    variant.setCurrentIndex(variantIndex)
 
     def LoadStates(self, index):
         country = self.findChild(QComboBox, "country").currentData(Qt.ItemDataRole.UserRole)

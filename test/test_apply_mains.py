@@ -1,8 +1,9 @@
 # Checks putting a player's mains in the character slots (ApplyMains, shared
 # by the scoreboard and team battle player widgets) with more than one
 # character slot: a character never ends up in two slots, whether the mains
-# repeat one, a set's selected character is loaded, or the mains replace
-# ones loaded from the player database before.
+# repeat one, a set's selected character is loaded, or the mains go on top of
+# ones loaded from the player database before, which move down instead of
+# being lost.
 # Run from the repository root: python test/test_apply_mains.py
 import os
 import sys
@@ -26,7 +27,7 @@ app = QApplication.instance() or QApplication(sys.argv)
 from src.GameAssetManager import GameAssetManager
 from src.PlayerWidgetMixin import PlayerWidgetMixin
 
-CHARACTERS = ["Mario", "Fox", "Falco", "Sheik"]
+CHARACTERS = ["Mario", "Fox", "Falco", "Sheik", "Peach"]
 
 
 def Model(names):
@@ -91,28 +92,43 @@ def TestSelectedCharacter():
 
 
 def TestSelectedCharacterOverSavedMains():
-    # Saved mains first, then the set's selected character: it's the second
-    # main, so its old slot is emptied
+    # Saved mains first, then the set's selected character: it goes first
+    # and the others move down, keeping their skins
+    p = FakePlayer(3)
+    p.ApplyMains({"ssbm": [["Fox", 1], ["Sheik", 2], ["Falco", 3]]})
+    p.ApplyMains(["Sheik", 0])
+    assert p.Slots() == ["Sheik", "Fox", "Falco"], p.Slots()
+    assert p.Skins() == [0, 1, 3], p.Skins()
+
     p = FakePlayer(3)
     p.ApplyMains({"ssbm": [["Fox"], ["Sheik"], ["Falco"]]})
-    p.ApplyMains(["Sheik", 0])
-    assert p.Slots() == ["Sheik", None, "Falco"], p.Slots()
+    p.ApplyMains(["Mario", 0])
+    assert p.Slots() == ["Mario", "Fox", "Sheik"], p.Slots()
     print("TestSelectedCharacterOverSavedMains: OK")
 
 
 def TestFewerMainsOverSavedMains():
-    # Mains from the provider replacing more saved ones keep the other saved
-    # characters, but not one now in an earlier slot
+    # Mains from the provider going on top of more saved ones
     p = FakePlayer(2)
     p.ApplyMains({"ssbm": [["Fox"], ["Falco"]]})
     p.ApplyMains({"ssbm": [["Falco"]]})
-    assert p.Slots() == ["Falco", None], p.Slots()
-
-    p = FakePlayer(2)
-    p.ApplyMains({"ssbm": [["Fox"], ["Falco"]]})
-    p.ApplyMains({"ssbm": [["Mario"]]})
-    assert p.Slots() == ["Mario", "Falco"], p.Slots()
+    assert p.Slots() == ["Falco", "Fox"], p.Slots()
     print("TestFewerMainsOverSavedMains: OK")
+
+
+def TestFourCharacters():
+    # A game with 4 characters per player (e.g. Marvel Tokon): 4 distinct
+    # saved mains all load, and stay distinct with the provider's on top
+    p = FakePlayer(4)
+    p.ApplyMains({"ssbm": [["Mario"], ["Fox"], ["Falco"], ["Sheik"]]})
+    assert p.Slots() == ["Mario", "Fox", "Falco", "Sheik"], p.Slots()
+
+    p.ApplyMains({"ssbm": [["Falco"]]})
+    assert p.Slots() == ["Falco", "Mario", "Fox", "Sheik"], p.Slots()
+
+    p.ApplyMains({"ssbm": [["Sheik"], ["Fox"]]})
+    assert p.Slots() == ["Sheik", "Fox", "Falco", "Mario"], p.Slots()
+    print("TestFourCharacters: OK")
 
 
 def TestOtherGame():
@@ -128,4 +144,5 @@ if __name__ == "__main__":
     TestSelectedCharacter()
     TestSelectedCharacterOverSavedMains()
     TestFewerMainsOverSavedMains()
+    TestFourCharacters()
     TestOtherGame()
