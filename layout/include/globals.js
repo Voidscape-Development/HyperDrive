@@ -586,12 +586,18 @@ HD.layouts = {};
   // deltas), or program_state.json polled when opened from a file
 
   let fetching = false;
+  // The file as last read: read again unchanged, it isn't parsed again (it
+  // can be megabytes, polled 15 times a second)
+  let lastFile = null;
 
   async function poll() {
     if (fetching || devMode) return;
     fetching = true;
     try {
-      const state = await $.ajax({ dataType: "json", url: "../../out/program_state.json", cache: false });
+      const file = await $.ajax({ dataType: "text", url: "../../out/program_state.json", cache: false });
+      if (file === lastFile) return;
+      const state = JSON.parse(file);
+      lastFile = file;
       // Overlapping or older responses never put an older state back
       if (!(state.timestamp <= current.timestamp)) receive(state);
     } catch (e) {
