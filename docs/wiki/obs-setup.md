@@ -44,7 +44,7 @@ OBS runs on another computer, use HyperDrive's computer's address instead of `12
 | `stage_strike`, `stage_strike_display` | The stage strike as it happens (see [Stage strike](stage-strike.md)) |
 | `ruleset` | The ruleset's stage list, also printable |
 | `bracket`, `bracket_ultimate`, `bracket_focus` | Brackets, standings and a zooming bracket (see [Bracket](bracket.md)) |
-| `top_8`, `top_8_single_elim`, `top_n_list` | Final results (see [Player list](player-list.md)) |
+| `top_8`, `top_8_single_elim`, `top_8 - StationSquare`, `top_n_list` | Final results (see [Player list](player-list.md)) |
 | `stream_queue`, `stream_queue_simple` | Upcoming sets (see [Stream queue](stream-queue.md)) |
 | `completed_sets` | Sets that just finished: a ticker, a list, a full-screen scrolling list (for a vertical stream or a venue screen) or cards, and an alert for upsets (`upset_alert.html`) |
 | `game_log` | The set's games so far: stages, characters and who won each, as a strip, a column or a full screen recap |

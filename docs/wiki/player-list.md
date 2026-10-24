@@ -1,8 +1,13 @@
 # Player list
 
 The [Player List](hyperdrive://open/player-list) tab holds a list of players for the
-`top_8`, `top_8_single_elim` and `top_n_list` layouts: final standings, a top 8 graphic, or
-any list of players.
+`top_8`, `top_8_single_elim`, `top_8 - StationSquare` and `top_n_list` layouts: final
+standings, a top 8 graphic, or any list of players.
+
+`top_8 - StationSquare` shows the winner's character art in a circle and the next seven
+in rows with their flags, characters and record (`index.html` for double elimination,
+`index_single_elim.html` for single). Its bottom bar has the start.gg tournament's logo
+on the left; put your series' logo in its folder as `series_logo.png` for the right.
 
 ## Filling it in
 

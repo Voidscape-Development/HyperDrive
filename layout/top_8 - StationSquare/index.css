@@ -1,0 +1,445 @@
+/* ═══════════════════════════════════════════════════════════
+   STATION SQUARE — top 8
+   Same design language as scoreboard - StationSquare and
+   versus_screen_tokkon - StationSquare. Transparent: the
+   background is its own source in OBS.
+   Sections:
+     1. Tokens + font
+     2. Top: title, date, start.gg link
+     3. Winner circle
+     4. Rows
+     5. Bottom bar
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Tokens + font ────────────────────────────────────── */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../include/Oswald.ttf") format("truetype");
+}
+
+.stationsquare {
+  --ss-navy: #1a2d8f;
+  --ss-blue: #2356c8;
+  --ss-sky: #34a2ea;
+  --ss-cyan: #43c0f5;
+  --ss-ring: #8fdcff;
+  --ss-accent: #ffd83a;
+  --ss-green: #2f7a24;
+  --ss-text-shadow: 0 3px 0 #0f237a, 0 0 6px rgba(10, 25, 90, 0.6);
+  --ss-font: "Oswald", var(--font);
+}
+
+body.stationsquare {
+  font-family: var(--ss-font);
+  font-weight: 700;
+  overflow: hidden;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+/* Full width in flex parents, so HD.fit() squeezes long names */
+.stationsquare .text {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+
+/* ── 2. Top: title, date, start.gg link ──────────────────── */
+
+.ss_title_bar {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 66px;
+  width: 560px;
+  height: 36px;
+  background: linear-gradient(90deg, #1f5a17 0%, var(--ss-green) 70%, rgba(47, 122, 36, 0) 100%);
+}
+
+.ss_title {
+  position: absolute;
+  z-index: 1;
+  left: 52px;
+  top: 28px;
+  width: 760px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  font-size: 80px;
+  letter-spacing: 1px;
+  -webkit-text-stroke: 3px #0b1640;
+  paint-order: stroke fill;
+  text-shadow: 0 5px 0 #0b1640;
+}
+
+.ss_date {
+  position: absolute;
+  right: 0;
+  top: 8px;
+  height: 36px;
+  padding: 0 16px 0 24px;
+  display: flex;
+  align-items: center;
+  border-radius: 18px 0 0 18px;
+  background: linear-gradient(180deg, #3d8d3a, #23611f);
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.ss_date.text_empty {
+  display: none;
+}
+
+/* Centered over the rows */
+.ss_link {
+  position: absolute;
+  left: 926px;
+  width: 922px;
+  top: 64px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-style: italic;
+}
+
+.ss_link .startgg_logo {
+  height: 58px;
+  width: 58px;
+  filter: drop-shadow(0 3px 0 #0b1640);
+}
+
+.ss_link .slug {
+  max-width: 820px;
+  font-size: 62px;
+  letter-spacing: 2px;
+  -webkit-text-stroke: 3px #0b1640;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #0b1640;
+}
+
+
+/* ── 3. Winner circle ────────────────────────────────────── */
+
+/* The art pops out of the top of the circle: inside the ring, and above
+   it in a dome that fades out */
+.winner {
+  --size: 700px;
+  --ring: 26px;
+  --pop: 140px;
+  position: absolute;
+  left: 176px;
+  top: 159px;
+  width: var(--size);
+  height: var(--size);
+}
+
+.winner .disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: var(--ring) solid #f6ad35;
+  background: radial-gradient(circle at 50% 40%, #f6cb5a 0%, #efb63f 60%, #e6a128 100%);
+  box-shadow: 0 10px 30px rgba(5, 20, 80, 0.45);
+}
+
+.winner .champion {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) skewX(-10deg);
+  font-size: 190px;
+  letter-spacing: 6px;
+  color: rgba(255, 255, 255, 0.12);
+  -webkit-text-stroke: 3px rgba(255, 255, 255, 0.28);
+  white-space: nowrap;
+}
+
+.winner .character_container {
+  position: absolute;
+  left: 0;
+  top: calc(-1 * var(--pop));
+  width: var(--size);
+  height: calc(var(--size) + var(--pop));
+  --inner: calc(var(--size) / 2 - var(--ring));
+  --middle: calc(var(--size) / 2 + var(--pop));
+  -webkit-mask-image:
+    radial-gradient(circle var(--inner) at 50% var(--middle), #000 99.5%, transparent 100%),
+    radial-gradient(ellipse var(--inner) var(--middle) at 50% 100%, #000 80%, transparent 100%);
+  -webkit-mask-size: 100% 100%, 100% var(--middle);
+  -webkit-mask-position: 0 0, 0 0;
+  -webkit-mask-repeat: no-repeat;
+}
+
+.winner .banner_clip {
+  position: absolute;
+  inset: var(--ring);
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.winner .banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 58%;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #f7a21c 0%, #ee8c0c 100%);
+  box-shadow: 0 -2px 0 rgba(255, 255, 255, 0.25) inset;
+}
+
+.winner .name {
+  width: 580px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: 108px;
+  text-shadow: 0 5px 0 rgba(90, 40, 0, 0.55);
+}
+
+
+/* ── 4. Rows ─────────────────────────────────────────────── */
+
+.rows_panel {
+  position: absolute;
+  left: 926px;
+  top: 154px;
+  width: 922px;
+  height: 710px;
+  border-radius: 24px;
+  background: rgba(35, 86, 200, 0.4);
+  box-shadow: inset 0 0 0 2px rgba(143, 220, 255, 0.2);
+}
+
+.rows {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+}
+
+.row {
+  position: relative;
+  width: 836px;
+  height: 72px;
+  box-sizing: border-box;
+  border: 3px solid #e6f2ff;
+  background: linear-gradient(175deg, #1c46b0 0%, #2a76d8 45%, #45b6f2 100%);
+  box-shadow: 0 4px 10px rgba(5, 20, 80, 0.35);
+}
+
+.row .placement {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  clip-path: polygon(0 0, 100% 0, 42% 100%, 0 100%);
+  background: linear-gradient(180deg, #2a357f, #3f4fa3);
+}
+
+.row.silver .placement {
+  background: linear-gradient(180deg, #ffffff 0%, #d4d9df 55%, #a9b1ba 100%);
+}
+
+.row.bronze .placement {
+  background: linear-gradient(180deg, #b8681a 0%, #a3550f 55%, #7f3f08 100%);
+}
+
+.row .number {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  font-size: 46px;
+  text-shadow: 0 3px 0 rgba(10, 25, 90, 0.7);
+}
+
+.row .row_body {
+  position: absolute;
+  left: 80px;
+  right: 14px;
+  top: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.row .flags {
+  display: flex;
+  gap: 6px;
+  min-width: 24px;
+}
+
+.row .flags img {
+  height: 34px;
+  border-radius: 3px;
+  box-shadow: 0 2px 0 rgba(10, 25, 90, 0.6);
+}
+
+.row .flags .text_empty {
+  display: none;
+}
+
+.row .names {
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.row .name,
+.row .team_members {
+  width: 100%;
+  display: flex;
+}
+
+.row .name {
+  font-size: 48px;
+  line-height: 1.1;
+  letter-spacing: 3px;
+  text-shadow: var(--ss-text-shadow);
+}
+
+.row .name .sponsor {
+  color: var(--ss-accent);
+  margin-right: 12px;
+}
+
+.row .team_members {
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-shadow: var(--ss-text-shadow);
+}
+
+.row:not(.teams) .team_members {
+  display: none;
+}
+
+.row.teams .name {
+  font-size: 36px;
+}
+
+.row .extras {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row .icons {
+  display: flex;
+  gap: 4px;
+}
+
+.row .icon img {
+  display: block;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 0 rgba(10, 25, 90, 0.6));
+}
+
+.row .record {
+  padding: 2px 10px;
+  border-radius: 14px;
+  background: rgba(15, 35, 122, 0.75);
+  font-size: 22px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.row .record.text_empty {
+  display: none;
+}
+
+
+/* ── 5. Bottom bar ───────────────────────────────────────── */
+
+.ss_bottom {
+  position: absolute;
+  left: 298px;
+  top: 880px;
+  width: 1324px;
+  height: 160px;
+  box-sizing: border-box;
+  border-radius: 80px;
+  border: 4px solid #5fb0f5;
+  background: linear-gradient(180deg, #2a64d8 0%, #1d47b0 100%);
+  box-shadow: 0 8px 24px rgba(5, 20, 80, 0.45);
+}
+
+.ss_bottom .orb {
+  position: absolute;
+  top: 6px;
+  width: 140px;
+  height: 140px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 4px solid #ffffff;
+  background-image: radial-gradient(circle at 40% 35%, #ff5a46 0%, #d81a16 55%, #9d0909 100%);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* The logo (--logo) over the red */
+.ss_bottom .orb::after {
+  content: "";
+  position: absolute;
+  inset: 24px;
+  background-image: var(--logo);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.ss_bottom .tournament_logo {
+  left: 6px;
+}
+
+/* Replace series_logo.png in this folder with your own */
+.ss_bottom .series_logo {
+  right: 6px;
+  --logo: url("series_logo.png");
+}
+
+.ss_bottom .event_box {
+  position: absolute;
+  left: 172px;
+  right: 172px;
+  top: 12px;
+  bottom: 12px;
+  box-sizing: border-box;
+  border: 6px solid #000000;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+}
+
+.ss_bottom .event {
+  width: 100%;
+  display: flex;
+  color: #000000;
+  font-size: 74px;
+  letter-spacing: 1px;
+}
