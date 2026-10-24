@@ -4002,6 +4002,11 @@ type Set {
 
   """The possible inputs to the external API for fetching results"""
   apiReportingInputOptions: JSON
+
+  """
+  If setGamesType is in best of mode, this is the number of games one must win a majority out of to win the set.
+  """
+  bestOf: Int
   bracketLink: String
   bracketName: String
 
