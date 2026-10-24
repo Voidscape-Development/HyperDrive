@@ -20,6 +20,16 @@ def _SetCharacter(combo: QComboBox, text: str):
         combo.setCurrentText(text)
 
 
+def _IndexOf(combo: QComboBox, en_name):
+    """The row of the item with this en_name, or 0 (none) if there isn't one"""
+    model = combo.model()
+    for i in range(model.rowCount()):
+        item = model.index(i, 0).data(Qt.ItemDataRole.UserRole)
+        if item and item.get("en_name") == en_name:
+            return i
+    return 0
+
+
 class PlayerWidgetMixin:
     """Methods shared by ScoreboardPlayerWidget and TeamPlayerWidget. They
     use the widgets' path, dataLock, character_elements and child fields."""
@@ -63,6 +73,49 @@ class PlayerWidgetMixin:
         char2[2].setCurrentIndex(skin1)
 
         self.CharactersChanged()
+
+    def ApplyMains(self, mains):
+        """Puts a player's mains in the character slots, in order. mains is
+        either a {game codename: [[name, skin, variant], ...]} dict or a
+        single [name, skin] character (a set's selected character). The
+        characters already in the slots (e.g. the player database's mains)
+        move down after them, so none is lost while there's room, and a
+        character is only ever put in one slot."""
+        if isinstance(mains, dict):
+            game = GameAssetManager.instance.selectedGame or {}
+            codename = game.get("codename")
+            entries = mains.get(codename) or mains.get(game.get("base_game_dir", codename)) or []
+        elif isinstance(mains, list) and mains and isinstance(mains[0], str):
+            entries = [mains]
+        else:
+            entries = []
+
+        current = []
+        for _, character, color, variant in self.character_elements:
+            data = character.currentData(Qt.ItemDataRole.UserRole)
+            if data and data.get("en_name"):
+                variantData = variant.currentData(Qt.ItemDataRole.UserRole) if variant else None
+                current.append(
+                    [data["en_name"], color.currentIndex(), (variantData or {}).get("en_name")]
+                )
+
+        unique = []
+        for main in entries + current:
+            if main and main[0] and main[0] not in [m[0] for m in unique]:
+                unique.append(main)
+
+        for i, (_, character, color, variant) in enumerate(self.character_elements):
+            main = unique[i] if i < len(unique) else [None]
+            characterIndex = _IndexOf(character, main[0])
+            if character.currentIndex() != characterIndex:
+                character.setCurrentIndex(characterIndex)
+            skin = int(main[1]) if len(main) > 1 and main[1] is not None else 0
+            if color.currentIndex() != skin:
+                color.setCurrentIndex(skin)
+            if variant:
+                variantIndex = _IndexOf(variant, main[2]) if len(main) >= 3 else 0
+                if variant.currentIndex() != variantIndex:
+                    variant.setCurrentIndex(variantIndex)
 
     def LoadStates(self, index):
         country = self.findChild(QComboBox, "country").currentData(Qt.ItemDataRole.UserRole)

@@ -678,71 +678,7 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
                     stateElement.setCurrentIndex(stateIndex)
 
             if data.get("mains") and no_mains != True:
-                if type(data.get("mains")) == list:
-                    for element in self.character_elements:
-                        character_element = element[1]
-                        characterIndex = 0
-                        for i in range(character_element.model().rowCount()):
-                            item = character_element.model().item(i).data(Qt.ItemDataRole.UserRole)
-                            if item:
-                                if item.get("en_name") == data.get("mains")[0]:
-                                    characterIndex = i
-                                    break
-                        character_element.setCurrentIndex(characterIndex)
-                elif type(data.get("mains")) == dict:
-                    game_codename = GameAssetManager.instance.selectedGame.get("codename")
-                    base_game_dir = GameAssetManager.instance.selectedGame.get(
-                        "base_game_dir", game_codename
-                    )
-                    mains = (
-                        data.get("mains").get(game_codename)
-                        or data.get("mains").get(base_game_dir)
-                        or []
-                    )
-
-                    for i, main in enumerate(mains):
-                        if i < len(self.character_elements):
-                            character_element = self.character_elements[i][1]
-                            color_element = self.character_elements[i][2]
-                            variant_element = self.character_elements[i][3]
-                            characterIndex = 0
-                            for i in range(character_element.model().rowCount()):
-                                item = (
-                                    character_element.model().item(i).data(Qt.ItemDataRole.UserRole)
-                                )
-                                if item:
-                                    if item.get("en_name") == main[0]:
-                                        characterIndex = i
-                                        break
-                            if character_element.currentIndex() != characterIndex:
-                                character_element.setCurrentIndex(characterIndex)
-                            if len(main) > 1:
-                                if color_element.currentIndex() != int(main[1]):
-                                    color_element.setCurrentIndex(int(main[1]))
-                            else:
-                                if color_element.currentIndex() != 0:
-                                    color_element.setCurrentIndex(0)
-
-                            variantIndex = 0
-                            if variant_element:
-                                for i in range(variant_element.model().rowCount()):
-                                    item = (
-                                        variant_element.model()
-                                        .item(i)
-                                        .data(Qt.ItemDataRole.UserRole)
-                                    )
-                                    if item:
-                                        if len(main) >= 3:
-                                            if item.get("en_name") == main[2]:
-                                                variantIndex = i
-                                                break
-                                        else:
-                                            variantIndex = 0
-                                            break
-                            else:
-                                variantIndex = 0
-                            if variant_element.currentIndex() != variantIndex:
-                                variant_element.setCurrentIndex(variantIndex)
+                self.ApplyMains(data.get("mains"))
 
             if data.get("seed") is not None:
                 if data.get("seed") > 0:
