@@ -261,7 +261,6 @@ HD.layouts = {};
   function receive(state) {
     const keys = stateKeys();
     current = keys ? _.pick(state, keys) : state;
-    console.log(state);
     schedule();
   }
 
