@@ -39,11 +39,12 @@ jobs:
           echo "$changed"
           # Shared files (include/, fonts, the renderer...) affect every layout
           if echo "$changed" | grep -q -E '^(layout/([^/]+$|(include|fonts|icons)/)|scripts/previews/)'; then
-            echo "args=--all" >> "$GITHUB_OUTPUT"
+            args="--all"
           else
-            folders=$(echo "$changed" | grep -E '^layout/' | cut -d/ -f1-2 | sort -u | tr '\n' ' ')
-            echo "args=$folders" >> "$GITHUB_OUTPUT"
+            args=$(echo "$changed" | grep -E '^layout/' | cut -d/ -f1-2 | sort -u | tr '\n' ' ')
           fi
+          echo "args=$args" >> "$GITHUB_OUTPUT"
+          echo "args_hash=$(echo "$args" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
 
       - uses: astral-sh/setup-uv@v6
         if: steps.layouts.outputs.args != ''
@@ -68,12 +69,25 @@ jobs:
             uv run --no-sync ./scripts/previews/download_assets.py
           fi
 
-      - name: Render before
+      # The base's renders are the same for every push to the pull request
+      # (same base, renderer, sample state and Playwright), so they're kept
+      # instead of rendered again: half the job
+      - name: Restore renders before
+        id: before
         if: steps.layouts.outputs.args != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/before
+          key: layout-before-${{ steps.layouts.outputs.base }}-${{ steps.layouts.outputs.args_hash }}-${{ hashFiles('scripts/previews/**', 'uv.lock') }}
+
+      - name: Render before
+        if: steps.layouts.outputs.args != '' && steps.before.outputs.cache-hit != 'true'
         env:
           BASE: ${{ steps.layouts.outputs.base }}
           ARGS: ${{ steps.layouts.outputs.args }}
         run: |
+          # There even when the base has none of the pages, for the cache
+          mkdir -p "$RUNNER_TEMP/before"
           git worktree add ../base "$BASE"
           mkdir -p ../base/user_data
           ln -s "$PWD/user_data/games" ../base/user_data/games
@@ -83,6 +97,14 @@ jobs:
           # Pages the base can't render just show up as new
           (cd ../base && uv run --project "$GITHUB_WORKSPACE" --no-sync \
             ./scripts/previews/render_previews.py $ARGS --out "$RUNNER_TEMP/before") || true
+
+      # Saved right away, so a run cancelled or failing later still keeps them
+      - name: Save renders before
+        if: steps.layouts.outputs.args != '' && steps.before.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/before
+          key: ${{ steps.before.outputs.cache-primary-key }}
 
       - name: Render after
         if: steps.layouts.outputs.args != ''

@@ -31,12 +31,15 @@ const MARGIN = 40;
 const PADDING = 60;
 const LABEL_ROOM = 90;
 const CAMERA_TIME = 1.0;
+const STAGGER_TIME = 1.5;
 
 // ---------------------------------------------------------------------
 // State
 
 // Set id: number used in class names (ids can be anything)
 let setIndex = {};
+// Set id: its element, as build() made it
+let setElements = {};
 // What build() placed: {sets: {id: {x, y, w, h}}, headers, byes, areas,
 // standings, width, height}
 let placed = null;
@@ -44,7 +47,7 @@ let lastSignature = null;
 let lastFocus = null;
 let camera = null;
 
-const setElement = (id) => $(`.set_${setIndex[id]}`);
+const setElement = (id) => setElements[id] || $();
 const box = (b) => `left: ${b.x}px; top: ${b.y}px; width: ${b.w}px;${b.h ? ` height: ${b.h}px;` : ""}`;
 
 // Every set is shown, waiting ones with where their players come from, but
@@ -62,6 +65,12 @@ function placeArea(columns, sets, top, result) {
   let lastX = MARGIN;
   const thirdPlace = [];
   const area = new Set(columns.flatMap((column) => column.sets));
+  // Set id: the sets of the area whose winner goes to it
+  const feedersOf = {};
+  for (const id of area) {
+    const next = sets[id] && sets[id].nextWin;
+    if (next) (feedersOf[next.set] = feedersOf[next.set] || []).push(id);
+  }
 
   const shown = [];
   for (const column of columns) {
@@ -92,9 +101,7 @@ function placeArea(columns, sets, top, result) {
     let cursor = top + HEADER_H;
     let firstY = null;
     for (const id of ids) {
-      const feeders = Object.keys(result.sets).filter(
-        (f) => area.has(f) && sets[f].nextWin && sets[f].nextWin.set == id,
-      );
+      const feeders = (feedersOf[id] || []).filter((f) => result.sets[f]);
       const next = sets[id].nextWin;
       const target = playIn && next ? result.sets[next.set] : null;
       let y = cursor;
@@ -181,32 +188,42 @@ function place(bracket) {
 // Drawing
 
 // Lines from each set to where its winner goes, within one part of the
-// bracket, and arrows out of it for players going on to another phase
+// bracket, and arrows out of it for players going on to another phase:
+// [{from, to (none for an arrow), d}]
 function lines(bracket) {
   const sets = bracket.sets || {};
   const path = (points) => `M${points.map((p) => p.join(" ")).join(" L")}`;
   return placed.areas.flatMap((columns) => {
     const inArea = new Set(columns.flatMap((c) => c.sets));
-    return [...inArea].map((id) => {
+    return [...inArea].flatMap((id) => {
       const set = sets[id];
       const from = placed.sets[id];
-      if (!set || !from) return "";
+      if (!set || !from) return [];
       const a = [from.x + from.w, from.y + from.h / 2];
       const to = set.nextWin && inArea.has(set.nextWin.set) && placed.sets[set.nextWin.set];
       if (to) {
-        if (to.x <= from.x) return "";
+        if (to.x <= from.x) return [];
         const b = [to.x, to.y + PLAYER_H / 2 + (set.nextWin.slot || 0) * (PLAYER_H + SET_GAP)];
         const mid = a[0] + (b[0] - a[0]) / 2;
-        return HD.html`<path class="line" data-from="${id}" data-to="${set.nextWin.set}" d="${path([a, [mid, a[1]], [mid, b[1]], b])}" />`;
+        return [{ from: id, to: set.nextWin.set, d: path([a, [mid, a[1]], [mid, b[1]], b]) }];
       }
       if (!set.nextWin && bracket.progressionsOut > 0 && ["winners", "losers"].includes(set.side)) {
         const [x, y] = [a[0] + 45, a[1]];
-        return HD.html`<path class="line" data-from="${id}" d="${path([a, [x, y]])} M${x - 10} ${y - 8} L${x} ${y} L${x - 10} ${y + 8}" />`;
+        return [{ from: id, d: `${path([a, [x, y]])} M${x - 10} ${y - 8} L${x} ${y} L${x - 10} ${y + 8}` }];
       }
-      return "";
+      return [];
     });
   });
 }
+
+// The lines, each with its shadow under it (a copy, see index.css)
+const linesHtml = (paths) =>
+  ["line shadow", "line"].map((cls) =>
+    paths.map(
+      (p) =>
+        HD.html`<path class="${cls}" data-from="${p.from}" ${p.to != null && HD.html`data-to="${p.to}"`} d="${p.d}" />`,
+    ),
+  );
 
 function build(data) {
   const bracket = data.bracket.bracket;
@@ -231,7 +248,9 @@ function build(data) {
         </div>`;
     }),
   ]);
-  HD.render($(".bf_lines").attr({ width: placed.width, height: placed.height }), lines(bracket));
+  setElements = {};
+  $(".bf_sets .slot").each((_i, el) => (setElements[el.dataset.set] = $(el)));
+  HD.render($(".bf_lines").attr({ width: placed.width, height: placed.height }), linesHtml(lines(bracket)));
 
   const standings = $(".bf_standings").removeData("hd-build").empty();
   if (placed.standings) standings.css({ left: placed.standings.x, top: placed.standings.y, width: placed.standings.w });
@@ -239,11 +258,18 @@ function build(data) {
   $("body").toggleClass("pool_view", HDBracket.IsPool(bracket));
 
   // Sets come in column by column (then their styles are left to the CSS,
-  // which dims them out of focus)
+  // which dims them out of focus), all in at most STAGGER_TIME however
+  // big the bracket
   const order = Object.keys(placed.sets).sort((a, b) => placed.sets[a].x - placed.sets[b].x);
   gsap.from(
     order.map((id) => setElement(id).get(0)),
-    { autoAlpha: 0, x: -40, duration: 0.4, stagger: 0.015, clearProps: "opacity,visibility,transform" },
+    {
+      autoAlpha: 0,
+      x: -40,
+      duration: 0.4,
+      stagger: Math.min(0.015, STAGGER_TIME / order.length),
+      clearProps: "opacity,visibility,transform",
+    },
   );
   gsap.from(".bf_lines path, .bf_round_name", {
     autoAlpha: 0,
@@ -341,22 +367,25 @@ function applyFocus(s, data, animate) {
   const inFocus = new Set((focus.sets || []).filter((id) => placed.sets[id]));
   const rounds = new Set(focus.rounds || []);
 
+  // Hundreds of elements in a big bracket: classList, without jQuery
   $("body").toggleClass("has_focus", inFocus.size > 0);
-  $(".slot").each((_i, el) => $(el).toggleClass("focused", inFocus.has(el.dataset.set)));
-  $(".bf_lines path").each((_i, el) => {
+  for (const el of document.querySelectorAll(".bf_sets .slot")) {
+    el.classList.toggle("focused", inFocus.has(el.dataset.set));
+  }
+  for (const el of document.querySelectorAll(".bf_lines path")) {
     const { from, to } = el.dataset;
-    $(el).toggleClass("focused", inFocus.has(from) && (to == null || inFocus.has(to)));
-  });
+    el.classList.toggle("focused", inFocus.has(from) && (to == null || inFocus.has(to)));
+  }
   // A round is highlighted when it's in focus, and not dimmed while any of
   // its sets is
-  const columns = Object.values(_.get(data, "bracket.bracket.sides", {})).flat();
-  $(".bf_round_name").each((_i, el) => {
-    const column = columns.find((c) => c.key == el.dataset.round);
-    $(el).toggleClass(
+  const columns = _.keyBy(Object.values(_.get(data, "bracket.bracket.sides", {})).flat(), "key");
+  for (const el of document.querySelectorAll(".bf_round_name")) {
+    const column = columns[el.dataset.round];
+    el.classList.toggle(
       "focused",
       rounds.has(el.dataset.round) || !!(column && column.sets.some((id) => inFocus.has(id))),
     );
-  });
+  }
 
   // The player whose run it is
   $(".slot .player").removeClass("focus_player");
@@ -379,20 +408,33 @@ function applyFocus(s, data, animate) {
 // ---------------------------------------------------------------------
 // Updating sets
 
-function updateSets(s, data) {
+// Every set with all, else only those that changed since old, or whose
+// players did (a big bracket has hundreds of sets, a dozen fields each)
+function updateSets(s, data, old, all) {
   const bracket = data.bracket.bracket;
-  const columns = Object.values(bracket.sides || {}).flat();
+  const columns = _.keyBy(Object.values(bracket.sides || {}).flat(), "key");
   $(".bf_round_name").each((_i, el) => {
-    const column = columns.find((c) => c.key == el.dataset.round);
+    const column = columns[el.dataset.round];
     HD.set(el, column ? column.name : "");
   });
   const byes = HDBracket.ByesText(bracket);
   $(".byes").each((_i, el) => HD.set(el, byes[el.dataset.round] ? `Bye: ${byes[el.dataset.round]}` : ""));
 
+  const oldSets = _.get(old, "bracket.bracket.sets") || {};
+  const players = _.get(data, "bracket.players.slot") || {};
+  const oldPlayers = _.get(old, "bracket.players.slot") || {};
+  const changedPlayers = new Set(
+    all
+      ? []
+      : _.union(Object.keys(players), Object.keys(oldPlayers)).filter((id) => !_.isEqual(players[id], oldPlayers[id])),
+  );
+  const changed = (id, set) =>
+    all || !_.isEqual(set, oldSets[id]) || set.players.some((p) => p && p.id && changedPlayers.has(String(p.id)));
+
   for (const id of Object.keys(placed.sets)) {
     const set = bracket.sets[id];
     const element = setElement(id);
-    if (set && element.get(0)) HDBracket.UpdateSet(s, element, set, data);
+    if (set && element.get(0) && changed(id, set)) HDBracket.UpdateSet(s, element, set, data);
   }
 }
 
@@ -428,12 +470,12 @@ HD.layout({
       built = true;
     }
 
+    const all = built || s.changed("layout_theme") || old.bracket?.playersPath !== data.bracket.playersPath;
     const changed =
-      built ||
+      all ||
       !_.isEqual(_.get(data, "bracket.bracket"), _.get(old, "bracket.bracket")) ||
-      !_.isEqual(_.get(data, "bracket.players"), _.get(old, "bracket.players")) ||
-      s.changed("layout_theme");
-    if (changed) updateSets(s, data);
+      !_.isEqual(_.get(data, "bracket.players"), _.get(old, "bracket.players"));
+    if (changed) updateSets(s, data, old, all);
 
     const standings = HDBracket.IsPool(data.bracket.bracket) ? HDBracket.StandingsHtml(data) : null;
     const standingsChanged = !!standings && HD.build(".bf_standings", String(standings), standings);

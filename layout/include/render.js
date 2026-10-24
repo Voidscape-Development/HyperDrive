@@ -122,37 +122,64 @@
     for (const entry of entries) HD.fit($(entry.target));
   });
 
-  HD.fit = (target) =>
-    document.fonts.ready.then(() => {
-      target.each((_, element) => {
-        const el = $(element);
-        if (!el.hasClass("hd-fit-content")) {
-          el.addClass("hd-fit-content");
-          fitObserver.observe(element);
-        }
-        const text = el.find(".text")[0];
-        if (!text) return;
-        text.style.transform = "";
-        text.style.fontSize = "";
+  // The elements to fit are gathered and fitted together: every text
+  // reset, then every one measured (one layout for all of them, not one
+  // each: a big bracket has thousands), then squeezed
+  let fitQueue = new Set();
+  let fitting = null;
 
-        const width = el.width();
-        if (text.scrollWidth <= width) return;
+  function fitAll(elements) {
+    const items = [];
+    for (const element of elements) {
+      const el = $(element);
+      if (!el.hasClass("hd-fit-content")) {
+        el.addClass("hd-fit-content");
+        fitObserver.observe(element);
+      }
+      const text = el.find(".text")[0];
+      if (!text) continue;
+      text.style.transform = "";
+      text.style.fontSize = "";
+      items.push({ el, text });
+    }
+    for (const item of items) {
+      // Not shown (display: none), there's nothing to fit: jQuery would
+      // show it for a layout to measure it. The observer fits it once it is.
+      if (item.el[0].getClientRects().length === 0) continue;
+      item.width = item.el.width();
+      item.scrollWidth = item.text.scrollWidth;
+    }
+    for (const { el, text, width, scrollWidth } of items) {
+      if (width == null || scrollWidth <= width) continue;
 
-        if (!el.hasClass("font-scale-fit")) {
-          text.style.transform = `scaleX(${width / text.scrollWidth})`;
-          return;
-        }
-        // Each step is a layout: jump to the size that fits if the width
-        // scales with it, then step down for what doesn't (padding...)
-        let size = parseFloat(getComputedStyle(text).fontSize);
-        size = Math.max(1, Math.floor(((size * width) / text.scrollWidth) * 10) / 10);
+      if (!el.hasClass("font-scale-fit")) {
+        text.style.transform = `scaleX(${width / scrollWidth})`;
+        continue;
+      }
+      // Each step is a layout: jump to the size that fits if the width
+      // scales with it, then step down for what doesn't (padding...)
+      let size = parseFloat(getComputedStyle(text).fontSize);
+      size = Math.max(1, Math.floor(((size * width) / scrollWidth) * 10) / 10);
+      text.style.fontSize = `${size}px`;
+      while (text.scrollWidth > width && size > 1) {
+        size = Math.max(1, size - 0.1);
         text.style.fontSize = `${size}px`;
-        while (text.scrollWidth > width && size > 1) {
-          size = Math.max(1, size - 0.1);
-          text.style.fontSize = `${size}px`;
-        }
+      }
+    }
+  }
+
+  HD.fit = (target) => {
+    target.each((_, element) => fitQueue.add(element));
+    if (!fitting) {
+      fitting = document.fonts.ready.then(() => {
+        const elements = fitQueue;
+        fitQueue = new Set();
+        fitting = null;
+        fitAll(elements);
       });
-    });
+    }
+    return fitting;
+  };
 
   // -------------------------------------------------------------------
   // The state's shapes

@@ -10,6 +10,10 @@
   --focus-color: var(--bracket-focus-color, var(--accent-color, #ffb800));
   --focus-dim: var(--bracket-focus-dim, 30%);
   --focus-time: 0.6s;
+  /* Under the sets, round names and lines. Each has its own: a filter on
+     the whole bracket is drawn again over all of it every frame of a
+     camera move, which a big bracket slows down. */
+  --bf-shadow: 0 2px 2px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.14), 0 1px 5px rgba(0, 0, 0, 0.12);
 }
 
 body {
@@ -99,9 +103,6 @@ body.no_title .viewport {
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12))
-    drop-shadow(0 3px 1px rgba(0, 0, 0, 0.14))
-    drop-shadow(0 1px 5px rgba(0, 0, 0, 0.12));
 }
 
 .bf_lines {
@@ -116,6 +117,13 @@ body.no_title .viewport {
   stroke: var(--bracket-line-color, var(--lines));
   stroke-width: 5;
   transition: opacity var(--focus-time), stroke var(--focus-time);
+}
+
+/* A line's shadow: a wider, faint copy under it, a little lower */
+.bf_lines path.shadow {
+  stroke: rgba(0, 0, 0, 0.15);
+  stroke-width: 9;
+  transform: translateY(2px);
 }
 
 .bf_sets {
@@ -135,6 +143,7 @@ body.no_title .viewport {
   color: var(--text-color);
   border-radius: calc(var(--border-radius) / 2);
   background-color: var(--bg-color);
+  box-shadow: var(--bf-shadow);
   transition: opacity var(--focus-time), box-shadow var(--focus-time);
 }
 
@@ -150,6 +159,7 @@ body.hd-bracket-hide-round-names .bf_round_name {
   position: absolute;
   font-size: 20px;
   height: 1.5em;
+  text-shadow: var(--bf-shadow);
 }
 
 .byes.text_empty {
@@ -165,6 +175,7 @@ body.hd-bracket-hide-round-names .bf_round_name {
   background-color: var(--bg-color);
   border-radius: calc(var(--border-radius) / 2);
   overflow: hidden;
+  box-shadow: var(--bf-shadow);
   transition: opacity var(--focus-time), box-shadow var(--focus-time);
 }
 
@@ -334,6 +345,8 @@ body.hd-bracket-show-identifier .slot .player {
   position: absolute;
   font-size: 34px;
   color: var(--text-color);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12)) drop-shadow(0 3px 1px rgba(0, 0, 0, 0.14))
+    drop-shadow(0 1px 5px rgba(0, 0, 0, 0.12));
   transition: opacity var(--focus-time);
 }
 
@@ -356,15 +369,15 @@ body.has_focus .bf_standings {
 }
 
 body.has_focus:not(.no_focus_glow) .slot.focused {
-  box-shadow: 0 0 0 4px var(--focus-color), 0 0 28px 4px var(--focus-color);
+  box-shadow: 0 0 0 4px var(--focus-color), 0 0 28px 4px var(--focus-color), var(--bf-shadow);
 }
 
-body.has_focus:not(.no_focus_glow) .bf_lines path.focused {
+body.has_focus:not(.no_focus_glow) .bf_lines path.focused:not(.shadow) {
   stroke: var(--focus-color);
 }
 
 body:not(.no_focus_glow) .bf_round_name.focused {
-  box-shadow: inset 0 -4px 0 var(--focus-color);
+  box-shadow: inset 0 -4px 0 var(--focus-color), var(--bf-shadow);
 }
 
 /* The player whose run is in focus */
