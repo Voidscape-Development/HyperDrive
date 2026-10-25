@@ -110,7 +110,7 @@ def TestSet():
         }
     )
     assert s["id"] == 1 and s["p1_name"] == "" and s["p2_name"] == "Pell", s
-    assert s["station"] == "" and s["stream"] is None
+    assert s["station"] == "" and s["stream"] == "" and s["stream_name"] == ""
     assert s["entrants"][0] == [] and len(s["entrants"][1]) == 1
     assert s["entrants"][1][0]["id"] == [None, 0]
 
@@ -122,6 +122,38 @@ def TestSet():
 
     # A set start.gg didn't send isn't a set
     assert Provider({"SetQuery": {"data": {"set": None}}})._GetMatchNewApi(1, None, None) == {}
+
+
+def TestStreams():
+    parse = H.StartGGDataProvider.ParseStream
+    assert parse(None) == parse({}) == ("", "")
+    assert parse({"streamName": "mainstage", "streamSource": "TWITCH"}) == (
+        "https://twitch.tv/mainstage",
+        "mainstage",
+    )
+    # YouTube: the channel's name, with its id in streamId
+    channel = "UCiHOK00jVASaoM7WPgi-hyg"
+    assert parse(
+        {"streamName": "Smash Club", "streamSource": "YOUTUBE", "streamId": channel}
+    ) == ("https://youtube.com/channel/" + channel, "Smash Club")
+    # Or the id as its name, with a name in shortName, if any
+    stream = {"streamName": channel, "streamSource": "YOUTUBE", "streamId": "71418924"}
+    assert parse(dict(stream, shortName="GQ Youtube")) == (
+        "https://youtube.com/channel/" + channel,
+        "GQ Youtube",
+    )
+    assert parse(dict(stream, shortName=None))[1] == channel
+    # A name without an id
+    assert parse({"streamName": "Club", "streamSource": "YOUTUBE"}) == (
+        "https://youtube.com/Club",
+        "Club",
+    )
+    assert parse({"streamName": "https://x.tv/a", "streamSource": "OTHER"})[0] == "https://x.tv/a"
+
+    s = Provider({}).ParseMatchDataNewApi(
+        {"id": 4, "stream": dict(stream, shortName="GQ Youtube"), "slots": []}
+    )
+    assert s["stream_name"] == "GQ Youtube" and s["stream"].endswith(channel), s
 
 
 def TestFutureSet():

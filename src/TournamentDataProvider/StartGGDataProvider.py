@@ -21,6 +21,9 @@ from . import StartGGConvert
 from .StartGGClient import ReadQuery, StartGGClient
 from .TournamentDataProvider import TournamentDataProvider
 
+# A YouTube channel's id: "UC" and 22 more letters, digits, - or _
+YOUTUBE_CHANNEL_ID = re.compile(r"^UC[\w-]{22}$")
+
 
 class StartGGDataProvider(TournamentDataProvider):
     NAME = "StartGG"
@@ -645,6 +648,34 @@ class StartGGDataProvider(TournamentDataProvider):
     # PARSING SETS
     # =====================================================
 
+    @staticmethod
+    def ParseStream(stream):
+        """A set's stream (start.gg's Streams) as (url, name to show). A
+        YouTube stream's streamName is usually the channel's name, with its
+        id in streamId, but is the id itself for some, with a name in
+        shortName."""
+        stream = as_dict(stream)
+        name = stream.get("streamName") or ""
+        source = stream.get("streamSource")
+        if not name:
+            return "", ""
+        if source == "TWITCH":
+            return "https://twitch.tv/" + name, name
+        if source == "YOUTUBE":
+            channel = next(
+                (c for c in [stream.get("streamId"), name] if c and YOUTUBE_CHANNEL_ID.match(c)),
+                None,
+            )
+            if YOUTUBE_CHANNEL_ID.match(name):
+                name = stream.get("shortName") or name
+            url = (
+                "https://youtube.com/channel/" + channel
+                if channel
+                else "https://youtube.com/" + name
+            )
+            return url, name
+        return name, name
+
     def ParseMatchDataNewApi(self, _set):
         try:
             slots = deep_get(_set, "slots") or []
@@ -670,13 +701,7 @@ class StartGGDataProvider(TournamentDataProvider):
                     )
                 )
 
-            streamUrl = deep_get(_set, "stream.streamName")
-            streamSource = deep_get(_set, "stream.streamSource")
-
-            if streamSource == "TWITCH" and streamUrl:
-                streamUrl = "https://twitch.tv/" + streamUrl
-            if streamSource == "YOUTUBE" and streamUrl:
-                streamUrl = "https://youtube.com/" + streamUrl
+            streamUrl, streamName = StartGGDataProvider.ParseStream(_set.get("stream"))
 
             setData = {
                 "id": _set.get("id"),
@@ -701,6 +726,7 @@ class StartGGDataProvider(TournamentDataProvider):
                 if p2 and p2.get("entrant")
                 else None,
                 "stream": streamUrl,
+                "stream_name": streamName,
                 "station": _set.get("station", {}).get("number", "")
                 if _set.get("station", {}) != None
                 else "",

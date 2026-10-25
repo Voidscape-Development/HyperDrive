@@ -8,7 +8,7 @@ The bar shows what's loaded and holds what applies to every widget.
 
 | Control | What it does |
 | - | - |
-| Tournament | **Load tournament** loads one from start.gg or parry.gg (see [Tournaments](tournaments.md)). Once it's loaded, it shows the tournament, event and entrants; click it for **Select event** (another event of the same tournament), **Repull entrants** (for players who registered after it was loaded), **Load a different tournament…** and **Unload tournament** |
+| Tournament | **Load tournament** loads one from start.gg or parry.gg (see [Tournaments](tournaments.md)). Once it's loaded, it shows the tournament, event and entrants; click it for **Repull entrants** (for players who registered after it was loaded), **Load a different tournament…**, **Unload tournament** and, below them, the tournament's other events, to switch to one |
 | Game dropdown | The game being played. It sets the characters, stages and icons. The arrow next to it has **Reload game assets**, **Download assets** and, for games with modded characters, **Modded content** |
 | **Completed sets** | Whether the sets that just finished are being pulled, for the `completed_sets` layouts, and when the next pull is. Click it for **Auto pull** and to pull now; ⟳ also pulls now |
 | Workspace (layers icon) | Saves the way the widgets are arranged under a name, and switches between saved arrangements. **Reset to default arrangement** puts every widget back |
@@ -42,6 +42,7 @@ Closed a widget by mistake? Bring it back from the Widgets button (grid icon) in
 
 | Item | What it does |
 | - | - |
+| **Guide** | This guide |
 | **Always on top** | Keeps HyperDrive above other windows |
 | **Download assets** | Character and stage icons for your games (see [Game assets](game-assets.md)) |
 | **Player database** | Your saved players (see [Player database](player-database.md)) |
@@ -50,6 +51,7 @@ Closed a widget by mistake? Bring it back from the Widgets button (grid icon) in
 | **Program Language** | HyperDrive's language (needs a restart) |
 | **Game Asset Language** | The language of character and stage names |
 | **Tournament term language** | The language of round names such as *Winners Finals* |
-| **Help** | This guide, bug reports and the asset database |
+| **Report a bug** | Opens HyperDrive's issues page |
+| **Contribute to the Asset Database** | Opens the asset database's page, for adding your game's icons |
 | **Settings** | See [Settings](settings.md) |
 | **About** | The version, and links to the source code and releases |

@@ -115,6 +115,11 @@ def TestSetFields():
     assert StreamName(None) == StreamName("") == ""
     # parry.gg's YouTube streams
     assert StreamName("https://www.youtube.com/@channel/live") == "@channel"
+    # The provider's name for it first: a YouTube channel's address has its id
+    youtube = "https://youtube.com/channel/UCiHOK00jVASaoM7WPgi-hyg"
+    assert SetStreamName({"stream": youtube, "stream_name": "Smash Club"}) == "Smash Club"
+    assert SetStreamName({"stream": "https://twitch.tv/mainstage"}) == "mainstage"
+    assert SetStreamName({}) == ""
 
     assert StreamPlatform("https://twitch.tv/mainstage") == "twitch"
     assert StreamPlatform("https://www.youtube.com/@channel/live") == "youtube"
@@ -265,7 +270,9 @@ def TestSelection():
     # The first set is selected and shown
     assert window.SelectedSet()["id"] == 2
     assert window.details.sides[0]["name"].text() == "Kaito"
-    assert window.details.factValues["stream"].text() == "https://twitch.tv/mainstage"
+    # The stream's name, its address in the tooltip
+    assert window.details.factValues["stream"].text() == "mainstage"
+    assert window.details.factValues["stream"].toolTip() == "https://twitch.tv/mainstage"
     assert window.details.loadButton.isEnabled()
 
     # Up and down skip the headers, from the search bar too

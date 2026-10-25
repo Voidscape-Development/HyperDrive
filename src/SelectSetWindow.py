@@ -83,6 +83,12 @@ def StreamName(url):
     return parts[-1] if parts else url
 
 
+def SetStreamName(s):
+    # The name the provider gives the set's stream (a YouTube channel's
+    # address can only have its id), else the one in its address
+    return s.get("stream_name") or StreamName(s.get("stream"))
+
+
 # Stream platforms recognized from the stream's address: (host, icon, color)
 PLATFORMS = {
     "twitch": (("twitch.tv",), "layout/icons/twitch.svg", "#9146ff"),
@@ -137,7 +143,7 @@ def SearchText(s):
             *TeamMembers(s),
             s.get("round_name") or "",
             s.get("tournament_phase") or "",
-            StreamName(s.get("stream")),
+            SetStreamName(s),
             StationText(s),
         ]
     ).lower()
@@ -145,7 +151,7 @@ def SearchText(s):
 
 def FilterOptions(sets):
     """The streams, stations and phases the sets have, for the filters."""
-    streams = sorted({StreamName(s.get("stream")) for s in sets} - {""}, key=str.lower)
+    streams = sorted({SetStreamName(s) for s in sets} - {""}, key=str.lower)
     # Stations by number
     stations = sorted(
         {StationText(s) for s in sets} - {""},
@@ -183,7 +189,7 @@ def GroupSets(
             continue
         if hideEmptySlots and HasEmptySlot(s):
             continue
-        if stream is not None and StreamName(s.get("stream")) != stream:
+        if stream is not None and SetStreamName(s) != stream:
             continue
         if station is not None and StationText(s) != station:
             continue
@@ -390,10 +396,10 @@ class SetRowDelegate(QStyledItemDelegate):
 
         # Stream and station, with the stream's platform or a station icon
         tags = []
-        if StreamName(s.get("stream")):
+        if SetStreamName(s):
             tags.append(
                 (
-                    StreamName(s.get("stream")),
+                    SetStreamName(s),
                     PlatformIcon(StreamPlatform(s.get("stream"))) or self.streamIcon,
                 )
             )
@@ -655,7 +661,8 @@ class SetDetails(QFrame):
         dash = "—"
         self.factValues["round"].setText(s.get("round_name") or dash)
         self.factValues["phase"].setText(s.get("tournament_phase") or dash)
-        self.factValues["stream"].setText(s.get("stream") or dash)
+        self.factValues["stream"].setText(SetStreamName(s) or s.get("stream") or dash)
+        self.factValues["stream"].setToolTip(s.get("stream") or "")
         self.factValues["station"].setText(StationText(s) or dash)
         self.factValues["status"].setText(StatusNames()[status])
         statusColor = {

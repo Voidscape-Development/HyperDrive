@@ -62,5 +62,5 @@ Your version is in ☰ › [About](hyperdrive://open/about).
 HyperDrive writes logs to the `logs/` folder next to it: `hyperdrive.log`,
 `hyperdrive-error.log`, and `hyperdrive-crash.log` after a crash.
 
-To report a bug, use ☰ › **Help** › **Report a bug**, say what you did and what happened, and
+To report a bug, use ☰ › **Report a bug**, say what you did and what happened, and
 attach the logs. Remove anything private from them first.

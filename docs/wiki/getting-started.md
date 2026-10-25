@@ -1,7 +1,7 @@
 # Getting started
 
 This page takes you from a fresh install to a working scoreboard on stream. It takes about
-five minutes. You can come back to it any time from ☰ › **Help** › **Guide**.
+five minutes. You can come back to it any time from ☰ › **Guide**.
 
 ## 1. Pick your game
 

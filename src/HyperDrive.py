@@ -171,6 +171,11 @@ from .StreamQueueWidget import StreamQueueWidget
 from .TeamBattleWidget import TeamBattleWidget
 from .TournamentDataManager import TournamentDataManager
 from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
+from .TournamentDataProvider.TournamentEventLookup import (
+    FetchTournamentEvents,
+    IsSameEvent,
+    ParseTournamentLink,
+)
 from .TournamentInfoWidget import TournamentInfoWidget
 from .TwitchPredictions import TwitchPredictionsHook
 from .Wiki import GETTING_STARTED_PAGE, Wiki
@@ -510,17 +515,7 @@ class Window(QMainWindow):
             )
         )
         self.tournamentMenu = QMenu(self.tournamentChip)
-
-        # Switch to another event of the same tournament
-        self.selectEventAction = self.tournamentMenu.addAction(
-            ThemedIcon("./assets/icons/swap.svg"), QApplication.translate("app", "Select event")
-        )
-        self.selectEventAction.setToolTip(
-            QApplication.translate("app", "Switch to another event of the same tournament")
-        )
-        self.selectEventAction.triggered.connect(
-            lambda: TournamentDataManager.instance.SelectEvent(self)
-        )
+        self.tournamentMenu.setToolTipsVisible(True)
 
         # For entrants who registered after the event was loaded
         self.repullEntrantsAction = self.tournamentMenu.addAction(
@@ -536,9 +531,7 @@ class Window(QMainWindow):
         self.repullEntrantsAction.triggered.connect(
             lambda: TournamentDataManager.instance.RepullEntrants()
         )
-        self.tournamentMenu.setToolTipsVisible(True)
 
-        self.tournamentMenu.addSeparator()
         action = self.tournamentMenu.addAction(
             QApplication.translate("app", "Load a different tournament...")
         )
@@ -548,6 +541,19 @@ class Window(QMainWindow):
             QApplication.translate("app", "Unload tournament"),
         )
         action.triggered.connect(lambda: TournamentDataManager.instance.SetTournament(None))
+
+        # Below, the tournament's events, to switch to another one. Fetched
+        # once per tournament (FillEventsMenu).
+        self.tournamentMenu.addSeparator()
+        self.eventsHeader = self.tournamentMenu.addAction(
+            QApplication.translate("app", "Events in this tournament")
+        )
+        self.eventsHeader.setEnabled(False)
+        self.eventActions = QActionGroup(self.tournamentMenu)
+        self.eventActions.setExclusive(True)
+        # (slug, events) of the tournament they were fetched for
+        self.tournamentEvents = None
+        TournamentDataManager.instance.signals.tournament_changed.connect(self.LoadTournamentEvents)
 
         TournamentDataManager.instance.signals.tournament_data_updated.connect(
             self.UpdateTournamentChip
@@ -647,6 +653,7 @@ class Window(QMainWindow):
 
         self.UpdateLastSetsButton()
         self.UpdateTournamentButtons()
+        self.LoadTournamentEvents()
         self.UpdateCompletedSetsTimer()
 
         self.commandBar.AddSeparator()
@@ -704,6 +711,17 @@ class Window(QMainWindow):
         )
         menu = QMenu()
         self.optionsBt.setMenu(menu)
+
+        # The in-app guide, docs/wiki, first so it's easy to find. English
+        # pages stand in for the ones not translated to the program's language.
+        Wiki.Load(LocaleHelper.programLocale)
+        self.wikiWindow = WikiWindow(self)
+        action = menu.addAction(QApplication.translate("app", "Guide"))
+        action.setIcon(ThemedIcon("assets/icons/book.svg"))
+        action.triggered.connect(lambda: self.wikiWindow.Open())
+
+        menu.addSeparator()
+
         action = menu.addAction(QApplication.translate("app", "Always on top"))
         action.setCheckable(True)
         action.toggled.connect(self.ToggleAlwaysOnTop)
@@ -851,7 +869,7 @@ class Window(QMainWindow):
 
         self.optionsBt.menu().addSeparator()
 
-        # Help menu code
+        # Links opened in the web browser
         help_messagebox = QMessageBox()
         help_messagebox.setWindowTitle(QApplication.translate("app", "Warning"))
         help_messagebox.setText(
@@ -860,28 +878,13 @@ class Window(QMainWindow):
             )
         )
 
-        helpMenu = QMenu(QApplication.translate("app", "Help") + menu_margin, self.optionsBt.menu())
-        self.optionsBt.menu().addMenu(helpMenu)
-
-        # The in-app guide, docs/wiki. English pages stand in for the ones
-        # not translated to the program's language.
-        Wiki.Load(LocaleHelper.programLocale)
-        self.wikiWindow = WikiWindow(self)
-        action = helpMenu.addAction(QApplication.translate("app", "Guide"))
-        action.setIcon(ThemedIcon("assets/icons/book.svg"))
-        action.triggered.connect(lambda: self.wikiWindow.Open())
-
-        helpMenu.addSeparator()
-
-        action = helpMenu.addAction(QApplication.translate("app", "Report a bug"))
+        action = self.optionsBt.menu().addAction(QApplication.translate("app", "Report a bug"))
         issues_url = f"{PROJECT_URL}/issues"
         action.triggered.connect(
             lambda x=None: [QDesktopServices.openUrl(QUrl(issues_url)), help_messagebox.exec()]
         )
 
-        helpMenu.addSeparator()
-
-        action = helpMenu.addAction(
+        action = self.optionsBt.menu().addAction(
             QApplication.translate("app", "Contribute to the Asset Database")
         )
         asset_url = "https://github.com/joaorb64/StreamHelperAssets/"
@@ -1283,6 +1286,96 @@ class Window(QMainWindow):
                 data.get("numEntrants")
             )
         self.tournamentChip.SetCaption(caption)
+
+    def LoadTournamentEvents(self):
+        # The loaded tournament's events, for the bottom of its menu. Another
+        # event of the same tournament keeps the ones already fetched.
+        provider = TournamentDataManager.instance.provider
+        parsed = ParseTournamentLink(provider.url) if provider and provider.url else None
+        if parsed is None:
+            self.tournamentEvents = None
+            self.FillEventsMenu(None)
+            return
+        slug = (parsed.get("provider"), parsed.get("slug"))
+        if self.tournamentEvents and self.tournamentEvents[0] == slug:
+            self.FillEventsMenu(self.tournamentEvents[1])
+            return
+
+        self.tournamentEvents = None
+        self.FillEventsMenu(None)
+
+        def loaded(result):
+            # Not if another tournament was loaded meanwhile
+            if TournamentDataManager.instance.provider is not provider:
+                return
+            self.tournamentEvents = (slug, result.get("events", []))
+            self.FillEventsMenu(self.tournamentEvents[1])
+
+        def failed(error):
+            if TournamentDataManager.instance.provider is provider:
+                self.FillEventsMenu([])
+
+        worker = Worker(
+            lambda progress_callback=None, cancel_event=None: FetchTournamentEvents(
+                parsed, SettingsManager.Get("api_keys.parrygg")
+            )
+        )
+        worker.signals.result.connect(loaded)
+        worker.signals.error.connect(failed)
+        TournamentDataManager.instance.threadPool.start(worker)
+
+    def FillEventsMenu(self, events):
+        """The events at the bottom of the tournament's menu, the loaded one
+        checked. None while they're fetched; with none (they couldn't be),
+        the event picker instead, which says why."""
+        for action in self.eventActions.actions():
+            self.eventActions.removeAction(action)
+            self.tournamentMenu.removeAction(action)
+            action.deleteLater()
+
+        provider = TournamentDataManager.instance.provider
+        if events is None:
+            self.eventsHeader.setText(QApplication.translate("app", "Loading events..."))
+            return
+        if not events:
+            self.eventsHeader.setText(QApplication.translate("app", "Events in this tournament"))
+            action = self.tournamentMenu.addAction(
+                ThemedIcon("./assets/icons/swap.svg"),
+                QApplication.translate("app", "Select event..."),
+            )
+            action.triggered.connect(lambda: TournamentDataManager.instance.SelectEvent(self))
+            self.eventActions.addAction(action)
+            return
+
+        self.eventsHeader.setText(QApplication.translate("app", "Events in this tournament"))
+        for event in events:
+            action = self.tournamentMenu.addAction(event.get("name") or event.get("url", ""))
+            action.setCheckable(True)
+            action.setChecked(IsSameEvent(event.get("url"), provider.url if provider else None))
+            action.setToolTip(
+                " · ".join(
+                    part
+                    for part in [
+                        event.get("game"),
+                        QApplication.translate("app", "{0} entrants").format(
+                            event.get("numEntrants") or 0
+                        ),
+                    ]
+                    if part
+                )
+            )
+            action.triggered.connect(
+                lambda checked=False, url=event.get("url"): self.LoadEvent(url)
+            )
+            self.eventActions.addAction(action)
+
+    def LoadEvent(self, url):
+        # Another event of the loaded tournament, as the event picker loads it
+        provider = TournamentDataManager.instance.provider
+        if not url or (provider and IsSameEvent(url, provider.url)):
+            return
+        SettingsManager.Set("TOURNAMENT_URL", url)
+        TournamentDataManager.instance.SetTournament(url)
 
     def UpdateWorkspaceButton(self):
         current = self.workspaces.Current()

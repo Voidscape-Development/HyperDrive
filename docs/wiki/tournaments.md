@@ -16,8 +16,8 @@ queue.
    dates and whether it's online or offline.
 
 The game is selected from the event. The top bar then shows the tournament and event; click
-it for **Select event**, which switches to another event of the same tournament, and
-**Unload tournament**.
+it for **Repull entrants**, **Load a different tournament…** and **Unload tournament**, with
+the tournament's events listed below them: click one to switch to it.
 
 ### parry.gg
 
