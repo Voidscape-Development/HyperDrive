@@ -16,6 +16,12 @@ query TournamentDataQuery($eventSlug: String!) {
 			venueAddress
 			city
 			addrState
+			numAttendees
+			timezone
+			hashtag
+			links {
+				discord
+			}
 			startAt
 			endAt
 			images {

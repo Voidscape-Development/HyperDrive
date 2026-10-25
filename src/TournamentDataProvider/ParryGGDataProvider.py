@@ -40,7 +40,13 @@ from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.SeedPerformance import EventBracketType
 from .StartGGDataProvider import StartGGDataProvider
-from .TournamentDataProvider import CityState, TournamentDataProvider
+from .TournamentDataProvider import (
+    LOCATION_HYBRID,
+    LOCATION_OFFLINE,
+    LOCATION_ONLINE,
+    CityState,
+    TournamentDataProvider,
+)
 
 # URL path tokens used for parsing/splitting tournament URLs.
 PARRY_HOST_PATH = "parry.gg/"
@@ -54,6 +60,13 @@ YOUTUBE_STREAM_URL_FORMAT = "https://www.youtube.com/@{}/live"
 
 # gRPC endpoint for the parry backend.
 PARRY_GRPC_TARGET = "api.parry.gg:443"
+
+# tournamentInfo.locationType for parry.gg's location types
+LOCATION_TYPES = {
+    LocationType.LOCATION_TYPE_OFFLINE: LOCATION_OFFLINE,
+    LocationType.LOCATION_TYPE_ONLINE: LOCATION_ONLINE,
+    LocationType.LOCATION_TYPE_HYBRID: LOCATION_HYBRID,
+}
 
 # Fallback tournament icon when a tournament has no banner image.
 PARRY_FAVICON_URL = "https://parry.gg/assets/favicon-BgItT2B4.png"
@@ -798,6 +811,15 @@ class ParryGGDataProvider(TournamentDataProvider):
             tournament_info["cityState"] = CityState(
                 tournament_info["city"], tournament_info["state"]
             )
+            # The event's, else the tournament's
+            tournament_info["locationType"] = LOCATION_TYPES.get(
+                event_data.location_type, LOCATION_TYPES.get(tournament_data.location_type, "")
+            )
+            tournament_info["numAttendees"] = tournament_data.num_attendees
+            tournament_info["timezone"] = tournament_data.time_zone
+            # parry.gg has no hashtag or Discord link
+            tournament_info["hashtag"] = ""
+            tournament_info["discord"] = ""
             tournament_info["startAt"] = tournament_data.start_date.seconds
             tournament_info["endAt"] = tournament_data.end_date.seconds
             tournament_info["eventStartAt"] = event_data.start_date.seconds

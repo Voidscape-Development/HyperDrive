@@ -19,7 +19,7 @@ for name, path in [("src", "src"), ("src.Helpers", "src/Helpers")]:
 
 from qtpy.QtCore import QDate, QObject, QUrl, Signal
 from qtpy.QtGui import QColor, QPixmap
-from qtpy.QtWidgets import QApplication, QDateEdit, QLineEdit, QSpinBox, QWidget
+from qtpy.QtWidgets import QApplication, QComboBox, QDateEdit, QLineEdit, QSpinBox, QWidget
 
 app = QApplication.instance() or QApplication(sys.argv)
 
@@ -93,6 +93,7 @@ module = types.ModuleType("src.TournamentDataManager")
 module.TournamentDataManager = FakeTournamentDataManager
 sys.modules["src.TournamentDataManager"] = module
 
+from src.SettingsManager import SettingsManager  # noqa: E402
 from src.Theme import Theme  # noqa: E402
 from src.TournamentInfoWidget import TournamentInfoWidget  # noqa: E402
 
@@ -135,6 +136,11 @@ DATA = {
     "city": "Springfield",
     "state": "IL",
     "cityState": "Springfield, IL",
+    "locationType": "offline",
+    "numAttendees": 300,
+    "timezone": "America/Chicago",
+    "hashtag": "HDI42",
+    "discord": "https://discord.gg/example",
     "shortLink": "hd-invitational-42",
     "startAt": start,
     "endAt": end,
@@ -161,6 +167,12 @@ for key, kind in [
     ("eventName", QLineEdit),
     ("address", QLineEdit),
     ("cityState", QLineEdit),
+    ("tagline", QLineEdit),
+    ("timezone", QLineEdit),
+    ("hashtag", QLineEdit),
+    ("discord", QLineEdit),
+    ("numAttendees", QSpinBox),
+    ("locationType", QComboBox),
     ("shortLink", QLineEdit),
     ("numEntrants", QSpinBox),
     ("startAt", QDateEdit),
@@ -168,6 +180,14 @@ for key, kind in [
 ]:
     found = widget.findChild(QWidget, key)
     check(isinstance(found, kind), f"{key} is a {kind.__name__} named after its key")
+
+# The tagline is the user's own: sent, and kept in the settings
+tagline = widget.fields["tagline"]
+tagline.setText("Top 8 · Sunday 6 PM")
+tagline.editingFinished.emit()
+check(info("tagline") == "Top 8 · Sunday 6 PM", "tagline sent")
+check(SettingsManager.Get("tournament_info_tagline") == "Top 8 · Sunday 6 PM", "tagline saved")
+check(info("locationType") == "", "location type sent as not set at first")
 
 # Loading the tournament
 FakeTournamentDataManager.instance.provider = FakeProvider()
@@ -183,6 +203,13 @@ check(info("tournamentName") == "HyperDrive Invitational #42", "tournament name 
 check(info("numEntrants") == 128, "entrants sent")
 check(info("cityState") == "Springfield, IL", "city and state sent together")
 check(info("city") == "Springfield" and info("state") == "IL", "city and state sent alone")
+check(info("locationType") == "offline", "location type sent")
+check(widget.fields["locationType"].currentText() == "In person", "location type shown")
+check(info("numAttendees") == 300, "attendees sent")
+check(info("timezone") == "America/Chicago", "time zone sent")
+check(info("hashtag") == "HDI42" and info("discord") == "https://discord.gg/example", "social sent")
+check(info("tagline") == "Top 8 · Sunday 6 PM", "loading keeps the tagline")
+check(widget.previewTagline.text() == "Top 8 · Sunday 6 PM", "preview shows the tagline")
 check(widget.fields["startAt"].date() == QDate(2026, 10, 24), "start date shown")
 check(widget.fields["endAt"].date() == QDate(2026, 10, 25), "end date shown")
 check(bool(info("endAt")), "end date sent")
@@ -222,6 +249,20 @@ check(info("cityState") == "Springfield", "edited city and state sent")
 check(widget.IsEdited("cityState"), "city and state count as edited")
 next(b for b in widget.blocks if b[0] == ["cityState"])[2].click()
 check(info("cityState") == "Springfield, IL", "city and state reverted")
+
+# The location type can be changed and reverted
+locationType = widget.fields["locationType"]
+locationType.setCurrentIndex(locationType.findData("hybrid"))
+check(info("locationType") == "hybrid", "changed location type sent")
+check(widget.IsEdited("locationType"), "location type counts as edited")
+next(b for b in widget.blocks if b[0] == ["locationType"])[2].click()
+check(info("locationType") == "offline", "location type reverted")
+
+# A typed hashtag loses its "#"
+hashtag = widget.fields["hashtag"]
+hashtag.setText("#HDI42")
+hashtag.editingFinished.emit()
+check(info("hashtag") == "HDI42", "hashtag sent without its #")
 
 # Going back to the tournament's value
 block[2].click()
@@ -269,6 +310,11 @@ app.processEvents()
 widget.btClearInfo.click()
 check(info("tournamentName") == "" and info("numEntrants") == 0, "clear empties the fields")
 check(info("cityState") == "", "clear empties the city and state")
+check(info("locationType") == "" and info("numAttendees") == 0, "clear empties the rest")
+check(
+    info("tagline") == "" and SettingsManager.Get("tournament_info_tagline") == "",
+    "clear empties the tagline",
+)
 check(info("banner") == "" and info("logo") == "", "clear empties the images")
 check(widget.EditedCount() == 0, "nothing edited after clearing")
 check(widget.headerTitle.text() == "Not loaded from the tournament", "header after clearing")

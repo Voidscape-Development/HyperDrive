@@ -24,20 +24,40 @@ LOGO_PATH = "./layout/logo.png"
 
 # The fields, by their key in tournamentInfo (also their widget's object name,
 # which the web dashboard finds them by)
-TEXT_FIELDS = ["tournamentName", "eventName", "address", "cityState", "shortLink"]
+TEXT_FIELDS = [
+    "tournamentName",
+    "eventName",
+    "address",
+    "cityState",
+    "shortLink",
+    "timezone",
+    "hashtag",
+    "discord",
+]
 DATE_FIELDS = ["startAt", "endAt"]
-NUMBER_FIELDS = ["numEntrants"]
+NUMBER_FIELDS = ["numEntrants", "numAttendees"]
+CHOICE_FIELDS = ["locationType"]
+# Text of the user's own, not the tournament's: loading the tournament keeps
+# it, and it's kept between sessions (in the settings)
+TAGLINE = "tagline"
+TAGLINE_SETTING = "tournament_info_tagline"
 
 # What the "Sent to layouts" list shows, in order
 SUMMARY_KEYS = [
     "tournamentName",
     "eventName",
+    "tagline",
     "startAt",
     "endAt",
+    "timezone",
     "numEntrants",
+    "numAttendees",
+    "locationType",
     "address",
     "cityState",
     "shortLink",
+    "hashtag",
+    "discord",
     "logo",
     "banner",
 ]
@@ -145,6 +165,7 @@ class TournamentInfoWidget(QDockWidget):
         form.setSpacing(12)
         form.addWidget(self.BuildIdentityCard())
         form.addWidget(self.BuildDetailsCard())
+        form.addWidget(self.BuildSocialCard())
         form.addWidget(self.BuildBannerCard())
         form.addStretch(1)
         self.bodyLayout.addLayout(form, 1)
@@ -258,7 +279,7 @@ class TournamentInfoWidget(QDockWidget):
         self.btClearInfo.setToolTip(
             QApplication.translate("app", "Empty every field, including the tournament's images")
         )
-        self.btClearInfo.clicked.connect(lambda: [self.UpdateData({})])
+        self.btClearInfo.clicked.connect(lambda: [self.ClearAll()])
         row.addWidget(self.btClearInfo)
 
         self.btLoadInfoFromTournament = QPushButton()
@@ -357,6 +378,15 @@ class TournamentInfoWidget(QDockWidget):
                 self.TextField("eventName"),
             )
         )
+        tagline = self.TextField(TAGLINE)
+        tagline.setPlaceholderText(QApplication.translate("app", "e.g. Top 8 · Sunday 6 PM"))
+        tagline.setToolTip(
+            QApplication.translate(
+                "app",
+                "Your own text for the layouts, e.g. the stage of the event or a sponsor. Loading the tournament keeps it.",
+            )
+        )
+        names.addWidget(self.Field(QApplication.translate("app", "Tagline"), [TAGLINE], tagline))
         names.addStretch(1)
         row.addLayout(names, 1)
         return card
@@ -414,6 +444,37 @@ class TournamentInfoWidget(QDockWidget):
             1,
         )
 
+        locationType = QComboBox()
+        locationType.setObjectName("locationType")
+        for label, value in [
+            (QApplication.translate("app", "Not set"), ""),
+            (QApplication.translate("app", "In person"), "offline"),
+            (QApplication.translate("app", "Online"), "online"),
+            (QApplication.translate("app", "Hybrid"), "hybrid"),
+        ]:
+            locationType.addItem(label, value)
+        self.fields["locationType"] = locationType
+        grid.addWidget(
+            self.Field(
+                QApplication.translate("app", "In person or online"), ["locationType"], locationType
+            ),
+            2,
+            0,
+        )
+
+        attendees = QSpinBox()
+        attendees.setObjectName("numAttendees")
+        attendees.setMaximum(999999)
+        attendees.setToolTip(
+            QApplication.translate("app", "Everyone at the tournament, in every event")
+        )
+        self.fields["numAttendees"] = attendees
+        grid.addWidget(
+            self.Field(QApplication.translate("app", "Attendees"), ["numAttendees"], attendees),
+            2,
+            1,
+        )
+
         shortLink = self.TextField("shortLink")
         copy = shortLink.addAction(
             ThemedIcon("assets/icons/copy.svg"), QLineEdit.ActionPosition.TrailingPosition
@@ -422,10 +483,62 @@ class TournamentInfoWidget(QDockWidget):
         copy.triggered.connect(lambda: QApplication.clipboard().setText(shortLink.text()))
         grid.addWidget(
             self.Field(QApplication.translate("app", "Short Link"), ["shortLink"], shortLink),
-            2,
+            3,
             0,
+        )
+
+        # For layouts to show times in the tournament's time
+        timezone = self.TextField("timezone")
+        timezone.setPlaceholderText("America/New_York")
+        timezone.setToolTip(
+            QApplication.translate(
+                "app", "The tournament's time zone, for layouts to show its local times"
+            )
+        )
+        completer = QCompleter(
+            sorted(bytes(zone).decode() for zone in QTimeZone.availableTimeZoneIds()), timezone
+        )
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        timezone.setCompleter(completer)
+        grid.addWidget(
+            self.Field(QApplication.translate("app", "Time Zone"), ["timezone"], timezone),
+            3,
             1,
-            2,
+        )
+        return card
+
+    def BuildSocialCard(self):
+        card, layout, _ = self.Card(QApplication.translate("app", "Social"))
+        grid = QGridLayout()
+        grid.setHorizontalSpacing(14)
+        grid.setColumnStretch(0, 2)
+        grid.setColumnStretch(1, 3)
+        layout.addLayout(grid)
+
+        hashtag = QHBoxLayout()
+        hashtag.setSpacing(6)
+        sign = QLabel("#")
+        sign.setObjectName("muted")
+        hashtag.addWidget(sign)
+        hashtagField = self.TextField("hashtag")
+        hashtagField.setAccessibleName(QApplication.translate("app", "Hashtag"))
+        # Kept without its "#", like the tournament's
+        hashtagField.editingFinished.connect(
+            lambda: (
+                hashtagField.text().startswith("#")
+                and hashtagField.setText(hashtagField.text().lstrip("#"))
+            )
+        )
+        hashtag.addWidget(hashtagField, 1)
+        grid.addWidget(
+            self.Field(QApplication.translate("app", "Hashtag"), ["hashtag"], hashtag), 0, 0
+        )
+
+        discord = self.TextField("discord")
+        discord.setPlaceholderText("https://discord.gg/…")
+        grid.addWidget(
+            self.Field(QApplication.translate("app", "Discord"), ["discord"], discord), 0, 1
         )
         return card
 
@@ -468,10 +581,16 @@ class TournamentInfoWidget(QDockWidget):
         preview = QVBoxLayout(self.preview)
         preview.setContentsMargins(10, 10, 10, 10)
 
+        top = QHBoxLayout()
+        top.setSpacing(8)
+        self.previewTagline = ElidedLabel()
+        self.previewTagline.setObjectName("previewTagline")
+        top.addWidget(self.previewTagline, 1)
         self.previewLink = QLabel()
         self.previewLink.setObjectName("chip")
         self.previewLink.setContentsMargins(6, 1, 6, 1)
-        preview.addWidget(self.previewLink, 0, Qt.AlignmentFlag.AlignRight)
+        top.addWidget(self.previewLink)
+        preview.addLayout(top)
         preview.addStretch(1)
 
         lowerThird = QFrame()
@@ -576,6 +695,28 @@ class TournamentInfoWidget(QDockWidget):
                 ]
             )
 
+        for key in CHOICE_FIELDS:
+            field = self.fields[key]
+            field.currentIndexChanged.connect(
+                lambda _, key=key, field=field: [
+                    StateManager.Set(f"tournamentInfo.{key}", field.currentData() or ""),
+                    self.FieldChanged(),
+                ]
+            )
+            StateManager.Set(f"tournamentInfo.{key}", field.currentData() or "")
+
+        tagline = self.fields[TAGLINE]
+        tagline.setText(SettingsManager.Get(TAGLINE_SETTING, "") or "")
+        tagline.editingFinished.connect(
+            lambda: [
+                StateManager.Set(f"tournamentInfo.{TAGLINE}", tagline.text()),
+                SettingsManager.Get(TAGLINE_SETTING, "") != tagline.text()
+                and SettingsManager.Set(TAGLINE_SETTING, tagline.text()),
+                self.RefreshSummary(),
+            ]
+        )
+        tagline.editingFinished.emit()
+
     # =====================================================
     # CHANGES SINCE THE LAST LOAD
     # =====================================================
@@ -585,6 +726,8 @@ class TournamentInfoWidget(QDockWidget):
             return field.date()
         if isinstance(field, QSpinBox):
             return field.value()
+        if isinstance(field, QComboBox):
+            return field.currentData() or ""
         return field.text()
 
     def IsEdited(self, key):
@@ -600,6 +743,9 @@ class TournamentInfoWidget(QDockWidget):
         value = self.loaded.get(key)
         if isinstance(value, QDate):
             return QLocale().toString(value, QLocale.FormatType.ShortFormat)
+        field = self.fields.get(key)
+        if isinstance(field, QComboBox):
+            return field.itemText(max(field.findData(value), 0))
         return str(value)
 
     def Revert(self, keys):
@@ -611,6 +757,8 @@ class TournamentInfoWidget(QDockWidget):
                 field.setDate(self.loaded[key])
             elif isinstance(field, QSpinBox):
                 field.setValue(self.loaded[key])
+            elif isinstance(field, QComboBox):
+                field.setCurrentIndex(max(field.findData(self.loaded[key]), 0))
             else:
                 field.setText(self.loaded[key])
                 field.editingFinished.emit()
@@ -740,6 +888,7 @@ class TournamentInfoWidget(QDockWidget):
         link = StateManager.Get("tournamentInfo.shortLink", "") or ""
         self.previewLink.setText(link)
         self.previewLink.setVisible(bool(link))
+        self.previewTagline.setText(StateManager.Get("tournamentInfo.tagline", "") or "")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -780,7 +929,9 @@ class TournamentInfoWidget(QDockWidget):
                 background: transparent; border: none; padding: 0px; color: {c["accentText"]};
             }}
             QToolButton#linkButton:hover {{ text-decoration: underline; }}
-            QLineEdit[edited="true"], QAbstractSpinBox[edited="true"] {{
+            QLabel#previewTagline {{ color: {c["text"]}; font-weight: bold; }}
+            QLineEdit[edited="true"], QAbstractSpinBox[edited="true"],
+            QComboBox[edited="true"] {{
                 border-color: {c["accent"]};
             }}
             QLabel#logoTile {{
@@ -958,6 +1109,8 @@ class TournamentInfoWidget(QDockWidget):
                 self.fields[key].editingFinished.emit()
             for key in NUMBER_FIELDS:
                 self.fields[key].setValue(0)
+            for key in CHOICE_FIELDS:
+                self.fields[key].setCurrentIndex(0)
             # The tournament's images, which have no field
             StateManager.Set("tournamentInfo.logo", "")
             StateManager.Set("tournamentInfo.banner", "")
@@ -977,6 +1130,8 @@ class TournamentInfoWidget(QDockWidget):
                         field.setDate(QDate(local.tm_year, local.tm_mon, local.tm_mday))
                     elif isinstance(field, QSpinBox):
                         field.setValue(int(data[key]))
+                    elif isinstance(field, QComboBox):
+                        field.setCurrentIndex(max(field.findData(str(data[key])), 0))
                     else:
                         field.setText(str(data[key]))
                         field.editingFinished.emit()
@@ -1012,6 +1167,13 @@ class TournamentInfoWidget(QDockWidget):
         self.UpdateBanner()
         self.UpdateEdited()
         self.RefreshSummary()
+
+    def ClearAll(self):
+        """Empties everything, the tagline too, which loading keeps."""
+        tagline = self.fields[TAGLINE]
+        tagline.setText("")
+        tagline.editingFinished.emit()
+        self.UpdateData({})
 
     def DisplayErrorMessage(self, message):
         msgBox = QMessageBox()

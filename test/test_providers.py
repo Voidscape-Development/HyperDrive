@@ -302,16 +302,36 @@ def TestCityState():
     assert CityState("", None) == ""
 
 
+def TestHashtag():
+    """Hashtags go to the layouts without their leading #"""
+    from src.TournamentDataProvider.TournamentDataProvider import Hashtag
+
+    assert Hashtag("#HDI42 ") == "HDI42"
+    assert Hashtag("HDI42") == "HDI42"
+    assert Hashtag(None) == ""
+
+
 def TestParryCityState():
-    """parry.gg's venue city and state, from its address"""
+    """parry.gg's venue city and state from its address, and its other
+    tournament info"""
     from parrygg.models.tournament_pb2 import Tournament
 
     def Data(withAddress):
-        tournament = Tournament(name="T", venue_address="1 Example Street, Springfield")
+        from parrygg.models.event_pb2 import LocationType
+
+        tournament = Tournament(
+            name="T",
+            venue_address="1 Example Street, Springfield",
+            num_attendees=300,
+            time_zone="America/Chicago",
+            location_type=LocationType.LOCATION_TYPE_HYBRID,
+        )
         if withAddress:
             tournament.address.locality = "Springfield"
             tournament.address.administrative_area_level_1 = "Illinois"
-        tournament.events.add(slug="singles", name="Singles")
+        event = tournament.events.add(slug="singles", name="Singles")
+        if withAddress:
+            event.location_type = LocationType.LOCATION_TYPE_OFFLINE
         response = types.SimpleNamespace(tournament=tournament)
         service = types.SimpleNamespace(GetTournament=lambda *a, **k: response)
         # Not constructed: that asks parry.gg for the tournament
@@ -325,8 +345,13 @@ def TestParryCityState():
     data = Data(True)
     assert data["city"] == "Springfield" and data["state"] == "Illinois", data
     assert data["cityState"] == "Springfield, Illinois", data
+    assert data["numAttendees"] == 300 and data["timezone"] == "America/Chicago", data
+    assert data["locationType"] == "offline", data
+    assert data["hashtag"] == "" and data["discord"] == "", data
     data = Data(False)
     assert data["city"] == "" and data["cityState"] == "", data
+    # The event's location type not set: the tournament's
+    assert data["locationType"] == "hybrid", data
 
 
 def TestAppContext():
@@ -372,6 +397,7 @@ if __name__ == "__main__":
         TestGetMatchDoesNotWaitForASlowApi,
         TestParrySetListStates,
         TestCityState,
+        TestHashtag,
         TestParryCityState,
         TestAppContext,
     ]:

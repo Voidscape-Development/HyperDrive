@@ -24,8 +24,9 @@ FAKE_TOURNAMENT_NAME = "HyperDrive Test Tournament"
 # =====================================================
 class Anonymizer:
     """Replaces what identifies people (tags, sponsors, names, handles,
-    pronouns, cities, avatars) and the event (its name, slug, venue and
-    streams) with placeholders, the same one for the same value everywhere.
+    pronouns, cities, avatars) and the event (its name, slug, venue,
+    hashtag, Discord and streams) with placeholders, the same one for the
+    same value everywhere.
     Numeric ids are kept: the provider's lookups depend on them."""
 
     PERSON_PARENTS = {"entrant", "entrants", "player", "user", "participants", "team"}
@@ -121,6 +122,10 @@ class Anonymizer:
                 out[k] = self.Fake("city", v, "City {}")
             elif k == "venueAddress":
                 out[k] = self.Fake("venue", v, "Venue {}")
+            elif k == "hashtag":
+                out[k] = self.Fake("hashtag", v, "HyperDriveTest{}")
+            elif k == "discord" and parent == "links":
+                out[k] = self.Fake("discord", v, "https://discord.gg/invite{}")
             elif k == "streamName":
                 out[k] = self.Fake("stream", v, "stream{}")
             elif k == "shortName" and parent == "stream":

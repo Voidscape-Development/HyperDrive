@@ -86,6 +86,14 @@ class TournamentData(TypedDict):
     city: str
     state: str
     cityState: str
+    # "offline", "online" or "hybrid", "" when not known
+    locationType: str
+    numAttendees: int
+    # IANA time zone of the tournament, e.g. "America/New_York"
+    timezone: str
+    # Without its "#"
+    hashtag: str
+    discord: str
     logo: str
     banner: str
     shortLink: str
