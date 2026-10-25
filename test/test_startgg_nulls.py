@@ -133,9 +133,10 @@ def TestStreams():
     )
     # YouTube: the channel's name, with its id in streamId
     channel = "UCiHOK00jVASaoM7WPgi-hyg"
-    assert parse(
-        {"streamName": "Smash Club", "streamSource": "YOUTUBE", "streamId": channel}
-    ) == ("https://youtube.com/channel/" + channel, "Smash Club")
+    assert parse({"streamName": "Smash Club", "streamSource": "YOUTUBE", "streamId": channel}) == (
+        "https://youtube.com/channel/" + channel,
+        "Smash Club",
+    )
     # Or the id as its name, with a name in shortName, if any
     stream = {"streamName": channel, "streamSource": "YOUTUBE", "streamId": "71418924"}
     assert parse(dict(stream, shortName="GQ Youtube")) == (
