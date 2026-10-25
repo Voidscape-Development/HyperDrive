@@ -378,21 +378,22 @@ class ParryGGDataProvider(TournamentDataProvider):
         return StartGGDataProvider.TranslateRoundName(label or "")
 
     def _resolve_stream(self, match):
-        """Return a stream URL string for a match, or '' if not queued."""
+        """Return a match's stream from _get_streams() (its "url",
+        "display_name"...), or {} if not queued."""
         if not match.HasField("stream_queue_entry"):
-            return ""
+            return {}
         sid = match.stream_queue_entry.stream_id
         if not sid:
             logger.info(f"Match {match.id} has stream_queue_entry but stream_id is empty")
-            return ""
-        url = self._get_streams().get(sid, {}).get("url", "")
-        if not url:
+            return {}
+        stream = self._get_streams().get(sid, {})
+        if not stream.get("url"):
             logger.info(
                 f"Stream {sid!r} not found in cache for match {match.id}; cache has {list(self._get_streams().keys())}"
             )
         else:
-            logger.info(f"Match {match.id} resolved to stream {url}")
-        return url
+            logger.info(f"Match {match.id} resolved to stream {stream['url']}")
+        return stream
 
     # =====================================================
     # START.GG FALLBACK
@@ -709,6 +710,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                     team.append(player)
             entrants.append(team)
 
+        stream = self._resolve_stream(match)
         result = {
             "id": match.id,
             "team1score": int(match.slots[0].score) if len(match.slots) > 0 else 0,
@@ -720,7 +722,9 @@ class ParryGGDataProvider(TournamentDataProvider):
             "p2_name": self._team_display_name(seeds[1]) if len(seeds) > 1 else "",
             "p1_seed": seeds[0].seed if len(seeds) > 0 else "",
             "p2_seed": seeds[1].seed if len(seeds) > 1 else "",
-            "stream": self._resolve_stream(match),
+            "stream": stream.get("url", ""),
+            # The name stream tracking shows, not the channel in the address
+            "stream_name": stream.get("display_name", ""),
             "station": "",
             "isOnline": self._is_online(),
             "isPools": is_pools,

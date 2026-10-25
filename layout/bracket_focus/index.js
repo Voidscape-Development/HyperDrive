@@ -46,6 +46,12 @@ let placed = null;
 let lastSignature = null;
 let lastFocus = null;
 let camera = null;
+// Where the camera is (see showView), and its move under way
+let view = null;
+let cameraTween = null;
+// The focus caption's text, and its fade under way
+let shownLabel = null;
+let labelTween = null;
 
 const setElement = (id) => setElements[id] || $();
 const box = (b) => `left: ${b.x}px; top: ${b.y}px; width: ${b.w}px;${b.h ? ` height: ${b.h}px;` : ""}`;
@@ -318,6 +324,41 @@ function focusBox(focus) {
   };
 }
 
+// Shows the world as a view: the world point (cx, cy) at (ax, ay) on screen,
+// at a scale
+function showView(v) {
+  view = v;
+  gsap.set(".world", {
+    x: v.ax - v.cx * v.scale,
+    y: v.ay - v.cy * v.scale,
+    scale: v.scale,
+    transformOrigin: "0 0",
+    immediateRender: true,
+  });
+}
+
+// The view t (0 to 1) of the way from a to b. Moving x, y and the scale
+// each in a straight line zooms unevenly: zooming in, most of it happens at
+// the start, and what's zoomed to swings out and back. Here each moment
+// zooms by as much as the one before (the scale goes geometrically), around
+// the one point that stays put on screen, so zooming in from the whole
+// bracket feels like zooming out to it played backwards.
+function between(a, b, t) {
+  const lerp = (p, q, f) => p + (q - p) * f;
+  const ratio = b.scale / a.scale;
+  const scale = a.scale * Math.pow(ratio, t);
+  // How far the center has moved: in step with 1 / scale, the size of the
+  // world on screen, so the point that stays put does
+  const u = Math.abs(Math.log(ratio)) < 0.01 ? t : (1 / scale - 1 / a.scale) / (1 / b.scale - 1 / a.scale);
+  return {
+    cx: lerp(a.cx, b.cx, u),
+    cy: lerp(a.cy, b.cy, u),
+    ax: lerp(a.ax, b.ax, t),
+    ay: lerp(a.ay, b.ay, t),
+    scale,
+  };
+}
+
 // Moves the camera to a box, animated or not
 function moveCamera(s, target, animate) {
   const viewport = $(".viewport");
@@ -331,18 +372,25 @@ function moveCamera(s, target, animate) {
   const label =
     $(".focus_label").hasClass("shown") && !$("body").hasClass("hd-bracket-hide-focus-label") ? LABEL_ROOM : 0;
   const scale = Math.min((vw - PADDING * 2) / target.w, (vh - PADDING * 2 - label) / target.h, maxZoom(s));
-  const vars = {
-    x: vw / 2 - (target.x + target.w / 2) * scale,
-    y: (vh - label) / 2 - (target.y + target.h / 2) * scale,
-    scale,
-    transformOrigin: "0 0",
-  };
-  if (animate) gsap.to(".world", { ...vars, duration: CAMERA_TIME, ease: "power2.inOut", overwrite: true });
-  else {
+  const to = { cx: target.x + target.w / 2, cy: target.y + target.h / 2, ax: vw / 2, ay: (vh - label) / 2, scale };
+
+  if (cameraTween) cameraTween.kill();
+  cameraTween = null;
+  if (animate && view) {
+    // From wherever it is, even halfway through another move
+    const from = view;
+    const progress = { t: 0 };
+    cameraTween = gsap.to(progress, {
+      t: 1,
+      duration: CAMERA_TIME,
+      ease: "power2.inOut",
+      onUpdate: () => showView(between(from, to, progress.t)),
+      onComplete: () => (cameraTween = null),
+    });
+  } else {
     // Right away: GSAP's timeline is frozen until the layout is first shown,
     // and the bracket would show at full size until then
-    gsap.killTweensOf(".world");
-    gsap.set(".world", { ...vars, immediateRender: true });
+    showView(to);
   }
 }
 
@@ -361,6 +409,32 @@ const glowColor = (focus) =>
   focus.mode && HD.theme("bracket", `focus_glow_custom_${focus.mode}`, false) === true
     ? `var(--bracket-focus-glow-color-${focus.mode})`
     : null;
+
+// The caption saying what's in focus, faded in and out whole, never shown
+// empty while its text fades: a new caption is filled in while the bar is
+// hidden, then faded in as the camera gets there. Going, its text is kept
+// for the fade out.
+function showLabel(label, animate) {
+  const bar = $(".focus_label");
+  const wasShown = bar.hasClass("shown");
+  bar.toggleClass("shown", label !== "");
+  if (wasShown && label === shownLabel) return;
+  if (labelTween) labelTween.kill();
+  labelTween = gsap.timeline();
+  if (label === "") {
+    if (wasShown) labelTween.to(bar, { autoAlpha: 0, duration: animate ? 0.3 : 0 });
+    return;
+  }
+  shownLabel = label;
+  const fill = () => HD.set(".focus_label .label", label, { duration: 0 });
+  if (wasShown && animate) {
+    labelTween.to(bar, { autoAlpha: 0, duration: 0.25 }).call(fill);
+  } else {
+    gsap.set(bar, { autoAlpha: 0 });
+    fill();
+  }
+  labelTween.to(bar, { autoAlpha: 1, duration: animate ? 0.4 : 0 }, animate ? CAMERA_TIME * 0.6 : 0);
+}
 
 function applyFocus(s, data, animate) {
   const focus = focusOf(s, data);
@@ -398,9 +472,7 @@ function applyFocus(s, data, animate) {
     );
   }
 
-  const label = inFocus.size > 0 ? focus.label || "" : "";
-  $(".focus_label").toggleClass("shown", label !== "");
-  HD.set(".focus_label .label", label);
+  showLabel(inFocus.size > 0 ? focus.label || "" : "", animate);
 
   moveCamera(s, focusBox({ sets: [...inFocus], rounds: inFocus.size ? [...rounds] : [] }), animate);
 }
@@ -456,7 +528,7 @@ HD.layout({
     if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides) {
       HD.render(".bf_sets, .bf_lines, .bf_standings", "");
       $("body").removeClass("has_focus");
-      $(".focus_label").removeClass("shown");
+      showLabel("", false);
       lastSignature = null;
       placed = null;
       return;

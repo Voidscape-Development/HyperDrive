@@ -2257,7 +2257,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -2387,7 +2388,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -2505,6 +2507,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "strikedBy": [
     [],
     []
@@ -2635,7 +2638,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -2752,7 +2756,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -2872,7 +2877,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -2993,7 +2999,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -3122,6 +3129,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -3237,7 +3245,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -3357,7 +3366,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -3477,7 +3487,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -3601,7 +3612,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -3723,6 +3735,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "strikedBy": [
     [],
     []
@@ -3807,7 +3820,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -3944,6 +3958,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -4064,6 +4079,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "strikedBy": [
     [],
     []
@@ -4183,6 +4199,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -4315,6 +4332,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -4438,6 +4456,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -4561,6 +4580,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -4696,6 +4716,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -4842,6 +4863,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -4991,6 +5013,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -5149,6 +5172,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -5294,6 +5318,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -5427,6 +5452,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -5541,7 +5567,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -5671,7 +5698,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -5788,7 +5816,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -5906,7 +5935,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -5988,7 +6018,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -6121,6 +6152,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "strikedBy": [
     [],
     []
@@ -6254,7 +6286,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -6383,7 +6416,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -6502,7 +6536,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -6617,7 +6652,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -6736,6 +6772,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "strikedBy": [
     [],
     []
@@ -6855,7 +6892,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -6986,7 +7024,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -7105,6 +7144,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "strikedBy": [
     [],
     []
@@ -7238,6 +7278,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "strikedBy": [
     [],
     []
@@ -7358,7 +7399,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -7478,7 +7520,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -7612,6 +7655,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -7744,7 +7788,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -7880,7 +7925,8 @@
    "stage_strike": {},
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "strikedBy": [
     [],
     []
@@ -8016,6 +8062,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "strikedBy": [
     [],
     []
@@ -8162,6 +8209,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -8297,6 +8345,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "strikedBy": [
     [],
     []
@@ -8361,6 +8410,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 1,
    "team2score": 3,
    "tournament_phase": "Bracket"
@@ -8416,6 +8466,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 3,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -8471,6 +8522,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 3,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -8526,6 +8578,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 0,
    "team2score": 3,
    "tournament_phase": "Bracket"
@@ -8581,6 +8634,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 1,
    "team2score": 3,
    "tournament_phase": "Bracket"
@@ -8636,6 +8690,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 3,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -8691,6 +8746,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 1,
    "team2score": 3,
    "tournament_phase": "Bracket"
@@ -8745,7 +8801,8 @@
    "round_name": "Losers Quarter-Final",
    "state": 3,
    "station": 1,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 0,
    "team2score": 3,
    "tournament_phase": "Bracket"
@@ -8801,6 +8858,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "team1score": 0,
    "team2score": 3,
    "tournament_phase": "Bracket"
@@ -8856,6 +8914,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 3,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -8910,7 +8969,8 @@
    "round_name": "Losers Round 5",
    "state": 3,
    "station": 2,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 3,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -8966,6 +9026,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 2,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -9021,6 +9082,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9076,6 +9138,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 0,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -9131,6 +9194,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 1,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -9186,6 +9250,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9241,6 +9306,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "team1score": 2,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -9295,7 +9361,8 @@
    "round_name": "Losers Round 4",
    "state": 3,
    "station": 2,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9350,7 +9417,8 @@
    "round_name": "Losers Round 4",
    "state": 3,
    "station": 3,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9405,7 +9473,8 @@
    "round_name": "Losers Round 3",
    "state": 3,
    "station": 2,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9461,6 +9530,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9515,7 +9585,8 @@
    "round_name": "Losers Round 3",
    "state": 3,
    "station": 2,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9570,7 +9641,8 @@
    "round_name": "Losers Round 3",
    "state": 3,
    "station": 2,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -9625,7 +9697,8 @@
    "round_name": "Winners Round 2",
    "state": 3,
    "station": 2,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9680,7 +9753,8 @@
    "round_name": "Winners Round 2",
    "state": 3,
    "station": 3,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9735,7 +9809,8 @@
    "round_name": "Winners Round 2",
    "state": 3,
    "station": 2,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9791,6 +9866,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9845,7 +9921,8 @@
    "round_name": "Winners Round 2",
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": -1,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -9901,6 +9978,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 2,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -9956,6 +10034,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -10011,6 +10090,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -10065,7 +10145,8 @@
    "round_name": "Losers Round 2",
    "state": 3,
    "station": 6,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -10120,7 +10201,8 @@
    "round_name": "Losers Round 2",
    "state": 3,
    "station": 4,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 0,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -10175,7 +10257,8 @@
    "round_name": "Losers Round 2",
    "state": 3,
    "station": 7,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -10230,7 +10313,8 @@
    "round_name": "Losers Round 2",
    "state": 3,
    "station": "",
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": -1,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -10286,6 +10370,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "team1score": 1,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -10340,7 +10425,8 @@
    "round_name": "Losers Round 2",
    "state": 3,
    "station": 3,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 1,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -10395,7 +10481,8 @@
    "round_name": "Losers Round 2",
    "state": 3,
    "station": 5,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -10450,7 +10537,8 @@
    "round_name": "Losers Round 2",
    "state": 3,
    "station": 3,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 0,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -10505,7 +10593,8 @@
    "round_name": "Losers Round 1",
    "state": 3,
    "station": 4,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -10560,7 +10649,8 @@
    "round_name": "Winners Round 1",
    "state": 3,
    "station": 2,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 1,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -10615,7 +10705,8 @@
    "round_name": "Winners Round 1",
    "state": 3,
    "station": 3,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -10671,6 +10762,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream2",
+   "stream_name": "stream2",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -10725,7 +10817,8 @@
    "round_name": "Winners Round 1",
    "state": 3,
    "station": 5,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 1,
    "tournament_phase": "Bracket"
@@ -10780,7 +10873,8 @@
    "round_name": "Winners Round 1",
    "state": 3,
    "station": 5,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -10835,7 +10929,8 @@
    "round_name": "Winners Round 1",
    "state": 3,
    "station": 7,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 0,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -10890,7 +10985,8 @@
    "round_name": "Winners Round 1",
    "state": 3,
    "station": 4,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"
@@ -10946,6 +11042,7 @@
    "state": 3,
    "station": "",
    "stream": "https://twitch.tv/stream3",
+   "stream_name": "stream3",
    "team1score": 1,
    "team2score": 2,
    "tournament_phase": "Bracket"
@@ -11000,7 +11097,8 @@
    "round_name": "Winners Round 1",
    "state": 3,
    "station": 6,
-   "stream": null,
+   "stream": "",
+   "stream_name": "",
    "team1score": 2,
    "team2score": 0,
    "tournament_phase": "Bracket"

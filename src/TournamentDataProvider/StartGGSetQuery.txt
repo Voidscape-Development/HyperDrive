@@ -85,6 +85,8 @@ query SetQuery($id: ID!, $profile: Boolean = true) {
 		stream {
 			streamName
 			streamSource
+			streamId
+			shortName
 		}
 	}
 }

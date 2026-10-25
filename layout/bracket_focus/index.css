@@ -405,7 +405,12 @@ body:not(.no_focus_glow) .bf_round_name.focused {
   white-space: nowrap;
 }
 
-.focus_label:not(.shown),
-body.hd-bracket-hide-focus-label .focus_label {
+/* Faded in and out by index.js, once its text is there */
+.focus_label {
   visibility: hidden;
+  opacity: 0;
+}
+
+body.hd-bracket-hide-focus-label .focus_label {
+  visibility: hidden !important;
 }

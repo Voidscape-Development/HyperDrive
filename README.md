@@ -24,7 +24,7 @@ HTML overlays that you add to OBS or any other streaming software as browser sou
   (see [`docs/layout-data.md`](docs/layout-data.md#custom-player-data-custom)).
 - **Web pages for your phone or a second screen:** a remote scoreboard, stage strike and
   character select, served by HyperDrive itself.
-- **A built-in guide** (Help > Guide) explaining every part of HyperDrive, with search and
+- **A built-in guide** (☰ > Guide) explaining every part of HyperDrive, with search and
   links that open the window being described. Its pages are in [`docs/wiki`](docs/wiki).
 
 To show a layout in OBS, add a Browser source with *Local file* checked, pick the
@@ -60,7 +60,7 @@ these from any device on the same network at `http://<HyperDrive's address>:5500
 | `/report-admin` | Report sets to start.gg right away: call, start, report, DQ, reset, assign stations and streams |
 | `/report-approval` | Approve or reject the results sent from reporting stations |
 | `/admin` | Player database editor |
-| `/wiki` | The guide (Help > Guide in the app) |
+| `/wiki` | The guide (☰ > Guide in the app) |
 | `/api/docs` | The web server's endpoints |
 
 ## Stream queue and start.gg

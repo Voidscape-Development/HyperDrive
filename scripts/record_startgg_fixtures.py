@@ -123,6 +123,11 @@ class Anonymizer:
                 out[k] = self.Fake("venue", v, "Venue {}")
             elif k == "streamName":
                 out[k] = self.Fake("stream", v, "stream{}")
+            elif k == "shortName" and parent == "stream":
+                out[k] = self.Fake("stream_short", v, "Stream {}")
+            elif k == "streamId" and parent == "stream":
+                # The channel's id on Twitch or YouTube
+                out[k] = self.Fake("stream_id", v, "channel{}")
             elif k == "shortSlug":
                 out[k] = self.Fake("short_slug", v, "short{}")
             elif k == "url" and "/images/user/" in v:

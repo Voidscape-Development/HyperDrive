@@ -169,7 +169,7 @@ class TournamentDataManager(QObject):
                 + "\n"
                 + QApplication.translate(
                     "app",
-                    "A tournament link, start.gg short link or tournament slug lets you pick one of its events. Use Select event to switch to another event of the same tournament later.",
+                    "A tournament link, start.gg short link or tournament slug lets you pick one of its events. Its other events are listed in the tournament's menu in the top bar, to switch to one later.",
                 )
                 + "\n"
                 + QApplication.translate("app", "Supported providers:")

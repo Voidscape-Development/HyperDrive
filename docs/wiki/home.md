@@ -34,4 +34,4 @@ from a fresh install to a scoreboard on stream in a few minutes.
 - The guide is also served by HyperDrive's web server at `http://<HyperDrive's address>:5500/wiki`,
   so you can read it on a phone or a second screen while you work.
 
-You can open this guide at any time from the menu button (☰) › **Help** › **Guide**.
+You can open this guide at any time from the menu button (☰) › **Guide**.
