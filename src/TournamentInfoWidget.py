@@ -24,7 +24,7 @@ LOGO_PATH = "./layout/logo.png"
 
 # The fields, by their key in tournamentInfo (also their widget's object name,
 # which the web dashboard finds them by)
-TEXT_FIELDS = ["tournamentName", "eventName", "address", "shortLink"]
+TEXT_FIELDS = ["tournamentName", "eventName", "address", "cityState", "shortLink"]
 DATE_FIELDS = ["startAt", "endAt"]
 NUMBER_FIELDS = ["numEntrants"]
 
@@ -36,6 +36,7 @@ SUMMARY_KEYS = [
     "endAt",
     "numEntrants",
     "address",
+    "cityState",
     "shortLink",
     "logo",
     "banner",
@@ -397,8 +398,20 @@ class TournamentInfoWidget(QDockWidget):
             self.Field(QApplication.translate("app", "Location"), ["address"], address),
             1,
             0,
+        )
+
+        # For layouts that don't show the whole address
+        cityState = self.TextField("cityState")
+        cityState.setPlaceholderText(QApplication.translate("app", "e.g. Springfield, IL"))
+        cityState.setToolTip(
+            QApplication.translate(
+                "app", "The venue's city and state, for layouts that don't show the whole address"
+            )
+        )
+        grid.addWidget(
+            self.Field(QApplication.translate("app", "City, State"), ["cityState"], cityState),
             1,
-            2,
+            1,
         )
 
         shortLink = self.TextField("shortLink")

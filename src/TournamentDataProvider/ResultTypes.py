@@ -82,6 +82,10 @@ class TournamentData(TypedDict):
     endAt: int
     eventStartAt: int
     address: str
+    # The venue's city and state (or province, region...) alone and together
+    city: str
+    state: str
+    cityState: str
     logo: str
     banner: str
     shortLink: str

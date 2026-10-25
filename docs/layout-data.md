@@ -227,6 +227,14 @@ character data for the set.
 The URLs of the start.gg tournament's square logo and wide banner, `""` when
 it has none, for layouts to brand themselves with.
 
+## `tournamentInfo.cityState`, `tournamentInfo.city`, `tournamentInfo.state`
+
+Where the venue is, for layouts that don't show the whole address
+(`tournamentInfo.address`): `cityState` is the city and state together, e.g.
+`"Springfield, IL"`, and can be changed in the Tournament Info tab. `city`
+and `state` are the tournament's own, from start.gg or parry.gg (parry.gg
+gives the state's full name). `""` when the tournament has none, e.g. online.
+
 ## `twitch_prediction`
 
 The Twitch prediction of the stream's scoreboard (see the README), `{}` when

@@ -8,7 +8,8 @@ about the event itself:
 | **Tournament Name**, **Event Name** | Shown on scoreboards, brackets and top 8s |
 | **Dates** | When it starts and ends |
 | **Entrants** | How many entrants |
-| **Location** | Where |
+| **Location** | Where: the venue's address |
+| **City, State** | Just the city and state (e.g. *Springfield, IL*), for layouts that don't show the whole address. Filled in from the tournament; layouts get it as `tournamentInfo.cityState` |
 | **Short Link** | e.g. the start.gg short link for viewers. The button at its end copies it |
 | **Logo** | The tile next to the names. Its buttons load an image of yours, download the tournament's from start.gg, or go back to the default. You can also drop an image on it |
 | **Banner** | The tournament's banner from start.gg, for layouts that show one. The button next to it removes it, **Restore** brings it back |

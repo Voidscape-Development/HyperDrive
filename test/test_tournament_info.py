@@ -132,6 +132,9 @@ DATA = {
     "eventName": "Ultimate Singles",
     "numEntrants": 128,
     "address": "1 Example Street, Springfield",
+    "city": "Springfield",
+    "state": "IL",
+    "cityState": "Springfield, IL",
     "shortLink": "hd-invitational-42",
     "startAt": start,
     "endAt": end,
@@ -157,6 +160,7 @@ for key, kind in [
     ("tournamentName", QLineEdit),
     ("eventName", QLineEdit),
     ("address", QLineEdit),
+    ("cityState", QLineEdit),
     ("shortLink", QLineEdit),
     ("numEntrants", QSpinBox),
     ("startAt", QDateEdit),
@@ -177,6 +181,8 @@ FakeTournamentDataManager.instance.signals.tournament_data_updated.emit(dict(DAT
 app.processEvents()
 check(info("tournamentName") == "HyperDrive Invitational #42", "tournament name sent")
 check(info("numEntrants") == 128, "entrants sent")
+check(info("cityState") == "Springfield, IL", "city and state sent together")
+check(info("city") == "Springfield" and info("state") == "IL", "city and state sent alone")
 check(widget.fields["startAt"].date() == QDate(2026, 10, 24), "start date shown")
 check(widget.fields["endAt"].date() == QDate(2026, 10, 25), "end date shown")
 check(bool(info("endAt")), "end date sent")
@@ -207,6 +213,15 @@ check(block[1].isVisible() and block[2].isVisible(), "edited badge and revert bu
 check("1 field changed by you" in widget.headerDetail.text(), "header counts the change")
 check(widget.summaryValues["eventName"].text().startswith("●"), "summary marks the change")
 shot(widget, "tournament_info.png")
+
+# The city and state can be changed on their own
+cityState = widget.fields["cityState"]
+cityState.setText("Springfield")
+cityState.editingFinished.emit()
+check(info("cityState") == "Springfield", "edited city and state sent")
+check(widget.IsEdited("cityState"), "city and state count as edited")
+next(b for b in widget.blocks if b[0] == ["cityState"])[2].click()
+check(info("cityState") == "Springfield, IL", "city and state reverted")
 
 # Going back to the tournament's value
 block[2].click()
@@ -253,6 +268,7 @@ app.processEvents()
 # Clearing it all
 widget.btClearInfo.click()
 check(info("tournamentName") == "" and info("numEntrants") == 0, "clear empties the fields")
+check(info("cityState") == "", "clear empties the city and state")
 check(info("banner") == "" and info("logo") == "", "clear empties the images")
 check(widget.EditedCount() == 0, "nothing edited after clearing")
 check(widget.headerTitle.text() == "Not loaded from the tournament", "header after clearing")

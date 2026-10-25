@@ -292,6 +292,43 @@ def TestParrySetListStates():
     assert _startgg_set_state(MatchState.MATCH_STATE_COMPLETED) == 3
 
 
+def TestCityState():
+    """The venue's city and state together, for layouts without the address"""
+    from src.TournamentDataProvider.TournamentDataProvider import CityState
+
+    assert CityState("Springfield", "IL") == "Springfield, IL"
+    assert CityState(" Springfield ", "") == "Springfield"
+    assert CityState(None, "Ontario") == "Ontario"
+    assert CityState("", None) == ""
+
+
+def TestParryCityState():
+    """parry.gg's venue city and state, from its address"""
+    from parrygg.models.tournament_pb2 import Tournament
+
+    def Data(withAddress):
+        tournament = Tournament(name="T", venue_address="1 Example Street, Springfield")
+        if withAddress:
+            tournament.address.locality = "Springfield"
+            tournament.address.administrative_area_level_1 = "Illinois"
+        tournament.events.add(slug="singles", name="Singles")
+        response = types.SimpleNamespace(tournament=tournament)
+        service = types.SimpleNamespace(GetTournament=lambda *a, **k: response)
+        # Not constructed: that asks parry.gg for the tournament
+        provider = ParryGGDataProvider.__new__(ParryGGDataProvider)
+        provider.channel = types.SimpleNamespace(close=lambda: None)
+        provider.tournament_service = service
+        provider.tournament_slug, provider.event_slug = "t", "singles"
+        provider.metadata, provider._timeout = [], 1
+        return provider.GetTournamentData()
+
+    data = Data(True)
+    assert data["city"] == "Springfield" and data["state"] == "Illinois", data
+    assert data["cityState"] == "Springfield, Illinois", data
+    data = Data(False)
+    assert data["city"] == "" and data["cityState"] == "", data
+
+
 def TestAppContext():
     """The app's context is its game, setting and player database"""
     from src.PlayerDB import PlayerDB
@@ -334,6 +371,8 @@ if __name__ == "__main__":
         TestGameChanged,
         TestGetMatchDoesNotWaitForASlowApi,
         TestParrySetListStates,
+        TestCityState,
+        TestParryCityState,
         TestAppContext,
     ]:
         test()

@@ -23,6 +23,13 @@ from .ResultTypes import (
 )
 
 
+def CityState(city, state):
+    """The city and state of a tournament's venue together ("Springfield,
+    IL"), for layouts that don't show the whole address; either alone when
+    the other is missing."""
+    return ", ".join(part.strip() for part in (city, state) if part and part.strip())
+
+
 class TournamentDataProvider(QObject):
     """What every tournament data provider (start.gg, parry.gg) can be asked.
     The results' shapes are in ResultTypes.py. Methods taking

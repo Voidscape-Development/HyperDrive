@@ -17141,6 +17141,8 @@
  "tournament_data": {
   "address": "Venue 1",
   "banner": "https://images.start.gg/images/tournament/962620/image-b863ca129f8c20f1ea8b3c691c0d09aa-optimized.jpg",
+  "city": "Venue City",
+  "cityState": "Venue City, NY",
   "endAt": 1792036680,
   "eventEndAt": "",
   "eventName": "Ultimate Singles",
@@ -17149,6 +17151,7 @@
   "numEntrants": 25,
   "shortLink": "short1",
   "startAt": 1792015200,
+  "state": "NY",
   "tournamentName": "HyperDrive Test Tournament #111"
  },
  "user_mains": {

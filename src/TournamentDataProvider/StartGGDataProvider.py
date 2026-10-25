@@ -19,7 +19,7 @@ from ..Helpers.SeedPerformance import EventBracketType
 from ..PlayerDBModels import MakeTag
 from . import StartGGConvert
 from .StartGGClient import ReadQuery, StartGGClient
-from .TournamentDataProvider import TournamentDataProvider
+from .TournamentDataProvider import CityState, TournamentDataProvider
 
 # A YouTube channel's id: "UC" and 22 more letters, digits, - or _
 YOUTUBE_CHANNEL_ID = re.compile(r"^UC[\w-]{22}$")
@@ -137,6 +137,9 @@ class StartGGDataProvider(TournamentDataProvider):
             finalData["eventName"] = deep_get(data, "data.event.name", "")
             finalData["numEntrants"] = deep_get(data, "data.event.numEntrants", 0)
             finalData["address"] = deep_get(data, "data.event.tournament.venueAddress", "")
+            finalData["city"] = deep_get(data, "data.event.tournament.city", "") or ""
+            finalData["state"] = deep_get(data, "data.event.tournament.addrState", "") or ""
+            finalData["cityState"] = CityState(finalData["city"], finalData["state"])
             finalData["shortLink"] = deep_get(data, "data.event.tournament.shortSlug", "")
             finalData["startAt"] = deep_get(data, "data.event.tournament.startAt", "")
             finalData["endAt"] = deep_get(data, "data.event.tournament.endAt", "")

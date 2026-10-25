@@ -14,6 +14,8 @@ query TournamentDataQuery($eventSlug: String!) {
 			name
 			shortSlug
 			venueAddress
+			city
+			addrState
 			startAt
 			endAt
 			images {

@@ -40,7 +40,7 @@ from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.SeedPerformance import EventBracketType
 from .StartGGDataProvider import StartGGDataProvider
-from .TournamentDataProvider import TournamentDataProvider
+from .TournamentDataProvider import CityState, TournamentDataProvider
 
 # URL path tokens used for parsing/splitting tournament URLs.
 PARRY_HOST_PATH = "parry.gg/"
@@ -791,6 +791,13 @@ class ParryGGDataProvider(TournamentDataProvider):
             tournament_info["eventName"] = event_data.name
             tournament_info["numEntrants"] = event_data.entrant_count
             tournament_info["address"] = tournament_data.venue_address
+            # The venue's place, as Google Maps splits it up
+            place = tournament_data.address if tournament_data.HasField("address") else None
+            tournament_info["city"] = place.locality if place else ""
+            tournament_info["state"] = place.administrative_area_level_1 if place else ""
+            tournament_info["cityState"] = CityState(
+                tournament_info["city"], tournament_info["state"]
+            )
             tournament_info["startAt"] = tournament_data.start_date.seconds
             tournament_info["endAt"] = tournament_data.end_date.seconds
             tournament_info["eventStartAt"] = event_data.start_date.seconds

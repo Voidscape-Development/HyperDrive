@@ -28,6 +28,7 @@ export default function TournamentInfoPage() {
             tournamentName: String(info.tournamentName ?? ""),
             eventName: String(info.eventName ?? ""),
             address: String(info.address ?? ""),
+            cityState: String(info.cityState ?? ""),
             numEntrants: String(info.numEntrants ?? ""),
             shortLink: String(info.shortLink ?? ""),
         },
@@ -60,7 +61,8 @@ export default function TournamentInfoPage() {
                 <Panel bodyClassName="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2">{text("tournamentName", "Tournament name")}</div>
                     <div className="sm:col-span-2">{text("eventName", "Event name")}</div>
-                    <div className="sm:col-span-2">{text("address", "Address")}</div>
+                    {text("address", "Address")}
+                    {text("cityState", "City, state", {placeholder: "e.g. Springfield, IL"})}
                     <Field label="Date" htmlFor="ti-date">
                         <Input
                             id="ti-date"
