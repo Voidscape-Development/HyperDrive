@@ -42,68 +42,26 @@
 <context>
     <name>DockWidget</name>
     <message>
-        <location filename="../layout/TournamentInfo.ui" line="17"/>
-        <location filename="../layout/TournamentInfo.ui" line="30"/>
         <source>Tournament Info</source>
         <translation>Turnierdaten</translation>
     </message>
     <message>
-        <location filename="../layout/TournamentInfo.ui" line="60"/>
         <source>Address</source>
         <translation>Adresse</translation>
     </message>
     <message>
-        <location filename="../layout/TournamentInfo.ui" line="73"/>
         <source>Event Name</source>
         <translation>Eventname</translation>
     </message>
     <message>
-        <location filename="../layout/TournamentInfo.ui" line="100"/>
-        <source>Short Link</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../layout/TournamentInfo.ui" line="124"/>
-        <source>Date</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../layout/TournamentInfo.ui" line="133"/>
-        <source>Load from tournament</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../layout/TournamentInfo.ui" line="140"/>
         <source>Clear</source>
-        <translation type="unfinished">Zurücksetzen</translation>
+        <translation type="obsolete">Zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../layout/TournamentInfo.ui" line="150"/>
-        <source>Tournament Icon</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../layout/TournamentInfo.ui" line="183"/>
-        <source>Load local file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../layout/TournamentInfo.ui" line="190"/>
-        <source>Download tournament icon</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../layout/TournamentInfo.ui" line="197"/>
-        <source>Default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../layout/TournamentInfo.ui" line="53"/>
         <source>Tournament Name</source>
         <translation>Turniername</translation>
     </message>
     <message>
-        <location filename="../layout/TournamentInfo.ui" line="80"/>
         <source>Entrant Number</source>
         <translation>Teilnehmerzahl</translation>
     </message>
@@ -115,7 +73,6 @@
 <context>
     <name>Form</name>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="14"/>
         <location filename="../layout/ScoreboardScore.ui" line="20"/>
         <location filename="../layout/ScoreboardPlayer.ui" line="25"/>
         <location filename="../layout/TeamPlayer.ui" line="25"/>
@@ -134,100 +91,64 @@
         <translation>Teamname</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="45"/>
         <source>Ruleset Name</source>
         <translation>Name des Regelwerks</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="55"/>
         <source>Stagelist</source>
         <translation>Liste der Stages</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="65"/>
         <source>All stages</source>
         <translation>Alle Stages</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="164"/>
         <source>Neutral stages</source>
         <translation>Neutrale Stages</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="250"/>
         <source>Counterpick stages</source>
         <translation>Counterpick-Stages</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="271"/>
-        <location filename="../layout/ScoreboardStage.ui" line="290"/>
         <source>DSR</source>
         <translation>DSR</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="277"/>
         <source>No DSR</source>
         <translation>Keine DSR</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="300"/>
         <source>MDSR</source>
         <translation>mDSR</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="313"/>
         <source>Stage striking</source>
         <translation>Streichen der Stages</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="321"/>
         <source>Strike order, numbers separated by comma (game 1)</source>
         <translation>Reihenfolge der streichenden Spieler vor Spiel 1, durch Kommata getrennt</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="334"/>
-        <source>1,2,1</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../layout/ScoreboardStage.ui" line="345"/>
         <source>Fixed ban count (how many stages winner bans)</source>
         <translation>Zahl der durch Sieger gestrichenen Stages</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="362"/>
         <source>Ban count by max games (games:bans,games:bans)</source>
         <translation>Stage-Streichungszahl nach Setlänge (Spiele:streichen,Spiele:streichen)</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="378"/>
-        <source>3:3,5:2</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../layout/ScoreboardStage.ui" line="396"/>
         <source>Save</source>
         <translation>Speichern</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="403"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../layout/ScoreboardStage.ui" line="410"/>
         <source>Clear</source>
         <translation>Zurücksetzen</translation>
-    </message>
-    <message>
-        <location filename="../layout/ScoreboardStage.ui" line="419"/>
-        <source>IP</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../layout/ScoreboardStage.ui" line="432"/>
-        <source>Validation</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../layout/ScoreboardPlayer.ui" line="66"/>
@@ -816,89 +737,235 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="70"/>
+        <location filename="../ScoreboardStageWidget.py" line="84"/>
+        <location filename="../ScoreboardStageWidget.py" line="183"/>
         <source>Ruleset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="258"/>
+        <location filename="../ScoreboardStageWidget.py" line="190"/>
+        <source>Load one of your saved rulesets or one of start.gg&apos;s for the game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="203"/>
+        <source>Ruleset Name</source>
+        <translation type="unfinished">Name des Regelwerks</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="215"/>
+        <source>Load the selected ruleset again, dropping your changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="222"/>
+        <source>Delete the saved ruleset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="254"/>
+        <source>Game 1 striking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="255"/>
+        <source>strike order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="263"/>
+        <source>Bans after each game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="264"/>
+        <source>by the game&apos;s winner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="271"/>
+        <source>Stage clause</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="274"/>
+        <source>No DSR</source>
+        <translation type="unfinished">Keine DSR</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="275"/>
+        <source>DSR</source>
+        <translation type="unfinished">DSR</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="276"/>
+        <source>MDSR</source>
+        <translation type="unfinished">mDSR</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="291"/>
+        <source>Stages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="300"/>
+        <source>Search stages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="306"/>
+        <source>All stages</source>
+        <translation type="unfinished">Alle Stages</translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="307"/>
+        <source>In ruleset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="313"/>
+        <source>Click a stage to change it: not used → neutral (game 1) → counterpick (the following games). Right-click to pick one.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="333"/>
+        <source>Stage strike page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="334"/>
+        <source>Open it on a phone or tablet on the same network.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="343"/>
+        <source>Stage strike</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="344"/>
+        <source>Characters only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="358"/>
+        <source>Copy the link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="375"/>
+        <source>Any stage can be picked again during the set.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="378"/>
+        <source>DSR: a stage already played in the set can&apos;t be picked again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="381"/>
+        <source>MDSR: the player picking can&apos;t pick a stage they already won on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="540"/>
+        <source>Applies to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="546"/>
         <source>Edit ruleset for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="267"/>
+        <location filename="../ScoreboardStageWidget.py" line="553"/>
         <source>Use its own ruleset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="269"/>
+        <location filename="../ScoreboardStageWidget.py" line="555"/>
         <source>Give this scoreboard a ruleset of its own instead of the one shared by all scoreboards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="277"/>
+        <location filename="../ScoreboardStageWidget.py" line="573"/>
         <source>Restart stage strike</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="292"/>
+        <location filename="../ScoreboardStageWidget.py" line="583"/>
         <source>All scoreboards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="296"/>
+        <location filename="../ScoreboardStageWidget.py" line="587"/>
         <source>own ruleset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="316"/>
+        <location filename="../ScoreboardStageWidget.py" line="607"/>
         <source>Editing the ruleset shared by all scoreboards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="318"/>
+        <location filename="../ScoreboardStageWidget.py" line="609"/>
         <source>Editing {0}&apos;s own ruleset.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="322"/>
+        <location filename="../ScoreboardStageWidget.py" line="613"/>
         <source>{0} uses the shared ruleset; changes apply to every scoreboard using it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="417"/>
+        <location filename="../ScoreboardStageWidget.py" line="1008"/>
+        <source>{0} neutral</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="1011"/>
+        <source>{0} counterpick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="1014"/>
+        <source>{0} not used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="1034"/>
+        <source>1 issue to fix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="1036"/>
+        <source>{0} issues to fix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ScoreboardStageWidget.py" line="1040"/>
+        <source>No stages yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Open {0} in a browser to stage strike.</source>
         <translation>Im Browser {0} öffnen, um Stages zu streichen.</translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="421"/>
-        <source>Open {0} for character selection only.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ScoreboardStageWidget.py" line="832"/>
-        <source>Number striked stages does not match the number of neutral stages. Should strike {0} more stage(s).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ScoreboardStageWidget.py" line="843"/>
+        <location filename="../ScoreboardStageWidget.py" line="1043"/>
         <source>The current ruleset is valid!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="808"/>
-        <source>The text for banByMaxGames is invalid.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ScoreboardStageWidget.py" line="472"/>
+        <location filename="../ScoreboardStageWidget.py" line="721"/>
         <location filename="../AssetDownloaderWindow.py" line="347"/>
         <location filename="../HyperDrive.py" line="1498"/>
         <source>Update</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ScoreboardStageWidget.py" line="475"/>
+        <location filename="../ScoreboardStageWidget.py" line="224"/>
+        <location filename="../ScoreboardStageWidget.py" line="724"/>
         <source>Save new</source>
         <translation>Speichern unter</translation>
     </message>
@@ -918,6 +985,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../TournamentInfoWidget.py" line="133"/>
         <location filename="../HyperDrive.py" line="422"/>
         <source>Tournament Info</source>
         <translation>Turnierdaten</translation>
@@ -956,7 +1024,7 @@
     <message>
         <location filename="../HyperDrive.py" line="595"/>
         <location filename="../HyperDrive.py" line="603"/>
-        <location filename="../TournamentDataProvider/StartGGDataProvider.py" line="34"/>
+        <location filename="../TournamentDataProvider/StartGGDataProvider.py" line="40"/>
         <source>Pull Latest Completed Sets from StartGG</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1070,7 +1138,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="114"/>
+        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="127"/>
         <source>Pull Latest Completed Sets from ParryGG</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1759,7 +1827,7 @@
         <translation>{0} wird heruntergeladen...</translation>
     </message>
     <message>
-        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="108"/>
+        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="121"/>
         <source>Parry.gg API key has not been set. Please configure it in Settings &gt; API Keys.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2043,6 +2111,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../ScoreboardStageWidget.py" line="218"/>
         <location filename="../PlayerDBWindow.py" line="188"/>
         <location filename="../PlayerMediaTabs.py" line="260"/>
         <location filename="../PlayerMediaTabs.py" line="703"/>
@@ -2081,6 +2150,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../ScoreboardStageWidget.py" line="210"/>
+        <location filename="../TournamentInfoWidget.py" line="236"/>
         <location filename="../PlayerDBWindow.py" line="261"/>
         <source>Revert</source>
         <translation type="unfinished"></translation>
@@ -2322,6 +2393,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../ScoreboardStageWidget.py" line="207"/>
         <location filename="../PlayerDBWindow.py" line="638"/>
         <location filename="../PlayerMediaTabs.py" line="755"/>
         <source>Unsaved changes</source>
@@ -2621,6 +2693,7 @@
         <location filename="../ScoreboardPlayerWidget.py" line="88"/>
         <location filename="../CommentaryWidget.py" line="84"/>
         <location filename="../DisplayOptions.py" line="23"/>
+        <location filename="../TournamentInfoWidget.py" line="428"/>
         <location filename="../ScoreboardWidget.py" line="228"/>
         <location filename="../TeamBattleWidget.py" line="255"/>
         <source>Location</source>
@@ -3081,30 +3154,312 @@
         <translation>kursiv</translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="100"/>
+        <location filename="../TournamentInfoWidget.py" line="996"/>
         <source>Open Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="102"/>
+        <location filename="../TournamentInfoWidget.py" line="998"/>
         <source>Image Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="213"/>
-        <location filename="../TournamentInfoWidget.py" line="214"/>
+        <location filename="../TournamentInfoWidget.py" line="1181"/>
+        <location filename="../TournamentInfoWidget.py" line="1182"/>
         <location filename="../TournamentDataManager.py" line="120"/>
         <location filename="../Settings/TournamentTermsSettings.py" line="214"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="200"/>
+        <location filename="../TournamentInfoWidget.py" line="1155"/>
         <source>The tournament URL could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentInfoWidget.py" line="202"/>
+        <location filename="../TournamentInfoWidget.py" line="228"/>
+        <source>Edited</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="277"/>
+        <source>Clear all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="280"/>
+        <source>Empty every field, including the tournament&apos;s images</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="291"/>
+        <source>Fill every field in from the tournament again, replacing your changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="305"/>
+        <source>Identity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="314"/>
+        <source>The tournament&apos;s logo. Drop an image here to use it instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="327"/>
+        <source>Load local file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="333"/>
+        <source>Download tournament icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="339"/>
+        <source>Go back to the default icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="353"/>
+        <source>Drop an image here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="369"/>
+        <location filename="../TournamentInfoWidget.py" line="879"/>
+        <source>Tournament Name</source>
+        <translation type="unfinished">Turniername</translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="376"/>
+        <source>Event Name</source>
+        <translation type="unfinished">Eventname</translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="382"/>
+        <source>e.g. Top 8 · Sunday 6 PM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="384"/>
+        <source>Your own text for the layouts, e.g. the stage of the event or a sponsor. Loading the tournament keeps it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="389"/>
+        <source>Tagline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="395"/>
+        <source>Details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="406"/>
+        <source>to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="410"/>
+        <source>Dates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="415"/>
+        <source>Entrant Number</source>
+        <translation type="unfinished">Teilnehmerzahl</translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="418"/>
+        <source>Entrants</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="435"/>
+        <source>e.g. Springfield, IL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="437"/>
+        <source>The venue&apos;s city and state, for layouts that don&apos;t show the whole address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="442"/>
+        <source>City, State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="450"/>
+        <source>Not set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="451"/>
+        <source>In person</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="453"/>
+        <source>Hybrid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="459"/>
+        <source>In person or online</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="469"/>
+        <source>Everyone at the tournament, in every event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="473"/>
+        <source>Attendees</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="482"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="485"/>
+        <source>Short Link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="494"/>
+        <source>The tournament&apos;s time zone, for layouts to show its local times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="505"/>
+        <source>Time Zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="512"/>
+        <source>Social</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="525"/>
+        <location filename="../TournamentInfoWidget.py" line="535"/>
+        <source>Hashtag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="541"/>
+        <source>Discord</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="547"/>
+        <source>Banner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="548"/>
+        <source>from the tournament, for layouts that show one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="552"/>
+        <source>Restore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="569"/>
+        <source>Remove the banner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="619"/>
+        <source>A rough idea of how layouts use these fields.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="628"/>
+        <source>Sent to layouts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="779"/>
+        <source>Go back to the tournament&apos;s value: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="807"/>
+        <source>Load from tournament</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="815"/>
+        <source>Fill these in by hand, or load a tournament to fill them in.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="820"/>
+        <source>Not loaded from the tournament</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="822"/>
+        <source>{0} fills these in from the tournament.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="828"/>
+        <source>Loaded from {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="830"/>
+        <source>Loaded from the tournament</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="834"/>
+        <source>at {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="848"/>
+        <source>1 field changed by you</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="850"/>
+        <source>{0} fields changed by you</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="870"/>
+        <source>empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="1062"/>
+        <source>No banner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="1065"/>
+        <source>Loading the banner…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="1082"/>
+        <source>The banner could not be loaded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentInfoWidget.py" line="1157"/>
         <source>Make sure that your tournament URL is correctly formatted and points to an existing event, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3175,6 +3530,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../TournamentInfoWidget.py" line="452"/>
         <location filename="../SelectEventWindow.py" line="41"/>
         <source>Online</source>
         <translation type="unfinished"></translation>
@@ -3211,6 +3567,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../TournamentInfoWidget.py" line="886"/>
         <location filename="../HyperDrive.py" line="1285"/>
         <location filename="../HyperDrive.py" line="1360"/>
         <location filename="../SelectEventWindow.py" line="212"/>
@@ -3279,6 +3636,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../ScoreboardStageWidget.py" line="197"/>
         <location filename="../BracketWidget.py" line="601"/>
         <location filename="../BracketWidget.py" line="1458"/>
         <source>Name</source>
@@ -3515,6 +3873,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../TournamentInfoWidget.py" line="803"/>
         <location filename="../BracketWidget.py" line="955"/>
         <source>Load from {0}</source>
         <translation type="unfinished"></translation>
@@ -3738,6 +4097,7 @@
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="127"/>
+        <location filename="../TournamentInfoWidget.py" line="813"/>
         <location filename="../BracketWidget.py" line="945"/>
         <source>No tournament loaded</source>
         <translation type="unfinished"></translation>
@@ -3836,6 +4196,7 @@
     </message>
     <message>
         <location filename="../StreamQueueWidget.py" line="329"/>
+        <location filename="../TournamentInfoWidget.py" line="577"/>
         <source>On stream</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4983,6 +5344,118 @@ Drop an image here.</source>
     <message>
         <location filename="../BracketFocus.py" line="23"/>
         <source>Losers Side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="34"/>
+        <source>Not used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="35"/>
+        <source>Neutral</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="36"/>
+        <source>Counterpick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="144"/>
+        <source>Fewer: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="145"/>
+        <source>More: {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="276"/>
+        <source>+ Add a step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="283"/>
+        <source>A wins rock-paper-scissors and strikes first; the players then take turns.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="322"/>
+        <source>Player {0} strikes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="332"/>
+        <source>Remove this step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="367"/>
+        <source>Strike {0} more: {1} neutral stages need {2} strikes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="370"/>
+        <source>Strike {0} fewer: {1} neutral stages need {2} strikes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="390"/>
+        <source>Add neutral stages to strike from.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="395"/>
+        <source>{0} strikes from {1} neutral stages leave 1 stage to play.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="420"/>
+        <source>Same every set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="421"/>
+        <source>Depends on best-of</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="430"/>
+        <source>Winner bans</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="431"/>
+        <location filename="../RulesetEditor.py" line="510"/>
+        <source>Banned stages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="444"/>
+        <source>+ Add a best-of</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="455"/>
+        <source>stages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="502"/>
+        <location filename="../RulesetEditor.py" line="506"/>
+        <source>Best of</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="519"/>
+        <source>Remove this best-of</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RulesetEditor.py" line="785"/>
+        <source>Click to change it, right-click to pick what it is</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
