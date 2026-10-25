@@ -7,7 +7,6 @@ import traceback
 import orjson
 import requests
 from loguru import logger
-from qtpy import uic
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
@@ -16,11 +15,26 @@ from src.StageStrikeLogic import StageStrikeLogic
 
 from .GameAssetManager import GameAssetManager
 from .Helpers.DictHelper import deep_get
-from .Helpers.DirHelper import ResolvePath
+from .RulesetEditor import (
+    STAGE_COUNTERPICK,
+    STAGE_NEUTRAL,
+    TILE_GAP,
+    TILE_HEIGHT,
+    BanEditor,
+    CounterpickColor,
+    ErrorColor,
+    Repolish,
+    SegmentedControl,
+    StageGrid,
+    StrikeOrderEditor,
+)
 from .ScoreboardManager import ScoreboardManager
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .Theme import ThemedIcon
+from .Theme import STATUS_OK_COLOR, Theme, ThemedIcon
+
+# Below this width, the rules column goes under the stages
+NARROW_WIDTH = 1000
 
 
 class ScoreboardStageWidgetSignals(QObject):
@@ -86,78 +100,16 @@ class ScoreboardStageWidget(QDockWidget):
         # Scoreboard whose ruleset the editor shows, 0 for the shared one
         self.editTarget = 0
         self.loadingForm = False
-
-        uic.loadUi(ResolvePath("src/layout/ScoreboardStage.ui"), self.innerWidget)
+        # The form was changed since its ruleset was loaded or saved
+        self.dirty = False
+        self.ready = False
 
         self.userRulesets = []
         self.startggRulesets = []
 
         self.stagesModel = QStandardItemModel()
-        self.neutralModel = QStandardItemModel()
-        self.counterpickModel = QStandardItemModel()
 
-        self.rulesetsBox = self.findChild(QComboBox, "rulesetSelect")
-        self.rulesetsBox.activated.connect(self.LoadRuleset)
-
-        self.stagesView = self.findChild(QListView, "allStages")
-        self.stagesView.setIconSize(QSize(64, 64))
-
-        self.stagesNeutral = self.findChild(QListView, "neutralStages")
-        self.stagesNeutral.setIconSize(QSize(64, 64))
-
-        self.stagesCounterpick = self.findChild(QListView, "counterpickStages")
-        self.stagesCounterpick.setIconSize(QSize(64, 64))
-
-        self.rulesetName = self.findChild(QLineEdit, "rulesetName")
-        self.rulesetName.textEdited.connect(self.ExportCurrentRuleset)
-
-        self.btAddNeutral = self.findChild(QPushButton, "btAddNeutral")
-        self.btAddNeutral.clicked.connect(
-            lambda x=None, view=self.stagesNeutral: self.AddStage(view)
-        )
-        self.btAddNeutral.setIcon(ThemedIcon("./assets/icons/arrow_right.svg"))
-
-        self.btRemoveNeutral = self.findChild(QPushButton, "btRemoveNeutral")
-        self.btRemoveNeutral.clicked.connect(lambda: self.RemoveStage(self.stagesNeutral))
-        self.btRemoveNeutral.setIcon(ThemedIcon("./assets/icons/arrow_left.svg"))
-
-        self.btAddCounterpick = self.findChild(QPushButton, "btAddCounterpick")
-        self.btAddCounterpick.clicked.connect(
-            lambda x=None, view=self.stagesCounterpick: self.AddStage(view)
-        )
-        self.btAddCounterpick.setIcon(ThemedIcon("./assets/icons/arrow_right.svg"))
-
-        self.btRemoveCounterpick = self.findChild(QPushButton, "btRemoveCounterpick")
-        self.btRemoveCounterpick.clicked.connect(lambda: self.RemoveStage(self.stagesCounterpick))
-        self.btRemoveCounterpick.setIcon(ThemedIcon("./assets/icons/arrow_left.svg"))
-
-        self.noDSR = self.findChild(QRadioButton, "noDSR")
-        self.noDSR.clicked.connect(self.ExportCurrentRuleset)
-        self.DSR = self.findChild(QRadioButton, "DSR")
-        self.DSR.clicked.connect(self.ExportCurrentRuleset)
-        self.MDSR = self.findChild(QRadioButton, "MDSR")
-        self.MDSR.clicked.connect(self.ExportCurrentRuleset)
-
-        self.strikeOrder = self.findChild(QLineEdit, "strikeOrder")
-        self.strikeOrder.textEdited.connect(self.ExportCurrentRuleset)
-
-        self.fixedBanCount = self.findChild(QRadioButton, "fixedBanCount")
-        self.fixedBanCount.clicked.connect(self.ExportCurrentRuleset)
-        self.variableBanCount = self.findChild(QRadioButton, "variableBanCount")
-        self.variableBanCount.clicked.connect(self.ExportCurrentRuleset)
-
-        self.banCount = self.findChild(QSpinBox, "banCount")
-        self.banCount.valueChanged.connect(self.ExportCurrentRuleset)
-
-        self.banCountByMaxGames = self.findChild(QLineEdit, "banCountByMaxGames")
-        self.banCountByMaxGames.textEdited.connect(self.ExportCurrentRuleset)
-
-        self.webappLabel = self.findChild(QLabel, "labelIp")
-        self.webappLabel.setOpenExternalLinks(True)
-        self.UpdateWebappLabel()
-
-        self.labelValidation = self.findChild(QLabel, "labelValidation")
-        self.labelValidation.setText("")
+        self.BuildUI()
 
         self.SetupScoreboardSelect()
 
@@ -174,23 +126,352 @@ class ScoreboardStageWidget(QDockWidget):
         StateManager.Set("score.ruleset", None)
         self.ExportCurrentRuleset()
 
-        self.btSave = self.findChild(QPushButton, "btSave")
-        self.btSave.setIcon(ThemedIcon("assets/icons/save.svg"))
-        self.btDelete = self.findChild(QPushButton, "btDelete")
-        self.btDelete.setIcon(ThemedIcon("assets/icons/cancel.svg"))
-        self.btClear = self.findChild(QPushButton, "btClear")
-        self.btClear.setIcon(ThemedIcon("assets/icons/undo.svg"))
-
         self.rulesetName.textChanged.connect(self.UpdateBottomButtons)
         self.btSave.clicked.connect(self.SaveRuleset)
         self.btDelete.clicked.connect(self.DeleteRuleset)
         self.btClear.clicked.connect(self.ClearRuleset)
 
-        self.stagesModel.dataChanged.connect(
-            lambda topLeft, bottomRight: self.update_cloned_items()
-        )
+        self.ready = True
+        self.ApplyStyle()
+        self.UpdateBottomButtons()
+        self.SetDirty(False)
         # TournamentDataManager.instance.signals.tournament_changed.connect()
         # load tournament ruleset
+
+    # =====================================================
+    # BUILDING
+    # =====================================================
+    def Card(self, title, note=None):
+        card = QFrame()
+        card.setObjectName("card")
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(16, 14, 16, 16)
+        layout.setSpacing(10)
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        label = QLabel(title)
+        label.setObjectName("cardTitle")
+        row.addWidget(label)
+        if note:
+            noteLabel = QLabel(note)
+            noteLabel.setObjectName("muted")
+            row.addWidget(noteLabel)
+        row.addStretch(1)
+        layout.addLayout(row)
+        return card, layout, row
+
+    def BuildUI(self):
+        outer = QVBoxLayout(self.innerWidget)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+
+        # Applies to: which scoreboards the ruleset is for (filled in by
+        # SetupScoreboardSelect)
+        self.scopeBar = QFrame()
+        self.scopeBar.setObjectName("bar")
+        self.scopeRow = QHBoxLayout(self.scopeBar)
+        self.scopeRow.setContentsMargins(16, 8, 16, 8)
+        self.scopeRow.setSpacing(10)
+        outer.addWidget(self.scopeBar)
+
+        # The ruleset: a saved or start.gg one, its name and saving it
+        rulesetBar = QFrame()
+        rulesetBar.setObjectName("bar")
+        row = QHBoxLayout(rulesetBar)
+        row.setContentsMargins(16, 8, 16, 8)
+        row.setSpacing(10)
+        label = QLabel(QApplication.translate("app", "Ruleset"))
+        label.setObjectName("fieldLabel")
+        row.addWidget(label)
+        self.rulesetsBox = QComboBox()
+        self.rulesetsBox.setObjectName("rulesetSelect")
+        self.rulesetsBox.setMinimumWidth(220)
+        self.rulesetsBox.setToolTip(
+            QApplication.translate(
+                "app", "Load one of your saved rulesets or one of start.gg's for the game"
+            )
+        )
+        self.rulesetsBox.activated.connect(self.LoadRuleset)
+        label.setBuddy(self.rulesetsBox)
+        row.addWidget(self.rulesetsBox)
+        nameLabel = QLabel(QApplication.translate("app", "Name"))
+        nameLabel.setObjectName("fieldLabel")
+        row.addSpacing(6)
+        row.addWidget(nameLabel)
+        self.rulesetName = QLineEdit()
+        self.rulesetName.setObjectName("rulesetName")
+        self.rulesetName.setPlaceholderText(QApplication.translate("app", "Ruleset Name"))
+        self.rulesetName.textEdited.connect(self.FormEdited)
+        nameLabel.setBuddy(self.rulesetName)
+        row.addWidget(self.rulesetName, 1)
+        self.dirtyLabel = QLabel("● " + QApplication.translate("app", "Unsaved changes"))
+        self.dirtyLabel.setObjectName("dirtyLabel")
+        row.addWidget(self.dirtyLabel)
+        self.btClear = QPushButton(QApplication.translate("app", "Revert"))
+        self.btClear.setObjectName("btClear")
+        self.btClear.setIcon(ThemedIcon("assets/icons/undo.svg"))
+        self.btClear.setAutoDefault(False)
+        self.btClear.setToolTip(
+            QApplication.translate("app", "Load the selected ruleset again, dropping your changes")
+        )
+        row.addWidget(self.btClear)
+        self.btDelete = QPushButton(QApplication.translate("app", "Delete"))
+        self.btDelete.setObjectName("btDelete")
+        self.btDelete.setIcon(ThemedIcon("assets/icons/cancel.svg"))
+        self.btDelete.setAutoDefault(False)
+        self.btDelete.setToolTip(QApplication.translate("app", "Delete the saved ruleset"))
+        row.addWidget(self.btDelete)
+        self.btSave = QPushButton(QApplication.translate("app", "Save new"))
+        self.btSave.setObjectName("btSave")
+        self.btSave.setIcon(ThemedIcon("assets/icons/save.svg"))
+        self.btSave.setDefault(True)
+        self.btSave.setAutoDefault(False)
+        row.addWidget(self.btSave)
+        outer.addWidget(rulesetBar)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        outer.addWidget(scroll, 1)
+        body = QWidget()
+        self.bodyLayout = QBoxLayout(QBoxLayout.Direction.LeftToRight, body)
+        self.bodyLayout.setContentsMargins(16, 14, 16, 14)
+        self.bodyLayout.setSpacing(14)
+        scroll.setWidget(body)
+
+        left = QVBoxLayout()
+        left.setSpacing(14)
+        left.addWidget(self.BuildStagesCard(), 1)
+        left.addWidget(self.BuildWebappCard())
+        self.bodyLayout.addLayout(left, 1)
+
+        self.rail = QWidget()
+        rail = QVBoxLayout(self.rail)
+        rail.setContentsMargins(0, 0, 0, 0)
+        rail.setSpacing(14)
+
+        card, layout, _ = self.Card(
+            QApplication.translate("app", "Game 1 striking"),
+            QApplication.translate("app", "strike order"),
+        )
+        self.strikeEditor = StrikeOrderEditor()
+        self.strikeEditor.changed.connect(self.FormEdited)
+        layout.addWidget(self.strikeEditor)
+        rail.addWidget(card)
+
+        card, layout, _ = self.Card(
+            QApplication.translate("app", "Bans after each game"),
+            QApplication.translate("app", "by the game's winner"),
+        )
+        self.banEditor = BanEditor()
+        self.banEditor.changed.connect(self.FormEdited)
+        layout.addWidget(self.banEditor)
+        rail.addWidget(card)
+
+        card, layout, _ = self.Card(QApplication.translate("app", "Stage clause"))
+        self.clause = SegmentedControl(
+            [
+                ("none", QApplication.translate("app", "No DSR")),
+                ("dsr", QApplication.translate("app", "DSR")),
+                ("mdsr", QApplication.translate("app", "MDSR")),
+            ]
+        )
+        self.clause.changed.connect(lambda _: [self.UpdateClauseHelp(), self.FormEdited()])
+        layout.addWidget(self.clause)
+        self.clauseHelp = QLabel()
+        self.clauseHelp.setObjectName("muted")
+        self.clauseHelp.setWordWrap(True)
+        layout.addWidget(self.clauseHelp)
+        rail.addWidget(card)
+        rail.addStretch(1)
+        self.bodyLayout.addWidget(self.rail)
+        self.UpdateClauseHelp()
+
+    def BuildStagesCard(self):
+        card, layout, title = self.Card(QApplication.translate("app", "Stages"))
+        self.stageCounts = {}
+        for state in (STAGE_NEUTRAL, STAGE_COUNTERPICK, "off"):
+            count = QLabel()
+            count.setObjectName("muted" if state == "off" else "countLabel")
+            title.insertWidget(title.count() - 1, count)
+            self.stageCounts[state] = count
+
+        self.stageSearch = QLineEdit()
+        self.stageSearch.setPlaceholderText(QApplication.translate("app", "Search stages"))
+        self.stageSearch.setClearButtonEnabled(True)
+        self.stageSearch.setMaximumWidth(200)
+        title.addWidget(self.stageSearch)
+        self.stageFilter = SegmentedControl(
+            [
+                ("all", QApplication.translate("app", "All stages")),
+                ("in", QApplication.translate("app", "In ruleset")),
+            ]
+        )
+        title.addWidget(self.stageFilter)
+
+        hint = QLabel(
+            QApplication.translate(
+                "app",
+                "Click a stage to change it: not used → neutral (game 1) → counterpick (the following games). Right-click to pick one.",
+            )
+        )
+        hint.setObjectName("muted")
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+
+        self.stageGrid = StageGrid()
+        self.stageGrid.stagesChanged.connect(self.FormEdited)
+        self.stageSearch.textChanged.connect(self.stageGrid.proxy.SetText)
+        self.stageFilter.changed.connect(
+            lambda key: self.stageGrid.proxy.SetInRulesetOnly(key == "in")
+        )
+        layout.addWidget(self.stageGrid, 1)
+        return card
+
+    def BuildWebappCard(self):
+        card, layout, _ = self.Card(
+            QApplication.translate("app", "Stage strike page"),
+            QApplication.translate("app", "Open it on a phone or tablet on the same network."),
+        )
+        grid = QGridLayout()
+        grid.setHorizontalSpacing(10)
+        grid.setVerticalSpacing(6)
+        grid.setColumnStretch(1, 1)
+        self.webappLinks = []
+        for row, title in enumerate(
+            [
+                QApplication.translate("app", "Stage strike"),
+                QApplication.translate("app", "Characters only"),
+            ]
+        ):
+            label = QLabel(title)
+            label.setObjectName("muted")
+            grid.addWidget(label, row, 0)
+            link = QLabel()
+            link.setOpenExternalLinks(True)
+            link.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+            link.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+            grid.addWidget(link, row, 1)
+            copy = QToolButton()
+            copy.setIcon(ThemedIcon("assets/icons/copy.svg"))
+            copy.setIconSize(QSize(14, 14))
+            copy.setToolTip(QApplication.translate("app", "Copy the link"))
+            copy.setAccessibleName(copy.toolTip())
+            grid.addWidget(copy, row, 2)
+            self.webappLinks.append((link, copy))
+        layout.addLayout(grid)
+        self.webappLinks[0][1].clicked.connect(
+            lambda: QApplication.clipboard().setText(self.webappUrls[0])
+        )
+        self.webappLinks[1][1].clicked.connect(
+            lambda: QApplication.clipboard().setText(self.webappUrls[1])
+        )
+        self.webappUrls = ["", ""]
+        return card
+
+    def UpdateClauseHelp(self):
+        self.clauseHelp.setText(
+            {
+                "none": QApplication.translate(
+                    "app", "Any stage can be picked again during the set."
+                ),
+                "dsr": QApplication.translate(
+                    "app", "DSR: a stage already played in the set can't be picked again."
+                ),
+                "mdsr": QApplication.translate(
+                    "app", "MDSR: the player picking can't pick a stage they already won on."
+                ),
+            }[self.clause.Value()]
+        )
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        narrow = self.width() < NARROW_WIDTH
+        self.bodyLayout.setDirection(
+            QBoxLayout.Direction.TopToBottom if narrow else QBoxLayout.Direction.LeftToRight
+        )
+        if narrow:
+            self.rail.setMinimumWidth(0)
+            self.rail.setMaximumWidth(16777215)
+        else:
+            self.rail.setFixedWidth(370)
+        # Stacked, the page scrolls: room for more rows of stages
+        self.stageGrid.setMinimumHeight((TILE_HEIGHT + TILE_GAP) * (3 if narrow else 2))
+
+    # =====================================================
+    # STYLE
+    # =====================================================
+    def ApplyStyle(self):
+        colors = Theme.Colors()
+        c = {k: v.name() for k, v in colors.items()}
+        r = Theme.Radius()
+        ok = STATUS_OK_COLOR
+        error = ErrorColor(colors).name()
+        counterpick = CounterpickColor(colors).name()
+        self.innerWidget.setStyleSheet(
+            f"""
+            QFrame#bar {{ border-bottom: 1px solid {c["raised"]}; }}
+            QFrame#card {{
+                background: {c["surface"]}; border: 1px solid {c["raised"]};
+                border-radius: {r + 4}px;
+            }}
+            QLabel#cardTitle {{ font-weight: bold; }}
+            QLabel#fieldLabel {{ font-weight: bold; color: {c["muted"]}; }}
+            QLabel#muted {{ color: {c["muted"]}; }}
+            QLabel#countLabel {{ font-weight: bold; }}
+            QLabel#dirtyLabel {{ color: {c["accentText"]}; }}
+            QLabel#validationPill {{
+                border-radius: 12px; font-weight: bold;
+                border: 1px solid {c["border"]}; color: {c["muted"]};
+            }}
+            QLabel#validationPill[status="ok"] {{ border-color: {ok}; color: {ok}; }}
+            QLabel#validationPill[status="bad"] {{ border-color: {error}; color: {error}; }}
+            QFrame#segmented {{
+                background: {c["window"]}; border: 1px solid {c["raised"]};
+                border-radius: {r + 2}px;
+            }}
+            QPushButton#segment {{
+                background: transparent; border: 1px solid transparent; color: {c["muted"]};
+                font-weight: bold; padding: 3px 10px;
+            }}
+            QPushButton#segment:hover {{ color: {c["text"]}; }}
+            QPushButton#segment:checked {{
+                background: {c["raised"]}; border-color: {c["border"]}; color: {c["text"]};
+            }}
+            QFrame#strikeRow {{
+                background: {c["window"]}; border: 1px solid {c["raised"]};
+                border-radius: {r + 2}px;
+            }}
+            QLabel#strikerA {{
+                background: {c["text"]}; color: {c["window"]}; border-radius: 5px;
+                font-weight: bold;
+            }}
+            QLabel#strikerB {{
+                background: {c["raised"]}; color: {c["text"]}; border: 1px solid {c["muted"]};
+                border-radius: 5px; font-weight: bold;
+            }}
+            QLabel#stepValue {{ font-weight: bold; }}
+            QToolButton#stepButton {{ min-width: 18px; font-weight: bold; }}
+            QToolButton#flatButton {{ background: transparent; border: 1px solid transparent; }}
+            QToolButton#flatButton:hover {{ border-color: {c["border"]}; }}
+            QPushButton#dashedButton {{
+                background: transparent; border: 1px dashed {c["border"]}; color: {c["muted"]};
+            }}
+            QPushButton#dashedButton:hover {{ border-color: {c["accent"]}; color: {c["text"]}; }}
+            QListView {{ background: transparent; border: none; }}
+            """
+        )
+        self.stageCounts[STAGE_NEUTRAL].setStyleSheet(f"color: {c['accentText']};")
+        self.stageCounts[STAGE_COUNTERPICK].setStyleSheet(f"color: {counterpick};")
+        self.stageGrid.SetColors(colors)
+        self.strikeEditor.Refresh()
+        self.UpdateWebappLabel()
+
+    def changeEvent(self, event):
+        # The theme changed
+        if event.type() == QEvent.Type.PaletteChange and getattr(self, "ready", False):
+            self.ApplyStyle()
+        super().changeEvent(event)
 
     # =====================================================
     # STAGE STRIKE LOGIC
@@ -250,18 +531,23 @@ class ScoreboardStageWidget(QDockWidget):
             self.GetLogic(number).Initialize()
 
     # =====================================================
+    # =====================================================
     # SCOREBOARD TARGETS
     # =====================================================
     def SetupScoreboardSelect(self):
-        row = QHBoxLayout()
+        row = self.scopeRow
 
-        row.addWidget(QLabel(QApplication.translate("app", "Edit ruleset for")))
+        label = QLabel(QApplication.translate("app", "Applies to"))
+        label.setObjectName("fieldLabel")
+        row.addWidget(label)
 
         self.scoreboardSelect = QComboBox()
-        self.scoreboardSelect.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.scoreboardSelect.setMinimumWidth(200)
+        self.scoreboardSelect.setToolTip(QApplication.translate("app", "Edit ruleset for"))
         self.scoreboardSelect.activated.connect(
             lambda _: self.SetEditTarget(self.scoreboardSelect.currentData() or 0)
         )
+        label.setBuddy(self.scoreboardSelect)
         row.addWidget(self.scoreboardSelect)
 
         self.ownRuleset = QCheckBox(QApplication.translate("app", "Use its own ruleset"))
@@ -274,16 +560,21 @@ class ScoreboardStageWidget(QDockWidget):
         self.ownRuleset.clicked.connect(self.SetOwnRuleset)
         row.addWidget(self.ownRuleset)
 
+        self.editingLabel = QLabel()
+        self.editingLabel.setObjectName("muted")
+        self.editingLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        row.addWidget(self.editingLabel, 1)
+
+        self.validationPill = QLabel()
+        self.validationPill.setObjectName("validationPill")
+        self.validationPill.setContentsMargins(12, 3, 12, 3)
+        row.addWidget(self.validationPill)
+
         self.resetStrikeBt = QPushButton(QApplication.translate("app", "Restart stage strike"))
         self.resetStrikeBt.setIcon(ThemedIcon("assets/icons/undo.svg"))
+        self.resetStrikeBt.setAutoDefault(False)
         self.resetStrikeBt.clicked.connect(self.ResetStrike)
         row.addWidget(self.resetStrikeBt)
-
-        self.innerWidget.layout().insertLayout(0, row)
-
-        self.editingLabel = QLabel()
-        self.editingLabel.setWordWrap(True)
-        self.innerWidget.layout().insertWidget(1, self.editingLabel)
 
         self.UpdateScoreboardSelect()
 
@@ -323,6 +614,7 @@ class ScoreboardStageWidget(QDockWidget):
                 "app", "{0} uses the shared ruleset; changes apply to every scoreboard using it."
             ).format(ScoreboardManager.instance.GetTabName(target))
         self.editingLabel.setText(text)
+        self.editingLabel.setToolTip(text)
         self.UpdateWebappLabel()
 
     def SetEditTarget(self, number):
@@ -333,6 +625,7 @@ class ScoreboardStageWidget(QDockWidget):
         ruleset = self.RulesetFor(self.editTarget) if self.editTarget else self.sharedRuleset
         self.LoadRulesetIntoForm(ruleset)
         self.ValidateRuleset(ruleset)
+        self.SetDirty(False)
         self.UpdateTargetWidgets()
 
     def ScoreboardAdded(self, number):
@@ -365,43 +658,6 @@ class ScoreboardStageWidget(QDockWidget):
                 pass
         self.UpdateScoreboardSelect()
 
-    def update_cloned_items(self):
-        neutralStages = []
-
-        for rowNeutral in range(self.neutralModel.rowCount()):
-            neutralItem = self.neutralModel.item(rowNeutral)
-
-            for rowAll in range(self.stagesModel.rowCount()):
-                stageItem = self.stagesModel.item(rowAll)
-
-                if neutralItem.data(Qt.ItemDataRole.UserRole).get("codename") == stageItem.data(
-                    Qt.ItemDataRole.UserRole
-                ).get("codename"):
-                    neutralStages.append(stageItem)
-
-        self.neutralModel.clear()
-
-        for s in neutralStages:
-            self.neutralModel.appendRow(s.clone())
-
-        counterpickStages = []
-
-        for rowNeutral in range(self.counterpickModel.rowCount()):
-            neutralItem = self.counterpickModel.item(rowNeutral)
-
-            for rowAll in range(self.stagesModel.rowCount()):
-                stageItem = self.stagesModel.item(rowAll)
-
-                if neutralItem.data(Qt.ItemDataRole.UserRole).get("codename") == stageItem.data(
-                    Qt.ItemDataRole.UserRole
-                ).get("codename"):
-                    counterpickStages.append(stageItem)
-
-        self.counterpickModel.clear()
-
-        for s in counterpickStages:
-            self.counterpickModel.appendRow(s.clone())
-
     # =====================================================
     # WEB APP
     # =====================================================
@@ -413,15 +669,10 @@ class ScoreboardStageWidget(QDockWidget):
         # Character selection only: each team picks once per score (add
         # &team=1 or &team=2 for one team's page)
         charactersUrl = f"{base}/character-select?scoreboard={self.editTarget or 1}"
-        self.webappLabel.setText(
-            QApplication.translate("app", "Open {0} in a browser to stage strike.").format(
-                f"<a href='{url}'>{url}</a>"
-            )
-            + "<br>"
-            + QApplication.translate("app", "Open {0} for character selection only.").format(
-                f"<a href='{charactersUrl}'>{charactersUrl}</a>"
-            )
-        )
+        self.webappUrls = [url, charactersUrl]
+        for (link, _), target in zip(self.webappLinks, self.webappUrls):
+            link.setText(f"<a href='{target}'>{target}</a>")
+            link.setToolTip(target)
 
     def GetIP(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -444,17 +695,15 @@ class ScoreboardStageWidget(QDockWidget):
         # Their stages were the previous game's
         self.customRulesets = {}
         self.editTarget = 0
+
+        self.stagesModel = GameAssetManager.instance.stageModel
+        self.stagesModel.sort(0)
+        self.stageGrid.SetSourceModel(self.stagesModel)
+
         self.UpdateScoreboardSelect()
 
         self.ClearRuleset()
         self.LoadRulesets()
-
-        self.stagesModel = GameAssetManager.instance.stageModel
-        self.stagesModel.dataChanged.connect(
-            lambda topLeft, bottomRight: self.update_cloned_items()
-        )
-        self.stagesModel.sort(0)
-        self.stagesView.setModel(self.stagesModel)
 
     def UpdateBottomButtons(self):
         found = next(
@@ -474,36 +723,18 @@ class ScoreboardStageWidget(QDockWidget):
         else:
             self.btSave.setText(QApplication.translate("app", "Save new"))
             self.btDelete.setEnabled(False)
+        self.btSave.setEnabled(bool(self.rulesetName.text().strip()))
 
-    def AddStage(self, view: QListView):
-        selected = self.stagesView.selectedIndexes()
+    def FormEdited(self, *args):
+        if self.loadingForm:
+            return
+        self.SetDirty(True)
+        self.ExportCurrentRuleset()
 
-        if len(selected) == 1:
-            data = selected[0].data(Qt.ItemDataRole.UserRole)
-
-            for i in range(self.stagesNeutral.model().rowCount()):
-                if self.stagesNeutral.model().item(i, 0).data(Qt.ItemDataRole.UserRole).get(
-                    "codename"
-                ) == data.get("codename"):
-                    return
-
-            for i in range(self.stagesCounterpick.model().rowCount()):
-                if self.stagesCounterpick.model().item(i, 0).data(Qt.ItemDataRole.UserRole).get(
-                    "codename"
-                ) == data.get("codename"):
-                    return
-
-            item = self.stagesView.model().itemFromIndex(selected[0]).clone()
-            view.model().appendRow(item)
-            view.model().sort(0)
-            self.ExportCurrentRuleset()
-
-    def RemoveStage(self, view: QListView):
-        selected = view.selectedIndexes()
-
-        if len(selected) == 1:
-            view.model().removeRow(selected[0].row())
-            self.ExportCurrentRuleset()
+    def SetDirty(self, dirty):
+        self.dirty = dirty
+        self.dirtyLabel.setVisible(dirty)
+        self.btClear.setEnabled(dirty)
 
     def FindStageInModel(self, codename: str):
         for row in range(self.stagesModel.rowCount()):
@@ -535,6 +766,11 @@ class ScoreboardStageWidget(QDockWidget):
         self.userRulesets.append(vars(self.GetCurrentRuleset(True)))
 
         self.SaveRulesetsFile()
+        # The saved ruleset is the one selected: reverting goes back to it
+        index = self.rulesetsBox.findText(self.rulesetName.text())
+        if index >= 0:
+            self.rulesetsBox.setCurrentIndex(index)
+        self.SetDirty(False)
 
     def DeleteRuleset(self):
         found = next(
@@ -565,6 +801,7 @@ class ScoreboardStageWidget(QDockWidget):
         self.UpdateBottomButtons()
 
     def LoadRulesets(self):
+        selected = self.rulesetsBox.currentText()
         rulesetsModel = QStandardItemModel()
 
         rulesetsModel.appendRow(QStandardItem(""))
@@ -682,8 +919,10 @@ class ScoreboardStageWidget(QDockWidget):
                 item.setIcon(ThemedIcon("./assets/icons/startgg.svg"))
                 rulesetsModel.appendRow(item)
 
-        # Update list
+        # Update list, keeping the selected ruleset
         self.rulesetsBox.setModel(rulesetsModel)
+        index = self.rulesetsBox.findText(selected) if selected else -1
+        self.rulesetsBox.setCurrentIndex(max(index, 0))
 
     def LoadRuleset(self):
         data = self.rulesetsBox.currentData()
@@ -693,6 +932,7 @@ class ScoreboardStageWidget(QDockWidget):
 
         self.LoadRulesetIntoForm(data)
         self.ExportCurrentRuleset()
+        self.SetDirty(False)
 
     def LoadRulesetIntoForm(self, data: Ruleset):
         # Setting the fields would export the half loaded ruleset otherwise
@@ -703,50 +943,32 @@ class ScoreboardStageWidget(QDockWidget):
             self.loadingForm = False
 
     def _LoadRulesetIntoForm(self, data: Ruleset):
-        self.rulesetName.setText(data.name)
+        self.rulesetName.setText(data.name or "")
 
         if data.useDSR:
-            self.DSR.setChecked(True)
+            self.clause.SetValue("dsr")
         elif data.useMDSR:
-            self.MDSR.setChecked(True)
+            self.clause.SetValue("mdsr")
         else:
-            self.noDSR.setChecked(True)
+            self.clause.SetValue("none")
+        self.UpdateClauseHelp()
 
-        if data.strikeOrder:
-            self.strikeOrder.setText(",".join([str(s) for s in data.strikeOrder]))
-        else:
-            self.strikeOrder.setText("")
+        # Without one, the usual 1,2,1
+        self.strikeEditor.SetOrder(
+            [int(s) for s in data.strikeOrder] if data.strikeOrder else [1, 2, 1]
+        )
 
-        if data.banCount:
-            self.fixedBanCount.setChecked(True)
-            self.banCount.setValue(data.banCount)
-            self.banCountByMaxGames.setText("")
-        elif data.banByMaxGames:
-            self.variableBanCount.setChecked(True)
-            self.banCountByMaxGames.setText(
-                ",".join([f"{k}:{v}" for k, v in data.banByMaxGames.items()])
-            )
-            self.banCount.setValue(0)
-        else:
-            self.fixedBanCount.setChecked(True)
-            self.banCount.setValue(0)
-            self.banCountByMaxGames.setText("")
+        self.banEditor.SetValues(data.banCount or 0, data.banByMaxGames or {})
 
-        self.neutralModel = QStandardItemModel()
-        if data.neutralStages:
-            for stage in data.neutralStages:
-                item = self.FindStageInModel(stage.get("codename"))
-                if item is not None:
-                    self.neutralModel.appendRow(item.clone())
-        self.stagesNeutral.setModel(self.neutralModel)
+        def codenames(stages):
+            found = []
+            for stage in stages or []:
+                codename = stage.get("codename") if isinstance(stage, dict) else None
+                if self.FindStageInModel(codename) is not None:
+                    found.append(codename)
+            return found
 
-        self.counterpickModel = QStandardItemModel()
-        if data.counterpickStages:
-            for stage in data.counterpickStages:
-                item = self.FindStageInModel(stage.get("codename"))
-                if item is not None:
-                    self.counterpickModel.appendRow(item.clone())
-        self.stagesCounterpick.setModel(self.counterpickModel)
+        self.stageGrid.SetStages(codenames(data.neutralStages), codenames(data.counterpickStages))
 
     # =====================================================
     # CURRENT RULESET
@@ -757,94 +979,72 @@ class ScoreboardStageWidget(QDockWidget):
         ruleset.videogame = GameAssetManager.instance.selectedGame.get("codename")
         ruleset.name = self.rulesetName.text()
 
-        ruleset.neutralStages = []
-        for i in range(self.stagesNeutral.model().rowCount()):
-            if not forSaving:
-                ruleset.neutralStages.append(
-                    self.stagesNeutral.model().item(i, 0).data(Qt.ItemDataRole.UserRole)
-                )
-            else:
-                ruleset.neutralStages.append(
-                    self.stagesNeutral.model()
-                    .item(i, 0)
-                    .data(Qt.ItemDataRole.UserRole)
-                    .get("en_name")
-                )
+        def stages(codenames):
+            found = []
+            for codename in codenames:
+                item = self.FindStageInModel(codename)
+                if item is not None:
+                    data = item.data(Qt.ItemDataRole.UserRole)
+                    found.append(data.get("en_name") if forSaving else data)
+            return found
 
-        ruleset.counterpickStages = []
-        for i in range(self.stagesCounterpick.model().rowCount()):
-            if not forSaving:
-                ruleset.counterpickStages.append(
-                    self.stagesCounterpick.model().item(i, 0).data(Qt.ItemDataRole.UserRole)
-                )
-            else:
-                ruleset.counterpickStages.append(
-                    self.stagesCounterpick.model()
-                    .item(i, 0)
-                    .data(Qt.ItemDataRole.UserRole)
-                    .get("en_name")
-                )
+        ruleset.neutralStages = stages(self.stageGrid.neutral)
+        ruleset.counterpickStages = stages(self.stageGrid.counterpick)
 
-        ruleset.useDSR = self.DSR.isChecked()
-        ruleset.useMDSR = self.MDSR.isChecked()
+        clause = self.clause.Value()
+        ruleset.useDSR = clause == "dsr"
+        ruleset.useMDSR = clause == "mdsr"
 
-        if self.fixedBanCount.isChecked():
-            ruleset.banCount = self.banCount.value()
+        ruleset.banCount, ruleset.banByMaxGames = self.banEditor.Values()
 
-        if self.variableBanCount.isChecked():
-            try:
-                inputText: str = self.banCountByMaxGames.text()
-                ruleset.banByMaxGames = {}
-
-                for _set in inputText.split(","):
-                    split = _set.split(":")
-
-                    if len(split) == 2:
-                        key, value = split
-                        ruleset.banByMaxGames[key.strip()] = int(value.strip())
-            except:
-                ruleset.banByMaxGames = {}
-                ruleset.errors.append(
-                    QApplication.translate("app", "The text for banByMaxGames is invalid.")
-                )
-                logger.error(traceback.format_exc())
-
-        ruleset.strikeOrder = [
-            int(n.strip())
-            for n in (
-                self.strikeOrder.text().split(",")
-                if self.strikeOrder.text() != ""
-                else "1,2,1".split(",")
-            )
-            if n.strip() != ""
-        ]
+        ruleset.strikeOrder = self.strikeEditor.Order()
 
         return ruleset
 
     def ValidateRuleset(self, ruleset: Ruleset):
+        neutral = len(ruleset.neutralStages)
+        counterpick = len(ruleset.counterpickStages)
+        self.stageCounts[STAGE_NEUTRAL].setText(
+            QApplication.translate("app", "{0} neutral").format(neutral)
+        )
+        self.stageCounts[STAGE_COUNTERPICK].setText(
+            QApplication.translate("app", "{0} counterpick").format(counterpick)
+        )
+        self.stageCounts["off"].setText(
+            QApplication.translate("app", "{0} not used").format(
+                max(self.stagesModel.rowCount() - neutral - counterpick, 0)
+            )
+        )
+
+        self.strikeEditor.SetNeutralCount(neutral)
         issues = []
 
         # Validate bans
-        if len(ruleset.neutralStages) > 0:
-            if sum(ruleset.strikeOrder) != len(ruleset.neutralStages) - 1:
-                remaining = (len(ruleset.neutralStages) - 1) - sum(ruleset.strikeOrder)
-                issues.append(
-                    QApplication.translate(
-                        "app",
-                        "Number striked stages does not match the number of neutral stages. Should strike {0} more stage(s).",
-                    ).format(remaining)
-                )
+        issue = self.strikeEditor.Issue()
+        if issue:
+            issues.append(issue)
 
         # Add errors
         for error in ruleset.errors:
             issues.append(error)
 
-        if len(issues) == 0:
-            validText = QApplication.translate("app", "The current ruleset is valid!")
-            self.labelValidation.setText(f"<span style='color: green'>{validText}</span>")
+        if issues:
+            status = "bad"
+            text = (
+                QApplication.translate("app", "1 issue to fix")
+                if len(issues) == 1
+                else QApplication.translate("app", "{0} issues to fix").format(len(issues))
+            )
+        elif neutral == 0 and counterpick == 0:
+            status = ""
+            text = QApplication.translate("app", "No stages yet")
         else:
-            issuesText = "\n".join(issues)
-            self.labelValidation.setText(f'<span style="color: red">{issuesText}</span>')
+            status = "ok"
+            text = QApplication.translate("app", "The current ruleset is valid!")
+        self.validationPill.setText("● " + text)
+        self.validationPill.setToolTip("\n".join(issues))
+        self.validationPill.setProperty("status", status)
+        Repolish(self.validationPill)
 
     def ExportCurrentRuleset(self):
         if self.loadingForm:

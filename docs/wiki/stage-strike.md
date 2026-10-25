@@ -9,29 +9,31 @@ be reported from the same page.
 Open the [Stage](hyperdrive://open/stage-strike) tab. Pick a ruleset in the **Ruleset**
 dropdown (start.gg's rulesets for the game, and the ones you saved), or make your own:
 
-| Field | What it means |
+| | What it means |
 | - | - |
-| **Ruleset Name** | Its name in the dropdown |
-| **Neutral stages** | Stages for game 1 |
-| **Counterpick stages** | Extra stages for the following games |
-| **Strike order** | Who strikes how many stages in game 1, e.g. `1,2,1` |
-| **Fixed ban count** | How many stages the winner of a game bans afterwards |
-| **Ban count by max games** | A different ban count by best of, e.g. `3:3,5:2` (3 bans in a best of 3, 2 in a best of 5) |
-| **DSR** | *No DSR*, *DSR* (a stage already played in the set can't be picked again) or *MDSR* (the player picking can't pick a stage they already won on) |
+| **Name** | The ruleset's name in the dropdown |
+| **Stages** | Click a stage to change it: *not used* → *neutral* (stages for game 1) → *counterpick* (extra stages for the following games). Right-click one to pick what it is. **Search stages** and **In ruleset** narrow the list |
+| **Game 1 striking** | Who strikes how many stages in game 1. Player A wins rock-paper-scissors and strikes first, then the players take turns. **+ Add a step** adds a turn |
+| **Bans after each game** | How many stages the winner of a game bans for the next one: **Same every set**, or **Depends on best-of** (e.g. 3 bans in a best of 3, 2 in a best of 5) |
+| **Stage clause** | *No DSR*, *DSR* (a stage already played in the set can't be picked again) or *MDSR* (the player picking can't pick a stage they already won on) |
 
-Drag stages from **All stages** into the neutral and counterpick lists. The **Validation**
-line tells you if the ruleset makes sense, e.g. if the strike order doesn't match the number
-of neutral stages. Click **Save new** (or **Update**) to keep it.
+The squares under **Game 1 striking** show the neutral stages being struck, and the stage
+left to play. If the strikes don't match the neutral stages, it says how many to add or take
+away, and the badge at the top of the tab says the ruleset has an issue to fix.
+
+Click **Save new** (or **Update**) to keep it. **Unsaved changes** shows when you changed
+the ruleset since; **Revert** goes back to the selected ruleset.
 
 ### Rulesets for several scoreboards
 
-**Edit ruleset for** picks what you're editing: the ruleset shared by **All scoreboards**,
+**Applies to** picks what you're editing: the ruleset shared by **All scoreboards**,
 or one scoreboard's. Check **Use its own ruleset** to give a scoreboard a ruleset of its own,
 e.g. a side stream running another game.
 
 ## 2. Open the stage strike page
 
-The Stage tab shows the link to open on a phone or tablet on the same network:
+The Stage tab's **Stage strike page** shows the link to open on a phone or tablet on the same
+network, with a button to copy it:
 
 ```
 http://<HyperDrive's address>:5500/stage-strike-app?scoreboard=1

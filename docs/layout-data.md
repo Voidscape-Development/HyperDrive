@@ -227,6 +227,27 @@ character data for the set.
 The URLs of the start.gg tournament's square logo and wide banner, `""` when
 it has none, for layouts to brand themselves with.
 
+## `tournamentInfo.cityState`, `tournamentInfo.city`, `tournamentInfo.state`
+
+Where the venue is, for layouts that don't show the whole address
+(`tournamentInfo.address`): `cityState` is the city and state together, e.g.
+`"Springfield, IL"`, and can be changed in the Tournament Info tab. `city`
+and `state` are the tournament's own, from start.gg or parry.gg (parry.gg
+gives the state's full name). `""` when the tournament has none, e.g. online.
+
+## More of `tournamentInfo`
+
+| Key | |
+| - | - |
+| `locationType` | Where the event is played: `"offline"` (in person), `"online"` or `"hybrid"`, `""` when not known. start.gg only tells in person from online |
+| `numAttendees` | Everyone at the tournament, in every event (`numEntrants` is the event's) |
+| `timezone` | The tournament's time zone, e.g. `"America/New_York"`, `""` when not known. With it, a layout shows the times in the tournament's time wherever it runs: `new Date(startAt * 1000).toLocaleTimeString([], {timeZone: timezone})` for a timestamp |
+| `hashtag` | The tournament's hashtag, without its `#`. start.gg only |
+| `discord` | The tournament's Discord link. start.gg only |
+| `tagline` | Text the user typed in the Tournament Info tab, e.g. `"Top 8 · Sunday 6 PM"`. Not from the tournament: loading it keeps the tagline |
+
+Each can be changed in the Tournament Info tab and on the web dashboard.
+
 ## `twitch_prediction`
 
 The Twitch prediction of the stream's scoreboard (see the README), `{}` when

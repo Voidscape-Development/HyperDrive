@@ -10,8 +10,17 @@ import {saveOnCommit, useAutoSaveForm} from "../ScoreboardPage/useAutoSaveForm";
 import {Field} from "@/components/Field";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 const failed = (what: string) => () => toast.error(`Couldn't ${what}.`);
+
+// tournamentInfo.locationType, "" for not set (a select item can't be "")
+const LOCATION_TYPES = [
+    ["none", "Not set"],
+    ["offline", "In person"],
+    ["online", "Online"],
+    ["hybrid", "Hybrid"],
+] as const;
 
 /**
  * Tournament Info: what the layouts show about the event. Filled in when an
@@ -27,9 +36,15 @@ export default function TournamentInfoPage() {
         {
             tournamentName: String(info.tournamentName ?? ""),
             eventName: String(info.eventName ?? ""),
+            tagline: String(info.tagline ?? ""),
             address: String(info.address ?? ""),
+            cityState: String(info.cityState ?? ""),
             numEntrants: String(info.numEntrants ?? ""),
+            numAttendees: String(info.numAttendees ?? ""),
             shortLink: String(info.shortLink ?? ""),
+            timezone: String(info.timezone ?? ""),
+            hashtag: String(info.hashtag ?? ""),
+            discord: String(info.discord ?? ""),
         },
         (v, changed) => dashboard.tournamentInfo.set(Object.fromEntries(changed.map((k) => [k, v[k]]))),
         900,
@@ -60,7 +75,9 @@ export default function TournamentInfoPage() {
                 <Panel bodyClassName="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2">{text("tournamentName", "Tournament name")}</div>
                     <div className="sm:col-span-2">{text("eventName", "Event name")}</div>
-                    <div className="sm:col-span-2">{text("address", "Address")}</div>
+                    <div className="sm:col-span-2">{text("tagline", "Tagline", {placeholder: "e.g. Top 8 · Sunday 6 PM"})}</div>
+                    {text("address", "Address")}
+                    {text("cityState", "City, state", {placeholder: "e.g. Springfield, IL"})}
                     <Field label="Date" htmlFor="ti-date">
                         <Input
                             id="ti-date"
@@ -70,7 +87,22 @@ export default function TournamentInfoPage() {
                         {info.startAt ? <span className="text-xs text-muted-foreground">On the layouts: {String(info.startAt)}</span> : null}
                     </Field>
                     {text("numEntrants", "Entrants", {type: "number", min: 0, inputMode: "numeric"})}
-                    <div className="sm:col-span-2">{text("shortLink", "Short link")}</div>
+                    <Field label="In person or online" htmlFor="ti-locationType">
+                        <Select
+                            value={String(info.locationType || "none")}
+                            onValueChange={(v) => dashboard.tournamentInfo.set({locationType: v === "none" ? "" : v}).catch(failed("change it"))}
+                        >
+                            <SelectTrigger id="ti-locationType"><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                {LOCATION_TYPES.map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </Field>
+                    {text("numAttendees", "Attendees", {type: "number", min: 0, inputMode: "numeric"})}
+                    {text("shortLink", "Short link")}
+                    {text("timezone", "Time zone", {placeholder: "America/New_York"})}
+                    {text("hashtag", "Hashtag", {placeholder: "without the #"})}
+                    {text("discord", "Discord", {placeholder: "https://discord.gg/…"})}
                     <p className="flex items-center gap-2 text-xs text-live sm:col-span-2">
                         <CircleCheck className="size-3.5"/>Changes go to the layouts as you type
                     </p>

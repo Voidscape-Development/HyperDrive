@@ -439,6 +439,10 @@ class DashboardActions:
                 date = QDate.fromString(str(value or ""), "yyyy-MM-dd")
                 if date.isValid():
                     field.setDate(date)
+            elif isinstance(field, QComboBox):
+                index = field.findData(str(value or ""))
+                if index >= 0:
+                    field.setCurrentIndex(index)
             elif isinstance(field, QLineEdit):
                 field.setText(str(value or ""))
                 field.editingFinished.emit()
@@ -456,7 +460,7 @@ class DashboardActions:
                 return "NO_TOURNAMENT", 409
             TournamentDataManager.instance.GetTournamentData()
         elif action == "clear":
-            widget.UpdateData({})
+            widget.ClearAll()
         elif action == "download_icon":
             if TournamentDataManager.instance.provider is None:
                 return "NO_TOURNAMENT", 409
