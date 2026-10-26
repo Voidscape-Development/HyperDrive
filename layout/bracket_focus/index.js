@@ -31,7 +31,18 @@ const MARGIN = 40;
 const PADDING = 60;
 const LABEL_ROOM = 90;
 const CAMERA_TIME = 1.0;
+const FADE_TIME = 0.6;
 const STAGGER_TIME = 1.5;
+
+// The layers the sets, round names and lines are in, bottom to top: the
+// base (everything, dimmed while there's a focus), the ones fading out of
+// focus and into it, and the ones in focus. Dimming is one opacity on a
+// layer, not one on each of hundreds of sets and lines, which the browser
+// draws apart (and fading, each its own layer) every frame of a camera move.
+// Moving an element to another layer has it laid out again, so only the few
+// changing focus move: zooming in from the whole bracket, the base fades
+// out under the sets in focus.
+const LAYERS = ["base", "to_dim", "to_lit", "lit"];
 
 // ---------------------------------------------------------------------
 // State
@@ -52,6 +63,13 @@ let cameraTween = null;
 // The focus caption's text, and its fade under way
 let shownLabel = null;
 let labelTween = null;
+// Layer name: its elements, {html, shadows, lines}, as build() made them
+let layers = {};
+// Each set, round name and line: the name of its layer
+let layerOf = new Map();
+// The layers' fades under way, and putting what they faded where it goes
+let fades = [];
+let settling = null;
 
 const setElement = (id) => setElements[id] || $();
 const box = (b) => `left: ${b.x}px; top: ${b.y}px; width: ${b.w}px;${b.h ? ` height: ${b.h}px;` : ""}`;
@@ -222,13 +240,11 @@ function lines(bracket) {
   });
 }
 
-// The lines, each with its shadow under it (a copy, see index.css)
-const linesHtml = (paths) =>
-  ["line shadow", "line"].map((cls) =>
-    paths.map(
-      (p) =>
-        HD.html`<path class="${cls}" data-from="${p.from}" ${p.to != null && HD.html`data-to="${p.to}"`} d="${p.d}" />`,
-    ),
+// The lines, or their shadows (a copy under each, see index.css)
+const linesHtml = (paths, cls) =>
+  paths.map(
+    (p) =>
+      HD.html`<path class="${cls}" data-from="${p.from}" ${p.to != null && HD.html`data-to="${p.to}"`} d="${p.d}" />`,
   );
 
 function build(data) {
@@ -236,27 +252,62 @@ function build(data) {
   const sets = bracket.sets || {};
   setIndex = {};
   placed = place(bracket);
+  settle();
 
+  // Everything starts in the base; applyFocus() lifts what's in focus
   HD.render(".bf_sets", [
-    Object.entries(placed.headers).map(
-      ([key, h]) => HD.html`<div class="bf_round_name" data-round="${key}" style="${box(h)}"></div>`,
-    ),
     Object.entries(placed.byes).map(
       ([key, b]) => HD.html`<div class="byes" data-round="${key}" style="${box(b)}"></div>`,
     ),
-    Object.entries(placed.sets).map(([id, at]) => {
-      setIndex[id] = Object.keys(setIndex).length + 1;
-      return HD.html`
-        <div class="slot set_${setIndex[id]} side_${sets[id].side}" data-set="${id}" style="${box(at)}">
-          <div class="set_identifier"><div class="text"></div></div>
-          ${HDBracket.PlayerSlotHtml(0)}
-          ${HDBracket.PlayerSlotHtml(1)}
-        </div>`;
-    }),
+    LAYERS.map(
+      (name) => HD.html`
+        <div class="bf_layer bf_${name}">
+          ${
+            name == "base" && [
+              Object.entries(placed.headers).map(
+                ([key, h]) => HD.html`<div class="bf_round_name" data-round="${key}" style="${box(h)}"></div>`,
+              ),
+              Object.entries(placed.sets).map(([id, at]) => {
+                setIndex[id] = Object.keys(setIndex).length + 1;
+                return HD.html`
+                  <div class="slot set_${setIndex[id]} side_${sets[id].side}" data-set="${id}" style="${box(at)}">
+                    <div class="set_identifier"><div class="text"></div></div>
+                    ${HDBracket.PlayerSlotHtml(0)}
+                    ${HDBracket.PlayerSlotHtml(1)}
+                  </div>`;
+              }),
+            ]
+          }
+        </div>`,
+    ),
   ]);
   setElements = {};
   $(".bf_sets .slot").each((_i, el) => (setElements[el.dataset.set] = $(el)));
-  HD.render($(".bf_lines").attr({ width: placed.width, height: placed.height }), linesHtml(lines(bracket)));
+  const paths = lines(bracket);
+  HD.render(
+    $(".bf_lines").attr({ width: placed.width, height: placed.height }),
+    LAYERS.map(
+      (name) => HD.html`
+        <g class="bf_layer bf_${name}">
+          <g class="shadows">${name == "base" && linesHtml(paths, "line shadow")}</g>
+          <g class="lines">${name == "base" && linesHtml(paths, "line")}</g>
+        </g>`,
+    ),
+  );
+  layers = {};
+  for (const name of LAYERS) {
+    const svg = document.querySelector(`.bf_lines .bf_${name}`);
+    layers[name] = {
+      html: document.querySelector(`.bf_sets .bf_${name}`),
+      svg,
+      shadows: svg.querySelector(".shadows"),
+      lines: svg.querySelector(".lines"),
+    };
+  }
+  layerOf = new Map();
+  for (const el of document.querySelectorAll(".bf_layer .slot, .bf_layer .bf_round_name, .bf_layer path")) {
+    layerOf.set(el, "base");
+  }
 
   const standings = $(".bf_standings").removeData("hd-build").empty();
   if (placed.standings) standings.css({ left: placed.standings.x, top: placed.standings.y, width: placed.standings.w });
@@ -436,30 +487,98 @@ function showLabel(label, animate) {
   labelTween.to(bar, { autoAlpha: 1, duration: animate ? 0.4 : 0 }, animate ? CAMERA_TIME * 0.6 : 0);
 }
 
+// Moves a set, round name or line to a layer
+function moveTo(el, name) {
+  const layer = layers[name];
+  const parent = el.tagName != "path" ? layer.html : el.classList.contains("shadow") ? layer.shadows : layer.lines;
+  parent.appendChild(el);
+  layerOf.set(el, name);
+}
+
+const layerElements = (name) => [layers[name].html, layers[name].svg];
+
+// Ends the layers' fades, the ones faded going to the base or lit layer,
+// and with all, the ones lit while the base faded in going back to it
+function settle(all = true) {
+  fades.forEach((tween) => tween.kill());
+  fades = [];
+  if (settling) settling.kill();
+  settling = null;
+  const hasFocus = document.body.classList.contains("has_focus");
+  for (const [el, name] of layerOf) {
+    if (name == "to_dim") moveTo(el, "base");
+    else if (name == "to_lit") moveTo(el, "lit");
+    else if (all && name == "lit" && !hasFocus) moveTo(el, "base");
+  }
+  if (layers.base) gsap.set([...layerElements("to_dim"), ...layerElements("to_lit")], { clearProps: "opacity" });
+}
+
+// Dims the sets, round names and lines out of focus (none with no set in
+// it). In focus, they're in the lit layer, the rest in the base, dimmed with
+// a focus; the ones changing focus are faded together, a layer each way.
+function dim(focused, hasFocus, animate) {
+  const base = layerElements("base");
+  const hadFocus = document.body.classList.contains("has_focus");
+  // Where the base is, even halfway through a fade
+  const from = parseFloat(getComputedStyle(base[0]).opacity);
+  settle(false);
+  $("body").toggleClass("has_focus", hasFocus);
+  gsap.set(base, { clearProps: "opacity" });
+  const to = parseFloat(getComputedStyle(base[0]).opacity);
+
+  for (const [el, f] of focused) {
+    const layer = hasFocus && f ? "lit" : "base";
+    if (layerOf.get(el) == layer) continue;
+    if (!animate || (!hadFocus && layer == "base")) {
+      moveTo(el, layer);
+    } else if (!hadFocus || !hasFocus) {
+      // The base fading out under them, or in up to them: they stay lit
+      if (layer == "lit") moveTo(el, layer);
+    } else {
+      moveTo(el, layer == "lit" ? "to_lit" : "to_dim");
+    }
+  }
+  if (!animate) return settle();
+
+  const fade = (targets, from, to) =>
+    gsap.fromTo(targets, { opacity: from }, { opacity: to, duration: FADE_TIME, ease: "power1.inOut" });
+  // The base stays dimmed (to) while the ones changing focus fade
+  fades = [fade(layerElements("to_dim"), 1, to), fade(layerElements("to_lit"), to, 1)];
+  if (from != to) {
+    fades.push(fade(base, from, to).eventCallback("onComplete", () => gsap.set(base, { clearProps: "opacity" })));
+  }
+  // Once the camera is still: moving elements has them laid out again
+  settling = gsap.delayedCall(Math.max(CAMERA_TIME, FADE_TIME) + 0.1, settle);
+}
+
 function applyFocus(s, data, animate) {
   const focus = focusOf(s, data);
   const inFocus = new Set((focus.sets || []).filter((id) => placed.sets[id]));
   const rounds = new Set(focus.rounds || []);
 
-  // Hundreds of elements in a big bracket: classList, without jQuery
-  $("body").toggleClass("has_focus", inFocus.size > 0);
+  // Each set, line and round name: whether it's in focus. Hundreds of
+  // elements in a big bracket: without jQuery.
+  const focused = new Map();
   for (const el of document.querySelectorAll(".bf_sets .slot")) {
-    el.classList.toggle("focused", inFocus.has(el.dataset.set));
+    focused.set(el, inFocus.has(el.dataset.set));
   }
   for (const el of document.querySelectorAll(".bf_lines path")) {
     const { from, to } = el.dataset;
-    el.classList.toggle("focused", inFocus.has(from) && (to == null || inFocus.has(to)));
+    focused.set(el, inFocus.has(from) && (to == null || inFocus.has(to)));
   }
   // A round is highlighted when it's in focus, and not dimmed while any of
   // its sets is
   const columns = _.keyBy(Object.values(_.get(data, "bracket.bracket.sides", {})).flat(), "key");
   for (const el of document.querySelectorAll(".bf_round_name")) {
     const column = columns[el.dataset.round];
-    el.classList.toggle(
-      "focused",
-      rounds.has(el.dataset.round) || !!(column && column.sets.some((id) => inFocus.has(id))),
-    );
+    focused.set(el, rounds.has(el.dataset.round) || !!(column && column.sets.some((id) => inFocus.has(id))));
   }
+
+  dim(focused, inFocus.size > 0, animate);
+  // After they're moved: an element is styled where it is before its
+  // outline is transitioned in (or out)
+  void getComputedStyle(layers.lit.html).opacity;
+  for (const [el, f] of focused) el.classList.toggle("focused", f);
 
   // The player whose run it is
   $(".slot .player").removeClass("focus_player");
@@ -526,6 +645,9 @@ HD.layout({
     const old = HDBracket.ForChannel(s.old, channel) || {};
 
     if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides) {
+      settle();
+      layers = {};
+      layerOf = new Map();
       HD.render(".bf_sets, .bf_lines, .bf_standings", "");
       $("body").removeClass("has_focus");
       showLabel("", false);

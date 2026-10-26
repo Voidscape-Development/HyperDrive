@@ -116,7 +116,7 @@ body.no_title .viewport {
   fill: none;
   stroke: var(--bracket-line-color, var(--lines));
   stroke-width: 5;
-  transition: opacity var(--focus-time), stroke var(--focus-time);
+  transition: stroke var(--focus-time);
 }
 
 /* A line's shadow: a wider, faint copy under it, a little lower */
@@ -126,7 +126,8 @@ body.no_title .viewport {
   transform: translateY(2px);
 }
 
-.bf_sets {
+.bf_sets,
+.bf_sets .bf_layer {
   position: absolute;
   left: 0;
   top: 0;
@@ -144,7 +145,7 @@ body.no_title .viewport {
   border-radius: calc(var(--border-radius) / 2);
   background-color: var(--bg-color);
   box-shadow: var(--bf-shadow);
-  transition: opacity var(--focus-time), box-shadow var(--focus-time);
+  transition: box-shadow var(--focus-time);
 }
 
 .bf_round_name .text {
@@ -160,6 +161,7 @@ body.hd-bracket-hide-round-names .bf_round_name {
   font-size: 20px;
   height: 1.5em;
   text-shadow: var(--bf-shadow);
+  transition: opacity var(--focus-time);
 }
 
 .byes.text_empty {
@@ -176,7 +178,7 @@ body.hd-bracket-hide-round-names .bf_round_name {
   border-radius: calc(var(--border-radius) / 2);
   overflow: hidden;
   box-shadow: var(--bf-shadow);
-  transition: opacity var(--focus-time), box-shadow var(--focus-time);
+  transition: box-shadow var(--focus-time);
 }
 
 .player.container {
@@ -359,10 +361,9 @@ body.hd-bracket-show-identifier .slot .player {
   display: none;
 }
 
-/* Focus: sets out of it dimmed, the ones in it outlined */
-body.has_focus .slot:not(.focused),
-body.has_focus .bf_lines path:not(.focused),
-body.has_focus .bf_round_name:not(.focused),
+/* Focus: sets out of it dimmed, the ones in it outlined. The sets, round
+   names and lines out of focus are in the base layer (see index.js). */
+body.has_focus .bf_layer.bf_base,
 body.has_focus .byes,
 body.has_focus .bf_standings {
   opacity: var(--focus-dim);
