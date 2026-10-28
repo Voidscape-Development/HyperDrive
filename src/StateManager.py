@@ -67,6 +67,9 @@ class StateManager:
     savePending = False
     saveScheduler: StateManagerSaveScheduler | None = None
 
+    # More changes than this are sent as a whole new state instead of a delta
+    MAX_DELTA = 100
+
     # DeepDiff's threshold_to_diff_deeper: a dict with fewer than this share of
     # its compared keys on both sides is reported as one values_changed.
     DIFF_DEEPER_THRESHOLD = 0.33
@@ -296,7 +299,7 @@ class StateManager:
                     for path, (old, new) in replaced.items()
                 ]
                 # logger.debug(f"State diff length: {diff_count}")
-                if len(delta) > 100:
+                if len(delta) > StateManager.MAX_DELTA:
                     StateManager.deltaIndex += 1
                     StateManager.signals.state_big_change.emit()
                 elif len(delta) > 0:
@@ -328,8 +331,9 @@ class StateManager:
     def _TakeReplaced(changedPaths):
         """The paths set with replace=True since the last save, as the set of
         paths left out of the diff and {path: (old value, new value)} for the
-        ones that changed. Only dicts on both sides are replaced as a whole,
-        and not when a parent of theirs changed too: the diff has them then."""
+        ones that changed. Only dicts on both sides with much changed in them
+        are replaced as a whole, and not when a parent of theirs changed too:
+        the diff has them then, and sends only what changed."""
         paths = StateManager.replacedPaths
         StateManager.replacedPaths = set()
 
@@ -341,7 +345,7 @@ class StateManager:
             return root
 
         whole = set()
-        replaced = {}
+        candidates = {}
         for path in paths:
             if not all(StateManager._IsPlainKey(k) for k in path) or any(
                 len(p) < len(path) and path[: len(p)] == p for p in changedPaths
@@ -351,10 +355,37 @@ class StateManager:
             new = Lookup(StateManager.state, path)
             if type(old) is not dict or type(new) is not dict:
                 continue
-            whole.add(path)
-            if not StateManager._SameValue(old, new):
+            if StateManager._SameValue(old, new):
+                whole.add(path)
+                continue
+            candidates[path] = (old, new, *StateManager._ChangedValues(old, new))
+
+        # Mostly changed, or too much changed together for a delta (the
+        # layouts would get the whole state instead)
+        tooMany = sum(c[2] for c in candidates.values()) > StateManager.MAX_DELTA
+        replaced = {}
+        for path, (old, new, changed, total) in candidates.items():
+            if tooMany or changed * 2 >= total:
+                whole.add(path)
                 replaced[path] = (old, new)
         return whole, replaced
+
+    def _ChangedValues(old, new):
+        """How many of the values in new (in its dicts and lists) differ from
+        old's, and how many values there are in new."""
+        if isinstance(new, dict):
+            pairs = [(old.get(k) if type(old) is dict else None, v) for k, v in new.items()]
+        elif isinstance(new, (list, tuple)):
+            same = type(old) is type(new)
+            pairs = [(old[i] if same and i < len(old) else None, v) for i, v in enumerate(new)]
+        else:
+            return (0 if type(old) is type(new) and old == new else 1), 1
+        changed = total = 0
+        for o, n in pairs:
+            c, t = StateManager._ChangedValues(o, n)
+            changed += c
+            total += t
+        return changed, total
 
     def UpdateLastSavedState(changedPaths):
         """Copy the changed paths of the state into lastSavedState.
@@ -528,7 +559,7 @@ class StateManager:
             return
 
         narrowed = []
-        reported, unchanged = StateManager._NarrowChildren(
+        StateManager._NarrowChildren(
             old,
             new,
             key,
@@ -541,15 +572,31 @@ class StateManager:
         )
 
         # DeepDiff checks every key it walks against every include path, so
-        # when most of the dict changed (e.g. the teams' stats swapped) the
-        # dict as one path is much faster than a path per changed value
-        if reported > 0 and reported >= unchanged:
+        # n paths cost about n * n, and the dict as one path about its size:
+        # less when most of it changed (e.g. the teams' stats swapped)
+        limit = len(narrowed) ** 2
+        if len(narrowed) > 1 and StateManager._SmallerThan(old, new, limit=limit):
             result.append(key)
         else:
             result.extend(narrowed)
 
+    def _SmallerThan(*values, limit):
+        """True if the values have fewer than limit dicts, lists and values
+        in them, counting no further than limit."""
+        stack = list(values)
+        count = 0
+        while stack:
+            value = stack.pop()
+            count += 1
+            if count >= limit:
+                return False
+            if isinstance(value, dict):
+                stack.extend(value.values())
+            elif isinstance(value, (list, tuple)):
+                stack.extend(value)
+        return True
+
     def _NarrowChildren(old, new, key, result, added, removed, both, narrow, keep):
-        """Returns how many keys differ and how many are the same."""
         changed = 0
         unchanged = []
         for k in both:
@@ -562,14 +609,12 @@ class StateManager:
                 unchanged.append(k)
 
         reported = len(added) + len(removed) + changed
-        sameCount = len(unchanged)
         if reported == 0:
-            return reported, sameCount
+            return
 
         for k in added + removed:
             result.append(f"{key}['{k}']")
 
-        differing = reported
         # Leaving the unchanged keys out could make DeepDiff report this dict
         # as a whole, so keep some of them in that case
         for k in unchanged:
@@ -578,7 +623,6 @@ class StateManager:
             keep(k, f"{key}['{k}']", result)
             changed += 1
             reported += 1
-        return differing, sameCount
 
     def WholeListDeltas(deltas):
         """Changes inside lists (items added, removed or moved, which
@@ -641,9 +685,11 @@ class StateManager:
         return deep_get(StateManager.state, key, default)
 
     def Set(key: str, value, replace=False):
-        """With replace=True a dict is sent and exported as one change of the
-        whole value instead of being diffed: much faster when most of it
-        changed (e.g. the teams' stats when they swap)."""
+        """With replace=True a dict that mostly changed (or with more changes
+        than a delta takes, see MAX_DELTA) is sent and exported as one change
+        of the whole value instead of being diffed value by value, which is
+        much faster (e.g. the teams' stats when they swap). When only a
+        little of it changed, it's diffed as usual."""
         with StateManager.lock:
             deep_set(StateManager.state, key, value)
             if replace:

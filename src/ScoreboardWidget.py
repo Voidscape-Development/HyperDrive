@@ -1058,7 +1058,7 @@ class ScoreboardWidget(QWidget):
         logger.info("STATION SETS LOADED -----------------------------")
         logger.info(data)
 
-        StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", data)
+        StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", data, replace=True)
 
     # A tracked stream's or station's next set loads after a countdown in the
     # tracking bar, so the set on the scoreboard can be held there a while

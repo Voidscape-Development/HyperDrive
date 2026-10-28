@@ -85,6 +85,7 @@ class StatsUtil:
                     "sets": data.get("sets"),
                     "request_time": data.get("request_time"),
                 },
+                replace=True,
             )
 
     # =====================================================
@@ -115,17 +116,17 @@ class StatsUtil:
                 StateManager.Set(f"score.{self.scoreboardNumber}.last_sets.2", {})
 
     def UpdateLastSets(self, data):
-        with StateManager.SaveBlock():
-            i = 1
-            for set in data.get("last_sets", []):
-                StateManager.Set(
-                    f"score.{self.scoreboardNumber}.last_sets."
-                    + data.get("playerNumber")
-                    + "."
-                    + str(i),
-                    StatsUtil.LastSetEntry(set),
-                )
-                i += 1
+        entries = data.get("last_sets", [])
+        if not entries:
+            return
+        # Set as one dict, which can be sent whole (entries past the new ones
+        # stay, as when they were set one by one)
+        path = f"score.{self.scoreboardNumber}.last_sets.{data.get('playerNumber')}"
+        current = StateManager.Get(path)
+        sets = dict(current) if isinstance(current, dict) else {}
+        for i, set in enumerate(entries, start=1):
+            sets[str(i)] = StatsUtil.LastSetEntry(set)
+        StateManager.Set(path, sets, replace=True)
 
     def LastSetEntry(set: dict) -> dict:
         """A set of a player's last sets, as in score.N.last_sets"""
@@ -187,17 +188,17 @@ class StatsUtil:
                 StateManager.Set(f"score.{self.scoreboardNumber}.history_sets.2", {})
 
     def UpdateHistorySets(self, data):
-        with StateManager.SaveBlock():
-            i = 1
-            for set in data.get("history_sets", []):
-                StateManager.Set(
-                    f"score.{self.scoreboardNumber}.history_sets."
-                    + data.get("playerNumber")
-                    + "."
-                    + str(i),
-                    StatsUtil.HistorySetEntry(set),
-                )
-                i += 1
+        entries = data.get("history_sets", [])
+        if not entries:
+            return
+        # Set as one dict, which can be sent whole (entries past the new ones
+        # stay, as when they were set one by one)
+        path = f"score.{self.scoreboardNumber}.history_sets.{data.get('playerNumber')}"
+        current = StateManager.Get(path)
+        sets = dict(current) if isinstance(current, dict) else {}
+        for i, set in enumerate(entries, start=1):
+            sets[str(i)] = StatsUtil.HistorySetEntry(set)
+        StateManager.Set(path, sets, replace=True)
 
     def HistorySetEntry(set: dict) -> dict:
         """A placement of a player's past events, as in score.N.history_sets"""

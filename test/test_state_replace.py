@@ -131,6 +131,21 @@ def TestReplaceUnderChangedParent():
     Check(old)
 
 
+def TestReplaceSmallChange():
+    # Only a little of it changed: the diff sends only that
+    Reset()
+    StateManager.Set("score.1.last_sets.1", Stats(1, 5))
+    old = copy.deepcopy(StateManager.state)
+    deltas.clear()
+    stats = copy.deepcopy(StateManager.Get("score.1.last_sets.1"))
+    stats["3"]["round_name"] = "Grand Final"
+    StateManager.Set("score.1.last_sets.1", stats, replace=True)
+    assert [d["path"] for d in deltas] == [["score", "1", "last_sets", "1", "3", "round_name"]], (
+        deltas
+    )
+    Check(old)
+
+
 def TestReplaceSameValue():
     Reset()
     StateManager.Set("score.1.last_sets.1", Stats(1, 2))
