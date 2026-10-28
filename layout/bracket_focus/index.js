@@ -437,9 +437,18 @@ function moveCamera(s, target, animate) {
       duration: cameraTime(),
       ease: "power2.inOut",
       onUpdate: () => showView(between(from, to, progress.t)),
-      onComplete: () => (cameraTween = null),
+      onComplete: () => {
+        cameraTween = null;
+        $(".world").css("will-change", "");
+      },
     });
+    // On its own layer while it moves, the bracket is only moved and scaled
+    // by the GPU, instead of drawn again every frame (more of it each frame
+    // zooming out). Its text is a little softer meanwhile, and sharp again
+    // once it's still and drawn at its new size.
+    $(".world").css("will-change", "transform");
   } else {
+    $(".world").css("will-change", "");
     // Right away: GSAP's timeline is frozen until the layout is first shown,
     // and the bracket would show at full size until then
     showView(to);
