@@ -1230,7 +1230,9 @@ class Window(QMainWindow):
                 )
 
     def LoadCompletedSetsClicked(self, data):
-        StateManager.Set("completed_sets", {index + 1: set for index, set in enumerate(data)})
+        StateManager.Set(
+            "completed_sets", {index + 1: set for index, set in enumerate(data)}, replace=True
+        )
 
     # =====================================================
     # TOURNAMENT BUTTONS

@@ -30,7 +30,8 @@ const MARGIN = 40;
 // caption saying what it is
 const PADDING = 60;
 const LABEL_ROOM = 90;
-const CAMERA_TIME = 1.0;
+// The camera's move, in seconds: the layout theme's "Bracket focus zoom time"
+const cameraTime = () => HD.theme("bracket", "focus_time", 1000) / 1000;
 const FADE_TIME = 0.6;
 const STAGGER_TIME = 1.5;
 
@@ -433,12 +434,21 @@ function moveCamera(s, target, animate) {
     const progress = { t: 0 };
     cameraTween = gsap.to(progress, {
       t: 1,
-      duration: CAMERA_TIME,
+      duration: cameraTime(),
       ease: "power2.inOut",
       onUpdate: () => showView(between(from, to, progress.t)),
-      onComplete: () => (cameraTween = null),
+      onComplete: () => {
+        cameraTween = null;
+        $(".world").css("will-change", "");
+      },
     });
+    // On its own layer while it moves, the bracket is only moved and scaled
+    // by the GPU, instead of drawn again every frame (more of it each frame
+    // zooming out). Its text is a little softer meanwhile, and sharp again
+    // once it's still and drawn at its new size.
+    $(".world").css("will-change", "transform");
   } else {
+    $(".world").css("will-change", "");
     // Right away: GSAP's timeline is frozen until the layout is first shown,
     // and the bracket would show at full size until then
     showView(to);
@@ -484,7 +494,7 @@ function showLabel(label, animate) {
     gsap.set(bar, { autoAlpha: 0 });
     fill();
   }
-  labelTween.to(bar, { autoAlpha: 1, duration: animate ? 0.4 : 0 }, animate ? CAMERA_TIME * 0.6 : 0);
+  labelTween.to(bar, { autoAlpha: 1, duration: animate ? 0.4 : 0 }, animate ? cameraTime() * 0.6 : 0);
 }
 
 // Moves a set, round name or line to a layer
@@ -548,7 +558,7 @@ function dim(focused, hasFocus, animate) {
     fades.push(fade(base, from, to).eventCallback("onComplete", () => gsap.set(base, { clearProps: "opacity" })));
   }
   // Once the camera is still: moving elements has them laid out again
-  settling = gsap.delayedCall(Math.max(CAMERA_TIME, FADE_TIME) + 0.1, settle);
+  settling = gsap.delayedCall(Math.max(cameraTime(), FADE_TIME) + 0.1, settle);
 }
 
 function applyFocus(s, data, animate) {

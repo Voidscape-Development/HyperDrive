@@ -10264,6 +10264,7 @@
         "focus_dim": 30,
         "focus_label_display": true,
         "focus_max_zoom": 200,
+        "focus_time": 1000,
         "identifier_display": false,
         "lines_color": "#000000",
         "pending_display": true,

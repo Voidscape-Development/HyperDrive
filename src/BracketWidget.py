@@ -1692,7 +1692,7 @@ class BracketWidget(QDockWidget):
         phase = self.tournament.GetPhase(main.phase) if main.phase else None
         players = StateManager.Get(RosterPath(self.RosterKey(phase)), {}) or {}
         if players != (StateManager.Get("bracket.players", {}) or {}):
-            StateManager.Set("bracket.players", copy.deepcopy(players))
+            StateManager.Set("bracket.players", copy.deepcopy(players), replace=True)
 
     # Saving, so a tournament run in HyperDrive survives a restart. The
     # channels are saved in the settings (BracketFocus).
@@ -1776,10 +1776,10 @@ class BracketWidget(QDockWidget):
             )
             for name, c in focus.channels.items()
         }
-        StateManager.Set("bracket.channels", channels)
+        StateManager.Set("bracket.channels", channels, replace=True)
 
         # The main channel's, as the layouts always had it
-        StateManager.Set("bracket.bracket", channels[MAIN_CHANNEL]["bracket"])
+        StateManager.Set("bracket.bracket", channels[MAIN_CHANNEL]["bracket"], replace=True)
         StateManager.Set("bracket.phase", channels[MAIN_CHANNEL]["phase"])
         StateManager.Set("bracket.phaseGroup", channels[MAIN_CHANNEL]["phaseGroup"])
         self.MirrorPlayers()

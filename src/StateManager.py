@@ -53,6 +53,8 @@ class StateManager:
     # Paths changed since the last save, as tuples of keys: they narrow the
     # diff and update lastSavedState without cloning the whole state
     changedPaths = []
+    # Paths set with Set(..., replace=True) since the last save
+    replacedPaths = set()
     deltaIndex = 0
     load_error: str | None = None
 
@@ -64,6 +66,9 @@ class StateManager:
     SAVE_DEBOUNCE_MS = 40
     savePending = False
     saveScheduler: StateManagerSaveScheduler | None = None
+
+    # More changes than this are sent as a whole new state instead of a delta
+    MAX_DELTA = 100
 
     # DeepDiff's threshold_to_diff_deeper: a dict with fewer than this share of
     # its compared keys on both sides is reported as one values_changed.
@@ -219,7 +224,7 @@ class StateManager:
             )
             return str(value)
 
-        def ExportAll(ref_diff, changedPaths):
+        def ExportAll(ref_diff, replaced, changedPaths):
             try:
                 StateManager.state.update({"timestamp": time.time()})
                 try:
@@ -245,6 +250,10 @@ class StateManager:
 
                 if not SettingsManager.Get("general.disable_export", False):
                     StateManager.ExportText(StateManager.lastSavedState, ref_diff)
+                    for path, (old, new) in replaced.items():
+                        StateManager.ExportReplaced(
+                            "/".join(k.replace("/", "_") for k in path), old, new
+                        )
                 StateManager.UpdateLastSavedState(changedPaths)
             except Exception as e:
                 logger.error(traceback.format_exc())
@@ -255,10 +264,18 @@ class StateManager:
         # subsequent save, or a single bad key would stall the export for good.
         StateManager.changedPaths = []
 
+        # Values set with replace=True skip DeepDiff, which goes through every
+        # value inside them
+        whole, replaced = StateManager._TakeReplaced(changedPaths)
+        diffPaths = [p for p in changedPaths if not any(p[: len(w)] == w for w in whole)]
+
         try:
             # DeepDiff is slow, and without include_paths it compares the
             # whole state, so only hand it the paths that really differ.
-            diffKeys = StateManager.NarrowChangedKeys(changedPaths)
+            if whole and not diffPaths:
+                diffKeys = []
+            else:
+                diffKeys = StateManager.NarrowChangedKeys(diffPaths)
             if diffKeys is None or len(diffKeys) > 0:
                 diff = DeepDiff(
                     StateManager.lastSavedState,
@@ -277,8 +294,12 @@ class StateManager:
         if diff is not None:
             try:
                 delta = StateManager.WholeListDeltas(Delta(diff).to_flat_dicts())
+                delta += [
+                    {"path": list(path), "action": "values_changed", "value": deep_clone(new)}
+                    for path, (old, new) in replaced.items()
+                ]
                 # logger.debug(f"State diff length: {diff_count}")
-                if len(delta) > 100:
+                if len(delta) > StateManager.MAX_DELTA:
                     StateManager.deltaIndex += 1
                     StateManager.signals.state_big_change.emit()
                 elif len(delta) > 0:
@@ -297,14 +318,74 @@ class StateManager:
 
         # When the diff couldn't be computed we still export, so that
         # program_state.json keeps tracking the live state.
-        if diff is None or len(diff) > 0:
+        if diff is None or len(diff) > 0 or replaced:
             # Without a diff (or without changed keys, which makes DeepDiff
             # compare everything) we can't tell what changed, so resync
             # lastSavedState completely.
             ExportAll(
                 diff if diff is not None else {},
+                replaced,
                 changedPaths if diff is not None and changedPaths else None,
             )
+
+    def _TakeReplaced(changedPaths):
+        """The paths set with replace=True since the last save, as the set of
+        paths left out of the diff and {path: (old value, new value)} for the
+        ones that changed. Only dicts on both sides with much changed in them
+        are replaced as a whole, and not when a parent of theirs changed too:
+        the diff has them then, and sends only what changed."""
+        paths = StateManager.replacedPaths
+        StateManager.replacedPaths = set()
+
+        def Lookup(root, path):
+            for k in path:
+                if not isinstance(root, dict) or k not in root:
+                    return None
+                root = root[k]
+            return root
+
+        whole = set()
+        candidates = {}
+        for path in paths:
+            if not all(StateManager._IsPlainKey(k) for k in path) or any(
+                len(p) < len(path) and path[: len(p)] == p for p in changedPaths
+            ):
+                continue
+            old = Lookup(StateManager.lastSavedState, path)
+            new = Lookup(StateManager.state, path)
+            if type(old) is not dict or type(new) is not dict:
+                continue
+            if StateManager._SameValue(old, new):
+                whole.add(path)
+                continue
+            candidates[path] = (old, new, *StateManager._ChangedValues(old, new))
+
+        # Mostly changed, or too much changed together for a delta (the
+        # layouts would get the whole state instead)
+        tooMany = sum(c[2] for c in candidates.values()) > StateManager.MAX_DELTA
+        replaced = {}
+        for path, (old, new, changed, total) in candidates.items():
+            if tooMany or changed * 2 >= total:
+                whole.add(path)
+                replaced[path] = (old, new)
+        return whole, replaced
+
+    def _ChangedValues(old, new):
+        """How many of the values in new (in its dicts and lists) differ from
+        old's, and how many values there are in new."""
+        if isinstance(new, dict):
+            pairs = [(old.get(k) if type(old) is dict else None, v) for k, v in new.items()]
+        elif isinstance(new, (list, tuple)):
+            same = type(old) is type(new)
+            pairs = [(old[i] if same and i < len(old) else None, v) for i, v in enumerate(new)]
+        else:
+            return (0 if type(old) is type(new) and old == new else 1), 1
+        changed = total = 0
+        for o, n in pairs:
+            c, t = StateManager._ChangedValues(o, n)
+            changed += c
+            total += t
+        return changed, total
 
     def UpdateLastSavedState(changedPaths):
         """Copy the changed paths of the state into lastSavedState.
@@ -477,17 +558,43 @@ class StateManager:
             result.append(key)
             return
 
+        narrowed = []
         StateManager._NarrowChildren(
             old,
             new,
             key,
-            result,
+            narrowed,
             added,
             removed,
             both,
             lambda k, childKey, out: StateManager._NarrowWhole(old[k], new[k], childKey, out),
             lambda k, childKey, out: out.append(childKey),
         )
+
+        # DeepDiff checks every key it walks against every include path, so
+        # n paths cost about n * n, and the dict as one path about its size:
+        # less when most of it changed (e.g. the teams' stats swapped)
+        limit = len(narrowed) ** 2
+        if len(narrowed) > 1 and StateManager._SmallerThan(old, new, limit=limit):
+            result.append(key)
+        else:
+            result.extend(narrowed)
+
+    def _SmallerThan(*values, limit):
+        """True if the values have fewer than limit dicts, lists and values
+        in them, counting no further than limit."""
+        stack = list(values)
+        count = 0
+        while stack:
+            value = stack.pop()
+            count += 1
+            if count >= limit:
+                return False
+            if isinstance(value, dict):
+                stack.extend(value.values())
+            elif isinstance(value, (list, tuple)):
+                stack.extend(value)
+        return True
 
     def _NarrowChildren(old, new, key, result, added, removed, both, narrow, keep):
         changed = 0
@@ -577,9 +684,16 @@ class StateManager:
     def Get(key: str, default=None):
         return deep_get(StateManager.state, key, default)
 
-    def Set(key: str, value):
+    def Set(key: str, value, replace=False):
+        """With replace=True a dict that mostly changed (or with more changes
+        than a delta takes, see MAX_DELTA) is sent and exported as one change
+        of the whole value instead of being diffed value by value, which is
+        much faster (e.g. the teams' stats when they swap). When only a
+        little of it changed, it's diffed as usual."""
         with StateManager.lock:
             deep_set(StateManager.state, key, value)
+            if replace:
+                StateManager.replacedPaths.add(tuple(key.split(".")))
             StateManager._Changed(key)
 
     def Unset(key: str):
@@ -671,6 +785,26 @@ class StateManager:
                 threading.Thread(target=_DownloadImage, args=(di, dest), daemon=True).start()
         except Exception:
             logger.error(traceback.format_exc())
+
+    def ExportReplaced(path, old, new):
+        """Export a value set with replace=True: only the files of what
+        changed in it are written or removed. None is no file, as with the
+        diff, which leaves None out."""
+        if type(old) is dict and type(new) is dict:
+            for k, value in old.items():
+                if k not in new:
+                    StateManager.RemoveFilesDict(path + "/" + str(k).replace("/", "_"), value)
+            for k, value in new.items():
+                childPath = path + "/" + str(k).replace("/", "_")
+                if k not in old:
+                    if value is not None:
+                        StateManager.CreateFilesDict(childPath, value)
+                elif not StateManager._SameValue(old[k], value):
+                    StateManager.ExportReplaced(childPath, old[k], value)
+            return
+        StateManager.RemoveFilesDict(path, old)
+        if new is not None:
+            StateManager.CreateFilesDict(path, new)
 
     def RemoveFilesDict(path, di):
         if StateManager._Excluded(StateManager._StateKey(path)):

@@ -903,7 +903,10 @@ class ScoreboardWidget(QWidget):
             StateManager.ReleaseSaving()
 
     def SwapStats(self):
-        """Swap the teams' player stats, which don't change when they swap."""
+        """Swap the teams' player stats, which don't change when they swap.
+
+        They're set with replace=True: nearly every value in them changes, and
+        diffing them value by value took seconds."""
         base = f"score.{self.scoreboardNumber}"
 
         for key in ("last_sets", "history_sets"):
@@ -915,7 +918,7 @@ class ScoreboardWidget(QWidget):
                 if stats is None:
                     StateManager.Unset(f"{base}.{key}.{team}")
                 else:
-                    StateManager.Set(f"{base}.{key}.{team}", stats)
+                    StateManager.Set(f"{base}.{key}.{team}", stats, replace=True)
 
         recentSets = StateManager.Get(f"{base}.recent_sets")
         if recentSets and recentSets.get("state") == "done":
@@ -930,7 +933,7 @@ class ScoreboardWidget(QWidget):
                 if "p1_char" in s or "p2_char" in s:
                     s["p1_char"], s["p2_char"] = s.get("p2_char"), s.get("p1_char")
                 sets.append(s)
-            StateManager.Set(f"{base}.recent_sets", dict(recentSets, sets=sets))
+            StateManager.Set(f"{base}.recent_sets", dict(recentSets, sets=sets), replace=True)
         elif recentSets:
             # Still loading for the old order, ask again for the new one
             self.stats.signals.RecentSetsSignal.emit()
@@ -1055,7 +1058,7 @@ class ScoreboardWidget(QWidget):
         logger.info("STATION SETS LOADED -----------------------------")
         logger.info(data)
 
-        StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", data)
+        StateManager.Set(f"score.{self.scoreboardNumber}.station_queue", data, replace=True)
 
     # A tracked stream's or station's next set loads after a countdown in the
     # tracking bar, so the set on the scoreboard can be held there a while

@@ -975,6 +975,6 @@ class StreamQueueWidget(QDockWidget):
         try:
             data = self.model.Export(self.OnStream(), self.durations)
             data["currentStream"] = SettingsManager.Get("twitch_username")
-            StateManager.Set("stream_queue", data)
+            StateManager.Set("stream_queue", data, replace=True)
         except Exception:
             logger.error(traceback.format_exc())

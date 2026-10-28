@@ -378,6 +378,19 @@ def LayoutThemeSchema():
                     ),
                 ),
                 Field(
+                    "focus_time",
+                    _tr("Bracket focus zoom time"),
+                    FIELD_NUMBER,
+                    1000,
+                    minimum=100,
+                    maximum=5000,
+                    suffix="ms",
+                    tooltip=_tr(
+                        "How long the bracket focus layout takes to zoom to what's in focus. "
+                        "Longer is smoother"
+                    ),
+                ),
+                Field(
                     "focus_label_display",
                     _tr("Display what's in focus"),
                     FIELD_CHECKBOX,
