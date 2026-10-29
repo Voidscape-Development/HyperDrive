@@ -252,6 +252,12 @@ class LayoutThemeWindow(QDialog):
 
         # Sections on the left, their fields on the right
         self.sectionList = QListWidget()
+        # Rows with room around them: at the app's tight item padding, a
+        # selected or hovered row ran into the ones next to it
+        self.sectionList.setSpacing(2)
+        self.sectionList.setStyleSheet(
+            "QListWidget::item { padding: 6px 10px; border-radius: 4px; }"
+        )
         self.sectionList.currentRowChanged.connect(
             lambda row: self.sectionStack.setCurrentIndex(row)
         )

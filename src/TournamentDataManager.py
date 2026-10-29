@@ -35,6 +35,10 @@ class TournamentDataManagerSignals(QObject):
     tournament_url_update = Signal(str)
     # Mains requested by a non-blocking EnrichPlayerData arrived
     player_mains_updated = Signal()
+    # Background loading started and finished (StartWithActivity), for the
+    # command bar's activity strip
+    activity_started = Signal(str)
+    activity_finished = Signal(str)
 
 
 class TournamentDataManager(QObject):
@@ -66,6 +70,13 @@ class TournamentDataManager(QObject):
                 SettingsManager.Get("TOURNAMENT_URL"), initialLoading=True
             )
             TournamentDataManager.instance.signals.twitch_username_updated.emit()
+
+    def StartWithActivity(self, worker, activity):
+        """Runs the worker, shown on the command bar's activity strip until
+        it's done"""
+        self.signals.activity_started.emit(activity)
+        worker.signals.finished.connect(lambda: self.signals.activity_finished.emit(activity))
+        self.threadPool.start(worker)
 
     def GetProvider(self):
         return self.provider
@@ -248,7 +259,7 @@ class TournamentDataManager(QObject):
 
         worker = Worker(fetch)
         worker.signals.result.connect(loaded)
-        self.threadPool.start(worker)
+        self.StartWithActivity(worker, "tournament")
 
     def RepullEntrants(self):
         # For entrants who registered after the event was loaded. Players
@@ -275,7 +286,7 @@ class TournamentDataManager(QObject):
             if mains is not None and players:
                 mains.Prewarm(players)
 
-        self.threadPool.start(Worker(load))
+        self.StartWithActivity(Worker(load), "entrants")
 
     def MainsFor(self, provider):
         """The background mains fetching for the provider, None if it has
@@ -318,7 +329,7 @@ class TournamentDataManager(QObject):
                 )
             ]
         )
-        self.threadPool.start(worker)
+        self.StartWithActivity(worker, "phases")
 
     def GetTournamentPhaseGroup(self, id):
         worker = Worker(self.provider.GetTournamentPhaseGroup, **{"id": id})
@@ -501,7 +512,7 @@ class TournamentDataManager(QObject):
         )
         if on_finished:
             worker.signals.finished.connect(on_finished)
-        self.threadPool.start(worker)
+        self.StartWithActivity(worker, "completed_sets")
 
     # =====================================================
     # STANDINGS
