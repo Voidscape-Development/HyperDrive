@@ -4,7 +4,7 @@
 <context>
     <name>About</name>
     <message>
-        <location filename="../HyperDrive.py" line="904"/>
+        <location filename="../HyperDrive.py" line="910"/>
         <location filename="../layout/About.ui" line="17"/>
         <source>About</source>
         <translation type="unfinished"></translation>
@@ -290,7 +290,7 @@
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../HyperDrive.py" line="899"/>
+        <location filename="../HyperDrive.py" line="905"/>
         <location filename="../Settings/SettingsWindow.py" line="30"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
@@ -729,7 +729,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1500"/>
+        <location filename="../HyperDrive.py" line="1506"/>
         <location filename="../AssetDownloaderWindow.py" line="347"/>
         <location filename="../ScoreboardStageWidget.py" line="721"/>
         <source>Update</source>
@@ -749,8 +749,8 @@
     <message>
         <location filename="../HyperDrive.py" line="201"/>
         <location filename="../HyperDrive.py" line="239"/>
-        <location filename="../HyperDrive.py" line="874"/>
-        <location filename="../HyperDrive.py" line="1442"/>
+        <location filename="../HyperDrive.py" line="880"/>
+        <location filename="../HyperDrive.py" line="1448"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -781,7 +781,7 @@
         <location filename="../ScoreboardManager.py" line="59"/>
         <location filename="../ScoreboardManager.py" line="98"/>
         <location filename="../ScoreboardManager.py" line="111"/>
-        <location filename="../HyperDrive.py" line="1581"/>
+        <location filename="../HyperDrive.py" line="1587"/>
         <location filename="../BracketFocusBar.py" line="211"/>
         <location filename="../StreamQueueWidget.py" line="173"/>
         <location filename="../StreamQueueWidget.py" line="449"/>
@@ -801,98 +801,98 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="595"/>
-        <location filename="../HyperDrive.py" line="603"/>
+        <location filename="../HyperDrive.py" line="601"/>
+        <location filename="../HyperDrive.py" line="609"/>
         <location filename="../TournamentDataProvider/StartGGDataProvider.py" line="40"/>
         <source>Pull Latest Completed Sets from StartGG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="725"/>
+        <location filename="../HyperDrive.py" line="731"/>
         <source>Always on top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="728"/>
-        <location filename="../HyperDrive.py" line="1529"/>
+        <location filename="../HyperDrive.py" line="734"/>
+        <location filename="../HyperDrive.py" line="1535"/>
         <source>Check for updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="732"/>
-        <location filename="../HyperDrive.py" line="970"/>
+        <location filename="../HyperDrive.py" line="738"/>
+        <location filename="../HyperDrive.py" line="976"/>
         <location filename="../AssetDownloaderWindow.py" line="781"/>
         <source>Download assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="761"/>
+        <location filename="../HyperDrive.py" line="767"/>
         <source>Program Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="769"/>
+        <location filename="../HyperDrive.py" line="775"/>
         <source>Program language changed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="772"/>
+        <location filename="../HyperDrive.py" line="778"/>
         <source>System language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="797"/>
+        <location filename="../HyperDrive.py" line="803"/>
         <source>Game Asset Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="806"/>
+        <location filename="../HyperDrive.py" line="812"/>
         <source>Game Asset Language changed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="809"/>
-        <location filename="../HyperDrive.py" line="846"/>
+        <location filename="../HyperDrive.py" line="815"/>
+        <location filename="../HyperDrive.py" line="852"/>
         <source>Same as program language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="834"/>
+        <location filename="../HyperDrive.py" line="840"/>
         <source>Tournament term language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="843"/>
+        <location filename="../HyperDrive.py" line="849"/>
         <source>Tournament term language changed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="876"/>
+        <location filename="../HyperDrive.py" line="882"/>
         <source>A new window has been opened in your default webbrowser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="719"/>
+        <location filename="../HyperDrive.py" line="725"/>
         <source>Guide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="881"/>
+        <location filename="../HyperDrive.py" line="887"/>
         <source>Report a bug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="888"/>
+        <location filename="../HyperDrive.py" line="894"/>
         <source>Contribute to the Asset Database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="962"/>
+        <location filename="../HyperDrive.py" line="968"/>
         <source>Modded content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="957"/>
+        <location filename="../HyperDrive.py" line="963"/>
         <source>Reload game assets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -902,50 +902,50 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1426"/>
+        <location filename="../HyperDrive.py" line="1432"/>
         <source>Updates aren&apos;t available for HyperDrive yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1444"/>
+        <location filename="../HyperDrive.py" line="1450"/>
         <source>Failed to fetch version from github:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1471"/>
+        <location filename="../HyperDrive.py" line="1477"/>
         <source>Updater</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1478"/>
+        <location filename="../HyperDrive.py" line="1484"/>
         <source>New version available:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1488"/>
+        <location filename="../HyperDrive.py" line="1494"/>
         <source>Update to latest version?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1573"/>
+        <location filename="../HyperDrive.py" line="1579"/>
         <source>Remove the last scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1583"/>
+        <location filename="../HyperDrive.py" line="1589"/>
         <source>Add a scoreboard, for another stream or station</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1634"/>
+        <location filename="../HyperDrive.py" line="1640"/>
         <source>Change Tab Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1502"/>
+        <location filename="../HyperDrive.py" line="1508"/>
         <location filename="../AssetDownloaderWindow.py" line="484"/>
         <location filename="../AssetDownloaderWindow.py" line="751"/>
-        <location filename="../TournamentDataManager.py" line="227"/>
+        <location filename="../TournamentDataManager.py" line="238"/>
         <location filename="../SelectSetWindow.py" line="823"/>
         <location filename="../SelectStationWindow.py" line="745"/>
         <location filename="../Helpers/DownloadHelper.py" line="217"/>
@@ -969,163 +969,163 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="523"/>
+        <location filename="../HyperDrive.py" line="529"/>
         <source>Repull entrants</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="526"/>
+        <location filename="../HyperDrive.py" line="532"/>
         <source>Pull the event&apos;s entrants again, to get players who registered after it was loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="536"/>
+        <location filename="../HyperDrive.py" line="542"/>
         <source>Load a different tournament...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="541"/>
+        <location filename="../HyperDrive.py" line="547"/>
         <source>Unload tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="549"/>
-        <location filename="../HyperDrive.py" line="1343"/>
-        <location filename="../HyperDrive.py" line="1352"/>
+        <location filename="../HyperDrive.py" line="555"/>
+        <location filename="../HyperDrive.py" line="1349"/>
+        <location filename="../HyperDrive.py" line="1358"/>
         <source>Events in this tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="570"/>
+        <location filename="../HyperDrive.py" line="576"/>
         <source>Completed sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="573"/>
+        <location filename="../HyperDrive.py" line="579"/>
         <source>The latest completed sets, for the completed_sets layouts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="582"/>
+        <location filename="../HyperDrive.py" line="588"/>
         <source>Auto pull</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="586"/>
+        <location filename="../HyperDrive.py" line="592"/>
         <source>Pull the latest completed sets periodically. The interval can be changed in Settings &gt; General.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="667"/>
-        <location filename="../HyperDrive.py" line="1386"/>
+        <location filename="../HyperDrive.py" line="673"/>
+        <location filename="../HyperDrive.py" line="1392"/>
         <source>Workspace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="679"/>
-        <location filename="../HyperDrive.py" line="1395"/>
+        <location filename="../HyperDrive.py" line="685"/>
+        <location filename="../HyperDrive.py" line="1401"/>
         <source>Widgets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="702"/>
-        <location filename="../HyperDrive.py" line="738"/>
+        <location filename="../HyperDrive.py" line="708"/>
+        <location filename="../HyperDrive.py" line="744"/>
         <source>Player database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="710"/>
+        <location filename="../HyperDrive.py" line="716"/>
         <source>Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="741"/>
+        <location filename="../HyperDrive.py" line="747"/>
         <source>Seed editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="950"/>
+        <location filename="../HyperDrive.py" line="956"/>
         <source>Game options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1219"/>
+        <location filename="../HyperDrive.py" line="1225"/>
         <source>Auto pull off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1221"/>
+        <location filename="../HyperDrive.py" line="1227"/>
         <source>Waiting for a tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1346"/>
+        <location filename="../HyperDrive.py" line="1352"/>
         <source>Select event...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1599"/>
+        <location filename="../HyperDrive.py" line="1605"/>
         <source>Double-click or right-click a tab to rename it</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1624"/>
+        <location filename="../HyperDrive.py" line="1630"/>
         <source>Rename scoreboard...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1635"/>
+        <location filename="../HyperDrive.py" line="1641"/>
         <source>Name of scoreboard {0}:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1637"/>
+        <location filename="../HyperDrive.py" line="1643"/>
         <source>Leave it empty for the default name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1217"/>
+        <location filename="../HyperDrive.py" line="1223"/>
         <source>Pulling...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1227"/>
+        <location filename="../HyperDrive.py" line="1233"/>
         <source>Next pull in {0}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1265"/>
+        <location filename="../HyperDrive.py" line="1271"/>
         <source>Load tournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1273"/>
+        <location filename="../HyperDrive.py" line="1279"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1399"/>
+        <location filename="../HyperDrive.py" line="1405"/>
         <source>{0} hidden</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1490"/>
+        <location filename="../HyperDrive.py" line="1496"/>
         <source>NOTE: This will open a new tab in your browser and close HyperDrive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1424"/>
-        <location filename="../HyperDrive.py" line="1516"/>
+        <location filename="../HyperDrive.py" line="1430"/>
+        <location filename="../HyperDrive.py" line="1522"/>
         <source>Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1518"/>
+        <location filename="../HyperDrive.py" line="1524"/>
         <source>You&apos;re already using the latest version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1532"/>
+        <location filename="../HyperDrive.py" line="1538"/>
         <source>Update available!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2708,7 +2708,7 @@
     <message>
         <location filename="../TournamentInfoWidget.py" line="1181"/>
         <location filename="../TournamentInfoWidget.py" line="1182"/>
-        <location filename="../TournamentDataManager.py" line="120"/>
+        <location filename="../TournamentDataManager.py" line="131"/>
         <location filename="../Settings/TournamentTermsSettings.py" line="214"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
@@ -3017,43 +3017,43 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="125"/>
+        <location filename="../TournamentDataManager.py" line="136"/>
         <source>API keys can be created at: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="168"/>
+        <location filename="../TournamentDataManager.py" line="179"/>
         <source>Paste the tournament URL.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="170"/>
+        <location filename="../TournamentDataManager.py" line="181"/>
         <source>A tournament link, start.gg short link or tournament slug lets you pick one of its events. Its other events are listed in the tournament&apos;s menu in the top bar, to switch to one later.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="175"/>
+        <location filename="../TournamentDataManager.py" line="186"/>
         <source>Supported providers:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="182"/>
-        <location filename="../TournamentDataManager.py" line="228"/>
+        <location filename="../TournamentDataManager.py" line="193"/>
+        <location filename="../TournamentDataManager.py" line="239"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="195"/>
+        <location filename="../TournamentDataManager.py" line="206"/>
         <source>Set tournament URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="225"/>
+        <location filename="../TournamentDataManager.py" line="236"/>
         <source>Set Twitch username</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="226"/>
+        <location filename="../TournamentDataManager.py" line="237"/>
         <source>Twitch Username:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3137,7 +3137,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1045"/>
+        <location filename="../HyperDrive.py" line="1051"/>
         <location filename="../GameAssetManager.py" line="156"/>
         <location filename="../GameAssetManager.py" line="202"/>
         <location filename="../GameAssetManager.py" line="383"/>
@@ -3185,8 +3185,8 @@
     </message>
     <message>
         <location filename="../SelectEventWindow.py" line="212"/>
-        <location filename="../HyperDrive.py" line="1287"/>
-        <location filename="../HyperDrive.py" line="1362"/>
+        <location filename="../HyperDrive.py" line="1293"/>
+        <location filename="../HyperDrive.py" line="1368"/>
         <location filename="../TournamentInfoWidget.py" line="886"/>
         <source>{0} entrants</source>
         <translation type="unfinished"></translation>
@@ -3198,7 +3198,7 @@
     </message>
     <message>
         <location filename="../SelectEventWindow.py" line="251"/>
-        <location filename="../HyperDrive.py" line="1340"/>
+        <location filename="../HyperDrive.py" line="1346"/>
         <source>Loading events...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4929,27 +4929,27 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommandBar.py" line="288"/>
+        <location filename="../CommandBar.py" line="357"/>
         <source>Save workspace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommandBar.py" line="289"/>
+        <location filename="../CommandBar.py" line="358"/>
         <source>Name of this arrangement of the widgets:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommandBar.py" line="308"/>
+        <location filename="../CommandBar.py" line="377"/>
         <source>Save current arrangement...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommandBar.py" line="311"/>
+        <location filename="../CommandBar.py" line="380"/>
         <source>Delete workspace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CommandBar.py" line="315"/>
+        <location filename="../CommandBar.py" line="384"/>
         <source>Reset to default arrangement</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5079,7 +5079,7 @@ Drop an image here.</source>
 <context>
     <name>layout_themes</name>
     <message>
-        <location filename="../HyperDrive.py" line="753"/>
+        <location filename="../HyperDrive.py" line="759"/>
         <source>Layout themes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5154,70 +5154,70 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="285"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="291"/>
         <source>The dimmed options only reach the layouts with &quot;Use this theme&apos;s colors in layouts&quot; on, in General.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="315"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="321"/>
         <source>Only reaches the layouts with &quot;Use this theme&apos;s colors in layouts&quot; on, in General</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="441"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="447"/>
         <source>Theme name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="452"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="458"/>
         <source>New theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="454"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="460"/>
         <source>{0} (custom)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="474"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="480"/>
         <source>Rename theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="488"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="494"/>
         <source>Delete theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="489"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="495"/>
         <source>Delete the theme &quot;{0}&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="505"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="517"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="511"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="523"/>
         <source>Import theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="507"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="535"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="513"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="541"/>
         <source>HyperDrive layout theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="518"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="524"/>
         <source>This file isn&apos;t a HyperDrive layout theme.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="533"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="547"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="539"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="553"/>
         <source>Export theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="548"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="554"/>
         <source>The theme could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5225,27 +5225,27 @@ Drop an image here.</source>
 <context>
     <name>punctuation</name>
     <message>
-        <location filename="../HyperDrive.py" line="1387"/>
+        <location filename="../HyperDrive.py" line="1393"/>
         <source>:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1398"/>
+        <location filename="../HyperDrive.py" line="1404"/>
         <source>(</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1400"/>
+        <location filename="../HyperDrive.py" line="1406"/>
         <source>)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1531"/>
+        <location filename="../HyperDrive.py" line="1537"/>
         <source>[</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../HyperDrive.py" line="1533"/>
+        <location filename="../HyperDrive.py" line="1539"/>
         <source>]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5319,7 +5319,7 @@ Drop an image here.</source>
     </message>
     <message>
         <location filename="../Settings/SettingsWidget.py" line="39"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="323"/>
+        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="329"/>
         <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
