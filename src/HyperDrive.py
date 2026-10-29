@@ -498,6 +498,12 @@ class Window(QMainWindow):
         pre_base_layout.setContentsMargins(0, 0, 0, 0)
         self.commandBar = CommandBar()
         pre_base_layout.addWidget(self.commandBar)
+        TournamentDataManager.instance.signals.activity_started.connect(
+            self.commandBar.activity.Start
+        )
+        TournamentDataManager.instance.signals.activity_finished.connect(
+            self.commandBar.activity.Finish
+        )
 
         logo = QLabel()
         logo.setPixmap(QIcon("assets/icons/icon.svg").pixmap(28, 28))
@@ -1324,7 +1330,7 @@ class Window(QMainWindow):
         )
         worker.signals.result.connect(loaded)
         worker.signals.error.connect(failed)
-        TournamentDataManager.instance.threadPool.start(worker)
+        TournamentDataManager.instance.StartWithActivity(worker, "events")
 
     def FillEventsMenu(self, events):
         """The events at the bottom of the tournament's menu, the loaded one
