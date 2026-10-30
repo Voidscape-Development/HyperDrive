@@ -662,7 +662,6 @@
     <name>Settings</name>
     <message>
         <location filename="../HyperDrive.py" line="905"/>
-        <location filename="../Settings/SettingsWindow.py" line="30"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
@@ -6137,142 +6136,8 @@ Drop an image here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="48"/>
-        <source>Gradient</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="67"/>
-        <source>Where the two colors meet, from the first color&apos;s side: 50% is an even blend. Lower keeps the first color closer to its side, higher spreads it further.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="148"/>
-        <source>Layout default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="182"/>
-        <source>Layout Themes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="196"/>
-        <source>Theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="200"/>
-        <source>The theme the layouts use. Changes are saved and sent to the layouts as you make them.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="208"/>
-        <source>New theme...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="211"/>
-        <source>Starts a new theme from the one in use</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="215"/>
-        <source>Import...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="218"/>
-        <source>Export...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="220"/>
-        <source>Saves the theme in use to a file you can share</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="226"/>
-        <source>Rename...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="229"/>
         <source>Delete</source>
-        <translation type="unfinished">Supprimer</translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="245"/>
-        <source>Built-in themes can&apos;t be changed. Create a new theme to customize one.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="291"/>
-        <source>The dimmed options only reach the layouts with &quot;Use this theme&apos;s colors in layouts&quot; on, in General.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="321"/>
-        <source>Only reaches the layouts with &quot;Use this theme&apos;s colors in layouts&quot; on, in General</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="447"/>
-        <source>Theme name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="458"/>
-        <source>New theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="460"/>
-        <source>{0} (custom)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="480"/>
-        <source>Rename theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="494"/>
-        <source>Delete theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="495"/>
-        <source>Delete the theme &quot;{0}&quot;?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="511"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="523"/>
-        <source>Import theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="513"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="541"/>
-        <source>HyperDrive layout theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="524"/>
-        <source>This file isn&apos;t a HyperDrive layout theme.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="539"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="553"/>
-        <source>Export theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="554"/>
-        <source>The theme could not be saved.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Supprimer</translation>
     </message>
 </context>
 <context>
@@ -6318,410 +6183,218 @@ Drop an image here.</source>
 <context>
     <name>settings</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="169"/>
         <source>General</source>
         <translation>Général</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="175"/>
-        <source>Appearance</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="316"/>
         <source>Scoreboard</source>
-        <translation type="unfinished">Tableau des scores</translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="345"/>
-        <source>State Manager</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="639"/>
-        <source>Web Reporting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="709"/>
-        <source>Twitch Predictions</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Tableau des scores</translation>
     </message>
     <message>
         <source>Hotkeys</source>
         <translation>Raccourcis clavier</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="446"/>
         <source>Default Display Options</source>
         <translation>Affichage par défaut</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="473"/>
-        <source>Character Select</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="479"/>
-        <source>Match &amp; Phase Names</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="485"/>
         <source>Pronouns</source>
-        <translation type="unfinished">Pronoms</translation>
+        <translation type="obsolete">Pronoms</translation>
     </message>
     <message>
         <source>Bluesky</source>
         <translation>Bluesky</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="547"/>
         <source>API Keys</source>
         <translation>Clés API</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="590"/>
-        <source>start.gg Reporting</source>
+        <source>Default</source>
+        <translation>Paramètres par défaut</translation>
+    </message>
+    <message>
+        <location filename="../Settings/Controls.py" line="73"/>
+        <source>Reset to default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWidget.py" line="39"/>
-        <location filename="../LayoutOptions/LayoutThemeWindow.py" line="329"/>
-        <source>Default</source>
-        <translation>Paramètres par défaut</translation>
+        <location filename="../Settings/Controls.py" line="83"/>
+        <source>Changed from the default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/Controls.py" line="105"/>
+        <source>Restart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/Controls.py" line="106"/>
+        <source>Takes effect after HyperDrive restarts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/Controls.py" line="184"/>
+        <source>Reset &quot;{0}&quot; to default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWidget.py" line="38"/>
+        <source>Insert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWidget.py" line="44"/>
+        <source>Insert {0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWidget.py" line="69"/>
+        <source>Show</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWidget.py" line="221"/>
+        <source>Set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/SettingsWidget.py" line="223"/>
+        <source>Not set</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>settings.api_keys</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="492"/>
         <source>ParryGG</source>
         <translation>ParryGG</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="497"/>
         <source>You can get an API Key from parry.gg/api-keys</source>
         <translation>Vous pouvez obtenir une clé API via parry.gg/api-keys</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="501"/>
-        <location filename="../Settings/SettingsWindow.py" line="520"/>
-        <location filename="../Settings/SettingsWindow.py" line="539"/>
         <source>Please note that the API Key will be stored in plain text on your computer</source>
         <translation>Veuillez noter que cette clé API sera stocké en clair sur votre ordinateur</translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="510"/>
-        <source>start.gg (reporting sets)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="515"/>
-        <source>Needed to report sets to start.gg from the scoreboard&apos;s Games window. Create a token at start.gg &gt; Developer Settings, with an account that&apos;s an admin of the tournament.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="529"/>
-        <source>Twitch (predictions)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="534"/>
-        <source>A user access token of your channel with the channel:manage:predictions scope, e.g. from a token generator for Twitch&apos;s API. See Settings &gt; Twitch Predictions.</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>settings.appearance</name>
     <message>
-        <location filename="../Theme.py" line="211"/>
+        <location filename="../Theme.py" line="213"/>
         <source>Background</source>
         <translation type="unfinished">Arrière Plan</translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="212"/>
+        <location filename="../Theme.py" line="214"/>
         <source>Panels and inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="213"/>
+        <location filename="../Theme.py" line="215"/>
         <source>Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="214"/>
+        <location filename="../Theme.py" line="216"/>
         <source>Borders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="215"/>
+        <location filename="../Theme.py" line="217"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="216"/>
+        <location filename="../Theme.py" line="218"/>
         <source>Secondary text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="217"/>
+        <location filename="../Theme.py" line="219"/>
         <source>Accent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="223"/>
+        <location filename="../Theme.py" line="225"/>
         <source>Compact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="224"/>
+        <location filename="../Theme.py" line="226"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="225"/>
+        <location filename="../Theme.py" line="227"/>
         <source>Comfortable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="277"/>
-        <location filename="../Settings/AppearanceSettings.py" line="255"/>
+        <location filename="../Theme.py" line="279"/>
         <source>Dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="279"/>
-        <location filename="../Settings/AppearanceSettings.py" line="257"/>
+        <location filename="../Theme.py" line="281"/>
         <source>Light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="290"/>
+        <location filename="../Theme.py" line="292"/>
         <source>Midnight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="291"/>
+        <location filename="../Theme.py" line="293"/>
         <source>Graphite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="292"/>
+        <location filename="../Theme.py" line="294"/>
         <source>OLED Black</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="293"/>
+        <location filename="../Theme.py" line="295"/>
         <source>Synthwave</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="294"/>
+        <location filename="../Theme.py" line="296"/>
         <source>Forest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="295"/>
+        <location filename="../Theme.py" line="297"/>
         <source>Paper</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="296"/>
+        <location filename="../Theme.py" line="298"/>
         <source>Soft Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="297"/>
+        <location filename="../Theme.py" line="299"/>
         <source>High Contrast Dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="298"/>
+        <location filename="../Theme.py" line="300"/>
         <source>High Contrast Light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Theme.py" line="632"/>
+        <location filename="../Theme.py" line="634"/>
         <source>Custom theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="52"/>
-        <source>Theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="57"/>
-        <source>Accent color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="65"/>
-        <source>Reset the accent color to default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="75"/>
-        <source>UI scale (takes effect on next restart)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="101"/>
-        <source>New custom theme...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="104"/>
-        <source>Starts a custom theme from the one in use</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="110"/>
-        <source>Import...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="113"/>
-        <source>Export...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="115"/>
-        <source>Saves the theme in use to a file you can share</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="121"/>
-        <source>Rename...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="124"/>
         <source>Delete</source>
-        <translation type="unfinished">Supprimer</translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="143"/>
-        <source>Reset &quot;{0}&quot; to default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="157"/>
-        <location filename="../Settings/AppearanceSettings.py" line="367"/>
-        <source>Reset all colors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="161"/>
-        <source>Resets every color to the built-in Dark or Light theme, whichever this theme is closest to</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="170"/>
-        <source>Corner roundness</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="188"/>
-        <source>Spacing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="201"/>
-        <source>Font</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="205"/>
-        <source>System default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="218"/>
-        <source>Default team colors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="260"/>
-        <source>Follow system</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="290"/>
-        <source>Customize {0}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="368"/>
-        <source>Reset every color of &quot;{0}&quot; to default?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="403"/>
-        <source>Theme name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="414"/>
-        <source>New custom theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="416"/>
-        <source>{0} (custom)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="432"/>
-        <source>Rename theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="445"/>
-        <source>Delete theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="446"/>
-        <source>Delete the theme &quot;{0}&quot;?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="464"/>
-        <location filename="../Settings/AppearanceSettings.py" line="476"/>
-        <source>Import theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="466"/>
-        <location filename="../Settings/AppearanceSettings.py" line="493"/>
-        <source>HyperDrive theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="477"/>
-        <source>This file isn&apos;t a HyperDrive theme.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="491"/>
-        <location filename="../Settings/AppearanceSettings.py" line="505"/>
-        <source>Export theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AppearanceSettings.py" line="506"/>
-        <source>The theme could not be saved.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>settings.bracket_auto_update_interval</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="105"/>
-        <source>Bracket auto update interval (seconds)</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Supprimer</translation>
     </message>
 </context>
 <context>
@@ -6756,67 +6429,15 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
-    <name>settings.character_picker</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="454"/>
-        <source>Show the player&apos;s mains in the character grid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="462"/>
-        <source>Show recently picked characters in the character grid</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>settings.compact_commentators</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="436"/>
-        <source>Compact Commentator Cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>settings.compact_players</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="427"/>
-        <source>Compact Player Cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>settings.completed_sets_pull_interval</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="84"/>
-        <source>Completed sets auto pull interval (seconds)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>settings.control_score_from_stage_strike</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="184"/>
         <source>Enable score control from the stage striking app</source>
         <translation>Activer la mise à jour du score depuis l’application de ban des stages</translation>
     </message>
 </context>
 <context>
-    <name>settings.custom_player_export</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="127"/>
-        <source>Export custom player data from user_data/custom_player_export</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="135"/>
-        <source>Sends the files in a folder named after a player&apos;s tag (or sponsor and tag) to the layouts, as the player&apos;s custom data. Changes to the files show up on stream within a second.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>settings.disable_autoupdate</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="209"/>
         <source>Disable automatic set updating for the scoreboard</source>
         <translation>Désactiver la mise à jour automatique du tableau des scores depuis le fournisseur de données de tournoi</translation>
     </message>
@@ -6838,7 +6459,6 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_export</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="335"/>
         <source>Disable HyperDrive file exporting</source>
         <translation>Désactiver l’export des fichiers individuels de données</translation>
     </message>
@@ -6853,7 +6473,6 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_overwrite</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="286"/>
         <source>Do not override existing values in the local player database (takes effect on next restart)</source>
         <translation>Ne pas remplacer les valeurs existantes dans la base de données locale des joueurs (Prend effet après le redémarrage de l&apos;application)</translation>
     </message>
@@ -6861,7 +6480,6 @@ Drop an image here.</source>
 <context>
     <name>settings.disable_scoreupdate</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="274"/>
         <source>Disable automatic score updating for the scoreboard</source>
         <translation>Désactiver la mise à jour automatique des scores sur le tableau des scores</translation>
     </message>
@@ -6874,32 +6492,16 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
-    <name>settings.force_no_mains_on_new_set_loads</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="262"/>
-        <source>Do not update character data when a set is loaded</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>settings.general</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="56"/>
         <source>Webserver Port</source>
         <translation>Port du serveur web</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="66"/>
-        <source>Web dashboard PIN (empty: no PIN)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="75"/>
         <source>Enable profanity filter</source>
         <translation>Activer le filtre anti-jurons</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="326"/>
         <source>Enable StateManager Logging</source>
         <translation>Activer le logging du gestionnaire d&apos;états</translation>
     </message>
@@ -6955,19 +6557,6 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
-    <name>settings.local_player_data</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="298"/>
-        <source>Use the local player database for player info when loading sets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="306"/>
-        <source>Sets, the stream queue and station sets are loaded without the players&apos; socials, pronouns and location, which come from the local player database instead. Players not in it yet are looked up once and saved to it.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>settings.pronouns</name>
     <message>
         <location filename="../Settings/PronounSettings.py" line="18"/>
@@ -7001,17 +6590,8 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
-    <name>settings.scoreboard_auto_update_interval</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="221"/>
-        <source>Scoreboard automatic set updating interval (seconds)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>settings.show_additional</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="418"/>
         <source>Show Additional Info</source>
         <translation>Montrer le champ &quot;Informations supplémentaires&quot;</translation>
     </message>
@@ -7019,7 +6599,6 @@ Drop an image here.</source>
 <context>
     <name>settings.show_birthday</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="382"/>
         <source>Show Birthday</source>
         <translation>Montrer le champ &quot;Anniversaire&quot;</translation>
     </message>
@@ -7027,7 +6606,6 @@ Drop an image here.</source>
 <context>
     <name>settings.show_characters</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="400"/>
         <source>Show Characters</source>
         <translation>Montrer le champ &quot;Personnages&quot;</translation>
     </message>
@@ -7042,7 +6620,6 @@ Drop an image here.</source>
 <context>
     <name>settings.show_location</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="391"/>
         <source>Show Location</source>
         <translation>Montrer le champ &quot;Lieu&quot;</translation>
     </message>
@@ -7050,7 +6627,6 @@ Drop an image here.</source>
 <context>
     <name>settings.show_name</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="355"/>
         <source>Show Real Name</source>
         <translation>Montrer le champ &quot;Nom Réel&quot;</translation>
     </message>
@@ -7058,7 +6634,6 @@ Drop an image here.</source>
 <context>
     <name>settings.show_pronouns</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="409"/>
         <source>Show Pronouns</source>
         <translation>Montrer le champ &quot;Pronoms&quot;</translation>
     </message>
@@ -7066,7 +6641,6 @@ Drop an image here.</source>
 <context>
     <name>settings.show_seed</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="373"/>
         <source>Show Seed</source>
         <translation>Montrer le champ &quot;Tête de série&quot;</translation>
     </message>
@@ -7074,46 +6648,13 @@ Drop an image here.</source>
 <context>
     <name>settings.show_social</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="364"/>
         <source>Show Social Media</source>
         <translation>Montrer le champ &quot;Réseaux sociaux&quot;</translation>
     </message>
 </context>
 <context>
-    <name>settings.stage_strike_ask_characters</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="197"/>
-        <source>Ask for the next game&apos;s characters on the stage striking app after each game</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>settings.startgg_reporting</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="556"/>
-        <source>Send each game to start.gg as it&apos;s played (otherwise games are sent when the set is reported)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="564"/>
-        <source>Lets viewers follow the set on start.gg live. Uses one request per change.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="572"/>
-        <source>Mark sets as in progress on start.gg when they&apos;re loaded on a scoreboard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="583"/>
-        <source>Ask before reporting a set</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>settings.team_1_default_color</name>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="225"/>
         <source>Default Color of Team 1</source>
         <translation>Couleur par défaut de l&apos;Équipe 1</translation>
     </message>
@@ -7121,25 +6662,8 @@ Drop an image here.</source>
 <context>
     <name>settings.team_2_default_color</name>
     <message>
-        <location filename="../Settings/AppearanceSettings.py" line="233"/>
         <source>Default Color of Team 2</source>
         <translation>Couleur par défaut de l&apos;Équipe 2</translation>
-    </message>
-</context>
-<context>
-    <name>settings.team_battle_default_first_to</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="158"/>
-        <source>Crew/Team Battle: games to win a matchup (First To)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>settings.team_battle_default_stocks</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="146"/>
-        <source>Crew/Team Battle: starting stocks per player (Stock Pool)</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7202,102 +6726,14 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
-    <name>settings.tracking_next_set_delay</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="243"/>
-        <source>Seconds before a tracked stream&apos;s or station&apos;s next set loads</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="251"/>
-        <source>Time to hold the next set if the current one isn&apos;t over yet. 0 loads it at once.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>settings.twitch_predictions</name>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="647"/>
-        <source>Run Twitch predictions for the set on stream</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="654"/>
-        <source>Needs the Twitch token of Settings &gt; API Keys, and a channel that&apos;s a Twitch affiliate or partner.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="660"/>
         <source>Scoreboard</source>
-        <translation type="unfinished">Tableau des scores</translation>
+        <translation type="obsolete">Tableau des scores</translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.py" line="665"/>
-        <source>The number of the scoreboard of the stream</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="670"/>
-        <source>Start one when a set is loaded</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="678"/>
-        <source>Resolve it with the winner when the set is over</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="686"/>
         <source>Title</source>
-        <translation type="unfinished">Titre</translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="691"/>
-        <source>{team1}, {team2} and {round} are replaced. Twitch allows 45 characters.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="697"/>
-        <source>Seconds viewers have to predict</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="704"/>
-        <source>From 30 to 1800</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>settings.web_reporting</name>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="598"/>
-        <source>Accept results from player reporting stations (/report)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="606"/>
-        <source>Players&apos; results wait on the Approval page until an admin approves them.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="612"/>
-        <source>Reporting station PIN (empty: no PIN)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="619"/>
-        <source>Asked once by each reporting station. The admin pages use the web dashboard PIN of Settings &gt; General.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="625"/>
-        <source>Get the sets from start.gg every (seconds)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/SettingsWindow.py" line="632"/>
-        <source>While a reporting page is open. At least 10.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Titre</translation>
     </message>
 </context>
 <context>
