@@ -3195,6 +3195,7 @@ type ProfileWidget {
   id: String
   name: String
   supportedLayouts: [String]
+  supportedPages: [String]
   widgetComponentsNodeModule: String
 }
 
@@ -3203,6 +3204,11 @@ type ProfileWidgetPageLayout {
   config: JSON
   id: String
   images(type: String): [Image]
+
+  """
+  Whether the layout has been saved since it was created from the page template
+  """
+  isCustomized: Boolean
   rows: JSON
   version: Int
 }
