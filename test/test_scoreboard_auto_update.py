@@ -372,6 +372,67 @@ def TestNextSetLoadsAfterTheDelay():
         scoreboardModule.SettingsManager.Get = get
 
 
+def TestDefaultBestOf():
+    """A start.gg set without a best-of gets the setting's when it loads"""
+    from qtpy.QtWidgets import QSpinBox, QWidget
+
+    get = scoreboardModule.SettingsManager.Get
+    manager = scoreboardModule.TournamentDataManager.instance
+    settings = {"general.startgg_default_best_of": 3}
+    scoreboardModule.SettingsManager.Get = staticmethod(
+        lambda key, default=None: settings.get(key, default)
+    )
+
+    class Column(QWidget):
+        def __init__(self):
+            super().__init__()
+            for name in ("score_left", "score_right", "best_of"):
+                QSpinBox(self).setObjectName(name)
+
+    class Board(Scoreboard):
+        UsesDefaultBestOf = ScoreboardWidget.UsesDefaultBestOf
+        ChangeSetData = ScoreboardWidget.ChangeSetData
+        teamsSwapped = False
+
+        def __init__(self):
+            super().__init__()
+            self.scoreColumn = Column()
+            self.team1column = self.team2column = QWidget()
+
+        def BestOf(self):
+            return self.scoreColumn.findChild(QSpinBox, "best_of").value()
+
+    try:
+        for provider, expected in [("StartGG", 3), ("ParryGG", 0)]:
+            scoreboardModule.TournamentDataManager.instance = types.SimpleNamespace(
+                provider=types.SimpleNamespace(NAME=provider)
+            )
+            board = Board()
+            board.ChangeSetData({"overwrite": True, "bestOf": None})
+            assert board.BestOf() == expected, provider
+
+        # Auto updates leave a best-of changed by hand
+        board = Board()
+        board.scoreColumn.findChild(QSpinBox, "best_of").setValue(5)
+        scoreboardModule.TournamentDataManager.instance = types.SimpleNamespace(
+            provider=types.SimpleNamespace(NAME="StartGG")
+        )
+        board.ChangeSetData({"overwrite": False, "bestOf": None})
+        assert board.BestOf() == 5
+        # start.gg's own best-of comes first
+        board.ChangeSetData({"overwrite": True, "bestOf": 7})
+        assert board.BestOf() == 7
+
+        # Off
+        settings["general.startgg_default_best_of"] = 0
+        board = Board()
+        board.ChangeSetData({"overwrite": True, "bestOf": None})
+        assert board.BestOf() == 0
+    finally:
+        scoreboardModule.SettingsManager.Get = get
+        scoreboardModule.TournamentDataManager.instance = manager
+
+
 if __name__ == "__main__":
     for test in [
         TestWaitForNextSet,
@@ -380,6 +441,7 @@ if __name__ == "__main__":
         TestTrackingBar,
         TestNextSetCountdown,
         TestNextSetLoadsAfterTheDelay,
+        TestDefaultBestOf,
     ]:
         test()
         print(f"{test.__name__}: OK")

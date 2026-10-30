@@ -351,6 +351,19 @@ class SettingsWindow(QDialog):
                 ),
                 invert=True,
             ),
+            # Until start.gg gives offline events a best-of too (ScoreboardWidget.ChangeSetData)
+            Setting(
+                "general.startgg_default_best_of",
+                TYPE_NUMBER,
+                0,
+                _tr("settings.startgg_default_best_of", "Default best-of for start.gg sets"),
+                _tr(
+                    "settings.startgg_default_best_of",
+                    "For sets start.gg doesn't give one, like offline events' sets, so their games can be reported. 0: leave it as it is",
+                ),
+                minimum=0,
+                maximum=99,
+            ),
             Setting(
                 "general.force_no_mains_on_new_set_loads",
                 TYPE_TOGGLE,
