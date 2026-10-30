@@ -19,6 +19,7 @@ from ..Settings.Controls import (
     ThemeCard,
     ToggleSwitch,
 )
+from ..SettingsManager import SettingsManager
 from ..Theme import ThemedIcon
 from .LayoutThemePreview import (
     KIND_SCOREBOARD,
@@ -50,6 +51,9 @@ APPLY_DELAY_MS = 150
 
 GALLERY_WIDTH = 228
 PREVIEW_WIDTH = 300
+
+# Whether hovering an option points at what it changes in the preview
+HIGHLIGHT_SETTING = "layout_themes.preview_highlight"
 
 # The switch shown above the sections instead of in General
 APPLY_COLORS = ("general", "apply_colors")
@@ -310,6 +314,30 @@ class SectionPage(SettingsPage):
         return found
 
 
+class HoverWatcher(QObject):
+    """Tells the window which option is under the mouse or has the keyboard
+    focus, so the preview can point at what it changes"""
+
+    def __init__(self, window):
+        super().__init__(window)
+        self.window = window
+        # widget -> (section key, [fields])
+        self.targets = {}
+
+    def Watch(self, widget, sectionKey, fields):
+        self.targets[widget] = (sectionKey, fields)
+        widget.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        target = self.targets.get(obj)
+        if target is not None:
+            if event.type() in (QEvent.Type.Enter, QEvent.Type.FocusIn):
+                self.window.PointAt(obj, *target)
+            elif event.type() in (QEvent.Type.Leave, QEvent.Type.FocusOut):
+                self.window.StopPointing(obj)
+        return False
+
+
 class LayoutThemeWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -335,6 +363,12 @@ class LayoutThemeWindow(QDialog):
         # notes saying so
         self.colorLabels = []
         self.colorNotes = []
+        # Pointing the preview at the option under the mouse: the option's
+        # widget, and the kind the preview showed before it switched to one
+        # that draws the option
+        self.hover = HoverWatcher(self)
+        self.pointingAt = None
+        self.kindBeforePointing = None
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -530,6 +564,7 @@ class LayoutThemeWindow(QDialog):
                 )
                 self.editors[(section.key, field.key)] = editor
                 gridLayout.addWidget(editor.widget, i // 3, i % 3)
+                self.hover.Watch(editor.widget, section.key, [field])
                 page.Searchable(editor.widget, group, labels[field.key], field.label, field.tooltip)
             for column in range(3):
                 gridLayout.setColumnStretch(column, 1)
@@ -565,6 +600,8 @@ class LayoutThemeWindow(QDialog):
                 self.colorLabels.append(row.label)
             self.rows[key] = row
             group.AddRow(row)
+            self.hover.Watch(row, section.key, [field])
+            self.hover.Watch(editor.widget, section.key, [field])
             page.Searchable(row, group, field.label, field.tooltip)
 
     def BuildGlowTable(self, page, section, fields):
@@ -615,6 +652,8 @@ class LayoutThemeWindow(QDialog):
             self.glowRows.append((section.key, dot, reset, modeFields, label))
             for widget in (dot, label, glow.widget, custom.widget, color.widget, reset):
                 page.Searchable(widget, group, title, name, _tr("Focus glow"))
+            for widget in (label, glow.widget, custom.widget, color.widget):
+                self.hover.Watch(widget, section.key, modeFields)
         grid.setColumnStretch(3, 1)
         group.AddWidget(table)
 
@@ -654,6 +693,16 @@ class LayoutThemeWindow(QDialog):
             thumbnails.addWidget(thumbnail, i // 2, i % 2)
         layout.addLayout(thumbnails)
         self.PreviewKindChanged()
+        layout.addSpacing(4)
+        self.highlightCheck = QCheckBox(_tr("Point at what an option changes"))
+        self.highlightCheck.setToolTip(
+            _tr(
+                "Hovering an option, or tabbing to it, outlines what it changes in the preview and dims the rest"
+            )
+        )
+        self.highlightCheck.setChecked(bool(SettingsManager.Get(HIGHLIGHT_SETTING, True)))
+        self.highlightCheck.toggled.connect(self.HighlightToggled)
+        layout.addWidget(self.highlightCheck)
         layout.addStretch(1)
         layout.addWidget(
             Description(
@@ -664,8 +713,64 @@ class LayoutThemeWindow(QDialog):
         )
         return pane
 
+    # =====================================================
+    # POINTING AT AN OPTION
+    # =====================================================
+    def PointAt(self, widget, sectionKey, fields):
+        if not self.highlightCheck.isChecked():
+            return
+        keys = [f"{sectionKey}.{field.key}" for field in fields]
+        kinds = self.preview.KindsShowing(keys)
+        current = self.previewKind.currentData()
+        if kinds and current not in kinds:
+            # Shows the option in a preview that draws it, until the mouse
+            # leaves it
+            if self.kindBeforePointing is None:
+                self.kindBeforePointing = current
+            self.previewKind.blockSignals(True)
+            self.previewKind.setCurrentIndex(self.previewKind.findData(kinds[0]))
+            self.previewKind.blockSignals(False)
+            self.preview.SetKind(kinds[0])
+        elif not kinds and self.kindBeforePointing is not None:
+            self.RestoreKind()
+        values = self.Theme()["values"][sectionKey]
+        off = len(fields) == 1 and fields[0].type == FIELD_CHECKBOX and not values[fields[0].key]
+        note = _tr("Off, so it isn't shown") if off else _tr("Not in the preview")
+        self.pointingAt = widget
+        self.preview.SetHighlight(keys, note)
+
+    def StopPointing(self, widget):
+        if widget is not self.pointingAt:
+            return
+        self.pointingAt = None
+        self.preview.SetHighlight(None)
+        # Not at once: moving to the next option shouldn't flicker
+        QTimer.singleShot(250, self.RestoreKindIfIdle)
+
+    def RestoreKindIfIdle(self):
+        if self.pointingAt is None:
+            self.RestoreKind()
+
+    def RestoreKind(self):
+        if self.kindBeforePointing is None:
+            return
+        self.previewKind.blockSignals(True)
+        self.previewKind.setCurrentIndex(self.previewKind.findData(self.kindBeforePointing))
+        self.previewKind.blockSignals(False)
+        self.preview.SetKind(self.kindBeforePointing)
+        self.kindBeforePointing = None
+
+    def HighlightToggled(self, on):
+        SettingsManager.Set(HIGHLIGHT_SETTING, on)
+        if not on:
+            self.pointingAt = None
+            self.preview.SetHighlight(None)
+            self.RestoreKind()
+
     def PreviewKindChanged(self, index=None):
         kind = self.previewKind.currentData()
+        # Picked by hand: stays when the mouse leaves an option
+        self.kindBeforePointing = None
         self.preview.SetKind(kind)
         for thumbnail in getattr(self, "thumbnails", []):
             thumbnail.SetSelected(thumbnail.kind == kind)

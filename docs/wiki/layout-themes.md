@@ -9,6 +9,12 @@ middle, in sections, and a **Preview** on the right draws a scoreboard, bracket,
 strike, stream queue, standings or versus screen in the theme as you change it (click a
 small one under it to see it big). It's an approximation: your layouts in OBS update live too.
 
+Hover an option, or tab to it, and the preview points at what it changes: it's outlined and
+the rest is dimmed. If another preview shows it better (e.g. a stage strike option while the
+scoreboard is shown), the preview switches to it until the mouse moves on. An option that's
+off, or that the preview doesn't draw, says so. Turn this off with **Point at what an option
+changes** under the preview.
+
 ## Built-in themes
 
 **Default** leaves every layout looking as it was made. The others give all the layouts a
