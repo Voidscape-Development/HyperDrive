@@ -20,7 +20,8 @@ function Status<T>({items, empty}: {items: Loadable<T>; empty: string}) {
 
 /** The player's last sets in this event, most recent first */
 export function LastSets({sets}: {sets: Loadable<LastSet>}) {
-    return <section className="flex flex-col gap-2">
+    // The round shows when the column is wide enough to leave the opponent's name whole
+    return <section className="@container flex flex-col gap-2">
         <SectionTitle>{i18n.t("last_sets")}</SectionTitle>
         {!sets?.length ? <Status items={sets} empty={i18n.t("no_last_sets")}/> :
             <ul className="flex flex-col divide-y rounded-md border text-sm">
@@ -43,7 +44,7 @@ export function LastSets({sets}: {sets: Loadable<LastSet>}) {
                             {s.oponent_seed ? <span className="text-muted-foreground"> ({i18n.t("seed_n", {value: s.oponent_seed})})</span> : null}
                         </span>
                         <CharacterIcons characters={s.oponent_char?.character}/>
-                        <span className="hidden shrink-0 text-xs text-muted-foreground xl:inline">
+                        <span className="hidden shrink-0 text-xs text-muted-foreground @lg:inline">
                             {[s.phase_name, s.phase_id].filter(Boolean).join(" ")} · {s.round_name}
                         </span>
                     </li>;

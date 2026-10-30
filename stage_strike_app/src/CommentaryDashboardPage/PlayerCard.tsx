@@ -9,7 +9,7 @@ const IMAGE = /\.(png|jpe?g|gif|webp|svg|avif)$/i;
 const VIDEO = /\.(mp4|webm|mov|m4v)$/i;
 
 /** Who a player is: tag, name, pronouns, where they're from, seed, socials and characters */
-export function PlayerIdentity({person, color}: {person: Person; color?: string}) {
+export function PlayerIdentity({person, color, aside}: {person: Person; color?: string; aside?: React.ReactNode}) {
     const avatar = assetUrl(person.avatar) ?? person.online_avatar ?? undefined;
     const countryCode = person.country?.code;
     const countryName = person.country?.display_name || person.country?.name || person.country?.en_name;
@@ -31,6 +31,7 @@ export function PlayerIdentity({person, color}: {person: Person; color?: string}
                 <div className="flex flex-wrap items-baseline gap-x-2">
                     {person.team ? <span className="text-lg text-muted-foreground">{person.team}</span> : null}
                     <span className="text-2xl leading-tight font-bold break-words">{person.name || i18n.t("no_player")}</span>
+                    {aside ? <span className="self-center">{aside}</span> : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
                     {person.real_name ? <span className="text-foreground">{person.real_name}</span> : null}

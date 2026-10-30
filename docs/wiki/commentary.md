@@ -34,6 +34,10 @@ Commentary tab has the link). It follows the scoreboard live and shows:
   start. Click one to see its players, with their stats.
 - **Recent results**: the event's last completed sets, upsets marked.
 
+On a laptop or a bigger screen, the page fits the window: each panel scrolls on its own,
+and on a wide screen *Up next* and *Recent results* get a column of their own. On a phone
+or a small tablet, the page scrolls.
+
 It only shows what's in HyperDrive: nothing on it can change the stream. With several
 scoreboards, pick one at the top, or add `?scoreboard=2` to the link to lock it to one.
 

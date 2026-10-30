@@ -10,10 +10,9 @@ import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import {cn} from "@/lib/utils";
 
-/** The set on the scoreboard: round, score, best of, and how big an upset it would be */
-export function SetSummary({scoreboard, scoreboardNumber}: {scoreboard: Scoreboard; scoreboardNumber: number}) {
+/** Asks the stats provider for the scoreboard's stats again */
+export function RefreshStatsButton({scoreboardNumber}: {scoreboardNumber: number}) {
     const [refreshing, setRefreshing] = useState(false);
-    const teams = [scoreboard.team?.["1"], scoreboard.team?.["2"]];
 
     const refresh = () => {
         setRefreshing(true);
@@ -26,7 +25,17 @@ export function SetSummary({scoreboard, scoreboardNumber}: {scoreboard: Scoreboa
             .finally(() => setRefreshing(false));
     };
 
-    return <Card className="gap-3 py-4">
+    return <Button variant="ghost" size="sm" onClick={refresh} disabled={refreshing} title={i18n.t("refresh_stats")}>
+        <RefreshCw className={cn(refreshing && "animate-spin")}/>
+        <span className="sr-only sm:not-sr-only">{i18n.t("refresh_stats")}</span>
+    </Button>;
+}
+
+/** The set on the scoreboard: round, score, best of, and how big an upset it would be */
+export function SetSummary({scoreboard}: {scoreboard: Scoreboard}) {
+    const teams = [scoreboard.team?.["1"], scoreboard.team?.["2"]];
+
+    return <Card className="shrink-0 gap-3 py-4">
         <CardContent className="flex flex-col gap-3 px-4">
             <div className="flex flex-wrap items-center justify-center gap-1.5 text-center text-sm">
                 {scoreboard.phase ? <Badge variant="secondary">{scoreboard.phase}</Badge> : null}
@@ -34,20 +43,16 @@ export function SetSummary({scoreboard, scoreboardNumber}: {scoreboard: Scoreboa
                 {scoreboard.best_of_text ? <Badge variant="outline">{scoreboard.best_of_text}</Badge> : null}
                 {scoreboard.station && scoreboard.station !== -1 ? <Badge variant="outline">{i18n.t("station_n", {value: scoreboard.station})}</Badge> : null}
             </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
                 <TeamScoreName team={teams[0]} align="right"/>
-                <div className="flex items-center gap-2 text-4xl font-bold tabular-nums">
-                    <span style={{color: teams[0]?.color}}>{teams[0]?.score ?? 0}</span>
-                    <span className="text-muted-foreground">–</span>
-                    <span style={{color: teams[1]?.color}}>{teams[1]?.score ?? 0}</span>
+                <div className="flex items-center gap-2 text-5xl leading-none font-bold tabular-nums">
+                    <span className="text-p1" style={{color: teams[0]?.color}}>{teams[0]?.score ?? 0}</span>
+                    <span className="text-3xl text-muted-foreground">–</span>
+                    <span className="text-p2" style={{color: teams[1]?.color}}>{teams[1]?.score ?? 0}</span>
                 </div>
                 <TeamScoreName team={teams[1]} align="left"/>
             </div>
             <UpsetLine scoreboard={scoreboard}/>
-            <Button variant="outline" size="sm" className="self-center" onClick={refresh} disabled={refreshing}>
-                <RefreshCw className={cn(refreshing && "animate-spin")}/>
-                {i18n.t("refresh_stats")}
-            </Button>
         </CardContent>
     </Card>;
 }
