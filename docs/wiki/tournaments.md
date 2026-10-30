@@ -22,7 +22,7 @@ the tournament's events listed below them: click one to switch to it.
 ### parry.gg
 
 parry.gg needs an API key: create one at parry.gg/api-keys and paste it in
-[Settings › API Keys](hyperdrive://open/settings/api-keys). Some features (the stream queue,
+[Settings › API keys](hyperdrive://open/settings/api-keys). Some features (the stream queue,
 reporting) are start.gg only.
 
 ## Players who registered late

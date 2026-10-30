@@ -21,7 +21,7 @@ set who won it. **Games** shows every game at once (see
 [Games and reporting](games-and-reporting.md)).
 
 The phase and match dropdowns list the usual names. You can rename them, or add your own,
-in [Settings › Match & Phase Names](hyperdrive://open/settings/match-names).
+in [Settings › Match & phase names](hyperdrive://open/settings/match-names).
 
 ## Teams and players
 
@@ -56,7 +56,7 @@ Above the teams:
 - The 👁 menu hides fields you don't use (real name, socials, seed, birthday, location,
   characters, pronouns, additional information), and **Compact player cards** shows only
   the tag, sponsor and characters. The defaults are in
-  [Settings › Default Display Options](hyperdrive://open/settings/display-options).
+  [Settings › Player cards](hyperdrive://open/settings/display-options).
 
 ## Loading a set from your tournament
 
@@ -106,10 +106,10 @@ section of the [web dashboard](web-pages.md#the-dashboard).
 
 In [Settings › Scoreboard](hyperdrive://open/settings/scoreboard):
 
-- **Enable score control from the stage striking app**: players report game winners from
-  the [stage strike](stage-strike.md) page.
-- **Disable automatic set updating** / **Disable automatic score updating**: stop the
-  start.gg updates.
-- **Do not update character data when a set is loaded**: keeps the characters you set.
-- **Use the local player database for player info when loading sets**: takes socials,
-  pronouns and location from your player database instead of start.gg.
+- **Update the loaded set automatically** (and how often, **Check every**) / **Update the
+  score automatically**: the start.gg updates. Turn them off to stop them.
+- **Fill in characters when a set loads**: off, the characters you set stay.
+- **Players can change the score**: players report game winners from the
+  [stage strike](stage-strike.md) page.
+- **Use the local player database for socials, pronouns and location**: takes them from your
+  player database instead of start.gg.

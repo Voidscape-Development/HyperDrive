@@ -17,8 +17,8 @@ Search, add, edit and delete players.
   versions, e.g. to share a database.
 
 Players are also saved from the scoreboard with **Save new player** / **Update player** on a
-player card. To keep the database from being changed by sets you load, check *Do not
-override existing values in the local player database* in
+player card. To keep the database from being changed by sets you load, turn on *Keep values
+already in the player database* in
 [Settings › Scoreboard](hyperdrive://open/settings/scoreboard).
 
 The database can also be edited from a browser at `http://<address>:5500/admin`.
@@ -49,7 +49,7 @@ Changes show up on stream within a second. The scoreboard's **Media…** button 
 for a player.
 
 Custom data can be turned off in
-[Settings › General](hyperdrive://open/settings/general) (*Export custom player data*). The
+[Settings › Data & file export](hyperdrive://open/settings/data) (*Send custom player data to the layouts*). The
 layout side is described in `docs/layout-data.md`, under *Custom player data*.
 
 ## Logos

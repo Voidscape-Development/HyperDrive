@@ -66,7 +66,7 @@ these from any device on the same network at `http://<HyperDrive's address>:5500
 ## Stream queue and start.gg
 
 The Stream Queue window shows when each set should start, from how long the event's
-last sets took. With a start.gg API token (Settings > API Keys, from an admin of the
+last sets took. With a start.gg API token (Settings > API keys, from an admin of the
 tournament), right click a set to call it, or to assign it to the stream or a station on
 start.gg.
 
@@ -78,8 +78,8 @@ The tournament's logo and banner from start.gg are sent to the layouts too
 HyperDrive can run a Twitch prediction for the set on stream: "Who wins?" opens when a
 set is loaded on the stream's scoreboard, and it's resolved with the winner once the set
 is over (or cancelled, if another set is loaded first). Turn it on in Settings > Twitch
-Predictions. It needs a user access token of the channel with the
-`channel:manage:predictions` scope (Settings > API Keys), and the channel must be a Twitch
+predictions. It needs a user access token of the channel with the
+`channel:manage:predictions` scope (on the same page), and the channel must be a Twitch
 affiliate or partner.
 
 To run them by hand, e.g. from a Stream Deck's *Website* action:

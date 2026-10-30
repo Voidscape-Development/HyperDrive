@@ -51,7 +51,7 @@ characters without striking stages.
 
 After each game, the page asks for the next game's characters. Turn this off in
 [Settings › Scoreboard](hyperdrive://open/settings/scoreboard) (*Ask for the next game's
-characters on the stage striking app after each game*); the **Characters** button still
+characters after each game*); the **Characters** button still
 opens it.
 
 A link with `?scoreboard=<n>`, like the one in the Stage tab, only works on that
@@ -71,7 +71,7 @@ Add one of these layouts in OBS (see [Adding layouts to OBS](obs-setup.md)):
 
 When a game's winner is picked on the stage strike page, the scoreboard's score goes up.
 Turn this off in [Settings › Scoreboard](hyperdrive://open/settings/scoreboard)
-(*Enable score control from the stage striking app*).
+(*Players can change the score*, under *Stage striking app*).
 
 **Restart stage strike**, in the Stage tab, starts the strike over for the scoreboard
 you're editing. You can also do it from a [Stream Deck](stream-deck.md).

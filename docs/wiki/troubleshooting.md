@@ -6,7 +6,7 @@
 - Make sure HyperDrive is running: layouts get their data from it.
 - Right-click the source › **Refresh cache of current page**, or **Interact** and press F5.
 - A layout loaded by URL (`http://127.0.0.1:5500/…`) needs the right port, if you changed it
-  in [Settings › General](hyperdrive://open/settings/general).
+  in [Settings › Web pages & PIN](hyperdrive://open/settings/web-pages).
 - Check it isn't hidden by [Display controls](display-controls.md).
 - A scoreboard layout shows scoreboard 1 unless its URL has `?scoreboardNumber=`.
 
@@ -25,12 +25,12 @@ still missing after updating, they may not be in the asset database yet (see
   private networks. If you dismissed it, allow `HyperDrive.exe` in *Windows Defender Firewall
   › Allow an app through firewall*.
 - Another program may be using port 5500: change the port in
-  [Settings › General](hyperdrive://open/settings/general) and restart HyperDrive.
+  [Settings › Web pages & PIN](hyperdrive://open/settings/web-pages) and restart HyperDrive.
 
 ## The tournament doesn't load
 
 - Check the link: it should be a start.gg tournament or event link, a short link, or a slug.
-- parry.gg needs an API key in [Settings › API Keys](hyperdrive://open/settings/api-keys).
+- parry.gg needs an API key in [Settings › API keys](hyperdrive://open/settings/api-keys).
 - start.gg may be down or limiting requests: wait a minute and try again.
 
 ## Reporting to start.gg fails

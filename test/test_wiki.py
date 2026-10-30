@@ -44,13 +44,14 @@ def AppTargets():
     docks = source[start : source.index(")", source.index("}", start))]
     targets = set(re.findall(r'"([a-z-]+)":', docks))
     targets |= set(re.findall(r'RegisterAppLink\(\s*"([a-z/-]+)"', source))
-    # The keys passed to add_setting_widget()
+    # The keys passed to AddPage()
     pages = {
-        node.args[2].value
+        node.args[0].value
         for node in ast.walk(ast.parse(Read("src/Settings/SettingsWindow.py")))
         if isinstance(node, ast.Call)
-        and getattr(node.func, "attr", "") == "add_setting_widget"
-        and len(node.args) > 2
+        and getattr(node.func, "attr", "") == "AddPage"
+        and node.args
+        and isinstance(node.args[0], ast.Constant)
     }
     return targets, pages
 

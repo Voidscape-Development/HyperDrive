@@ -49,7 +49,7 @@ players' media files, and workspaces.
 ### Locking the dashboard
 
 Anyone on your network can open the dashboard. To lock it, set a **Web dashboard PIN** in
-[Settings › General](hyperdrive://open/settings/general): each browser then asks for it
+[Settings › Web pages & PIN](hyperdrive://open/settings/web-pages): each browser then asks for it
 once and remembers it, until the PIN changes or someone clicks the lock at the bottom of
 the sidebar. After five wrong PINs, a device has to wait 30 seconds.
 
@@ -77,6 +77,6 @@ see [Troubleshooting](troubleshooting.md#web-pages-dont-load-on-another-device).
 ## Changing the port
 
 The port is 5500 unless you change it in
-[Settings › General](hyperdrive://open/settings/general) (*Webserver Port*), which takes
+[Settings › Web pages & PIN](hyperdrive://open/settings/web-pages) (*Web server port*), which takes
 effect when HyperDrive restarts. Use the new port in every link, in the
 [Stream Deck](stream-deck.md) settings, and for layouts you load by URL.
