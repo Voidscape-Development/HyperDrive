@@ -73,6 +73,20 @@
   --color-live: var(--live);
 }
 
+/* The commentary dashboard fits the window, its panels scrolling on their own,
+   on screens big enough for that (fit), with a column for what's up next on
+   wide ones (wide). Smaller screens scroll the page. */
+@custom-variant fit (@media (width >= 64rem) and (height >= 34rem));
+@custom-variant wide (@media (width >= 100rem) and (height >= 34rem));
+
+/* A panel scrolling on its own: a thin scrollbar, and not the page's once it reaches the end */
+@utility scroll-panel {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: oklch(1 0 0 / 20%) transparent;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

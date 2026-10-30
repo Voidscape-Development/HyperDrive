@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from "react";
 import {ChevronRight, Clock} from "lucide-react";
 import i18n from "../i18n/config";
-import type {DashboardState, QueueSet, QueueStream} from "./types";
+import type {DashboardState, QueueSet, QueueStream, Team} from "./types";
 import {clockTime, Empty, etaText, numbered, teamName, scoreText, toNumber} from "./util";
 import {PreviewDialog} from "./Preview";
 import {Badge} from "@/components/ui/badge";
@@ -30,8 +30,8 @@ export function UpNext({state, scoreboardNumber}: {state: DashboardState; scoreb
     const sets = stream?.sets ?? [];
     const preview = useMemo(() => sets.find((s) => s.queueKey === previewKey) ?? null, [sets, previewKey]);
 
-    return <Card className="gap-3 py-4">
-        <CardHeader className="px-4">
+    return <Card className="gap-3 py-4 fit:min-h-0">
+        <CardHeader className="shrink-0 px-4">
             <CardTitle>{i18n.t("up_next")}</CardTitle>
             {streams.length > 1 ? <CardAction>
                 <Select value={stream?.name} onValueChange={setPicked}>
@@ -42,7 +42,7 @@ export function UpNext({state, scoreboardNumber}: {state: DashboardState; scoreb
                 </Select>
             </CardAction> : null}
         </CardHeader>
-        <CardContent className="px-4">
+        <CardContent className="px-4 fit:min-h-0 fit:flex-1 fit:scroll-panel">
             {sets.length === 0
                 ? <Empty>{streams.length === 0 ? i18n.t("no_stream_queue") : i18n.t("queue_empty")}</Empty>
                 : <ul className="flex flex-col divide-y rounded-md border">
@@ -68,11 +68,9 @@ function QueueRow({set, onClick}: {set: QueueSet; onClick: () => void}) {
             <span className="w-5 shrink-0 text-center text-sm text-muted-foreground tabular-nums">{set.position}</span>
             <span className="min-w-0 flex-1">
                 <span className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="font-semibold">{teamName(teams[0]) || i18n.t("tbd")}</span>
-                    {teams[0]?.seed && teams[0].seed < 100000 ? <span className="text-xs text-muted-foreground">({teams[0].seed})</span> : null}
+                    <QueueTeam team={teams[0]}/>
                     <span className="text-xs text-muted-foreground">{i18n.t("vs")}</span>
-                    <span className="font-semibold">{teamName(teams[1]) || i18n.t("tbd")}</span>
-                    {teams[1]?.seed && teams[1].seed < 100000 ? <span className="text-xs text-muted-foreground">({teams[1].seed})</span> : null}
+                    <QueueTeam team={teams[1]}/>
                 </span>
                 <span className="block truncate text-xs text-muted-foreground">
                     {[set.phase, set.match, set.best_of_text].filter(Boolean).join(" · ")}
@@ -89,6 +87,14 @@ function QueueRow({set, onClick}: {set: QueueSet; onClick: () => void}) {
     </li>;
 }
 
+/** A team's name and seed, kept on one line */
+function QueueTeam({team}: {team?: Team}) {
+    return <span className="whitespace-nowrap">
+        <span className="font-semibold">{teamName(team) || i18n.t("tbd")}</span>
+        {team?.seed && team.seed < 100000 ? <span className="ml-1 text-xs text-muted-foreground">({team.seed})</span> : null}
+    </span>;
+}
+
 /** The event's last completed sets, upsets marked */
 export function RecentResults({state}: {state: DashboardState}) {
     const sets = numbered(state.completed_sets);
@@ -98,9 +104,9 @@ export function RecentResults({state}: {state: DashboardState}) {
         return teamName || players.map((p) => p.gamertag).join(" / ");
     };
 
-    return <Card className="gap-3 py-4">
-        <CardHeader className="px-4"><CardTitle>{i18n.t("recent_results")}</CardTitle></CardHeader>
-        <CardContent className="px-4">
+    return <Card className="gap-3 py-4 fit:min-h-0">
+        <CardHeader className="shrink-0 px-4"><CardTitle>{i18n.t("recent_results")}</CardTitle></CardHeader>
+        <CardContent className="px-4 fit:min-h-0 fit:flex-1 fit:scroll-panel">
             {sets.length === 0 ? <Empty>{i18n.t("no_recent_results")}</Empty> :
                 <ul className="flex flex-col divide-y rounded-md border text-sm">
                     {sets.map((s, i) => <li key={i} className="flex items-center gap-2 px-3 py-2">

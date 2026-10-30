@@ -7,7 +7,7 @@ import websocketInit from "../ScoreboardPage/websocketInit";
 import type {ReduxState} from "../redux/store";
 import type {DashboardState, Scoreboard} from "./types";
 import {TeamColumn} from "./TeamColumn";
-import {BracketStakes, GameLog, SetSummary} from "./Match";
+import {BracketStakes, GameLog, RefreshStatsButton, SetSummary} from "./Match";
 import {HeadToHead} from "./Stats";
 import {RecentResults, UpNext} from "./UpNext";
 import {teamName, teamPlayers} from "./util";
@@ -89,12 +89,12 @@ export default function CommentaryDashboardPage() {
         const recent = scoreboard.recent_sets;
         const h2h = !singles ? null : recent?.state === "done" ? recent.sets ?? [] : recent ? undefined : [];
 
-        body = <main className="mx-auto flex w-full max-w-[110rem] flex-col gap-4 p-4">
-            <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,28rem)_minmax(0,1fr)]">
+        body = <main className="mx-auto flex w-full max-w-[120rem] flex-col gap-4 p-4 fit:min-h-0 fit:flex-1 wide:flex-row">
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,28rem)_minmax(0,1fr)] fit:min-h-0 fit:flex-1 fit:grid-rows-[minmax(0,1fr)] wide:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)_minmax(0,1fr)]">
                 <div className="flex min-w-0 flex-col gap-4 lg:order-2">
-                    <SetSummary scoreboard={scoreboard} scoreboardNumber={scoreboardNumber}/>
-                    <Card className="py-4">
-                        <CardContent className="flex flex-col gap-5 px-4">
+                    <SetSummary scoreboard={scoreboard}/>
+                    <Card className="py-0 fit:min-h-0 fit:flex-1">
+                        <CardContent className="flex flex-col gap-5 p-4 fit:scroll-panel">
                             {singles ? <HeadToHead
                                 sets={h2h}
                                 loading={recent?.state === "loading"}
@@ -109,15 +109,17 @@ export default function CommentaryDashboardPage() {
                 <div className="min-w-0 lg:order-1"><TeamColumn scoreboard={scoreboard} team={1}/></div>
                 <div className="min-w-0 lg:order-3"><TeamColumn scoreboard={scoreboard} team={2}/></div>
             </div>
-            <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
+            {/* Under the players, or a column of its own on wide screens */}
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2 fit:h-[clamp(11rem,32%,20rem)] fit:shrink-0 fit:grid-rows-[minmax(0,1fr)] wide:h-auto wide:w-[26rem] wide:grid-cols-[minmax(0,1fr)] wide:grid-rows-[minmax(0,3fr)_minmax(0,2fr)]">
                 <UpNext state={state} scoreboardNumber={scoreboardNumber}/>
                 <RecentResults state={state}/>
             </div>
         </main>;
     }
 
-    return <div className="min-h-dvh bg-background text-foreground">
-        <header className="sticky top-0 z-10 flex flex-wrap items-center gap-x-6 gap-y-2 border-b bg-card/95 px-4 py-2 backdrop-blur">
+    // On big enough screens, the page is the window's size and its panels scroll instead
+    return <div className="min-h-dvh bg-background text-foreground fit:flex fit:h-dvh fit:flex-col fit:overflow-hidden">
+        <header className="sticky top-0 z-10 flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 border-b bg-card/95 px-4 py-2 backdrop-blur">
             <div className="flex items-center gap-3">
                 <img alt="HyperDrive logo" src={`${BASE_URL}/assets/icons/icon.png`} className="size-8"/>
                 <h1 className="font-semibold tracking-tight whitespace-nowrap">{i18n.t("commentary_dashboard")}</h1>
@@ -127,7 +129,8 @@ export default function CommentaryDashboardPage() {
                 {state.tournamentInfo?.eventName ? <span className="text-muted-foreground"> · {state.tournamentInfo.eventName}</span> : null}
                 {state.tournamentInfo?.numEntrants ? <span className="text-muted-foreground"> · {i18n.t("entrants_n", {value: state.tournamentInfo.numEntrants})}</span> : null}
             </div>
-            <div className="ml-auto flex items-center gap-3">
+            <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+                {scoreboard ? <RefreshStatsButton scoreboardNumber={scoreboardNumber}/> : null}
                 {!locked && numbers.length > 1 ? <Tabs value={String(scoreboardNumber)} onValueChange={(v) => pick(Number(v))}>
                     <TabsList>
                         {numbers.map((n) => <TabsTrigger key={n} value={String(n)}>{i18n.t("scoreboard_n", {value: n})}</TabsTrigger>)}
