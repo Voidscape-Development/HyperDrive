@@ -1292,6 +1292,12 @@ class ScoreboardWidget(QWidget):
 
             if data.get("bestOf"):
                 self.scoreColumn.findChild(QSpinBox, "best_of").setValue(data.get("bestOf"))
+            elif data.get("overwrite") and self.UsesDefaultBestOf():
+                # start.gg has no best-of for offline events yet. Only when
+                # the set first loads, so one changed by hand stays.
+                self.scoreColumn.findChild(QSpinBox, "best_of").setValue(
+                    SettingsManager.Get("general.startgg_default_best_of", 0)
+                )
 
             losersContainers = [
                 self.team1column.findChild(QCheckBox, "losers"),
@@ -1408,6 +1414,15 @@ class ScoreboardWidget(QWidget):
                 StateManager.Set(f"score.{self.scoreboardNumber}.top_n", data.get("top_n"))
         finally:
             StateManager.ReleaseSaving()
+
+    def UsesDefaultBestOf(self):
+        """Whether sets that load without a best-of get the setting's"""
+        provider = TournamentDataManager.instance.provider
+        return (
+            provider is not None
+            and provider.NAME == "StartGG"
+            and SettingsManager.Get("general.startgg_default_best_of", 0) > 0
+        )
 
     def UpdateSetData(self, data):
         # Do not update the scoreboard on empty data
