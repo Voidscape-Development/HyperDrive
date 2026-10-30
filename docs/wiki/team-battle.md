@@ -12,7 +12,7 @@ two teams of players, played one matchup at a time until a team runs out.
 | **Stock Pool (Limited Plays)**, **First To (Limited Plays)** | The same, with only some of each team's players playing: see [Players on deck](#players-on-deck) |
 
 The starting stocks (Stock Pool) and games to win a matchup (First To) default to the values
-in [Settings › General](hyperdrive://open/settings/general).
+in [Settings › Crew battles](hyperdrive://open/settings/crew-battles).
 
 ## Running a battle
 

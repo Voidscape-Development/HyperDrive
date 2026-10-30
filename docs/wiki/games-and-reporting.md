@@ -33,8 +33,8 @@ HyperDrive can report the set, with its games, characters and stages, to start.g
 needs a start.gg API token from an account that's an **admin of the tournament**:
 
 1. On start.gg, open **Developer Settings** and create a token.
-2. Paste it in [Settings › API Keys](hyperdrive://open/settings/api-keys), under
-   *start.gg (reporting sets)*.
+2. Paste it in [Settings › API keys](hyperdrive://open/settings/api-keys), under
+   *start.gg token*.
 3. Click **Games**, then **☰ › Check start.gg token** to make sure it works.
 
 Then, with a set loaded from start.gg:
@@ -60,11 +60,11 @@ admin to approve, see [Web reporting](web-reporting.md).
 
 ## Reporting settings
 
-In [Settings › start.gg Reporting](hyperdrive://open/settings/startgg-reporting):
+In [Settings › start.gg reporting](hyperdrive://open/settings/startgg-reporting):
 
 - **Send each game to start.gg as it's played**: viewers can follow the set on start.gg.
   Otherwise the games are sent when the set is reported.
-- **Mark sets as in progress on start.gg when they're loaded on a scoreboard**.
+- **Mark sets as in progress when they're loaded on a scoreboard**.
 - **Ask before reporting a set**.
 
 > The token is saved in plain text in `user_data/settings.json`. Don't share that file.

@@ -11,7 +11,7 @@ The [Commentary](hyperdrive://open/commentary) tab holds the commentators shown 
   [Player database](player-database.md). **Save new player** adds a commentator to it.
 - The 👁 menu hides fields you don't use, and **Compact player cards** shows only the
   tag, sponsor and characters (each card's arrow still shows the rest). Its default is
-  set in [Settings › Default Display Options](hyperdrive://open/settings/display-options).
+  set in [Settings › Player cards](hyperdrive://open/settings/display-options).
 
 ## Commentary dashboard
 

@@ -4,7 +4,7 @@ HyperDrive can run your event's reporting from a browser. Admins report sets to 
 right away. Players report their own sets at a **reporting station**, and an admin
 approves each result before it's reported. It works with start.gg events, using the
 start.gg API token from
-[Settings › API Keys](hyperdrive://open/settings/api-keys) (from an account that's an
+[Settings › API keys](hyperdrive://open/settings/api-keys) (from an account that's an
 admin of the tournament, as for [reporting from the scoreboard](games-and-reporting.md)).
 
 There are three pages. Each one is in the [dashboard](web-pages.md#the-dashboard)'s
@@ -83,15 +83,15 @@ A link sets it up too: `/report?station=5&name=Setup%205`.
 
 ## Settings
 
-In [Settings › Web Reporting](hyperdrive://open/settings/web-reporting):
+In [Settings › Web reporting](hyperdrive://open/settings/web-reporting):
 
 | Setting | |
 | - | - |
 | Accept results from player reporting stations | Off: `/report` sends nothing |
 | Reporting station PIN | Asked once by each station's browser, then remembered. Empty: no PIN |
-| Get the sets from start.gg every (seconds) | While a reporting page is open. At least 10 |
+| Get the sets from start.gg every | While a reporting page is open. At least 10 |
 
 The admin pages use the dashboard's PIN from
-[Settings › General](hyperdrive://open/settings/general). Without one, anyone on your
+[Settings › Web pages & PIN](hyperdrive://open/settings/web-pages). Without one, anyone on your
 network can open them. Set a dashboard PIN when players can reach HyperDrive's address. The
 station PIN only lets a device send results for approval.

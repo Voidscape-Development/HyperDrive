@@ -27,7 +27,7 @@ http://127.0.0.1:5500/layout/scoreboard_simple/index.html?scoreboardNumber=2
 | `?channel=TV 1` | Bracket layouts: shows a bracket channel other than the main one (see [Bracket](bracket.md#channels)) |
 
 Join several with `&`: `?scoreboardNumber=2&display=side`. If you changed the web server's
-port in [Settings › General](hyperdrive://open/settings/general), use it instead of 5500. If
+port in [Settings › Web pages & PIN](hyperdrive://open/settings/web-pages), use it instead of 5500. If
 OBS runs on another computer, use HyperDrive's computer's address instead of `127.0.0.1`.
 
 ## Which layout for what

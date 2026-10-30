@@ -44,7 +44,7 @@ Changes made here only change HyperDrive's queue, not start.gg's.
 ### Calling sets and assigning streams on start.gg
 
 With a start.gg API token from an admin of the tournament (in
-[Settings › API Keys](hyperdrive://open/settings/api-keys)), right-click a set and open
+[Settings › API keys](hyperdrive://open/settings/api-keys)), right-click a set and open
 **On start.gg** to:
 
 - **Call the set**, which notifies the players.

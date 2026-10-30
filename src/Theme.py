@@ -26,6 +26,8 @@ DEFAULT_THEME = THEME_DARK
 # logo uses a deeper amber, so the light theme does too.
 DEFAULT_ACCENT = "#ffb800"
 DEFAULT_ACCENT_ON_LIGHT = "#f0a500"
+# The tint of notices that aren't warnings, blended into each theme's colors
+INFO_COLOR = "#4f8cff"
 # A status light that's on (the command bar's completed sets). It's only a
 # dot, so one green does for dark and light themes.
 STATUS_OK_COLOR = "#3fbf6f"
@@ -708,6 +710,9 @@ class Theme:
         onWhite, onBlack = Contrast(accent, "#ffffff"), Contrast(accent, "#111111")
         colors["onAccent"] = QColor("#ffffff") if onWhite >= onBlack else QColor("#111111")
         colors["accentSoft"] = Blend(colors["surface"], accent, 0.22)
+        # Notices that aren't warnings (the settings' restart banner)
+        colors["info"] = Blend(colors["border"], QColor(INFO_COLOR), 0.55)
+        colors["infoSoft"] = Blend(colors["surface"], QColor(INFO_COLOR), 0.12)
         # Accent color readable as text on the window (a light accent like
         # the default amber is darkened on a light theme)
         colors["accentText"] = ReadableOn(
@@ -1031,5 +1036,34 @@ class Theme:
         QLabel#statusDot {{ background: {c["disabled"]}; border-radius: 4px; }}
         QLabel#statusDot[status="ok"] {{ background: {STATUS_OK_COLOR}; }}
         QLabel#statusDot[status="busy"] {{ background: {c["accent"]}; }}
+
+        /* Settings pages (Settings/Controls.py) */
+        QFrame#settingsGroup {{
+            background: {c["surface"]}; border: 1px solid {c["border"]}; border-radius: {r + 4}px;
+        }}
+        QFrame#settingsSeparator {{ background: {c["raised"]}; border: none; margin: 0px 8px; }}
+        QWidget#settingRow {{ border-radius: {r}px; }}
+        QWidget#settingRow[highlight="true"] {{ background: {c["accentSoft"]}; }}
+        QLabel#settingsDescription {{ color: {c["muted"]}; }}
+        QLabel#settingsDescription:disabled {{ color: {c["disabled"]}; }}
+        QLabel#settingsBadge {{
+            color: {c["accentText"]}; background: {c["accentSoft"]};
+            border-radius: 7px; padding: 0px 6px;
+        }}
+        QFrame#settingsBanner {{
+            background: {c["infoSoft"]}; border: 1px solid {c["info"]}; border-radius: {r + 4}px;
+        }}
+        QFrame#settingsBanner[kind="accent"] {{
+            background: {c["accentSoft"]}; border-color: {c["accent"]};
+        }}
+        QPushButton#primaryButton {{
+            background: {c["accent"]}; color: {c["onAccent"]}; border-color: {c["accent"]};
+        }}
+        QPushButton#primaryButton:hover {{ background: {c["accentHover"]}; }}
+        QFrame#settingsSidebar {{ background: {c["surface"]}; border: none; border-right: 1px solid {c["border"]}; }}
+        QFrame#settingsSidebar QListWidget {{ background: transparent; border: none; }}
+        QFrame#settingsSidebar QListWidget::item {{ padding: 5px 8px; border-radius: {r}px; }}
+        QFrame#settingsSidebar QListWidget::item:selected {{ color: {c["accentText"]}; }}
+        QFrame#settingsSidebar QListWidget::item:disabled {{ color: {c["muted"]}; background: transparent; }}
         """
         )

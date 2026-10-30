@@ -10,18 +10,17 @@ The channel must be a Twitch **affiliate or partner**.
 
 1. Get a user access token of your channel with the `channel:manage:predictions` scope,
    e.g. from a token generator for Twitch's API.
-2. Paste it in [Settings › API Keys](hyperdrive://open/settings/api-keys), under *Twitch
-   (predictions)*.
-3. In [Settings › Twitch Predictions](hyperdrive://open/settings/twitch-predictions), check
-   **Run Twitch predictions for the set on stream**.
+2. Paste it in [Settings › Twitch predictions](hyperdrive://open/settings/twitch-predictions)
+   (or [API keys](hyperdrive://open/settings/api-keys)), under *Twitch token*.
+3. On the same page, turn on **Run predictions for the set on stream**.
 
 | Setting | |
 | - | - |
-| Scoreboard | The number of the stream's scoreboard |
-| Start one when a set is loaded | Otherwise start them by hand (below) |
-| Resolve it with the winner when the set is over | Otherwise resolve them by hand |
+| Scoreboard on stream | The number of the stream's scoreboard |
+| Start one when a set loads | Otherwise start them by hand (below) |
+| Pay out to the winner when the set ends | Otherwise resolve them by hand |
 | Title | `{team1}`, `{team2}` and `{round}` are replaced. Twitch allows 45 characters |
-| Seconds viewers have to predict | From 30 to 1800 |
+| Time viewers have to predict | From 30 seconds to 30 minutes |
 
 ## Running them by hand
 
