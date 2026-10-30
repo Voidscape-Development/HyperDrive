@@ -1061,6 +1061,7 @@ class Theme:
         }}
         QPushButton#primaryButton:hover {{ background: {c["accentHover"]}; }}
         QFrame#settingsSidebar {{ background: {c["surface"]}; border: none; border-right: 1px solid {c["border"]}; }}
+        QFrame#settingsAside {{ background: {c["surface"]}; border: none; border-left: 1px solid {c["border"]}; }}
         QFrame#settingsSidebar QListWidget {{ background: transparent; border: none; }}
         QFrame#settingsSidebar QListWidget::item {{ padding: 5px 8px; border-radius: {r}px; }}
         QFrame#settingsSidebar QListWidget::item:selected {{ color: {c["accentText"]}; }}

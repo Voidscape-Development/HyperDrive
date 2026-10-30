@@ -477,8 +477,20 @@ def LayoutThemeSchema():
                     False,
                     tooltip=_tr("Off: sponsors take a lighter shade of the team's color"),
                 ),
-                Field("team1_sponsor_color", _tr("Team 1 sponsor color"), FIELD_COLOR, "#000000"),
-                Field("team2_sponsor_color", _tr("Team 2 sponsor color"), FIELD_COLOR, "#000000"),
+                Field(
+                    "team1_sponsor_color",
+                    _tr("Team 1 sponsor color"),
+                    FIELD_COLOR,
+                    "#000000",
+                    enabled_by="custom_sponsor_colors",
+                ),
+                Field(
+                    "team2_sponsor_color",
+                    _tr("Team 2 sponsor color"),
+                    FIELD_COLOR,
+                    "#000000",
+                    enabled_by="custom_sponsor_colors",
+                ),
             ],
         ),
     ]

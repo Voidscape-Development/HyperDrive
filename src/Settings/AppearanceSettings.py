@@ -290,6 +290,9 @@ class AppearanceSettings(SettingsPage):
     def BuildGallery(self):
         """The cards of every theme, the one in use checked"""
         if self.gallery is not None:
+            # Out of the layout at once, not when deleteLater() gets to it
+            self.galleryHolder.layout().removeWidget(self.gallery)
+            self.gallery.hide()
             self.gallery.deleteLater()
         for button in self.cards.buttons():
             self.cards.removeButton(button)

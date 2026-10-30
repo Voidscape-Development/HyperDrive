@@ -215,6 +215,8 @@ class SettingsGroup(QFrame):
         self.layout.setContentsMargins(4, 4, 4, 4)
         self.layout.setSpacing(0)
         self.items = 0
+        # (the line above it or None, the row)
+        self.entries = []
         if title:
             header = QHBoxLayout()
             header.setContentsMargins(12, 8, 12, 2)
@@ -237,14 +239,28 @@ class SettingsGroup(QFrame):
         return row
 
     def AddWidget(self, widget):
+        line = None
         if self.items:
             line = QFrame()
             line.setObjectName("settingsSeparator")
             line.setFixedHeight(1)
             self.layout.addWidget(line)
         self.layout.addWidget(widget)
+        self.entries.append((line, widget))
         self.items += 1
         return widget
+
+    def UpdateSeparators(self):
+        """Shows a line only between rows that aren't hidden, after some
+        were hidden (e.g. by a search)"""
+        first = True
+        for line, widget in self.entries:
+            shown = not widget.isHidden()
+            if line is not None:
+                line.setVisible(shown and not first)
+            if shown:
+                first = False
+        self.setVisible(not first)
 
 
 class SettingsPage(QScrollArea):
