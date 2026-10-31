@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="../include/globals.js"></script>
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+  <body>
+    <div class="panel">
+      <div class="character"></div>
+      <div class="identity">
+        <div class="name"></div>
+        <div class="details"></div>
+        <div class="bio"></div>
+      </div>
+      <div class="tiles">
+        <div class="tile seed_tile"><div class="tile_value"></div><div class="tile_label">Seed</div></div>
+        <div class="tile record_tile"><div class="tile_value"></div><div class="tile_label">Sets in this event</div></div>
+      </div>
+      <div class="section finishes_section">
+        <div class="section_title">Recent finishes</div>
+        <div class="finishes"></div>
+      </div>
+      <div class="section sets_section">
+        <div class="section_title">Recent sets</div>
+        <div class="sets"></div>
+      </div>
+    </div>
+    <script>
+      // Player 1 is on the left of the screen, so their stats go on the right
+      HD.page({ player: 1 });
+    </script>
+    <script src="./index.js"></script>
+  </body>
+</html>
