@@ -49,6 +49,10 @@
   // the DOM back
   const shown = new WeakMap();
 
+  // Elements fading out for a change: element -> the change (its html,
+  // after and fade in) that goes in once the fade ends
+  const fading = new WeakMap();
+
   HD.set = async (target, content, options = {}) => {
     const el = target instanceof $ ? target : $(target);
     if (el.length === 0) return;
@@ -66,10 +70,34 @@
     }
     el.each((_, e) => shown.set(e, html));
 
+    // Already fading out for an earlier change: this one goes in when the
+    // fade ends instead. Starting the fade over would keep the old content
+    // up for as long as changes come faster than the fade (e.g. teams
+    // swapped over and over), which could take seconds. Hidden pages put
+    // content in right away, stopping that fade.
+    const elements = el.toArray();
+    const pending = !document.hidden && fading.get(elements[0]);
+    if (pending && pending.elements.length === elements.length && elements.every((e) => fading.get(e) === pending)) {
+      Object.assign(pending, { html, after, animIn });
+      return pending.done;
+    }
+
+    const change = { elements, html, after, animIn };
+    change.done = new Promise((resolve) => (change.resolve = resolve));
+    for (const e of elements) fading.set(e, change);
+    // Once it's in, or its fade was stopped (e.g. by another HD.set() on
+    // some of the elements, which puts in its own content)
+    const release = () => {
+      for (const e of elements) if (fading.get(e) === change) fading.delete(e);
+      change.resolve();
+    };
+
     await document.fonts.ready;
     const text = () => el.find(".text");
 
     const swap = () => {
+      release();
+      const { html, after, animIn } = change;
       text().html(html);
       const empty = html.trim().length === 0;
       text().toggleClass("text_empty", empty);
@@ -88,9 +116,11 @@
     };
 
     if (document.hidden) return swap();
-    const vars = { ...animOut, onComplete: swap };
+    const vars = { ...animOut, onComplete: swap, onInterrupt: release };
     // The first time there's nothing to fade out
-    await (first ? gsap.set(text(), vars) : gsap.to(text(), vars));
+    if (first) gsap.set(text(), vars);
+    else gsap.to(text(), vars);
+    return change.done;
   };
 
   // Structure (a list's rows, iframes...) put straight in the target(s),
