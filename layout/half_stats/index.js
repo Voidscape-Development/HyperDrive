@@ -33,7 +33,9 @@ HD.layout({
   update(s) {
     const c = s.settings;
     const n = Number(c.player) === 2 ? 2 : 1;
-    $("body").toggleClass("right", n === 1).toggleClass("left", n === 2);
+    $("body")
+      .toggleClass("right", n === 1)
+      .toggleClass("left", n === 2);
     HD.teamColors(s);
     document.documentElement.style.setProperty("--side-color", `var(--p${n}-score-bg-color)`);
 
@@ -83,7 +85,8 @@ HD.layout({
       const spr = h.spr;
       HD.set(
         `${sel} .spr`,
-        spr != null && HD.html`<span class="${spr > 0 ? "positive" : spr < 0 ? "negative" : "even"}">SPR ${spr > 0 ? "+" : ""}${spr}</span>`,
+        spr != null &&
+          HD.html`<span class="${spr > 0 ? "positive" : spr < 0 ? "negative" : "even"}">SPR ${spr > 0 ? "+" : ""}${spr}</span>`,
       );
     });
 
