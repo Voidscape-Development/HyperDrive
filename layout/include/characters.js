@@ -79,6 +79,11 @@
     );
   }
 
+  // Containers changing characters: element -> the change (its characters
+  // and settings) that goes in once the old ones have faded out and the new
+  // ones loaded
+  const changing = new WeakMap();
+
   // options: { source (path of the team or player), asset_key, custom_zoom,
   // custom_center, use_dividers, scale_based_on_parent, scale_fill_x/y,
   // flip_x, slice_character ([from, to] of each player's), load_settings_path, in, out }
@@ -97,10 +102,51 @@
     if (!first && _.isEqual(characters, charactersAt(s.old, settings.source, settings))) return;
     el.addClass("hd_character_container hd_character_container_active");
 
-    const animIn = { autoAlpha: 1, duration: 0.5, stagger: 0.1, ...settings.in };
+    // Already changing: these go in instead once it's done. Starting the
+    // fade over would keep the old characters up for as long as changes
+    // come faster than it (e.g. teams swapped over and over).
+    const pending = changing.get(element);
+    if (pending) {
+      Object.assign(pending, { characters, settings });
+      // Hidden pages don't wait for the fade: stopping it shows them now
+      if (document.hidden) gsap.killTweensOf(el.children(".hd_character"));
+      return pending.done;
+    }
+
+    const change = { characters, settings, shown: false };
+    change.done = new Promise((resolve) => (change.resolve = resolve));
+    changing.set(element, change);
+
     const animOut = { autoAlpha: 0, duration: 0.5, stagger: 0.1, ...settings.out, overwrite: true };
 
     const show = async () => {
+      // Once only, from the fade's end or its being stopped
+      if (change.shown) return;
+      change.shown = true;
+      let settings;
+      let shownCharacters;
+      // Changes made while the images load go in too, before fading in
+      do {
+        ({ settings, characters: shownCharacters } = change);
+        await load(shownCharacters, settings);
+      } while (change.characters !== shownCharacters);
+      changing.delete(element);
+      change.resolve();
+
+      const animIn = { autoAlpha: 1, duration: 0.5, stagger: 0.1, ...settings.in };
+      const animOut = { autoAlpha: 0, duration: 0.5, stagger: 0.1, ...settings.out, overwrite: true };
+      const shown = el.children(".hd_character");
+      if (shown.length === 0) return;
+      if (document.hidden) {
+        gsap.killTweensOf(shown);
+        shown.css({ opacity: 1, visibility: "inherit" });
+      } else {
+        gsap.fromTo(shown, animOut, animIn);
+      }
+    };
+
+    // The characters in the container, hidden, once their images are in
+    const load = (characters, settings) => {
       el.html("");
       // Each with the number of characters its player has, minus its index
       // overall, as z-index: earlier ones on top
@@ -121,26 +167,19 @@
           ? centerVideo(div.children(".hd_character_img"), asset)
           : HD.centerImage(div.children(".hd_character_img"), asset, options);
       });
-      await Promise.allSettled(loads);
-
-      const shown = el.children(".hd_character");
-      if (shown.length === 0) return;
-      if (document.hidden) {
-        gsap.killTweensOf(shown);
-        shown.css({ opacity: 1, visibility: "inherit" });
-      } else {
-        gsap.fromTo(shown, animOut, animIn);
-      }
+      return Promise.allSettled(loads);
     };
 
     const old = el.children(".hd_character");
     if (first || document.hidden || old.length === 0) {
       gsap.killTweensOf(old);
-      await show();
+      show();
     } else {
-      // Fade out, then change them and fade in
-      await gsap.fromTo(old, animIn, { ...animOut, onComplete: show });
+      // Fade out (from where they are), then change them and fade in. If
+      // the fade is stopped, the new ones still go in.
+      gsap.to(old, { ...animOut, onComplete: show, onInterrupt: show });
     }
+    return change.done;
   };
 
   // Character options that slide them 20px toward the middle as they fade,
