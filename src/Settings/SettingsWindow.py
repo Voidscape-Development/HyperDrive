@@ -556,7 +556,6 @@ class SettingsWindow(QDialog):
             page.AddGroup(),
             self.ParryKey(),
             self.StartggKey(),
-            self.TwitchKey(),
         )
         self.AddPage("api-keys", _tr("settings", "API keys"), "assets/icons/key.svg", page)
 
@@ -649,79 +648,6 @@ class SettingsWindow(QDialog):
             "web-reporting", _tr("settings", "Web reporting"), "assets/icons/station.svg", page
         )
 
-        # Twitch predictions for the set on stream, see src/TwitchPredictions.py
-        page = SettingsPage(
-            _tr("settings", "Twitch predictions"),
-            _tr(
-                "settings",
-                "Lets viewers bet channel points on the set on stream. Needs a channel that's a Twitch affiliate or partner.",
-            ),
-        )
-        self.Rows(page.AddGroup(), self.TwitchKey())
-        group = page.AddGroup(_tr("settings.twitch_predictions", "When to run them"))
-        enabled = Setting(
-            "twitch_predictions.enabled",
-            TYPE_TOGGLE,
-            False,
-            _tr("settings.twitch_predictions", "Run predictions for the set on stream"),
-        )
-        self.Rows(
-            group,
-            enabled,
-            Setting(
-                "twitch_predictions.scoreboard",
-                TYPE_NUMBER,
-                1,
-                _tr("settings.twitch_predictions", "Scoreboard on stream"),
-                _tr("settings.twitch_predictions", "The number of the scoreboard of the stream"),
-                indent=True,
-            ).EnabledBy(enabled),
-            Setting(
-                "twitch_predictions.auto_start",
-                TYPE_TOGGLE,
-                True,
-                _tr("settings.twitch_predictions", "Start one when a set loads"),
-                indent=True,
-            ).EnabledBy(enabled),
-            Setting(
-                "twitch_predictions.auto_resolve",
-                TYPE_TOGGLE,
-                True,
-                _tr("settings.twitch_predictions", "Pay out to the winner when the set ends"),
-                indent=True,
-            ).EnabledBy(enabled),
-        )
-        self.Rows(
-            page.AddGroup(_tr("settings.twitch_predictions", "The prediction")),
-            Setting(
-                "twitch_predictions.title",
-                TYPE_TEMPLATE,
-                "Who wins {round}?",
-                _tr("settings.twitch_predictions", "Title"),
-                _tr(
-                    "settings.twitch_predictions",
-                    "The placeholders are replaced with the set's teams and round. Twitch allows 45 characters.",
-                ),
-                tokens=["{team1}", "{team2}", "{round}"],
-            ).EnabledBy(enabled),
-            Setting(
-                "twitch_predictions.window",
-                TYPE_NUMBER,
-                180,
-                _tr("settings.twitch_predictions", "Time viewers have to predict"),
-                _tr("settings.twitch_predictions", "30 s to 30 min"),
-                minimum=30,
-                maximum=1800,
-                suffix="s",
-            ).EnabledBy(enabled),
-        )
-        self.AddPage(
-            "twitch-predictions",
-            _tr("settings", "Twitch predictions"),
-            "assets/icons/twitch.svg",
-            page,
-        )
-
         # ---------------- Advanced ----------------
         self.Heading(_tr("settings", "Advanced"))
 
@@ -786,19 +712,6 @@ class SettingsWindow(QDialog):
             _tr(
                 "settings.api_keys",
                 "For reporting sets, calling them and assigning streams. Create one at start.gg > Developer Settings, with an account that's an admin of the tournament.",
-            ),
-            status=True,
-        )
-
-    def TwitchKey(self):
-        return Setting(
-            "api_keys.twitch",
-            TYPE_PASSWORD,
-            "",
-            _tr("settings.api_keys", "Twitch token"),
-            _tr(
-                "settings.api_keys",
-                "For Twitch predictions: a user access token of your channel with the channel:manage:predictions scope.",
             ),
             status=True,
         )

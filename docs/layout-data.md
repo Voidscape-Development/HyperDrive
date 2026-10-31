@@ -248,13 +248,6 @@ gives the state's full name). `""` when the tournament has none, e.g. online.
 
 Each can be changed in the Tournament Info tab and on the web dashboard.
 
-## `twitch_prediction`
-
-The Twitch prediction of the stream's scoreboard (see the README), `{}` when
-there's none: `{id, setId, title, names: {"1", "2"}, outcomes: {"1", "2"},
-status, winner}`. `status` is `ACTIVE`, `LOCKED`, `RESOLVED` or `CANCELED`,
-`winner` the team that won once it's resolved.
-
 ## `score.N.games`
 
 The games of the set on scoreboard N, by game number:

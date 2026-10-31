@@ -5519,13 +5519,6 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
-    <name>settings.twitch_predictions</name>
-    <message>
-        <source>Scoreboard</source>
-        <translation type="obsolete">Tabellone</translation>
-    </message>
-</context>
-<context>
     <name>thumb_app</name>
     <message>
         <source>HyperDrive - Thumbnail</source>

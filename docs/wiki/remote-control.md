@@ -23,7 +23,6 @@ scoreboard's number and `T` the team (1 or 2).
 | `/scoreboardN-stats-refresh` | Gets the players' stats again: head-to-head, last sets, past events and upset factor |
 | `/stream-queue/load-next?stream=<name>` | Loads a stream's next set into its scoreboard |
 | `/display/...` | Shows or hides layouts (see [Display controls](display-controls.md)) |
-| `/twitch/prediction/...` | Twitch predictions (see [Twitch predictions](twitch-predictions.md)) |
 | `/team-battle-teamT-scoreup`, `/team-battle-teamT-next-player` | Crew battles |
 | `/program-state` | Everything HyperDrive sends to the layouts, as JSON |
 | `/layouts` | The layout pages: `{"layouts": [{"folder", "pages": [{"name", "path", "preview"}]}]}`, where `path` and `preview` (the page's `_preview.png`, or `null`) go after the server's address |

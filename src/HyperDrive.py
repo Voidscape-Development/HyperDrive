@@ -177,7 +177,6 @@ from .TournamentDataProvider.TournamentEventLookup import (
     ParseTournamentLink,
 )
 from .TournamentInfoWidget import TournamentInfoWidget
-from .TwitchPredictions import TwitchPredictionsHook
 from .Wiki import GETTING_STARTED_PAGE, Wiki
 from .WikiWindow import WikiWindow
 from .Workers import *
@@ -448,9 +447,6 @@ class Window(QMainWindow):
         streamQueue.setObjectName(QApplication.translate("app", "Stream Queue"))
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, streamQueue)
         self.dockWidgets.append(streamQueue)
-
-        # Twitch predictions for the set on stream (off until enabled in the settings)
-        TwitchPredictionsHook()
 
         commentary = CommentaryWidget()
         commentary.setWindowIcon(ThemedIcon("assets/icons/mic.svg"))

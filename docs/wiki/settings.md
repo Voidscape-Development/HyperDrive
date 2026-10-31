@@ -82,7 +82,6 @@ automatically.
 | - | - |
 | parry.gg | Loading parry.gg tournaments |
 | start.gg token | [Reporting sets](games-and-reporting.md), calling sets and assigning streams. From an admin of the tournament |
-| Twitch token | [Twitch predictions](twitch-predictions.md). Also on the Twitch predictions page |
 
 Each shows **Set** or **Not set**; the eye button shows what you typed. Keys are stored in
 plain text in `user_data/settings.json`. Don't share that file.
@@ -94,10 +93,6 @@ See [Games and reporting](games-and-reporting.md#reporting-settings).
 ### [Web reporting](hyperdrive://open/settings/web-reporting)
 
 See [Web reporting](web-reporting.md#settings).
-
-### [Twitch predictions](hyperdrive://open/settings/twitch-predictions)
-
-See [Twitch predictions](twitch-predictions.md).
 
 ## Advanced
 
