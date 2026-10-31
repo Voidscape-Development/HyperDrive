@@ -6798,17 +6798,6 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
-    <name>settings.twitch_predictions</name>
-    <message>
-        <source>Scoreboard</source>
-        <translation type="obsolete">Placar</translation>
-    </message>
-    <message>
-        <source>Title</source>
-        <translation type="obsolete">Título</translation>
-    </message>
-</context>
-<context>
     <name>thumb_app</name>
     <message>
         <source>Please select a game first</source>

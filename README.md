@@ -73,24 +73,6 @@ start.gg.
 The tournament's logo and banner from start.gg are sent to the layouts too
 (`tournamentInfo.logo` and `tournamentInfo.banner`).
 
-## Twitch predictions
-
-HyperDrive can run a Twitch prediction for the set on stream: "Who wins?" opens when a
-set is loaded on the stream's scoreboard, and it's resolved with the winner once the set
-is over (or cancelled, if another set is loaded first). Turn it on in Settings > Twitch
-predictions. It needs a user access token of the channel with the
-`channel:manage:predictions` scope (on the same page), and the channel must be a Twitch
-affiliate or partner.
-
-To run them by hand, e.g. from a Stream Deck's *Website* action:
-
-| Link | |
-| - | - |
-| `/twitch/prediction/start` | Opens one for the stream's scoreboard |
-| `/twitch/prediction/lock`, `/twitch/prediction/cancel` | |
-| `/twitch/prediction/resolve/<team>` | Team 1 or 2 won |
-| `/twitch/prediction` | Its state |
-
 ## Display Controls
 
 The Display Controls window turns layouts on and off: off plays the layout's hide

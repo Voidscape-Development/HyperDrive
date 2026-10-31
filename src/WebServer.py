@@ -1212,25 +1212,6 @@ class WebServer(QThread):
         return await call(WebServer.actions.display, kind, name, action)
 
     # =====================================================
-    # TWITCH PREDICTIONS
-    # =====================================================
-    # The Twitch prediction of the stream's scoreboard: /twitch/prediction
-    # for its state, /twitch/prediction/<start, lock or cancel> and
-    # /twitch/prediction/resolve/<team 1 or 2>. Twitch is called in the
-    # background, so the state answered may not show the change yet.
-    @api.get("/twitch/prediction")
-    async def twitch_prediction_state():
-        return await call(WebServer.actions.twitch_prediction)
-
-    @api.get("/twitch/prediction/resolve/{team}")
-    async def twitch_prediction_resolve(team: str):
-        return await call(WebServer.actions.twitch_prediction, "resolve", team)
-
-    @api.get("/twitch/prediction/{action}")
-    async def twitch_prediction_action(action: str):
-        return await call(WebServer.actions.twitch_prediction, action)
-
-    # =====================================================
     # DISPLAY CONTROLS MESSAGES
     # =====================================================
     # {"folder": <name>} or {"group": <name>} or {"all": true}, with

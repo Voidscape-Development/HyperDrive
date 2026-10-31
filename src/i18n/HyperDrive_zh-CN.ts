@@ -6583,17 +6583,6 @@ Drop an image here.</source>
     </message>
 </context>
 <context>
-    <name>settings.twitch_predictions</name>
-    <message>
-        <source>Scoreboard</source>
-        <translation type="obsolete">计分板</translation>
-    </message>
-    <message>
-        <source>Title</source>
-        <translation type="obsolete">标题</translation>
-    </message>
-</context>
-<context>
     <name>thumb_app</name>
     <message>
         <source>HyperDrive - Thumbnail</source>
