@@ -228,7 +228,8 @@ function lines(bracket) {
       const to = set.nextWin && inArea.has(set.nextWin.set) && placed.sets[set.nextWin.set];
       if (to) {
         if (to.x <= from.x) return [];
-        const b = [to.x, to.y + PLAYER_H / 2 + (set.nextWin.slot || 0) * (PLAYER_H + SET_GAP)];
+        // To the middle of the set, so the two sets feeding it share one line into it
+        const b = [to.x, to.y + to.h / 2];
         const mid = a[0] + (b[0] - a[0]) / 2;
         return [{ from: id, to: set.nextWin.set, d: path([a, [mid, a[1]], [mid, b[1]], b]) }];
       }
