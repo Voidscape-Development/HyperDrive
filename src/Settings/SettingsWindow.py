@@ -28,7 +28,6 @@ from .PronounSettings import PronounSettings
 from .SettingsWidget import (
     TYPE_NUMBER,
     TYPE_PASSWORD,
-    TYPE_TEMPLATE,
     TYPE_TOGGLE,
     Setting,
 )
