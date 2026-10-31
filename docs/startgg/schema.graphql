@@ -4508,6 +4508,9 @@ type ShopVotingOptionConfig {
   id: ID
   name: String
   numSelected: Int
+
+  """Multi-round voting: [{ endAt, numSelected, numEliminated }]"""
+  rounds: JSON
   voteRatio: Float
 }
 
@@ -4515,6 +4518,10 @@ type ShopVotingOptionConfig {
 type ShopVotingOptionValue {
   id: ID
   name: String
+
+  """The player this option represents, if linked"""
+  player: Player
+  playerId: ID
   subname: String
 }
 
