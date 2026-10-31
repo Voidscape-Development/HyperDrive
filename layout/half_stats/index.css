@@ -1,0 +1,278 @@
+/* ═══════════════════════════════════════════════════════════
+   HALF STATS — index.css
+   A 960x1080 panel for split screen displays: player 1's page sits
+   on the right half of the screen, player 2's on the left.
+   Fonts and design tokens come from ../main.css (loaded first).
+   ═══════════════════════════════════════════════════════════ */
+
+body {
+  font-family: var(--font);
+  font-weight: 700;
+  overflow: hidden;
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  color: var(--text-color);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.dot {
+  margin: 0 10px;
+  opacity: 0.5;
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  width: 960px;
+  height: 1080px;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0 60px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 28px;
+  background: color-mix(in srgb, var(--side-color) 22%, var(--bg-color));
+}
+
+body.right .panel {
+  left: 960px;
+}
+
+body.left .panel {
+  left: 0;
+}
+
+/* Character art behind the name, fading into the stats */
+.character {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 520px;
+  z-index: 0;
+  opacity: 0.85;
+  mask-image: linear-gradient(to bottom, black 55%, transparent);
+}
+
+.identity,
+.tiles,
+.section {
+  position: relative;
+  z-index: 1;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.identity .name {
+  font-size: 84px;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.identity .name .sponsor {
+  color: var(--p1-sponsor-color);
+  margin-right: 14px;
+  font-size: 0.6em;
+}
+
+body.left .identity .name .sponsor {
+  color: var(--p2-sponsor-color);
+}
+
+.details {
+  font-size: 30px;
+  opacity: 0.85;
+}
+
+.bio {
+  font-size: 24px;
+  opacity: 0.7;
+}
+
+.bio:empty {
+  display: none;
+}
+
+/* ── Seed and event record ───────────────────────────────── */
+
+.tiles {
+  display: flex;
+  gap: 20px;
+}
+
+.tile {
+  flex: 1;
+  padding: 14px 24px;
+  border-radius: var(--border-radius);
+  background: var(--bg-color);
+  border-left: 8px solid var(--side-color);
+}
+
+.tile_value {
+  font-size: 72px;
+  line-height: 1;
+}
+
+.tile_label {
+  margin-top: 4px;
+  font-size: 22px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+/* ── Lists ───────────────────────────────────────────────── */
+
+.section_title {
+  font-size: 24px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
+.finishes,
+.sets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.finish,
+.set {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 64px;
+  padding: 0 20px;
+  border-radius: var(--border-radius);
+  background: var(--bg-color);
+  overflow: hidden;
+}
+
+.placement {
+  flex: 0 0 150px;
+  font-size: 40px;
+}
+
+.placement .ordinal {
+  font-size: 22px;
+  margin-left: 2px;
+}
+
+.placement .num_entrants {
+  font-size: 22px;
+  opacity: 0.55;
+}
+
+.finish_info,
+.set_info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tournament_name,
+.oponent {
+  font-size: 26px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.event_name,
+.round {
+  font-size: 18px;
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.oponent .sponsor {
+  opacity: 0.6;
+  margin-right: 8px;
+}
+
+.spr {
+  font-size: 22px;
+}
+
+.spr .positive {
+  color: #4caf50;
+}
+
+.spr .negative {
+  color: #ef5350;
+}
+
+.spr .even {
+  opacity: 0.6;
+}
+
+.result_tag {
+  flex: 0 0 44px;
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+  font-size: 28px;
+  border-radius: var(--border-radius-chip);
+}
+
+.result_tag.winner {
+  background: #2e7d32;
+}
+
+.result_tag.loser {
+  background: #8e2424;
+}
+
+.set_score {
+  font-size: 36px;
+}
+
+/* main.css centers text; this panel reads from the left */
+.text {
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+.tile .tile_value .text,
+.set_score .text {
+  justify-content: flex-start !important;
+}
+
+.set_score {
+  text-align: right;
+}
+
+.set_score .text {
+  justify-content: flex-end !important;
+}
+
+.details .flag {
+  height: 28px;
+  margin-right: 8px;
+  border-radius: 3px;
+}
+
+.details .text {
+  align-items: center;
+}
+
+.result_tag .text {
+  justify-content: center !important;
+}
+
+.oponent .sponsor:empty {
+  display: none;
+}

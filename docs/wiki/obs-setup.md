@@ -50,6 +50,7 @@ OBS runs on another computer, use HyperDrive's computer's address instead of `12
 | `game_log` | The set's games so far: stages, characters and who won each, as a strip, a column or a full screen recap |
 | `last_sets`, `recent_sets`, `recent_sets_full`, `tournament_history` | Player stats: recent sets, head-to-head and past results |
 | `tale_of_the_tape` | Both players' stats face to face before their set: seeds, head-to-head, finishes and last meetings |
+| `half_stats` | A half screen stats panel for split screen displays: `player1.html` fills the right half of the screen, `player2.html` the left. Seed, event record, recent finishes and recent sets |
 | `starting_soon` | Starting soon and be right back screens: a countdown, the next sets on stream and the latest results |
 | `map`, `map_world_fighters` | Where the players come from |
 
