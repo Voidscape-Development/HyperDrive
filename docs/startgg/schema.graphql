@@ -1624,7 +1624,12 @@ type Image {
   ratio: Float
   type: String
   uploadedBy: Int
-  url: String
+  url(
+    """
+    Widest the image will be drawn, in device pixels. Banners get a smaller copy when one covers it.
+    """
+    width: Int
+  ): String
   width: Float
 }
 
@@ -2031,6 +2036,11 @@ type MonetaryPrizing implements EventPrizing {
 
 type Mutation {
   acceptAccountInvite(contactInfoParams: contactInfoParams, msaUserParams: msaUserParams, regParams: regParams, updatePlayerParams: updatePlayerParams, userId: ID, userToken: String): User
+
+  """
+  Estimate the sales tax for a shop checkout. Rechecked when the order is placed.
+  """
+  calculateShopOrderTax(address: JSON, cart: JSON!, shipping: Float, shopId: ID!): Float
 
   """Completes a User Confirmation."""
   confirmUserConfirmation(email: String!, value: String!): UserConfirmation
