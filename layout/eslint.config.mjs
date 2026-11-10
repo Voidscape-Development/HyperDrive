@@ -14,6 +14,7 @@ const browser = Object.fromEntries(
     "setInterval",
     "clearInterval",
     "requestAnimationFrame",
+    "cancelAnimationFrame",
     "fetch",
     "URL",
     "URLSearchParams",
