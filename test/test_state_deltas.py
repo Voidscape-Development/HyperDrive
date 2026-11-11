@@ -19,19 +19,17 @@ from deepdiff import DeepDiff, Delta
 
 from src.StateManager import StateManager
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from state_protocol import apply_deltas
+
 
 def Apply(data, delta):
-    """applyDelta() of layout/include/globals.js and stateDelta.js."""
-    current = data
-    for key in delta["path"][:-1]:
-        if isinstance(current, dict) and key not in current:
-            current[key] = {}
-        current = current[key]
-    last = delta["path"][-1]
-    if delta["action"] == "dictionary_item_removed":
-        current.pop(last, None)
-    else:
-        current[last] = delta["value"]
+    """applyDeltas() of layout/include/state_client.js, which every client
+    runs: its Python port, held to the same fixture by
+    test_state_protocol.py. It raises on an action the clients don't know."""
+    applied = apply_deltas(data, [delta])
+    data.clear()
+    data.update(applied)
 
 
 def RandomScalar():

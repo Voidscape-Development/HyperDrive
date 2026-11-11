@@ -70,8 +70,8 @@ function sampleState(): State {
 
 describe("deltas", () => {
 	it("sets, adds and removes keys like the layouts do", () => {
-		const state = sampleState();
-		applyDeltas(state, [
+		const before = sampleState();
+		const state = applyDeltas(before, [
 			{ path: ["score", "1", "team", "1", "score"], action: "values_changed", value: 3 },
 			{ path: ["score", "3", "team", "1", "score"], action: "dictionary_item_added", value: 0 },
 			{ path: ["display", "groups", "main"], action: "dictionary_item_removed" },
@@ -79,12 +79,15 @@ describe("deltas", () => {
 		expect(state.score["1"].team["1"].score).toBe(3);
 		expect(state.score["3"].team["1"].score).toBe(0);
 		expect(state.display.groups).toEqual({});
+		// The state given is left as it was
+		expect(before).toEqual(sampleState());
 	});
 
 	it("replaces a value that isn't an object on the way", () => {
 		const state: State = { a: null };
-		applyDeltas(state, [{ path: ["a", "b"], action: "dictionary_item_added", value: 1 }]);
-		expect(state).toEqual({ a: { b: 1 } });
+		expect(applyDeltas(state, [{ path: ["a", "b"], action: "dictionary_item_added", value: 1 }])).toEqual({
+			a: { b: 1 },
+		});
 	});
 });
 

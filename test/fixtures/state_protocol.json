@@ -1,0 +1,200 @@
+{
+  "description": [
+    "Conformance fixture of the state protocol (docs/state-protocol.md): what a client must hold after each message.",
+    "Every case starts with a new client, with the state {} and no number. Its steps are, in order, one of:",
+    "  full: a program_state message. delta: a program_state_update message, with the status the client gives it.",
+    "  reset: the client drops its connection and its state.",
+    "After each step: index is the number of the last message taken (null: none), resync whether the client",
+    "asked for the whole state at this step (emit program_state), and state the state held, given when the",
+    "step changes it: without one the state must be the one before, untouched.",
+    "Run by test/state_client.test.cjs (layout/include/state_client.js, which the web app and the Stream Deck",
+    "plugin bundle), streamdeck/test/state-client.test.ts and test/test_state_protocol.py (test/state_protocol.py)."
+  ],
+  "actions": {"set": ["values_changed", "type_changes", "dictionary_item_added"], "remove": ["dictionary_item_removed"]},
+  "cases": [
+    {
+      "name": "every action, in order",
+      "notes": "The four actions StateManager sends, applied one message after the other.",
+      "steps": [
+        {"full": {"state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}, "delta_index": 5}, "resync": false, "index": 5, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "values_changed", "delta": {"delta_index": 6, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 1}]}, "status": "applied", "resync": false, "index": 6, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 1, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "dictionary_item_added, with an object", "delta": {"delta_index": 7, "delta": [{"path": ["score", "1", "team", "1", "player", "2"], "action": "dictionary_item_added", "value": {"name": "Erin", "character": {}}}]}, "status": "applied", "resync": false, "index": 7, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 1, "player": {"1": {"name": "Alice"}, "2": {"name": "Erin", "character": {}}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "dictionary_item_removed: the key is gone, not null", "delta": {"delta_index": 8, "delta": [{"path": ["commentary", "2"], "action": "dictionary_item_removed"}]}, "status": "applied", "resync": false, "index": 8, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 1, "player": {"1": {"name": "Alice"}, "2": {"name": "Erin", "character": {}}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}}}},
+        {"notes": "type_changes: number to text", "delta": {"delta_index": 9, "delta": [{"path": ["score", "1", "best_of"], "action": "type_changes", "value": "5"}]}, "status": "applied", "resync": false, "index": 9, "state": {"score": {"1": {"best_of": "5", "team": {"1": {"score": 1, "player": {"1": {"name": "Alice"}, "2": {"name": "Erin", "character": {}}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}}}},
+        {"notes": "The fields DeepDiff adds are ignored: a removal's value is the old one", "delta": {"delta_index": 10, "delta": [{"path": ["game", "codename"], "action": "dictionary_item_removed", "value": "game", "old_value": "unknown___", "new_path": null}]}, "status": "applied", "resync": false, "index": 10, "state": {"score": {"1": {"best_of": "5", "team": {"1": {"score": 1, "player": {"1": {"name": "Alice"}, "2": {"name": "Erin", "character": {}}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game"}, "commentary": {"1": {"name": "Carol"}}}}
+      ]
+    },
+    {
+      "name": "paths",
+      "notes": "Objects on the way are created, numbers in paths are keys, and null is a value.",
+      "steps": [
+        {"full": {"state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}, "delta_index": 0}, "resync": false, "index": 0, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "The objects on the way don't exist yet: created", "delta": {"delta_index": 1, "delta": [{"path": ["score", "2", "team", "1", "score"], "action": "dictionary_item_added", "value": 0}]}, "status": "applied", "resync": false, "index": 1, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}, "2": {"team": {"1": {"score": 0}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "Numbers as keys of objects (Python int keys): the same keys as their text", "delta": {"delta_index": 2, "delta": [{"path": ["score", 1, "team", 2, "score"], "action": "values_changed", "value": 2}]}, "status": "applied", "resync": false, "index": 2, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 2, "player": {"1": {"name": "Bob"}}}}}, "2": {"team": {"1": {"score": 0}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "A value that isn't an object on the way is replaced by one. null is a value like another.", "delta": {"delta_index": 3, "delta": [{"path": ["game", "name", "short"], "action": "dictionary_item_added", "value": "G"}, {"path": ["tournamentInfo", "eventName"], "action": "dictionary_item_added", "value": null}]}, "status": "applied", "resync": false, "index": 3, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 2, "player": {"1": {"name": "Bob"}}}}}, "2": {"team": {"1": {"score": 0}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": {"short": "G"}, "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}, "tournamentInfo": {"eventName": null}}},
+        {"notes": "Removing what isn't there changes nothing but creates the objects on the way", "delta": {"delta_index": 4, "delta": [{"path": ["game", "missing"], "action": "dictionary_item_removed"}, {"path": ["nothing", "here", "at_all"], "action": "dictionary_item_removed"}]}, "status": "applied", "resync": false, "index": 4, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 2, "player": {"1": {"name": "Bob"}}}}}, "2": {"team": {"1": {"score": 0}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": {"short": "G"}, "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}, "tournamentInfo": {"eventName": null}, "nothing": {"here": {}}}},
+        {"notes": "The deltas of a message are applied in order", "delta": {"delta_index": 5, "delta": [{"path": ["commentary", "1", "name"], "action": "values_changed", "value": "Carol 2"}, {"path": ["commentary", "1"], "action": "dictionary_item_removed"}, {"path": ["commentary", "1", "name"], "action": "dictionary_item_added", "value": "Carol 3"}]}, "status": "applied", "resync": false, "index": 5, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 2, "player": {"1": {"name": "Bob"}}}}}, "2": {"team": {"1": {"score": 0}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": {"short": "G"}, "codename": "game"}, "commentary": {"1": {"name": "Carol 3"}, "2": {"name": "Dan"}}, "tournamentInfo": {"eventName": null}, "nothing": {"here": {}}}}
+      ]
+    },
+    {
+      "name": "lists",
+      "notes": "Lists whose items were added, removed or moved come whole (StateManager.WholeListDeltas). A value inside an item that stays comes by its index.",
+      "steps": [
+        {"full": {"state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}, "delta_index": 1}, "resync": false, "index": 1, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m2", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "Shorter list, whole", "delta": {"delta_index": 2, "delta": [{"path": ["bracket", "focus", "main", "sets"], "action": "values_changed", "value": ["m1", "m3"]}]}, "status": "applied", "resync": false, "index": 2, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["m1", "m3"], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "Emptied list", "delta": {"delta_index": 3, "delta": [{"path": ["bracket", "focus", "main", "sets"], "action": "values_changed", "value": []}]}, "status": "applied", "resync": false, "index": 3, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": [], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "A value inside a list's item, by index", "delta": {"delta_index": 4, "delta": [{"path": ["bracket", "focus", "main", "rounds", 1, "sets"], "action": "values_changed", "value": 4}]}, "status": "applied", "resync": false, "index": 4, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": [], "rounds": [{"name": "w:1", "sets": 2}, {"name": "w:2", "sets": 4}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "An index as text is the same index", "delta": {"delta_index": 5, "delta": [{"path": ["bracket", "focus", "main", "rounds", "0", "name"], "action": "values_changed", "value": "w:0"}]}, "status": "applied", "resync": false, "index": 5, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": [], "rounds": [{"name": "w:0", "sets": 2}, {"name": "w:2", "sets": 4}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "The index after the last adds an item", "delta": {"delta_index": 6, "delta": [{"path": ["bracket", "focus", "main", "rounds", 2], "action": "values_changed", "value": {"name": "w:3", "sets": 1}}]}, "status": "applied", "resync": false, "index": 6, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": [], "rounds": [{"name": "w:0", "sets": 2}, {"name": "w:2", "sets": 4}, {"name": "w:3", "sets": 1}]}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}},
+        {"notes": "An object with lists replaced whole (Set(..., replace=True))", "delta": {"delta_index": 7, "delta": [{"path": ["bracket", "focus", "main"], "action": "values_changed", "value": {"sets": ["x"], "rounds": []}}]}, "status": "applied", "resync": false, "index": 7, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}, "bracket": {"focus": {"main": {"sets": ["x"], "rounds": []}}}, "game": {"name": "Game", "codename": "game"}, "commentary": {"1": {"name": "Carol"}, "2": {"name": "Dan"}}}}
+      ]
+    },
+    {
+      "name": "duplicate number",
+      "notes": "A delta with the number of the state held: the whole state was read after that change, so it is ignored without asking for anything.",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 3}, "resync": false, "index": 3, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 3, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 9}]}, "status": "duplicate", "resync": false, "index": 3},
+        {"delta": {"delta_index": 4, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 1}]}, "status": "applied", "resync": false, "index": 4, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 1}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 4, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 9}]}, "status": "duplicate", "resync": false, "index": 4},
+        {"delta": {"delta_index": 5, "delta": [{"path": ["score", "1", "team", "2", "score"], "action": "values_changed", "value": 1}]}, "status": "applied", "resync": false, "index": 5, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 1}, "2": {"score": 1}}}}, "list": ["m1", "m2"]}}
+      ]
+    },
+    {
+      "name": "stale number",
+      "notes": "An older delta: the whole state is asked for once, and deltas wait for it.",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 10}, "resync": false, "index": 10, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 11, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 1}]}, "status": "applied", "resync": false, "index": 11, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 1}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 9, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 7}]}, "status": "stale", "resync": true, "index": 11},
+        {"notes": "Not applied, not asked again", "delta": {"delta_index": 12, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 2}]}, "status": "waiting", "resync": false, "index": 11},
+        {"delta": {"delta_index": 8, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 7}]}, "status": "waiting", "resync": false, "index": 11},
+        {"full": {"state": {"game": {"name": "Other"}}, "delta_index": 12}, "resync": false, "index": 12, "state": {"game": {"name": "Other"}}},
+        {"delta": {"delta_index": 13, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Another"}]}, "status": "applied", "resync": false, "index": 13, "state": {"game": {"name": "Another"}}}
+      ]
+    },
+    {
+      "name": "gap",
+      "notes": "A skipped number: a delta was missed.",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 2}, "resync": false, "index": 2, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 4, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 4}]}, "status": "gap", "resync": true, "index": 2},
+        {"delta": {"delta_index": 5, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 5}]}, "status": "waiting", "resync": false, "index": 2},
+        {"full": {"state": {"score": {"1": {"team": {"1": {"score": 5}}}}}, "delta_index": 5}, "resync": false, "index": 5, "state": {"score": {"1": {"team": {"1": {"score": 5}}}}}},
+        {"delta": {"delta_index": 6, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 6}]}, "status": "applied", "resync": false, "index": 6, "state": {"score": {"1": {"team": {"1": {"score": 6}}}}}},
+        {"notes": "Asked again: the first one came", "delta": {"delta_index": 9, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 9}]}, "status": "gap", "resync": true, "index": 6},
+        {"full": {"state": {"score": {"1": {"team": {"1": {"score": 9}}}}}, "delta_index": 9}, "resync": false, "index": 9, "state": {"score": {"1": {"team": {"1": {"score": 9}}}}}}
+      ]
+    },
+    {
+      "name": "delta before any state",
+      "notes": "Nothing to apply it to.",
+      "steps": [
+        {"delta": {"delta_index": 1, "delta": [{"path": ["game", "name"], "action": "dictionary_item_added", "value": "Game"}]}, "status": "gap", "resync": true, "index": null},
+        {"delta": {"delta_index": 2, "delta": [{"path": ["game", "name"], "action": "dictionary_item_added", "value": "Game 2"}]}, "status": "waiting", "resync": false, "index": null},
+        {"full": {"state": {"game": {"name": "Game 2"}}, "delta_index": 2}, "resync": false, "index": 2, "state": {"game": {"name": "Game 2"}}},
+        {"delta": {"delta_index": 3, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Game 3"}]}, "status": "applied", "resync": false, "index": 3, "state": {"game": {"name": "Game 3"}}}
+      ]
+    },
+    {
+      "name": "HyperDrive restarted",
+      "notes": "The numbering starts again from 0 with the application. A whole state is always taken and sets the number, a lower one included.",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 40}, "resync": false, "index": 40, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 41, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 1}]}, "status": "applied", "resync": false, "index": 41, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 1}}}}, "list": ["m1", "m2"]}},
+        {"notes": "Lower number: taken", "full": {"state": {"game": {"name": "Restarted"}}, "delta_index": 0}, "resync": false, "index": 0, "state": {"game": {"name": "Restarted"}}},
+        {"delta": {"delta_index": 1, "delta": [{"path": ["game", "codename"], "action": "dictionary_item_added", "value": "restarted"}]}, "status": "applied", "resync": false, "index": 1, "state": {"game": {"name": "Restarted", "codename": "restarted"}}},
+        {"delta": {"delta_index": 2, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Restarted 2"}]}, "status": "applied", "resync": false, "index": 2, "state": {"game": {"name": "Restarted 2", "codename": "restarted"}}}
+      ]
+    },
+    {
+      "name": "HyperDrive restarted, its state missed",
+      "notes": "The deltas of the new numbering are stale until the whole state comes.",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 40}, "resync": false, "index": 40, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 1, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Restarted"}]}, "status": "stale", "resync": true, "index": 40},
+        {"delta": {"delta_index": 2, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Restarted 2"}]}, "status": "waiting", "resync": false, "index": 40},
+        {"full": {"state": {"game": {"name": "Restarted 2"}}, "delta_index": 2}, "resync": false, "index": 2, "state": {"game": {"name": "Restarted 2"}}},
+        {"delta": {"delta_index": 3, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Restarted 3"}]}, "status": "applied", "resync": false, "index": 3, "state": {"game": {"name": "Restarted 3"}}}
+      ]
+    },
+    {
+      "name": "whole state while in step",
+      "notes": "After a change too big for a delta everyone gets the whole state, with the next number.",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 7}, "resync": false, "index": 7, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 8, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 1}]}, "status": "applied", "resync": false, "index": 8, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 1}}}}, "list": ["m1", "m2"]}},
+        {"full": {"state": {"game": {"name": "New tournament"}}, "delta_index": 9}, "resync": false, "index": 9, "state": {"game": {"name": "New tournament"}}},
+        {"delta": {"delta_index": 10, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "New tournament 2"}]}, "status": "applied", "resync": false, "index": 10, "state": {"game": {"name": "New tournament 2"}}},
+        {"notes": "Same number: taken all the same", "full": {"state": {"game": {"name": "Asked for"}}, "delta_index": 10}, "resync": false, "index": 10, "state": {"game": {"name": "Asked for"}}},
+        {"delta": {"delta_index": 11, "delta": [{"path": ["game", "codename"], "action": "dictionary_item_added", "value": "asked"}]}, "status": "applied", "resync": false, "index": 11, "state": {"game": {"name": "Asked for", "codename": "asked"}}}
+      ]
+    },
+    {
+      "name": "subscription",
+      "notes": "A client that subscribed to some top-level keys gets those of the state, and every update: without deltas when nothing of them changed, so the numbers stay one by one.",
+      "steps": [
+        {"full": {"state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}}, "delta_index": 20}, "resync": false, "index": 20, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 0, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}}},
+        {"notes": "The state is the same object: nothing to render", "delta": {"delta_index": 21, "delta": []}, "status": "empty", "resync": false, "index": 21},
+        {"delta": {"delta_index": 22, "delta": [{"path": ["score", "1", "team", "1", "score"], "action": "values_changed", "value": 1}]}, "status": "applied", "resync": false, "index": 22, "state": {"score": {"1": {"best_of": 3, "team": {"1": {"score": 1, "player": {"1": {"name": "Alice"}}}, "2": {"score": 0, "player": {"1": {"name": "Bob"}}}}}}}},
+        {"delta": {"delta_index": 23, "delta": []}, "status": "empty", "resync": false, "index": 23},
+        {"notes": "Empty updates count too", "delta": {"delta_index": 25, "delta": []}, "status": "gap", "resync": true, "index": 23},
+        {"full": {"state": {"score": {"1": {"team": {"1": {"score": 3}}}}}, "delta_index": 25}, "resync": false, "index": 25, "state": {"score": {"1": {"team": {"1": {"score": 3}}}}}}
+      ]
+    },
+    {
+      "name": "messages the protocol doesn't know",
+      "notes": "Never applied in part: the state stays as it was, and the whole state is asked for. Each is followed here by the whole state.",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 1}, "resync": false, "index": 1, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"notes": "An action StateManager turns into the whole list: not applied as a guess", "delta": {"delta_index": 2, "delta": [{"path": ["list", 1], "action": "iterable_item_removed", "value": "m2"}]}, "status": "invalid", "resync": true, "index": 1},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 2}, "resync": false, "index": 2, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"notes": "The first delta is fine: not applied either", "delta": {"delta_index": 3, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Half"}, {"path": ["game", "name"], "action": "iterable_item_moved", "value": 1}]}, "status": "invalid", "resync": true, "index": 2},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 3}, "resync": false, "index": 3, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"notes": "No value", "delta": {"delta_index": 4, "delta": [{"path": ["game", "name"], "action": "values_changed"}]}, "status": "invalid", "resync": true, "index": 3},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 4}, "resync": false, "index": 4, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"notes": "DeepDiff's placeholder for a value it doesn't give (1 becoming true)", "delta": {"delta_index": 5, "delta": [{"path": ["score", "1", "best_of"], "action": "type_changes", "value": "unknown___"}]}, "status": "invalid", "resync": true, "index": 4},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 5}, "resync": false, "index": 5, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"notes": "Empty path", "delta": {"delta_index": 6, "delta": [{"path": [], "action": "values_changed", "value": {}}]}, "status": "invalid", "resync": true, "index": 5},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 6}, "resync": false, "index": 6, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"notes": "Removing a list's item", "delta": {"delta_index": 7, "delta": [{"path": ["list", 0], "action": "dictionary_item_removed"}]}, "status": "invalid", "resync": true, "index": 6},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 7}, "resync": false, "index": 7, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"notes": "An index past the list's end", "delta": {"delta_index": 8, "delta": [{"path": ["list", 7], "action": "values_changed", "value": "m9"}]}, "status": "invalid", "resync": true, "index": 7},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 8}, "resync": false, "index": 8, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"notes": "A key that isn't an index, in a list", "delta": {"delta_index": 9, "delta": [{"path": ["list", "last"], "action": "values_changed", "value": "m9"}]}, "status": "invalid", "resync": true, "index": 8},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 9}, "resync": false, "index": 9, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 10, "delta": [{"path": ["__proto__", "polluted"], "action": "dictionary_item_added", "value": true}]}, "status": "invalid", "resync": true, "index": 9},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 10}, "resync": false, "index": 10, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta": [{"path": ["game", "name"], "action": "values_changed", "value": "No number"}]}, "status": "invalid", "resync": true, "index": 10},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 11}, "resync": false, "index": 11, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 12, "delta": {"game": {"name": "Not a list"}}}, "status": "invalid", "resync": true, "index": 11},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 12}, "resync": false, "index": 12, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": "13", "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Number as text"}]}, "status": "invalid", "resync": true, "index": 12},
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 13}, "resync": false, "index": 13, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 14, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Fine"}]}, "status": "applied", "resync": false, "index": 14, "state": {"game": {"name": "Fine"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}}
+      ]
+    },
+    {
+      "name": "whole state without a number",
+      "notes": "Taken, but no delta is known to follow it.",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}}}, "resync": false, "index": null, "state": {"game": {"name": "Game"}}},
+        {"delta": {"delta_index": 1, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Game 1"}]}, "status": "gap", "resync": true, "index": null},
+        {"full": {"state": {"game": {"name": "Game 1"}}, "delta_index": 1}, "resync": false, "index": 1, "state": {"game": {"name": "Game 1"}}},
+        {"delta": {"delta_index": 2, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Game 2"}]}, "status": "applied", "resync": false, "index": 2, "state": {"game": {"name": "Game 2"}}}
+      ]
+    },
+    {
+      "name": "connection reset",
+      "notes": "A client that drops its connection (and its state) forgets the numbering: reset().",
+      "steps": [
+        {"full": {"state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}, "delta_index": 4}, "resync": false, "index": 4, "state": {"game": {"name": "Game"}, "score": {"1": {"team": {"1": {"score": 0}}}}, "list": ["m1", "m2"]}},
+        {"delta": {"delta_index": 6, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Missed"}]}, "status": "gap", "resync": true, "index": 4},
+        {"notes": "Not waiting any more, and no number", "reset": true, "resync": false, "index": null, "state": {}},
+        {"notes": "Asked again: nothing is known", "delta": {"delta_index": 5, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Unknown"}]}, "status": "gap", "resync": true, "index": null},
+        {"full": {"state": {"game": {"name": "Game"}}, "delta_index": 5}, "resync": false, "index": 5, "state": {"game": {"name": "Game"}}},
+        {"delta": {"delta_index": 6, "delta": [{"path": ["game", "name"], "action": "values_changed", "value": "Game 6"}]}, "status": "applied", "resync": false, "index": 6, "state": {"game": {"name": "Game 6"}}}
+      ]
+    }
+  ]
+}

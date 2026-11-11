@@ -6,6 +6,6 @@
     "noEmit": true,
     "lib": ["es2020", "dom"]
   },
-  "include": ["include/hd.d.ts", "**/*.js"],
+  "include": ["include/hd.d.ts", "include/state_client.d.ts", "**/*.js"],
   "exclude": ["include/*.min.js", "include/socket.io.min.js"]
 }

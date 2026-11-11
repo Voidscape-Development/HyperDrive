@@ -1,7 +1,8 @@
 import { EventEmitter } from "node:events";
 import { io, type Socket } from "socket.io-client";
 
-import { applyDeltas, type Delta, type State } from "./state.ts";
+import { createSync, type DeltaMessage, type StateMessage, type Sync } from "./state-client.ts";
+import type { State } from "./state.ts";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
@@ -60,7 +61,8 @@ export class HyperDriveConnection extends EventEmitter<Events> {
 	address: Address = DEFAULT_ADDRESS;
 
 	#socket: Socket | undefined;
-	#deltaIndex: number | undefined;
+	// Which deltas apply, and when the whole state is asked for again
+	readonly #sync: Sync = createSync(() => this.#socket?.emit("program_state", {}));
 	#stateQueued = false;
 	readonly #timeoutMs: number;
 
@@ -104,35 +106,17 @@ export class HyperDriveConnection extends EventEmitter<Events> {
 		});
 
 		// Sent on connect, after a big change, or when asked for
-		socket.on("program_state", (message: { state?: State; delta_index?: number }) => {
-			this.state = message?.state ?? {};
-			this.#deltaIndex = message?.delta_index;
+		socket.on("program_state", (message: StateMessage) => {
+			this.state = this.#sync.full(message);
 			this.#queueState();
 		});
 
-		socket.on("program_state_update", (message: { delta_index?: number; delta?: Delta[] }) => {
-			const index = message?.delta_index;
-			if (typeof index !== "number" || !Array.isArray(message.delta)) {
-				return;
+		socket.on("program_state_update", (message: DeltaMessage) => {
+			const result = this.#sync.delta(message, this.state);
+			if (result.status === "applied") {
+				this.state = result.state;
+				this.#queueState();
 			}
-			if (this.#deltaIndex !== undefined && index <= this.#deltaIndex) {
-				// Already in the state we have
-				return;
-			}
-			if (this.#deltaIndex !== undefined && index !== this.#deltaIndex + 1) {
-				// Missed an update: get the whole state again
-				this.#deltaIndex = undefined;
-				socket.emit("program_state", {});
-				return;
-			}
-			try {
-				applyDeltas(this.state, message.delta);
-				this.#deltaIndex = index;
-			} catch {
-				this.#deltaIndex = undefined;
-				socket.emit("program_state", {});
-			}
-			this.#queueState();
 		});
 	}
 
@@ -144,7 +128,7 @@ export class HyperDriveConnection extends EventEmitter<Events> {
 			this.#socket = undefined;
 		}
 		this.state = {};
-		this.#deltaIndex = undefined;
+		this.#sync.reset();
 		this.#setStatus("disconnected");
 		this.#queueState();
 	}

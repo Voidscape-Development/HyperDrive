@@ -10,7 +10,8 @@ A socket.io client gets the whole state when it connects (`program_state`:
 of it connects with `auth: {state_keys: ["score", "game"]}` and gets only
 those top-level keys, in both. Its updates keep their numbers, with an empty
 `delta` when none of its keys changed. Layouts do this with `subscribe` (see
-[layouts.md](layouts.md#subscriptions)).
+[layouts.md](layouts.md#subscriptions)). What a client does with these
+messages is in [state-protocol.md](state-protocol.md).
 
 ## `bracket`
 

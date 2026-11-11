@@ -9,6 +9,8 @@ import {
 import { hdStore } from "../redux/store";
 import socketConnection from "../websocketConnection";
 import {BACKEND_PORT, PROTOCOL} from "../env";
+import {createSync} from "../stateClient";
+import {HDState} from "../backendDataTypes";
 
 let initialized = false;
 
@@ -19,6 +21,22 @@ export default function websocketInit() {
 
     initialized = true;
     const socket = socketConnection.instance();
+
+    // The state protocol, shared with the layouts: applies the deltas that
+    // are next in line, and asks for the whole state when one is missing or
+    // older than the state held.
+    const sync = createSync((reason, index) => {
+        console.warn(`Delta ${index} after ${sync.index} (${reason}): requesting new full state.`);
+        socket.emit("program_state", {});
+    });
+    // The state with every delta received applied, and whether the store
+    // has it yet
+    let latest = {} as HDState;
+    let stored = true;
+    const store = () => {
+        stored = true;
+        hdStore.dispatch(hdStateSlice.actions.overwrite({state: latest, delta_index: sync.index ?? -1}));
+    };
 
     socket.on("connect", () => {
         console.log("SocketIO connection established.");
@@ -38,7 +56,8 @@ export default function websocketInit() {
 
     socket.on("program_state", data => {
         console.log("HyperDrive state received ", data);
-        hdStore.dispatch(hdStateSlice.actions.overwrite(data));
+        latest = sync.full<HDState>(data);
+        store();
     });
 
     socket.on("games", data => {
@@ -54,7 +73,11 @@ export default function websocketInit() {
 
     socket.on("program_state_update", deltaMessage => {
         console.log("HyperDrive state update received", deltaMessage);
-        hdStore.dispatch(hdStateSlice.actions.addDeltas(deltaMessage));
+        const result = sync.delta(deltaMessage, latest);
+        if (result.status === "applied") {
+            latest = result.state;
+            stored = false;
+        }
     });
 
     socket.on("playerdb", data => {
@@ -80,10 +103,10 @@ export default function websocketInit() {
 
     // This can't be set up twice because of the initialization guard at the top of the function.
     // Often enough that a change made on a page shows there without a lag
+    // Deltas come in bursts: the store gets their result, not each of them
     setInterval(() => {
-        const state = hdStore.getState();
-        if (state.websocketInfo.status === "connected" && state.hdState?.stateDeltas.length > 0) {
-            hdStore.dispatch(hdStateSlice.actions.applySavedDeltas());
+        if (!stored) {
+            store();
         }
     }, 200);
 }
