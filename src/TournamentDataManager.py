@@ -1,5 +1,6 @@
 import threading
 import time
+import traceback
 
 from loguru import logger
 from qtpy.QtCore import *
@@ -411,62 +412,86 @@ class TournamentDataManager(QObject):
         self.threadPool.start(worker)
 
     def LoadStationSets(self, mainWindow, on_finished=None):
-        if mainWindow.lastStationSelected:
-            worker = Worker(
-                TournamentDataManager.instance.LoadStationSetsDo, **{"mainWindow": mainWindow}
-            )
+        """Loads the set on the scoreboard's stream or station (NewSetSelected)
+        and, when its queue changed, the sets after it (StationSetsLoaded)"""
+        provider = self.provider
+        if not mainWindow.lastStationSelected or provider is None:
             if on_finished:
-                worker.signals.finished.connect(on_finished)
-            self.threadPool.start(worker)
-        elif on_finished:
-            on_finished()
+                on_finished()
+            return
 
-    def LoadStationSetsDo(self, mainWindow, progress_callback=None, cancel_event=None):
+        # What the worker needs of the scoreboard is read here, on the GUI
+        # thread: the station, and the queue it already has
+        station = dict(mainWindow.lastStationSelected)
+        queueCache = mainWindow.stationQueueCache
+        known = type(queueCache)()
+        known.UpdateQueue(list(queueCache.queue))
+
+        def fetch(progress_callback=None, cancel_event=None):
+            return TournamentDataManager.FetchStationSets(provider, station, known)
+
+        worker = Worker(fetch)
+        worker.signals.result.connect(
+            lambda result: self.StationSetsFetched(mainWindow, provider, station, result)
+        )
+        if on_finished:
+            worker.signals.finished.connect(on_finished)
+        self.threadPool.start(worker)
+
+    @staticmethod
+    def FetchStationSets(provider, station, known):
+        """Runs in a worker thread, and touches nothing of the GUI: the set
+        on the station now, its sets' ids, and the sets after the first one
+        when they aren't the ones known already (None when they are, or when
+        they couldn't be fetched)"""
         stationSet = None
 
-        if mainWindow.lastStationSelected.get("type") == "stream":
+        if station.get("type") == "stream":
             # Pass the full station dict so providers that need extra context
             # (e.g. parry's per-capacity slot index) can read it. Providers that
             # only care about the identifier string accept either form.
-            stationSet = TournamentDataManager.instance.provider.GetStreamMatchId(
-                mainWindow.lastStationSelected
-            )
+            stationSet = provider.GetStreamMatchId(station)
 
         # Populate the upcoming-matches queue for both stream and station
         # selections. Providers that don't have a queue for the given id
         # return [] (e.g. start.gg returns [] when called with a stream id).
-        stationSets = TournamentDataManager.instance.provider.GetStationMatchsId(
-            mainWindow.lastStationSelected.get("id")
-        )
+        stationSets = provider.GetStationMatchsId(station.get("id"))
 
-        if stationSets is not None and len(stationSets) > 0:
+        queue = None
+        if stationSets:
             # Station mode: use queue head as the active set when no
             # stream-mode set was loaded above.
             if stationSet is None:
                 stationSet = stationSets[0]
 
-            queueCache = mainWindow.stationQueueCache
-            logger.info(queueCache.queue)
-            logger.info(stationSets)
-            if queueCache and not queueCache.CheckQueue(stationSets):
-                queueCache.UpdateQueue(stationSets)
+            if not known.CheckQueue(stationSets):
+                # Fetched here, in the same worker: a worker made in this
+                # thread would never deliver its result. Omits the first one
+                # (loaded through NewSetSelected).
+                try:
+                    queue = provider.GetFutureMatchesList(stationSets[1:], None, None)
+                except Exception:
+                    logger.error(traceback.format_exc())
 
-                TournamentDataManager.instance.GetStationMatches(stationSets, mainWindow)
+        return {"set": stationSet, "ids": stationSets, "queue": queue}
 
-        if not stationSet:
-            stationSet = {}
+    def StationSetsFetched(self, mainWindow, provider, station, result):
+        """On the GUI thread, with what FetchStationSets returned"""
+        # Another event, or another stream or station, was picked meanwhile
+        if provider is not self.provider or mainWindow.lastStationSelected != station:
+            return
 
-        stationSet["auto_update"] = mainWindow.lastStationSelected.get("type")
+        if result.get("queue") is not None:
+            # Only once its sets were fetched, so a failed fetch is tried
+            # again at the next update
+            mainWindow.stationQueueCache.UpdateQueue(result.get("ids"))
 
+        stationSet = result.get("set") or {}
+        stationSet["auto_update"] = station.get("type")
         mainWindow.signals.NewSetSelected.emit(stationSet)
 
-    # omits the first one (loaded through NewSetSelected)
-    def GetStationMatches(self, matchesId, mainWindow):
-        matchesId = matchesId[1:]
-
-        worker = Worker(self.provider.GetFutureMatchesList, **{"setsId": matchesId})
-        worker.signals.result.connect(lambda sets: mainWindow.signals.StationSetsLoaded.emit(sets))
-        self.threadPool.start(worker)
+        if result.get("queue") is not None:
+            mainWindow.signals.StationSetsLoaded.emit(result.get("queue"))
 
     # =====================================================
     # SET HISTORY
