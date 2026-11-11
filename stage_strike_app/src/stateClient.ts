@@ -9,6 +9,7 @@
  * and selectors of unchanged parts keep returning the same objects.
  */
 /// <reference path="../../layout/include/state_client.d.ts" />
+/// <reference path="../../layout/include/state.d.ts" />
 import "../../layout/include/state_client.js";
 
 export const { ACTIONS, SET_ACTIONS, REMOVE_ACTIONS, applyDeltas, createSync } = HDStateClient;
@@ -18,3 +19,6 @@ export type StateMessage<S> = HDStateClient.StateMessage<S>;
 export type DeltaMessage = HDStateClient.DeltaMessage;
 export type DeltaStatus = HDStateClient.DeltaStatus;
 export type Sync = HDStateClient.Sync;
+
+/** The program state's shape, generated from src/state_schema.py (layout/include/state.d.ts) */
+export type ProgramState = HDState.State;

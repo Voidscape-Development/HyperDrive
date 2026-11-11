@@ -4,6 +4,15 @@ What HyperDrive sends to the layouts (in `program_state`) for the bracket widget
 Stream Queue widget, the completed sets, the scoreboard's Games window, the Crew/Team Battle window, the
 players' socials and custom data, and the layout theme in use.
 
+The shape of the whole state, every section and key with its type, is
+described in [`src/state_schema.py`](../src/state_schema.py), from which
+[`layout/include/state.d.ts`](../layout/include/state.d.ts) is generated
+(`python scripts/gen_state_types.py`): `HD.State` in layout scripts, so
+editors complete `s.data.score[1].team[1].player[1].name`. This page explains
+the sections that need more than a type. A key added to the state goes in the
+schema first: `test/test_state_schema.py` checks the keys the application sets
+against it.
+
 A socket.io client gets the whole state when it connects (`program_state`:
 `{state, delta_index}`), then changes (`program_state_update`:
 `{delta_index, delta}`, numbered one by one). A client that only needs some
