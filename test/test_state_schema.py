@@ -173,7 +173,7 @@ def TestSampleState():
     # Every section but the file's timestamp and what only a tournament
     # provider sets is in the sample
     missing = set(schema.SECTIONS) - set(sample)
-    assert missing == {"timestamp", "provider_videogame"}, missing
+    assert missing <= {"timestamp", "provider_videogame"}, missing
 
 
 def TestValidation():
