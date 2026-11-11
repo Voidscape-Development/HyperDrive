@@ -43,7 +43,8 @@ empty = {}
 
 
 class QueueSetsCache:
-    queue = []
+    def __init__(self):
+        self.queue = []
 
     def UpdateQueue(self, q):
         self.queue = q
@@ -99,8 +100,6 @@ class ScoreboardWidgetSignals(QObject):
 
 
 class ScoreboardWidget(QWidget):
-    stationQueueCache = QueueSetsCache()
-
     def __init__(self, scoreboardNumber=1, *args):
         super().__init__(*args)
 
@@ -131,6 +130,8 @@ class ScoreboardWidget(QWidget):
         self.lastSetSelected = None
 
         self.lastStationSelected = None
+        # Its own: a stream's or station's queue isn't another scoreboard's
+        self.stationQueueCache = QueueSetsCache()
         # The set loaded from the bracket, as the bracket has it, for the
         # tracking bar; None when the set on the scoreboard isn't the one
         # being tracked (waiting for a stream's next set)

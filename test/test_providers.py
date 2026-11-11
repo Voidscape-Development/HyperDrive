@@ -387,6 +387,16 @@ def TestAppContext():
     assert StartGGDataProvider("https://www.start.gg/t", None, None, context=other).context is other
 
 
+def TestSeedsArePerProvider():
+    """An event's seeds aren't the next event's (they were kept on the
+    class, shared by every provider made)"""
+    first = StartGGDataProvider("https://www.start.gg/tournament/a/event/e", None, None)
+    second = StartGGDataProvider("https://www.start.gg/tournament/b/event/e", None, None)
+    first.player_seeds[123] = 1
+    assert second.player_seeds == {}, second.player_seeds
+    assert "player_seeds" not in vars(StartGGDataProvider)
+
+
 if __name__ == "__main__":
     for test in [
         TestProviderClassFor,
@@ -400,6 +410,7 @@ if __name__ == "__main__":
         TestHashtag,
         TestParryCityState,
         TestAppContext,
+        TestSeedsArePerProvider,
     ]:
         test()
         print(f"{test.__name__}: OK")

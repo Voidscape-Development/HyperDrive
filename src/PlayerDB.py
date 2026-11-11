@@ -34,7 +34,12 @@ class PlayerDBSignals(QObject):
 
 class PlayerDB:
     signals = PlayerDBSignals()
+    # {tag: player}. Players are added from worker threads (entrants,
+    # mains, players looked up for a set) while the GUI thread reads them:
+    # every access here holds `lock`. Never held while waiting for the GUI
+    # thread (SetupModel) or while writing the database file.
     database = {}
+    lock = threading.RLock()
     model: QStandardItemModel = None
     webServer = None
     modelLock = threading.Lock()
@@ -45,7 +50,9 @@ class PlayerDB:
     # The fields saved to the database, the others (id, avatar, seed...) are
     # only kept while the program runs
     fieldnames = PLAYER_FIELDS
-    saveLock = threading.Lock()
+    # Held from taking the copy to save until it's written, so an older
+    # copy can't be written after a newer one. Taken before `lock`.
+    saveLock = threading.RLock()
 
     # =====================================================
     # LOADING
@@ -58,9 +65,10 @@ class PlayerDB:
             if not players:
                 players = PlayerDB.MigrateLegacyFiles()
 
-            for tag, player in players.items():
-                if tag not in PlayerDB.database:
-                    PlayerDB.database[tag] = player
+            with PlayerDB.lock:
+                for tag, player in players.items():
+                    if tag not in PlayerDB.database:
+                        PlayerDB.database[tag] = player
 
             PlayerDB.SaveDB()
             PlayerDB.SetupModel()
@@ -105,17 +113,18 @@ class PlayerDB:
     def ApplyReloadedDB(saved):
         """Replaces the players in memory with the ones read by ReloadDB."""
         try:
-            for tag in list(PlayerDB.database.keys()):
-                if tag not in saved:
-                    del PlayerDB.database[tag]
-            for tag, player in saved.items():
-                entry = PlayerDB.database.get(tag)
-                if entry is None:
-                    PlayerDB.database[tag] = player
-                else:
-                    for field in PlayerDB.fieldnames:
-                        entry.pop(field, None)
-                    entry.update(player)
+            with PlayerDB.lock:
+                for tag in list(PlayerDB.database.keys()):
+                    if tag not in saved:
+                        del PlayerDB.database[tag]
+                for tag, player in saved.items():
+                    entry = PlayerDB.database.get(tag)
+                    if entry is None:
+                        PlayerDB.database[tag] = player
+                    else:
+                        for field in PlayerDB.fieldnames:
+                            entry.pop(field, None)
+                        entry.update(player)
             PlayerDB.SetupModel()
         except Exception:
             logger.error(traceback.format_exc())
@@ -197,7 +206,7 @@ class PlayerDB:
     @staticmethod
     def ExportJSON(path):
         """Saves the players to a file in the format of local_players.json."""
-        players = deep_clone(list(PlayerDB.database.values()))
+        players = list(PlayerDB.Snapshot().values())
         player_list = [
             {k: v for k, v in player.items() if k in PlayerDB.fieldnames}
             for player in players
@@ -214,71 +223,79 @@ class PlayerDB:
     @staticmethod
     def AddPlayers(players, overwrite=False):
         logger.info(f"Adding players to DB: {len(players)}")
-        for player in players:
-            if player is not None:
-                tag = (
-                    player.get("prefix") + " " + player.get("gamerTag")
-                    if player.get("prefix")
-                    else player.get("gamerTag")
-                )
-
-                SocialsHelper.Normalize(player)
-
-                if not overwrite:
-                    if tag not in PlayerDB.database:
-                        incomingMains = player.get("mains", {})
-                        for game in incomingMains:
-                            for main in incomingMains[game]:
-                                if len(main) == 1:
-                                    main.append(0)
-                        PlayerDB.database[tag] = player
-                    else:
-                        dbMains = deep_clone(PlayerDB.database[tag].get("mains", {}))
-                        if isinstance(dbMains, str):
-                            dbMains = json.loads(dbMains)
-                        incomingMains = player.get("mains", {})
-
-                        newMains = []
-                        for game in incomingMains:
-                            for main in incomingMains[game]:
-                                if len(main) == 1:
-                                    found = next(
-                                        (m for m in dbMains.get(game, []) if m[0] == main[0]), None
-                                    )
-                                    if found:
-                                        main.append(found[1])
-                                    else:
-                                        main.append(0)
-                                newMains.append(main)
-                            dbMains[game] = newMains
-
-                        # Merged platform by platform, so accounts typed in
-                        # by hand aren't lost when start.gg doesn't know them
-                        dbSocials = SocialsHelper.Get(PlayerDB.database[tag])
-                        incomingSocials = SocialsHelper.Get(player)
-
-                        if SettingsManager.Get("general.disable_overwrite", False):
-                            PlayerDB.database[tag] = player | PlayerDB.database[tag]
-                            socials = SocialsHelper.Merge(incomingSocials, dbSocials)
-                        else:
-                            PlayerDB.database[tag].update(player)
-                            socials = SocialsHelper.Merge(dbSocials, incomingSocials)
-                        PlayerDB.database[tag]["mains"] = dbMains
-                        if socials or "socials" in PlayerDB.database[tag]:
-                            PlayerDB.database[tag]["socials"] = socials
-                            PlayerDB.database[tag]["twitter"] = socials.get("twitter", "")
-                else:
-                    if PlayerDB.database.get(tag) is not None and player.get("mains") is not None:
-                        try:
-                            mains = PlayerDB.database[tag].get("mains", {})
-                            mains.update(player.get("mains", {}))
-                            player["mains"] = mains
-                        except:
-                            logger.error(traceback.format_exc())
-                    PlayerDB.database[tag] = player
+        with PlayerDB.lock:
+            for player in players:
+                if player is not None:
+                    PlayerDB._AddPlayer(player, overwrite)
 
         PlayerDB.SaveDB()
         PlayerDB.SetupModel()
+
+    @staticmethod
+    def _AddPlayer(player, overwrite):
+        """Adds or merges one player. With PlayerDB.lock held."""
+        # The same key every lookup and the saved rows use
+        tag = PlayerDB.GetTag(player)
+        if not tag.strip():
+            logger.warning(f"Not adding a player without a tag: {player}")
+            return
+
+        SocialsHelper.Normalize(player)
+
+        if not overwrite:
+            if tag not in PlayerDB.database:
+                incomingMains = player.get("mains") or {}
+                for game in incomingMains:
+                    for main in incomingMains[game]:
+                        if len(main) == 1:
+                            main.append(0)
+                PlayerDB.database[tag] = player
+            else:
+                dbMains = deep_clone(PlayerDB.database[tag].get("mains") or {})
+                if isinstance(dbMains, str):
+                    dbMains = json.loads(dbMains)
+                incomingMains = player.get("mains") or {}
+
+                for game in incomingMains:
+                    # Each game's own list: one shared by every game gave
+                    # each game the mains of the ones before it too
+                    newMains = []
+                    for main in incomingMains[game]:
+                        if len(main) == 1:
+                            found = next(
+                                (m for m in dbMains.get(game, []) if m[0] == main[0]), None
+                            )
+                            if found:
+                                main.append(found[1])
+                            else:
+                                main.append(0)
+                        newMains.append(main)
+                    dbMains[game] = newMains
+
+                # Merged platform by platform, so accounts typed in
+                # by hand aren't lost when start.gg doesn't know them
+                dbSocials = SocialsHelper.Get(PlayerDB.database[tag])
+                incomingSocials = SocialsHelper.Get(player)
+
+                if SettingsManager.Get("general.disable_overwrite", False):
+                    PlayerDB.database[tag] = player | PlayerDB.database[tag]
+                    socials = SocialsHelper.Merge(incomingSocials, dbSocials)
+                else:
+                    PlayerDB.database[tag].update(player)
+                    socials = SocialsHelper.Merge(dbSocials, incomingSocials)
+                PlayerDB.database[tag]["mains"] = dbMains
+                if socials or "socials" in PlayerDB.database[tag]:
+                    PlayerDB.database[tag]["socials"] = socials
+                    PlayerDB.database[tag]["twitter"] = socials.get("twitter", "")
+        else:
+            if PlayerDB.database.get(tag) is not None and player.get("mains") is not None:
+                try:
+                    mains = PlayerDB.database[tag].get("mains", {})
+                    mains.update(player.get("mains", {}))
+                    player["mains"] = mains
+                except:
+                    logger.error(traceback.format_exc())
+            PlayerDB.database[tag] = player
 
     @staticmethod
     def UpdatePlayer(oldTag, player):
@@ -292,18 +309,19 @@ class PlayerDB:
         newTag = PlayerDB.GetTag(player)
         if not newTag:
             return None
-        if newTag != oldTag and newTag in PlayerDB.database:
-            return None
+        with PlayerDB.lock:
+            if newTag != oldTag and newTag in PlayerDB.database:
+                return None
 
-        entry = deep_clone(PlayerDB.database.get(oldTag) or {}) if oldTag else {}
-        entry.update(player)
-        entry["prefix"] = (entry.get("prefix") or "").strip()
-        entry["gamerTag"] = (entry.get("gamerTag") or "").strip()
-        SocialsHelper.Normalize(entry)
+            entry = deep_clone(PlayerDB.database.get(oldTag) or {}) if oldTag else {}
+            entry.update(player)
+            entry["prefix"] = (entry.get("prefix") or "").strip()
+            entry["gamerTag"] = (entry.get("gamerTag") or "").strip()
+            SocialsHelper.Normalize(entry)
 
-        if oldTag is not None and oldTag != newTag:
-            PlayerDB.database.pop(oldTag, None)
-        PlayerDB.database[newTag] = entry
+            if oldTag is not None and oldTag != newTag:
+                PlayerDB.database.pop(oldTag, None)
+            PlayerDB.database[newTag] = entry
 
         PlayerDB.SaveDB()
         PlayerDB.SetupModel()
@@ -311,16 +329,17 @@ class PlayerDB:
 
     @staticmethod
     def DeletePlayer(tag):
-        if tag in PlayerDB.database:
-            del PlayerDB.database[tag]
+        with PlayerDB.lock:
+            PlayerDB.database.pop(tag, None)
 
         PlayerDB.SaveDB()
         PlayerDB.SetupModel()
 
     @staticmethod
     def DeletePlayers(tags):
-        for tag in tags:
-            PlayerDB.database.pop(tag, None)
+        with PlayerDB.lock:
+            for tag in tags:
+                PlayerDB.database.pop(tag, None)
 
         PlayerDB.SaveDB()
         PlayerDB.SetupModel()
@@ -336,13 +355,28 @@ class PlayerDB:
     @staticmethod
     def GetPlayer(tag):
         """Returns a copy of the player saved under tag (prefix + gamerTag), or None."""
-        player = PlayerDB.database.get(tag)
-        return deep_clone(player) if player is not None else None
+        with PlayerDB.lock:
+            player = PlayerDB.database.get(tag)
+            return deep_clone(player) if player is not None else None
+
+    @staticmethod
+    def HasPlayer(tag):
+        with PlayerDB.lock:
+            return tag in PlayerDB.database
+
+    @staticmethod
+    def Snapshot():
+        """A copy of every player, {tag: player}, safe to go through while
+        other threads add players"""
+        with PlayerDB.lock:
+            return deep_clone({tag: p for tag, p in PlayerDB.database.items() if p is not None})
 
     @staticmethod
     def GetPlayerFromTag(tag):
-        for player_db in PlayerDB.database.values():
-            if tag.lower() == player_db.get("gamerTag").lower():
+        with PlayerDB.lock:
+            players = list(PlayerDB.database.values())
+        for player_db in players:
+            if player_db and tag.lower() == (player_db.get("gamerTag") or "").lower():
                 return player_db
         return None
 
@@ -396,78 +430,74 @@ class PlayerDB:
                         PlayerDB.iconCache[key] = icon
                 return icon
 
-            for player in PlayerDB.database.values():
-                if player is not None:
-                    try:
-                        tag = (
-                            player.get("prefix") + " " + player.get("gamerTag")
-                            if player.get("prefix")
-                            else player.get("gamerTag")
-                        )
+            for tag, player, character in PlayerDB._ModelRows():
+                try:
+                    item = QStandardItem(tag)
+                    item.setIcon(cancelIcon)
 
-                        item = QStandardItem(tag)
-                        item.setIcon(cancelIcon)
+                    if character is not None:
+                        icon = GetCharIcon(character[0], int(character[1]))
+                        if icon is not None:
+                            item.setIcon(icon)
 
-                        if player.get("mains") and type(player.get("mains")) == dict:
-                            if (
-                                GameAssetManager.instance.selectedGame.get("codename")
-                                in player.get("mains", {}).keys()
-                            ):
-                                playerMains = player.get("mains")[
-                                    GameAssetManager.instance.selectedGame.get("codename")
-                                ]
+                    item.setData(player, Qt.ItemDataRole.UserRole)
 
-                                if playerMains is not None and len(playerMains) > 0:
-                                    # Must be a list of size 2 [character, skin]
-                                    playerMains = [
-                                        main
-                                        for main in playerMains
-                                        if isinstance(main, list)
-                                        and (len(main) == 2)
-                                        or (len(main) == 3)
-                                    ]
-
-                                    # If the skin is invalid, default to 0
-                                    for main in playerMains:
-                                        while len(main) < 3:
-                                            main.append("")
-                                        skin = 0
-                                        try:
-                                            skin = int(main[1])
-                                        except:
-                                            logger.error(
-                                                f"Local DB error: Player {player.get('gamerTag')} has an invalid skin for character {main[0]}"
-                                            )
-                                            logger.error(traceback.format_exc())
-                                        main[1] = skin
-
-                                        # If no variant, set to none
-                                        if len(main) >= 3:
-                                            variant = main[2]
-                                        else:
-                                            variant = ""
-                                        main[2] = variant
-
-                                    if (
-                                        playerMains[0][0]
-                                        in GameAssetManager.instance.characters.keys()
-                                    ):
-                                        character = playerMains[0]
-
-                                        icon = GetCharIcon(character[0], int(character[1]))
-                                        if icon is not None:
-                                            item.setIcon(icon)
-
-                        item.setData(player, Qt.ItemDataRole.UserRole)
-
-                        PlayerDB.model.appendRow(item)
-                    except:
-                        logger.error(
-                            f"Error loading player from local DB: {player.get('gamerTag')}"
-                        )
-                        logger.error(traceback.format_exc())
+                    PlayerDB.model.appendRow(item)
+                except:
+                    logger.error(f"Error loading player from local DB: {player.get('gamerTag')}")
+                    logger.error(traceback.format_exc())
 
             PlayerDB.signals.db_updated.emit()
+
+    @staticmethod
+    def _ModelRows():
+        """What the model shows of each player: (the tag they're saved
+        under, a copy of the player, their first main [character, skin,
+        variant] in the game loaded or None). Taken with PlayerDB.lock held,
+        so the model is built from a copy other threads can't change while
+        it's gone through."""
+        rows = []
+        selectedGame = (GameAssetManager.instance.selectedGame or {}).get("codename")
+        characters = GameAssetManager.instance.characters or {}
+        with PlayerDB.lock:
+            for tag, player in list(PlayerDB.database.items()):
+                if player is None:
+                    continue
+                character = None
+                try:
+                    mains = player.get("mains")
+                    if mains and type(mains) == dict and selectedGame in mains:
+                        playerMains = mains[selectedGame]
+
+                        if playerMains is not None and len(playerMains) > 0:
+                            # Must be a list of size 2 [character, skin]
+                            playerMains = [
+                                main
+                                for main in playerMains
+                                if isinstance(main, list) and (len(main) == 2) or (len(main) == 3)
+                            ]
+
+                            # If the skin is invalid, default to 0
+                            for main in playerMains:
+                                while len(main) < 3:
+                                    main.append("")
+                                skin = 0
+                                try:
+                                    skin = int(main[1])
+                                except:
+                                    logger.error(
+                                        f"Local DB error: Player {player.get('gamerTag')} has an invalid skin for character {main[0]}"
+                                    )
+                                    logger.error(traceback.format_exc())
+                                main[1] = skin
+
+                            if playerMains and playerMains[0][0] in characters:
+                                character = list(playerMains[0])
+                    rows.append((tag, deep_clone(player), character))
+                except:
+                    logger.error(f"Error loading player from local DB: {player.get('gamerTag')}")
+                    logger.error(traceback.format_exc())
+        return rows
 
     # =====================================================
     # SAVING
@@ -475,12 +505,12 @@ class PlayerDB:
     @staticmethod
     def SaveDB():
         try:
-            # One copy of the whole DB, taken in a single call so another
-            # thread changing it can't break the loop below
-            players = deep_clone(list(PlayerDB.database.values()))
-            PlayerDB.WriteDB(
-                {MakeTag(p.get("prefix"), p.get("gamerTag")): p for p in players if p is not None}
-            )
+            # The copy is taken and written under saveLock: two threads
+            # saving at once write in the order they copied, so the one
+            # with the older copy can't delete rows the newer one added
+            with PlayerDB.saveLock:
+                players = PlayerDB.Snapshot().values()
+                PlayerDB.WriteDB({PlayerDB.GetTag(p): p for p in players})
         except Exception:
             logger.error(traceback.format_exc())
 

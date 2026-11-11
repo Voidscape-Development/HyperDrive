@@ -125,6 +125,9 @@ class StartGGReporterSignals(QObject):
     set_reported = Signal(int, str)
     # Scoreboard number, set id: the set was reset on start.gg
     set_reset = Signal(int, str)
+    # Scoreboard number, the request Submit returned, whether start.gg took
+    # it: False once it's given up on (refused, or out of retries)
+    request_finished = Signal(int, object, bool)
 
 
 class StartGGReporter(QObject):
@@ -169,6 +172,8 @@ class StartGGReporter(QObject):
         self._SetStatus(scoreboard, STATUS_IDLE, "", None)
 
     def Submit(self, scoreboard, kind, setId, variables=None):
+        """Queues a request. Returns it (None if it can't be sent), the one
+        signals.request_finished says the outcome of."""
         if not IsReportableSetId(setId):
             self._SetStatus(
                 scoreboard,
@@ -178,7 +183,7 @@ class StartGGReporter(QObject):
                 ),
                 setId,
             )
-            return
+            return None
         request = {
             "kind": kind,
             "setId": str(setId),
@@ -194,6 +199,7 @@ class StartGGReporter(QObject):
         if scoreboard not in self.sending:
             self._SetStatus(scoreboard, STATUS_PENDING, "", setId)
             self._Next(scoreboard)
+        return request
 
     def _Next(self, scoreboard):
         queue = self.queues.get(scoreboard) or []
@@ -246,6 +252,7 @@ class StartGGReporter(QObject):
                 self.signals.set_reset.emit(scoreboard, request["setId"])
             else:
                 self._SetStatus(scoreboard, STATUS_SYNCED, "", request["setId"])
+            self.signals.request_finished.emit(scoreboard, request, True)
             self._Next(scoreboard)
             return
 
@@ -267,6 +274,7 @@ class StartGGReporter(QObject):
         # Given up: what's left can't go through without it
         if queue and queue[0] is request:
             queue.pop(0)
+        self.signals.request_finished.emit(scoreboard, request, False)
         if request["kind"] == KIND_START:
             # Not worth stopping the rest for
             self._SetStatus(scoreboard, STATUS_ERROR, message, request["setId"])
@@ -280,7 +288,10 @@ class StartGGReporter(QObject):
         """Sends again what failed last (given by the caller, as the games
         may have changed since)."""
         if request is not None:
-            self.Submit(scoreboard, request["kind"], request["setId"], request.get("variables"))
+            return self.Submit(
+                scoreboard, request["kind"], request["setId"], request.get("variables")
+            )
+        return None
 
     # =====================================================
     # OTHER ACTIONS

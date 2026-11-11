@@ -1,3 +1,4 @@
+import contextlib
 import random
 from urllib.parse import quote as urlencode
 
@@ -46,7 +47,16 @@ class TournamentDataProvider(QObject):
     The results' shapes are in ResultTypes.py. Methods taking
     progress_callback and cancel_event run in a Worker thread, which passes
     them. Methods taking a callback emit their result to it (callback.emit)
-    instead of returning it."""
+    instead of returning it.
+
+    Making a provider asks nothing of the network: Connect does, off the GUI
+    thread, before anything else is asked of it.
+
+    A method that can't get its answer (the network, the API key, an event
+    that isn't there) raises a ProviderError (ProviderErrors.py) when it's
+    called inside RaiseProviderErrors, as TournamentDataManager.Run does:
+    something empty then always means the provider said there's nothing.
+    Called directly, it logs the error and returns something empty."""
 
     # =====================================================
     # WHAT THE PROVIDER IS
@@ -86,6 +96,9 @@ class TournamentDataProvider(QObject):
     # MainsKey, IsMainsCached and FetchMains, for the manager to fetch
     # players' mains in the background (PlayerMains.py)
     SUPPORTS_MAINS_PREFETCH = False
+    # Its background requests (BackgroundRequests) are spaced out by the
+    # provider itself, so PlayerMains doesn't wait between them
+    PACES_BACKGROUND_REQUESTS = False
 
     def __init__(self, url, threadpool, dataManager, api_key=None, context=None) -> None:
         super().__init__(None)
@@ -107,6 +120,21 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # TOURNAMENT
     # =====================================================
+    def Connect(self, progress_callback=None, cancel_event=None) -> str:
+        """What the provider has to ask before it can be used: the event's
+        real link (from a short or admin link), its ids... Returns the
+        event's URL to keep, also in self.url. Called once, off the GUI
+        thread. Raises a ProviderError when the event can't be loaded: the
+        API key was refused, the event wasn't found, or the provider
+        couldn't be reached (which can be tried again)."""
+        return self.GetRealEventURL(self.url)
+
+    def BackgroundRequests(self):
+        """with provider.BackgroundRequests(): the requests made inside
+        aren't ones the user is waiting for (mains fetched ahead of time),
+        and leave room for those that are"""
+        return contextlib.nullcontext()
+
     def GetRealEventURL(self, url) -> str:
         """The event's URL to keep, from the one given (which may be a short
         or admin link)"""
@@ -188,7 +216,8 @@ class TournamentDataProvider(QObject):
         # ignore station["slot"] entirely.
         pass
 
-    def GetStationMatchId(self, stationId):
+    def GetStationMatchId(self, stationId) -> dict | None:
+        """The first of GetStationMatchsId, None if the station has no set"""
         pass
 
     def GetStationMatchsId(self, stationId) -> list[dict]:
@@ -258,24 +287,31 @@ class TournamentDataProvider(QObject):
     # SET HISTORY
     # =====================================================
     def GetRecentSets(
-        self, id1, id2, videogame, callback, requestTime, progress_callback, cancel_event
+        self,
+        id1,
+        id2,
+        videogame,
+        callback,
+        requestTime,
+        progress_callback=None,
+        cancel_event=None,
     ) -> None:
         """Emits the sets the two players (ids as in Player.id) played
         against each other: a RecentSets"""
         pass
 
     def GetLastSets(
-        self, playerID, playerNumber, callback, progress_callback, cancel_event
+        self, playerID, playerNumber, callback, progress_callback=None, cancel_event=None
     ) -> None:
         """Emits the player's last sets in the event: a LastSets"""
         pass
 
-    def GetCompletedSets(self, progress_callback, cancel_event) -> list[CompletedSet]:
+    def GetCompletedSets(self, progress_callback=None, cancel_event=None) -> list[CompletedSet]:
         """The event's last completed sets, most recent first"""
         pass
 
     def GetPlayerHistoryStandings(
-        self, playerID, playerNumber, gameType, callback, progress_callback, cancel_event
+        self, playerID, playerNumber, gameType, callback, progress_callback=None, cancel_event=None
     ) -> None:
         """Emits the player's placements in past events: a HistorySets"""
         pass
@@ -323,6 +359,8 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # STANDINGS
     # =====================================================
-    def GetStandings(self, playerNumber, progress_callback, cancel_event) -> list[Standing]:
+    def GetStandings(
+        self, playerNumber, progress_callback=None, cancel_event=None
+    ) -> list[Standing]:
         """The event's top playerNumber, in placement order"""
         pass
