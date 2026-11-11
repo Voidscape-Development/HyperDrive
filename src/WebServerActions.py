@@ -18,7 +18,6 @@ from .PlayerDB import PlayerDB
 from .ScoreboardWidget import ScoreboardWidget
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .StatsUtil import StatsUtil
 from .TeamBattleWidget import TeamBattleWidget
 from .TournamentDataManager import TournamentDataManager
 from .TournamentDataProvider.TournamentEventLookup import (
@@ -736,11 +735,11 @@ class WebServerActions(QThread):
     # PLAYER STATS
     # =====================================================
     def stats_recent_sets(self, scoreboard):
-        StatsUtil.instance.signals.RecentSetsSignal.emit()
+        self._get_scoreboard(scoreboard).stats.signals.RecentSetsSignal.emit()
         return "OK"
 
     def stats_upset_factor(self, scoreboard):
-        StatsUtil.instance.signals.UpsetFactorCalculation.emit()
+        self._get_scoreboard(scoreboard).stats.signals.UpsetFactorCalculation.emit()
         return "OK"
 
     def stats_last_sets(self, scoreboard, player):
@@ -1048,7 +1047,8 @@ class WebServerActions(QThread):
         index = int(index) - 1
         if index < 0:
             return "ERROR : index can't be lower than 1"
-        result = self.commentaryWidget.LoadCommFromTagSignal.emit(index, tag, no_mains)
+        self.commentaryWidget.LoadCommFromTagSignal.emit(index, tag, no_mains)
+        return "OK"
 
     # =====================================================
     # TOURNAMENT

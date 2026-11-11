@@ -626,7 +626,7 @@ class WebServer(QThread):
     def ws_team_color(message=None):
         info = load_message(message)
         WebServer.ws_emit(
-            "team_scoredown",
+            "team_color",
             WebServer.actions.team_color(
                 info.get("scoreboardNumber", "1"), info.get("team"), "#" + info.get("color")
             ),
@@ -741,7 +741,7 @@ class WebServer(QThread):
         return await call(
             WebServer.actions.set_route,
             scoreboardNumber,
-            bestOf=args.get("best-of"),
+            bestOf=args.get("best-of", args.get("best_of")),
             phase=args.get("phase"),
             match=args.get("match"),
             players=args.get("players"),
@@ -757,7 +757,7 @@ class WebServer(QThread):
             "set",
             WebServer.actions.set_route(
                 parsed.get("scoreboardNumber", "1"),
-                bestOf=parsed.get("best_of"),
+                bestOf=parsed.get("best_of", parsed.get("best-of")),
                 phase=parsed.get("phase"),
                 match=parsed.get("match"),
                 players=parsed.get("players"),
@@ -825,7 +825,10 @@ class WebServer(QThread):
 
     @on("current_game")
     def ws_get_current_game(message=None):
-        WebServer.ws_emit("get_current_game", WebServer.actions.get_current_game())
+        game = WebServer.actions.get_current_game()
+        WebServer.ws_emit("current_game", game)
+        # It used to be answered with this event only
+        WebServer.ws_emit("get_current_game", game)
 
     # Get match and phase names
     @api.get("/match-names")
@@ -916,9 +919,7 @@ class WebServer(QThread):
         info = load_message(message)
         WebServer.ws_emit(
             "stats_recent_sets",
-            WebServer.actions.stats_recent_sets(
-                info.get("scoreboardNumber", "1"), info.get("player")
-            ),
+            WebServer.actions.stats_recent_sets(info.get("scoreboardNumber", "1")),
         )
 
     # Resubmits Call for Upset Factor
@@ -931,9 +932,7 @@ class WebServer(QThread):
         info = load_message(message)
         WebServer.ws_emit(
             "stats_upset_factor",
-            WebServer.actions.stats_upset_factor(
-                info.get("scoreboardNumber", "1"), info.get("player")
-            ),
+            WebServer.actions.stats_upset_factor(info.get("scoreboardNumber", "1")),
         )
 
     # Resubmits Call for Last Sets
