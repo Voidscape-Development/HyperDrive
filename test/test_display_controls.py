@@ -146,7 +146,7 @@ def TestActions():
 
     # Runs the actions here instead of on the GUI thread
     class Executor:
-        def run_sync(self, fn, timeout=None):
+        def run_sync(self, fn):
             return fn()
 
     QtHelper.gui_executor = Executor()

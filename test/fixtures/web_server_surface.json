@@ -138,12 +138,34 @@
     "POST /dashboard-api/tournament/repull",
     "POST /dashboard-api/tournament/unload",
     "POST /dashboard-api/unlock",
+    "POST /display/all/{action}",
+    "POST /display/{kind}/{name}/{action}",
+    "POST /load-commentator-from-tag-{caster}",
     "POST /reporting-api/submissions",
     "POST /reporting-api/unlock",
     "POST /score",
+    "POST /scoreboard{scoreboardNumber:seg}-clear-all",
+    "POST /scoreboard{scoreboardNumber:seg}-load-player-from-tag-{team:seg}-{player:seg}",
+    "POST /scoreboard{scoreboardNumber:seg}-load-set",
+    "POST /scoreboard{scoreboardNumber:seg}-open-set",
+    "POST /scoreboard{scoreboardNumber:seg}-pull-stream",
+    "POST /scoreboard{scoreboardNumber:seg}-reset-match",
+    "POST /scoreboard{scoreboardNumber:seg}-reset-players",
+    "POST /scoreboard{scoreboardNumber:seg}-reset-scores",
+    "POST /scoreboard{scoreboardNumber:seg}-set",
     "POST /scoreboard{scoreboardNumber:seg}-set-current-stage",
+    "POST /scoreboard{scoreboardNumber:seg}-stats-history-sets-{player}",
+    "POST /scoreboard{scoreboardNumber:seg}-stats-last-sets-{player}",
+    "POST /scoreboard{scoreboardNumber:seg}-stats-recent-sets",
+    "POST /scoreboard{scoreboardNumber:seg}-stats-refresh",
+    "POST /scoreboard{scoreboardNumber:seg}-stats-upset-factor",
+    "POST /scoreboard{scoreboardNumber:seg}-swap-teams",
+    "POST /scoreboard{scoreboardNumber:seg}-team{team:seg}-color-{color:seg}",
     "POST /scoreboard{scoreboardNumber:seg}-team{team:seg}-info",
+    "POST /scoreboard{scoreboardNumber:seg}-team{team:seg}-scoredown",
+    "POST /scoreboard{scoreboardNumber:seg}-team{team:seg}-scoreup",
     "POST /scoreboard{scoreboardNumber:seg}-update-team-{team:seg}-{player:seg}",
+    "POST /set-tournament",
     "POST /stage_strike_confirm_clicked",
     "POST /stage_strike_match_win",
     "POST /stage_strike_redo",
@@ -153,6 +175,16 @@
     "POST /stage_strike_set_gentlemans",
     "POST /stage_strike_stage_clicked",
     "POST /stage_strike_undo",
+    "POST /stream-queue/load-next",
+    "POST /stream-queue/refresh",
+    "POST /team-battle-reset",
+    "POST /team-battle-reset-stocks",
+    "POST /team-battle-team{team:seg}-next-player",
+    "POST /team-battle-team{team:seg}-player{player:seg}-active",
+    "POST /team-battle-team{team:seg}-scoredown",
+    "POST /team-battle-team{team:seg}-scoreup",
+    "POST /update-bracket",
+    "POST /update-bracket-sets",
     "POST /update-commentary-{caster}",
     "POST /update-game",
     "POST /{filename:path}"
@@ -223,5 +255,184 @@
     "update_game",
     "update_team",
     "variants"
-  ]
+  ],
+  "replies": {
+    "ruleset": [
+      "ruleset"
+    ],
+    "stage_strike_stage_clicked": [
+      "stage_strike_stage_clicked"
+    ],
+    "stage_strike_confirm_clicked": [
+      "stage_strike_confirm_clicked"
+    ],
+    "stage_strike_report_characters": [
+      "stage_strike_report_characters"
+    ],
+    "stage_strike_rps_win": [
+      "stage_strike_rps_win"
+    ],
+    "stage_strike_match_win": [
+      "stage_strike_match_win"
+    ],
+    "stage_strike_set_gentlemans": [
+      "stage_strike_set_gentlemans"
+    ],
+    "stage_strike_undo": [
+      "stage_strike_undo"
+    ],
+    "stage_strike_redo": [
+      "stage_strike_redo"
+    ],
+    "stage_strike_reset": [
+      "stage_strike_reset"
+    ],
+    "score": [
+      "score"
+    ],
+    "team_scoreup": [
+      "team_scoreup"
+    ],
+    "team_scoredown": [
+      "team_scoredown"
+    ],
+    "team_color": [
+      "team_color"
+    ],
+    "team_info": [
+      "team_info"
+    ],
+    "team_battle_scoreup": [
+      "team_battle_scoreup"
+    ],
+    "team_battle_scoredown": [
+      "team_battle_scoredown"
+    ],
+    "team_battle_next_player": [
+      "team_battle_next_player"
+    ],
+    "team_battle_set_active": [
+      "team_battle_set_active"
+    ],
+    "team_battle_reset_stocks": [
+      "team_battle_reset_stocks"
+    ],
+    "team_battle_reset": [
+      "team_battle_reset"
+    ],
+    "set": [
+      "set"
+    ],
+    "update_team": [
+      "update_team"
+    ],
+    "update_commentary": [
+      "update_commentary"
+    ],
+    "update_game": [
+      "update_game"
+    ],
+    "games": [
+      "games"
+    ],
+    "current_game": [
+      "current_game",
+      "get_current_game"
+    ],
+    "match_names": [
+      "match_names"
+    ],
+    "characters": [
+      "characters"
+    ],
+    "variants": [
+      "variants"
+    ],
+    "swap_teams": [
+      "swap_teams"
+    ],
+    "get_swap": [
+      "get_swap"
+    ],
+    "open_set": [
+      "open_set"
+    ],
+    "pull_stream": [
+      "pull_stream"
+    ],
+    "stats_recent_sets": [
+      "stats_recent_sets"
+    ],
+    "stats_upset_factor": [
+      "stats_upset_factor"
+    ],
+    "stats_last_sets": [
+      "stats_last_sets"
+    ],
+    "stats_history_sets": [
+      "stats_history_sets"
+    ],
+    "reset_scores": [
+      "reset_scores"
+    ],
+    "reset_match": [
+      "reset_match"
+    ],
+    "reset_players": [
+      "reset_players"
+    ],
+    "clear_all": [
+      "clear_all"
+    ],
+    "get_sets": [
+      "get_sets"
+    ],
+    "get_match": [
+      "get_match"
+    ],
+    "get_comms": [
+      "get_comms"
+    ],
+    "load_set": [
+      "load_set"
+    ],
+    "get_set": [
+      "get_set"
+    ],
+    "playerdb": [
+      "playerdb"
+    ],
+    "update_bracket": [
+      "update_bracket"
+    ],
+    "update_bracket_sets": [
+      "update_bracket_sets"
+    ],
+    "bracket_focus": [
+      "bracket_focus"
+    ],
+    "bracket_focus_set": [
+      "bracket_focus"
+    ],
+    "display_state": [
+      "display_state"
+    ],
+    "display_register": [],
+    "load_player_from_tag": [
+      "load_player_from_tag"
+    ],
+    "load_commentator_from_tag": [
+      "load_commentator_from_tag"
+    ],
+    "set_tournament": [
+      "set_tournament"
+    ],
+    "get_tournament_events": [
+      "get_tournament_events"
+    ],
+    "states": [],
+    "set_current_stage": [
+      "set_current_stage"
+    ]
+  }
 }

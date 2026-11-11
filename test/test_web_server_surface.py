@@ -1,7 +1,8 @@
 # Checks that the web server still has every HTTP route and socket.io event
 # that clients use (the layouts, the web pages, the Stream Deck plugin and
 # other tools): test/fixtures/web_server_surface.json lists them, and none may
-# go missing. New ones are fine; add them to the list with
+# go missing. It also lists the events each event is answered with, which
+# test_web_actions.py checks. New ones are fine; add them to the list with
 #   python test/test_web_server_surface.py --update
 # Run from the repository root: python test/test_web_server_surface.py
 import json
@@ -19,6 +20,7 @@ from qtpy.QtWidgets import QApplication
 
 app = QApplication.instance() or QApplication([])
 
+from src.WebActionRegistry import ACTIONS
 from src.WebServer import WebServer, api, sio
 
 FIXTURE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
@@ -70,7 +72,8 @@ def TestNothingLost():
 if __name__ == "__main__":
     if "--update" in sys.argv:
         with open(FIXTURE, "w", encoding="utf-8") as f:
-            json.dump({"routes": Routes(), "events": Events()}, f, indent=2)
+            replies = {a.socket: list(a.replies) for a in ACTIONS if a.socket}
+            json.dump({"routes": Routes(), "events": Events(), "replies": replies}, f, indent=2)
             f.write("\n")
         print(f"Wrote {FIXTURE}")
     else:

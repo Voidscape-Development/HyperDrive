@@ -118,32 +118,24 @@ def gui_thread_async(fn):
     return wrapper
 
 
-def gui_thread_sync(fn=None, *, timeout=None):
+def gui_thread_sync(fn):
     """
     Helper decorator that automatically dispatches the target function to the gui thread. Note that this
     function will block the calling thread until enough GUI cycles have completed to process the dispatched event.
     This is useful if it is desirable for changes to propagate before progressing, but it is slower than the async
     fire-and-forget version of this method.
-
-    Used as `@gui_thread_sync` it waits for as long as it takes. With `@gui_thread_sync(timeout=seconds)` it
-    raises TimeoutError when the gui thread hasn't run the function by then (see `GuiExecutor.run_sync`).
     """
 
-    def decorator(fn):
-        @functools.wraps(fn)
-        def wrapper(*args, **kwargs):
-            if gui_executor is None:
-                raise ValueError(
-                    "Can't marshal action to gui thread if the gui executor has not been initialized."
-                )
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        if gui_executor is None:
+            raise ValueError(
+                "Can't marshal action to gui thread if the gui executor has not been initialized."
+            )
 
-            if timeout is None:
-                return gui_executor.run_sync(lambda: fn(*args, **kwargs))
-            return gui_executor.run_sync(lambda: fn(*args, **kwargs), timeout=timeout)
+        return gui_executor.run_sync(lambda: fn(*args, **kwargs))
 
-        return wrapper
-
-    return decorator if fn is None else decorator(fn)
+    return wrapper
 
 
 # =====================================================

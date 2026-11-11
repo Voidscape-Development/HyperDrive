@@ -1,9 +1,9 @@
 import asyncio
-import html
 import json
 import logging
 import mimetypes
 import os
+import re
 import socket
 import threading
 import traceback
@@ -30,7 +30,17 @@ from .PlayerDBModels import GetEngine, Player
 from .ScoreboardManager import ScoreboardManager
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .WebServerActions import ScoreboardNotAvailable, ScoreboardNotFound, WebServerActions
+from .WebActionRegistry import (
+    ACTIONS,
+    ACTIONS_BY_NAME,
+    Action,
+    Route,
+    Source,
+    parse_message,
+    run_action,
+    socket_source,
+)
+from .WebServerActions import ActionError, WebServerActions
 from .Wiki import HOME_PAGE, WebPage, WebSearchPage
 
 log = logging.getLogger("socketio.server")
@@ -95,26 +105,6 @@ def respond(result):
     )
 
 
-async def call(fn, *args, **kwargs):
-    """Runs an action in a worker thread (they wait on the GUI thread) and
-    returns its response."""
-    return respond(await run_in_threadpool(fn, *args, **kwargs))
-
-
-def parse_message(message):
-    if isinstance(message, (str, bytes)):
-        try:
-            message = orjson.loads(message) if message else {}
-        except orjson.JSONDecodeError:
-            return {}
-    return message if isinstance(message, dict) else {}
-
-
-def load_message(message):
-    """Socket messages are JSON strings, or already decoded by the client."""
-    return orjson.loads(message) if isinstance(message, (str, bytes)) else message
-
-
 api = FastAPI(title="HyperDrive", docs_url="/api/docs", redoc_url=None)
 api.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
@@ -129,7 +119,8 @@ sio = socketio.AsyncServer(
     # logger=True,
 )
 
-# The socket.io client of the socket event being handled in this thread
+# The socket.io client whose event a handler made with on() is handling in
+# this thread
 _client = threading.local()
 
 # Clients that asked for part of the program state, when connecting with
@@ -181,8 +172,9 @@ def filter_update(message, keys):
 
 
 def on(event):
-    """Registers a socket event handler. Handlers run in a worker thread,
-    where WebServer.ws_emit answers the client that sent the event."""
+    """Registers a socket event handler written by hand (the actions' are
+    made from WebActionRegistry, see below). Handlers run in a worker thread,
+    where ws_emit answers the client that sent the event."""
 
     def decorator(fn):
         def run(sid, message):
@@ -212,22 +204,11 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-@api.exception_handler(ScoreboardNotAvailable)
-async def handle_scoreboard_not_available(request: Request, e: ScoreboardNotAvailable):
-    return HTMLResponse(str(e), status_code=503)
-
-
-@api.exception_handler(ScoreboardNotFound)
-async def handle_scoreboard_not_found(request: Request, e: ScoreboardNotFound):
-    return HTMLResponse(str(e), status_code=404)
-
-
-# The GUI thread didn't get to a request's action in time (see
-# WebServerActions.GUI_TIMEOUT)
-@api.exception_handler(TimeoutError)
-async def handle_gui_timeout(request: Request, e: TimeoutError):
-    logger.error(f"[HTTP] {request.url.path}: {e}")
-    return HTMLResponse("GUI_BUSY", status_code=503)
+# A parameter that isn't valid (400), a scoreboard that doesn't exist (404),
+# or the GUI thread not getting to the action in time (503)
+@api.exception_handler(ActionError)
+async def handle_action_error(request: Request, e: ActionError):
+    return HTMLResponse(str(e), status_code=e.status)
 
 
 class PlayerAdmin(ModelView, model=Player):
@@ -258,19 +239,385 @@ class PlayerAdmin(ModelView, model=Player):
         await run_in_threadpool(PlayerDB.ReloadDB)
 
 
+# =====================================================
+# SOCKET MESSAGES AND PROGRAM STATE
+# =====================================================
+def ws_emit(event, *args, **kwargs):
+    """Sends a socket event. In a socket event handler it answers the
+    client that sent the event, anywhere else it goes to every client.
+    Returns a concurrent.futures.Future, or None if the server isn't
+    running."""
+    loop = WebServer.loop
+    if loop is None or loop.is_closed():
+        return None
+    sid = getattr(_client, "sid", None)
+    data = args[0] if args else None
+    return asyncio.run_coroutine_threadsafe(sio.emit(event, data, to=sid), loop)
+
+
+@api.get("/program-state")
+async def program_state():
+    return Response(await run_in_threadpool(encode_program_state), media_type="application/json")
+
+
+# The layout pages and their previews, e.g. for the OBS plugin's layout
+# source (see src/LayoutList.py)
+@api.get("/layouts")
+async def layouts():
+    return await run_in_threadpool(ListLayouts)
+
+
+def ws_emit_state(event, message, filter):
+    """Sends a state message: whole to the clients that subscribed to
+    nothing, and filter(message, keys) to each set of keys subscribed to.
+    In a socket event handler it answers that client alone."""
+    loop = WebServer.loop
+    if loop is None or loop.is_closed():
+        return None
+    sid = getattr(_client, "sid", None)
+
+    async def send():
+        if sid is not None:
+            keys = _subscriptions.get(sid)
+            await sio.emit(event, message if keys is None else filter(message, keys), to=sid)
+            return
+        await sio.emit(event, message, skip_sid=list(_subscriptions))
+        for keys in set(_subscriptions.values()):
+            await sio.emit(event, filter(message, keys), room=keys_room(keys))
+
+    return asyncio.run_coroutine_threadsafe(send(), loop)
+
+
+@on("program-state-update")
+def ws_program_state_update(message=None):
+    # Manual trigger to push full state to all clients
+    ws_program_state()
+
+
+def on_program_state_update(changes):
+    if len(changes) > 0:
+        future = ws_emit_state("program_state_update", changes, filter_update)
+        if future is not None:
+            future.add_done_callback(_check_state_update_sent)
+
+
+def _check_state_update_sent(future):
+    if isinstance(future.exception(), (TypeError, ValueError)):
+        logger.warning("Unserializable program state update")
+
+        # If we can't emit a diff, fall back to emitting the whole program
+        # state. Well-behaved listeners should discard their existing state
+        # and re-sync with us that way.
+        ws_program_state()
+
+
+@sio.on("connect")
+async def ws_connect(sid, environ, auth=None):
+    # Subscribed first, so updates meanwhile are filtered too
+    keys = state_keys(auth)
+    if keys is not None:
+        _subscriptions[sid] = keys
+        await sio.enter_room(sid, keys_room(keys))
+    message = await run_in_threadpool(program_state_message)
+    await sio.emit(
+        "program_state", message if keys is None else filter_state(message, keys), to=sid
+    )
+
+
+@sio.on("disconnect")
+async def ws_disconnect(sid, *args):
+    _subscriptions.pop(sid, None)
+
+
+# Also connected to signals of the program, to send the state to every client
+@on("program_state")
+def ws_program_state(message=None):
+    ws_emit_state("program_state", program_state_message(), filter_state)
+
+
+# =====================================================
+# ACTIONS
+# =====================================================
+# Every action in WebActionRegistry gets its HTTP routes and its socket.io
+# event from here. Both read the action's parameters into a Source and hand
+# it to run_action, in a worker thread.
+def action_endpoint(action: Action):
+    async def endpoint(request: Request):
+        body = parse_message(await request.body()) if request.method == "POST" else {}
+        source = Source(request.path_params, request.query_params, body)
+        return respond(await run_in_threadpool(run_action, WebServer.actions, action, source))
+
+    return endpoint
+
+
+def action_docs(action: Action, route: Route, method):
+    """The route's parameters for /api/docs, which can't tell them from the
+    endpoint's signature."""
+    inPath = re.findall(r"{(\w+)", route.path)
+    parameters = [
+        {"name": name, "in": "path", "required": True, "schema": {"type": "string"}}
+        for name in inPath
+    ]
+    fields = {}
+    wholeBody = False
+    for param in action.params:
+        if param.path in inPath:
+            continue
+        wholeBody = wholeBody or param.whole
+        if param.query:
+            parameters.append({"name": param.query[0], "in": "query", "schema": {"type": "string"}})
+        if param.body:
+            fields[param.body[0]] = {}
+    docs = {"parameters": parameters}
+    if method == "POST" and (fields or wholeBody):
+        schema = {"type": "object", "properties": fields}
+        docs["requestBody"] = {"content": {"application/json": {"schema": schema}}}
+    return docs
+
+
+def action_handler(action: Action):
+    """The socket.io handler of an action: it's answered with the action's
+    reply events, and through the event's acknowledgement if the client asked
+    for one. When the action can't be done as asked (e.g. there's no such
+    scoreboard), the answer is {"error": <why>, "status": <HTTP status>}."""
+
+    async def handler(sid, message=None, *args):
+        source = socket_source(message)
+        try:
+            result = await run_in_threadpool(run_action, WebServer.actions, action, source)
+        except ActionError as e:
+            logger.warning(f"[Socket] {action.socket}: {e}")
+            result = {"error": str(e), "status": e.status}
+        except Exception:
+            logger.error(traceback.format_exc())
+            return None
+        for event in action.replies:
+            await sio.emit(event, result, to=sid)
+        return result
+
+    return handler
+
+
+for _action in ACTIONS:
+    for _route in _action.http:
+        for _method in _route.methods:
+            api.add_api_route(
+                _route.path,
+                action_endpoint(_action),
+                methods=[_method],
+                name=_action.name,
+                description=_action.doc or None,
+                openapi_extra=action_docs(_action, _route, _method),
+            )
+    if _action.socket:
+        sio.on(_action.socket, action_handler(_action))
+
+
+def broadcast_action(name, message=None):
+    """Runs an action and sends its answer to every client, for the program
+    to tell them about a change (e.g. the characters, once the game changed)."""
+    action = ACTIONS_BY_NAME[name]
+    try:
+        result = run_action(WebServer.actions, action, socket_source(message))
+    except Exception:
+        logger.error(traceback.format_exc())
+        return
+    for event in action.replies:
+        ws_emit(event, result)
+
+
+# Connected to signals of the program (see HyperDrive.py), so they take and
+# ignore whatever the signal sends
+def ws_get_characters(message=None):
+    broadcast_action("get_characters")
+
+
+def ws_playerdb(message=None):
+    broadcast_action("get_playerdb")
+
+
+# {"scoreboardNumber": <n>}: the stage strike page's data of that scoreboard
+def ws_ruleset(message=None):
+    broadcast_action("ruleset", message)
+
+
+# =====================================================
+# ACTIONS WITH THEIR OWN REQUEST FORMAT
+# =====================================================
+# These don't name the action's parameters like the registry does, so
+# they're written by hand: they make the action's Source and run it like
+# the ones above.
+#
+# Display Controls over socket.io: {"folder": <name>} or {"group": <name>}
+# or {"all": true}, with "action": show, hide or toggle (without it, answers
+# whether it's shown)
+@on("display")
+def ws_display(message=None):
+    info = parse_message(message)
+    kind = next((k for k in ("folder", "group", "all") if k in info), None)
+    source = Source({"kind": kind, "name": info.get(kind), "action": info.get("action")}, {}, {})
+    try:
+        result = run_action(WebServer.actions, ACTIONS_BY_NAME["display"], source)
+    except ActionError as e:
+        result = {"error": str(e)}
+    if isinstance(result, tuple):
+        result = {"error": result[0]}
+    ws_emit("display", result)
+
+
+def ws_broadcast_display_state():
+    """Sends display_state to every client when something is shown or hidden."""
+    loop = WebServer.loop
+    if loop is None or loop.is_closed():
+        return
+    from .DisplayControls import DisplayControls
+
+    if DisplayControls.instance is None:
+        return
+    controls = DisplayControls.instance
+    state = {"kind": "all", "shown": controls.AllShown(), **controls.State()}
+    asyncio.run_coroutine_threadsafe(sio.emit("display_state", state), loop)
+
+
+# Bracket focus requests as links, e.g. for a Stream Deck: /bracket-focus/all,
+# /bracket-focus/next-round, /bracket-focus/previous-round,
+# /bracket-focus/winners, /bracket-focus/losers (a side),
+# /bracket-focus/follow?scoreboard=<n>, /bracket-focus/tour?interval=<s>
+# /bracket-focus/player?id=<player slot> and /bracket-focus/phase?phase=<id>
+# (a phase of the bracket widget the channel shows), each with
+# &channel=<name>
+@api.get("/bracket-focus/{action}")
+async def bracket_focus_action(action: str, request: Request):
+    args = request.query_params
+    body = {
+        "all": {"mode": "all"},
+        "next-round": {"move": 1},
+        "previous-round": {"move": -1},
+        "winners": {"mode": "side", "side": "winners"},
+        "losers": {"mode": "side", "side": "losers"},
+        "follow": {"mode": "follow", "scoreboard": args.get("scoreboard", 1)},
+        "tour": {"mode": "tour", "interval": args.get("interval")},
+        "player": {"mode": "player", "player": args.get("id")},
+        "phase": {"phase": args.get("phase", "")},
+    }.get(action)
+    if body is None:
+        return HTMLResponse("Unknown action", status_code=404)
+    source = Source({}, args, body)
+    return respond(
+        await run_in_threadpool(
+            run_action, WebServer.actions, ACTIONS_BY_NAME["bracket_focus_set"], source
+        )
+    )
+
+
+# =====================================================
+# PAGES AND FILES
+# =====================================================
+@api.get("/")
+@api.get("/scoreboard")
+@api.get("/stage-strike-app")
+@api.get("/character-select")
+@api.get("/bracket-focus-app")
+@api.get("/commentary-dashboard")
+async def stage_strike_app():
+    return FileResponse(
+        os.path.join(os.path.abspath("."), "stage_strike_app/build/index.html"),
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+# Browsers ask for it on pages without an icon of their own, and would
+# keep showing TournamentStreamHelper's from the same address otherwise
+@api.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse(
+        os.path.join(os.path.abspath("."), "assets/icons/icon.ico"),
+        media_type="image/x-icon",
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+# The in-app guide (docs/wiki), for a phone or a second screen
+@api.get("/wiki", response_class=HTMLResponse)
+async def wiki_home():
+    content = WebPage(HOME_PAGE)
+    if content is None:
+        return HTMLResponse("The guide wasn't found", status_code=404)
+    return HTMLResponse(content)
+
+
+@api.get("/wiki/search", response_class=HTMLResponse)
+async def wiki_search(q: str = ""):
+    return HTMLResponse(WebSearchPage(q))
+
+
+@api.get("/wiki/{page}", response_class=HTMLResponse)
+async def wiki_page(page: str):
+    content = WebPage(page)
+    if content is None:
+        return HTMLResponse(WebSearchPage(page.replace("-", " ")), status_code=404)
+    return HTMLResponse(content)
+
+
+# Registered last by WebServer.__init__, as it matches every path
+async def file_request(filename: str):
+    filename = filename or "stage_strike_app/build/index.html"
+    # The settings hold API keys and passwords (e.g. the start.gg
+    # token used to report sets), and web reporting's file the addresses
+    # of the devices that reported, so they're never served
+    normalized = os.path.normcase(os.path.normpath(filename)).replace("\\", "/").lstrip("./")
+    if os.path.basename(normalized).startswith(
+        ("settings.json", "web_reporting.json")
+    ) and normalized.startswith("user_data/"):
+        return HTMLResponse("Not allowed", status_code=403)
+
+    root = os.path.abspath(".")
+    path = os.path.abspath(os.path.join(root, filename))
+    try:
+        inside = os.path.commonpath([root, path]) == root
+    except ValueError:  # another drive on Windows
+        inside = False
+    if not inside or not os.path.isfile(path):
+        logger.error(f"File not found: {filename}")
+        return HTMLResponse("File not found", status_code=404)
+
+    mimetype = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+    if filename.endswith(".js"):
+        mimetype = "text/javascript"
+    if filename.lower().endswith(".png"):
+        mimetype = "image/apng"
+    if filename.lower().endswith(".svg"):
+        mimetype = "image/svg+xml"
+
+    ext = filename.rsplit(".", 1)[-1].lower()
+    if ext in ("html", "js", "css", "json"):
+        cache = "no-cache, max-age=0"
+    else:
+        cache = "public, max-age=86400"
+
+    return FileResponse(
+        path,
+        media_type=mimetype,
+        headers={"Cache-Control": cache},
+        filename=os.path.basename(path) if filename.endswith(".gz") else None,
+    )
+
+
 class WebServer(QThread):
     api = api
     sio = sio
     app = socketio.ASGIApp(sio, other_asgi_app=api)
-    actions = None
+    actions: WebServerActions | None = None
     # The server's event loop, set while it runs
     loop: asyncio.AbstractEventLoop | None = None
     routesAdded = False
 
-    # Stage striking is per scoreboard. HTTP requests pick it with
-    # ?scoreboard=<n> or a "scoreboardNumber" field in their JSON body, and
-    # socket messages with a "scoreboardNumber" field. Both default to 1.
-    parse_message = staticmethod(parse_message)
+    # For the program to send to every client (see HyperDrive.py)
+    ws_program_state = staticmethod(ws_program_state)
+    ws_get_characters = staticmethod(ws_get_characters)
+    ws_playerdb = staticmethod(ws_playerdb)
+    ws_ruleset = staticmethod(ws_ruleset)
+    ws_broadcast_display_state = staticmethod(ws_broadcast_display_state)
 
     def __init__(
         self, parent=None, stageWidget=None, commentaryWidget: CommentaryWidget = None
@@ -283,8 +630,8 @@ class WebServer(QThread):
             commentaryWidget=commentaryWidget,
         )
 
-        StateManager.signals.state_updated.connect(WebServer.on_program_state_update)
-        StateManager.signals.state_big_change.connect(WebServer.ws_program_state)
+        StateManager.signals.state_updated.connect(on_program_state_update)
+        StateManager.signals.state_big_change.connect(ws_program_state)
 
         self.host_name = "0.0.0.0"
         self.port = SettingsManager.Get("general.webserver_port", 5500)
@@ -309,1211 +656,7 @@ class WebServer(QThread):
             )
             # The web dashboard's API and pages
             WebDashboard.Setup(api, parent)
-            api.add_api_route("/{filename:path}", WebServer.file_request, methods=["GET", "POST"])
-
-    # =====================================================
-    # SOCKET MESSAGES AND PROGRAM STATE
-    # =====================================================
-    # Don't override the QObject emit() method
-    def ws_emit(event, *args, **kwargs):
-        """Sends a socket event. In a socket event handler it answers the
-        client that sent the event, anywhere else it goes to every client.
-        Returns a concurrent.futures.Future, or None if the server isn't
-        running."""
-        loop = WebServer.loop
-        if loop is None or loop.is_closed():
-            return None
-        sid = getattr(_client, "sid", None)
-        data = args[0] if args else None
-        return asyncio.run_coroutine_threadsafe(sio.emit(event, data, to=sid), loop)
-
-    @api.get("/program-state")
-    async def program_state():
-        return Response(
-            await run_in_threadpool(encode_program_state), media_type="application/json"
-        )
-
-    # The layout pages and their previews, e.g. for the OBS plugin's layout
-    # source (see src/LayoutList.py)
-    @api.get("/layouts")
-    async def layouts():
-        return await run_in_threadpool(ListLayouts)
-
-    def ws_emit_state(event, message, filter):
-        """Sends a state message: whole to the clients that subscribed to
-        nothing, and filter(message, keys) to each set of keys subscribed to.
-        In a socket event handler it answers that client alone."""
-        loop = WebServer.loop
-        if loop is None or loop.is_closed():
-            return None
-        sid = getattr(_client, "sid", None)
-
-        async def send():
-            if sid is not None:
-                keys = _subscriptions.get(sid)
-                await sio.emit(event, message if keys is None else filter(message, keys), to=sid)
-                return
-            await sio.emit(event, message, skip_sid=list(_subscriptions))
-            for keys in set(_subscriptions.values()):
-                await sio.emit(event, filter(message, keys), room=keys_room(keys))
-
-        return asyncio.run_coroutine_threadsafe(send(), loop)
-
-    @on("program-state-update")
-    def ws_program_state_update(message=None):
-        # Manual trigger to push full state to all clients
-        WebServer.ws_program_state()
-
-    def on_program_state_update(changes):
-        if len(changes) > 0:
-            future = WebServer.ws_emit_state("program_state_update", changes, filter_update)
-            if future is not None:
-                future.add_done_callback(WebServer._check_state_update_sent)
-
-    def _check_state_update_sent(future):
-        if isinstance(future.exception(), (TypeError, ValueError)):
-            logger.warning("Unserializable program state update")
-
-            # If we can't emit a diff, fall back to emitting the whole program
-            # state. Well-behaved listeners should discard their existing state
-            # and re-sync with us that way.
-            WebServer.ws_program_state()
-
-    @sio.on("connect")
-    async def ws_connect(sid, environ, auth=None):
-        # Subscribed first, so updates meanwhile are filtered too
-        keys = state_keys(auth)
-        if keys is not None:
-            _subscriptions[sid] = keys
-            await sio.enter_room(sid, keys_room(keys))
-        message = await run_in_threadpool(program_state_message)
-        await sio.emit(
-            "program_state", message if keys is None else filter_state(message, keys), to=sid
-        )
-
-    @sio.on("disconnect")
-    async def ws_disconnect(sid, *args):
-        _subscriptions.pop(sid, None)
-
-    @on("program_state")
-    def ws_program_state(message=None):
-        WebServer.ws_emit_state("program_state", program_state_message(), filter_state)
-
-    # =====================================================
-    # REQUEST HELPERS
-    # =====================================================
-    def request_scoreboard(request: Request, body=None):
-        if request.query_params.get("scoreboard"):
-            return request.query_params.get("scoreboard")
-        return (body or {}).get("scoreboardNumber", 1)
-
-    async def request_body(request: Request):
-        return parse_message(await request.body())
-
-    # Pages for one team (?team=<1|2>) may only strike on their turn, undo
-    # their own actions, and need the other team to confirm a game's winner
-    def request_team(request: Request, body=None):
-        return request.query_params.get("team") or (body or {}).get("team")
-
-    # =====================================================
-    # STAGE STRIKING
-    # =====================================================
-    @api.get("/ruleset")
-    async def ruleset(request: Request):
-        return await call(WebServer.actions.ruleset, WebServer.request_scoreboard(request))
-
-    # The "ruleset" event carries the scoreboard it is for in "scoreboard"
-    @on("ruleset")
-    def ws_ruleset(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit("ruleset", WebServer.actions.ruleset(info.get("scoreboardNumber", 1)))
-
-    @api.post("/stage_strike_stage_clicked")
-    async def stage_clicked(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.stage_clicked,
-            body,
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_stage_clicked")
-    def ws_stage_clicked(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_stage_clicked",
-            WebServer.actions.stage_clicked(
-                info, info.get("scoreboardNumber", 1), info.get("team")
-            ),
-        )
-
-    @api.post("/stage_strike_confirm_clicked")
-    async def confirm_clicked(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.confirm_clicked,
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_confirm_clicked")
-    def ws_confirm_clicked(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_confirm_clicked",
-            WebServer.actions.confirm_clicked(info.get("scoreboardNumber", 1), info.get("team")),
-        )
-
-    # Characters picked for the next game:
-    # {"characters": {team: {player: [[character, skin], ...]}}}
-    @api.post("/stage_strike_report_characters")
-    async def report_characters(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.report_characters,
-            body,
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_report_characters")
-    def ws_report_characters(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_report_characters",
-            WebServer.actions.report_characters(
-                info, info.get("scoreboardNumber", 1), info.get("team")
-            ),
-        )
-
-    # The character select page's picks: like the above, but each team picks
-    # once per score (409 ALREADY_PICKED until the score changes)
-    @api.post("/character_select_report")
-    async def character_select_report(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.character_select_report,
-            body,
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @api.post("/stage_strike_rps_win")
-    async def rps_win(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.rps_win,
-            body.get("winner"),
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_rps_win")
-    def ws_rps_win(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_rps_win",
-            WebServer.actions.rps_win(
-                info.get("winner"), info.get("scoreboardNumber", 1), info.get("team")
-            ),
-        )
-
-    @api.post("/stage_strike_match_win")
-    async def match_win(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.match_win,
-            body.get("winner"),
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_match_win")
-    def ws_match_win(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_match_win",
-            WebServer.actions.match_win(
-                info.get("winner"), info.get("scoreboardNumber", 1), info.get("team")
-            ),
-        )
-
-    @api.post("/stage_strike_set_gentlemans")
-    async def set_gentlemans(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.set_gentlemans,
-            body.get("value"),
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_set_gentlemans")
-    def ws_set_gentlemans(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_set_gentlemans",
-            WebServer.actions.set_gentlemans(
-                info.get("value"), info.get("scoreboardNumber", 1), info.get("team")
-            ),
-        )
-
-    @api.post("/stage_strike_undo")
-    async def stage_strike_undo(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.stage_strike_undo,
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_undo")
-    def ws_stage_strike_undo(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_undo",
-            WebServer.actions.stage_strike_undo(info.get("scoreboardNumber", 1), info.get("team")),
-        )
-
-    @api.post("/stage_strike_redo")
-    async def stage_strike_redo(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.stage_strike_redo,
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_redo")
-    def ws_stage_strike_redo(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_redo",
-            WebServer.actions.stage_strike_redo(info.get("scoreboardNumber", 1), info.get("team")),
-        )
-
-    @api.post("/stage_strike_reset")
-    async def reset(request: Request):
-        body = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.reset,
-            WebServer.request_scoreboard(request, body),
-            WebServer.request_team(request, body),
-        )
-
-    @on("stage_strike_reset")
-    def ws_reset(message=None):
-        info = parse_message(message)
-        WebServer.ws_emit(
-            "stage_strike_reset",
-            WebServer.actions.reset(info.get("scoreboardNumber", 1), info.get("team")),
-        )
-
-    # =====================================================
-    # SCOREBOARD SCORE AND TEAMS
-    # =====================================================
-    @api.post("/score")
-    async def post_score(request: Request):
-        return await call(WebServer.actions.post_score, await request.body())
-
-    @on("score")
-    def ws_post_score(message=None):
-        WebServer.ws_emit("score", WebServer.actions.post_score(message))
-
-    # Ticks score of Team specified up by 1 point
-    @api.get("/scoreboard{scoreboardNumber:seg}-team{team:seg}-scoreup")
-    async def team_scoreup(scoreboardNumber: str, team: str):
-        return await call(WebServer.actions.team_scoreup, scoreboardNumber, team)
-
-    @on("team_scoreup")
-    def ws_team_scoreup(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "team_scoreup",
-            WebServer.actions.team_scoreup(info.get("scoreboardNumber", "1"), info.get("team")),
-        )
-
-    # Ticks score of Team specified down by 1 point
-    @api.get("/scoreboard{scoreboardNumber:seg}-team{team:seg}-scoredown")
-    async def team_scoredown(scoreboardNumber: str, team: str):
-        return await call(WebServer.actions.team_scoredown, scoreboardNumber, team)
-
-    @on("team_scoredown")
-    def ws_team_scoredown(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "team_scoredown",
-            WebServer.actions.team_scoredown(info.get("scoreboardNumber", "1"), info.get("team")),
-        )
-
-    # Set color of team
-    @api.get("/scoreboard{scoreboardNumber:seg}-team{team:seg}-color-{color:seg}")
-    async def team_color(scoreboardNumber: str, team: str, color: str):
-        return await call(WebServer.actions.team_color, scoreboardNumber, team, "#" + color)
-
-    @on("team_color")
-    def ws_team_color(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "team_color",
-            WebServer.actions.team_color(
-                info.get("scoreboardNumber", "1"), info.get("team"), "#" + info.get("color")
-            ),
-        )
-
-    # Sets a team's name, losers state and/or color
-    # Ex. POST /scoreboard1-team2-info {"name": "Team B", "losers": true, "color": "#2e89ff"}
-    @api.post("/scoreboard{scoreboardNumber:seg}-team{team:seg}-info")
-    async def team_info(scoreboardNumber: str, team: str, request: Request):
-        body = await WebServer.request_body(request)
-        return await call(WebServer.actions.team_info, scoreboardNumber, team, body)
-
-    @on("team_info")
-    def ws_team_info(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "team_info",
-            WebServer.actions.team_info(info.get("scoreboardNumber", "1"), info.get("team"), info),
-        )
-
-    # =====================================================
-    # CREW/TEAM BATTLE
-    # =====================================================
-    # Crew/Team Battle
-    # A team scores: in Stock Pool the other team's active player loses a
-    # stock, in First To the team's active player wins a game
-    @api.get("/team-battle-team{team:seg}-scoreup")
-    async def team_battle_scoreup(team: str):
-        return await call(WebServer.actions.team_battle_scoreup, team)
-
-    @on("team_battle_scoreup")
-    def ws_team_battle_scoreup(message=None):
-        info = load_message(message) or {}
-        WebServer.ws_emit(
-            "team_battle_scoreup", WebServer.actions.team_battle_scoreup(info.get("team"))
-        )
-
-    # Undoes a team's last point
-    @api.get("/team-battle-team{team:seg}-scoredown")
-    async def team_battle_scoredown(team: str):
-        return await call(WebServer.actions.team_battle_scoredown, team)
-
-    @on("team_battle_scoredown")
-    def ws_team_battle_scoredown(message=None):
-        info = load_message(message) or {}
-        WebServer.ws_emit(
-            "team_battle_scoredown", WebServer.actions.team_battle_scoredown(info.get("team"))
-        )
-
-    # Makes the team's next player in line who isn't eliminated active
-    @api.get("/team-battle-team{team:seg}-next-player")
-    async def team_battle_next_player(team: str):
-        return await call(WebServer.actions.team_battle_next_player, team)
-
-    @on("team_battle_next_player")
-    def ws_team_battle_next_player(message=None):
-        info = load_message(message) or {}
-        WebServer.ws_emit(
-            "team_battle_next_player", WebServer.actions.team_battle_next_player(info.get("team"))
-        )
-
-    # Makes a player active, by their number in the team (from 1)
-    @api.get("/team-battle-team{team:seg}-player{player:seg}-active")
-    async def team_battle_set_active(team: str, player: str):
-        return await call(WebServer.actions.team_battle_set_active, team, player)
-
-    @on("team_battle_set_active")
-    def ws_team_battle_set_active(message=None):
-        info = load_message(message) or {}
-        WebServer.ws_emit(
-            "team_battle_set_active",
-            WebServer.actions.team_battle_set_active(info.get("team"), info.get("player")),
-        )
-
-    # Resets every player's stocks/games
-    @api.get("/team-battle-reset-stocks")
-    async def team_battle_reset_stocks():
-        return await call(WebServer.actions.team_battle_reset_stocks)
-
-    @on("team_battle_reset_stocks")
-    def ws_team_battle_reset_stocks(message=None):
-        WebServer.ws_emit("team_battle_reset_stocks", WebServer.actions.team_battle_reset_stocks())
-
-    # Clears the players and starts the battle over
-    @api.get("/team-battle-reset")
-    async def team_battle_reset():
-        return await call(WebServer.actions.team_battle_reset)
-
-    @on("team_battle_reset")
-    def ws_team_battle_reset(message=None):
-        WebServer.ws_emit("team_battle_reset", WebServer.actions.team_battle_reset())
-
-    @api.get("/team-battle-get")
-    async def get_team_battle():
-        return await call(WebServer.actions.get_team_battle)
-
-    # =====================================================
-    # SCOREBOARD DATA
-    # =====================================================
-    @api.get("/scoreboard{scoreboardNumber:seg}-get")
-    async def get_route(scoreboardNumber: str):
-        return await call(WebServer.actions.get_scoreboard, scoreboardNumber)
-
-    # Dynamic endpoint to allow flexible sets of information
-    # Ex. http://192.168.1.2:5000/set?best-of=5
-    #
-    # Test Scenario that was used
-    # Ex. http://192.168.4.34:5000/set?best-of=5&phase=Top 32&match=Winners Finals
-    @api.get("/scoreboard{scoreboardNumber:seg}-set")
-    async def set_route(scoreboardNumber: str, request: Request):
-        args = request.query_params
-        return await call(
-            WebServer.actions.set_route,
-            scoreboardNumber,
-            bestOf=args.get("best-of", args.get("best_of")),
-            phase=args.get("phase"),
-            match=args.get("match"),
-            players=args.get("players"),
-            characters=args.get("characters"),
-            losers=args.get("losers"),
-            team=args.get("team"),
-        )
-
-    @on("set")
-    def ws_set_route(message=None):
-        parsed = load_message(message)
-        WebServer.ws_emit(
-            "set",
-            WebServer.actions.set_route(
-                parsed.get("scoreboardNumber", "1"),
-                bestOf=parsed.get("best_of", parsed.get("best-of")),
-                phase=parsed.get("phase"),
-                match=parsed.get("match"),
-                players=parsed.get("players"),
-                characters=parsed.get("characters"),
-                losers=parsed.get("losers"),
-                team=parsed.get("team"),
-            ),
-        )
-
-    # Set player data
-    @api.post("/scoreboard{scoreboardNumber:seg}-update-team-{team:seg}-{player:seg}")
-    async def set_team_data(scoreboardNumber: str, team: str, player: str, request: Request):
-        data = await WebServer.request_body(request)
-        return await call(WebServer.actions.set_team_data, scoreboardNumber, team, player, data)
-
-    @on("update_team")
-    def ws_set_team_data(message=None):
-        data = load_message(message)
-        WebServer.ws_emit(
-            "update_team",
-            WebServer.actions.set_team_data(
-                data.get("scoreboardNumber", "1"), data.get("team"), data.get("player"), data
-            ),
-        )
-
-    @api.post("/update-commentary-{caster}")
-    async def set_commentary_data(caster: str, request: Request):
-        data = await WebServer.request_body(request)
-        return await call(WebServer.actions.set_commentary_data, caster, data)
-
-    @on("update_commentary")
-    def ws_set_commentary_data(message=None):
-        data = load_message(message)
-        WebServer.ws_emit(
-            "update_commentary",
-            WebServer.actions.set_commentary_data(data.get("commentator"), data),
-        )
-
-    # Set game
-    @api.post("/update-game")
-    async def set_game(request: Request):
-        data = await WebServer.request_body(request)
-        return await call(WebServer.actions.set_game, data)
-
-    @on("update_game")
-    def ws_set_game_data(message=None):
-        WebServer.ws_emit("update_game", WebServer.actions.set_game(load_message(message)))
-
-    # =====================================================
-    # GAMES AND CHARACTERS
-    # =====================================================
-    # Get games
-    @api.get("/games")
-    async def get_games():
-        return await call(WebServer.actions.get_games)
-
-    @on("games")
-    def ws_get_games(message=None):
-        WebServer.ws_emit("games", WebServer.actions.get_games())
-
-    # Get current game
-    @api.get("/current-game")
-    async def get_current_game():
-        return await call(WebServer.actions.get_current_game)
-
-    @on("current_game")
-    def ws_get_current_game(message=None):
-        game = WebServer.actions.get_current_game()
-        WebServer.ws_emit("current_game", game)
-        # It used to be answered with this event only
-        WebServer.ws_emit("get_current_game", game)
-
-    # Get match and phase names
-    @api.get("/match-names")
-    async def get_match_names():
-        return await call(WebServer.actions.get_match_names)
-
-    @on("match_names")
-    def ws_get_match_names(message=None):
-        WebServer.ws_emit("match_names", WebServer.actions.get_match_names())
-
-    # Get characters
-    @api.get("/characters")
-    async def get_characters():
-        return await call(WebServer.actions.get_characters)
-
-    @on("characters")
-    def ws_get_characters(message=None):
-        WebServer.ws_emit("characters", WebServer.actions.get_characters())
-
-    # Get variants
-    @api.get("/variants")
-    async def get_variants():
-        return await call(WebServer.actions.get_variants)
-
-    @on("variants")
-    def ws_get_variants(message=None):
-        WebServer.ws_emit("variants", WebServer.actions.get_variants())
-
-    # =====================================================
-    # SWAPPING AND LOADING SETS
-    # =====================================================
-    # Swaps teams
-    @api.get("/scoreboard{scoreboardNumber:seg}-swap-teams")
-    async def swap_teams(scoreboardNumber: str):
-        return await call(WebServer.actions.swap_teams, scoreboardNumber)
-
-    @on("swap_teams")
-    def ws_swap_teams(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "swap_teams", WebServer.actions.swap_teams(info.get("scoreboardNumber", "1"))
-        )
-
-    # Are the teams currently swapped?
-    @api.get("/scoreboard{scoreboardNumber:seg}-get-swap")
-    async def get_swap(scoreboardNumber: str):
-        return await call(WebServer.actions.get_swap, scoreboardNumber)
-
-    @on("get_swap")
-    def ws_get_swap(message=None):
-        info = load_message(message)
-        WebServer.ws_emit("get_swap", WebServer.actions.get_swap(info.get("scoreboardNumber", "1")))
-
-    # Opens Set Selector Window
-    @api.get("/scoreboard{scoreboardNumber:seg}-open-set")
-    async def open_sets(scoreboardNumber: str):
-        return await call(WebServer.actions.open_sets, scoreboardNumber)
-
-    @on("open_set")
-    def ws_open_sets(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "open_set", WebServer.actions.open_sets(info.get("scoreboardNumber", "1"))
-        )
-
-    # Pulls Current Stream Set
-    @api.get("/scoreboard{scoreboardNumber:seg}-pull-stream")
-    async def pull_stream_set(scoreboardNumber: str):
-        return await call(WebServer.actions.pull_stream_set, scoreboardNumber)
-
-    @on("pull_stream")
-    def ws_pull_stream_set(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "pull_stream", WebServer.actions.pull_stream_set(info.get("scoreboardNumber", "1"))
-        )
-
-    # =====================================================
-    # PLAYER STATS
-    # =====================================================
-    # Resubmits Call for Recent Sets
-    @api.get("/scoreboard{scoreboardNumber:seg}-stats-recent-sets")
-    async def stats_recent_sets(scoreboardNumber: str):
-        return await call(WebServer.actions.stats_recent_sets, scoreboardNumber)
-
-    @on("stats_recent_sets")
-    def ws_stats_recent_sets(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "stats_recent_sets",
-            WebServer.actions.stats_recent_sets(info.get("scoreboardNumber", "1")),
-        )
-
-    # Resubmits Call for Upset Factor
-    @api.get("/scoreboard{scoreboardNumber:seg}-stats-upset-factor")
-    async def stats_upset_factor(scoreboardNumber: str):
-        return await call(WebServer.actions.stats_upset_factor, scoreboardNumber)
-
-    @on("stats_upset_factor")
-    def ws_stats_upset_factor(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "stats_upset_factor",
-            WebServer.actions.stats_upset_factor(info.get("scoreboardNumber", "1")),
-        )
-
-    # Resubmits Call for Last Sets
-    @api.get("/scoreboard{scoreboardNumber:seg}-stats-last-sets-{player}")
-    async def stats_last_sets(scoreboardNumber: str, player: str):
-        return await call(WebServer.actions.stats_last_sets, scoreboardNumber, player)
-
-    @on("stats_last_sets")
-    def ws_stats_last_sets(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "stats_last_sets",
-            WebServer.actions.stats_last_sets(
-                info.get("scoreboardNumber", "1"), info.get("player")
-            ),
-        )
-
-    # Resubmits Call for History Sets
-    @api.get("/scoreboard{scoreboardNumber:seg}-stats-history-sets-{player}")
-    async def stats_history_sets(scoreboardNumber: str, player: str):
-        return await call(WebServer.actions.stats_history_sets, scoreboardNumber, player)
-
-    @on("stats_history_sets")
-    def ws_stats_history_sets(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "stats_history_sets",
-            WebServer.actions.stats_history_sets(
-                info.get("scoreboardNumber", "1"), info.get("player")
-            ),
-        )
-
-    # Gets all of the scoreboard's player stats again
-    @api.get("/scoreboard{scoreboardNumber:seg}-stats-refresh")
-    async def stats_refresh(scoreboardNumber: str):
-        return await call(WebServer.actions.stats_refresh, scoreboardNumber)
-
-    # The players of a set that isn't on a scoreboard, for the commentary
-    # dashboard: {"teams": [[player...], [player...]]}
-    @api.post("/commentary-preview")
-    async def commentary_preview(request: Request):
-        return await call(
-            WebServer.actions.commentary_preview, await WebServer.request_body(request)
-        )
-
-    # =====================================================
-    # RESETTING
-    # =====================================================
-    # Resets scores
-    @api.get("/scoreboard{scoreboardNumber:seg}-reset-scores")
-    async def reset_scores(scoreboardNumber: str):
-        return await call(WebServer.actions.reset_scores, scoreboardNumber)
-
-    @on("reset_scores")
-    def ws_reset_scores(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "reset_scores", WebServer.actions.reset_scores(info.get("scoreboardNumber", "1"))
-        )
-
-    # Resets scores, match, phase, and losers status
-    @api.get("/scoreboard{scoreboardNumber:seg}-reset-match")
-    async def reset_match(scoreboardNumber: str):
-        return await call(WebServer.actions.reset_match, scoreboardNumber)
-
-    @on("reset_match")
-    def ws_reset_match(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "reset_match", WebServer.actions.reset_match(info.get("scoreboardNumber", "1"))
-        )
-
-    # Resets scores, match, phase, and losers status
-    @api.get("/scoreboard{scoreboardNumber:seg}-reset-players")
-    async def reset_players(scoreboardNumber: str):
-        return await call(WebServer.actions.reset_players, scoreboardNumber)
-
-    @on("reset_players")
-    def ws_reset_players(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "reset_players", WebServer.actions.reset_players(info.get("scoreboardNumber", "1"))
-        )
-
-    # Resets all values
-    @api.get("/scoreboard{scoreboardNumber:seg}-clear-all")
-    async def clear_all(scoreboardNumber: str):
-        return await call(WebServer.actions.clear_all, scoreboardNumber)
-
-    @on("clear_all")
-    def ws_clear_all(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "clear_all", WebServer.actions.clear_all(info.get("scoreboardNumber", "1"))
-        )
-
-    # =====================================================
-    # SETS AND COMMENTATORS
-    # =====================================================
-    # Get the sets to be played
-    @api.get("/get-sets")
-    async def get_sets(request: Request):
-        return await call(WebServer.actions.get_sets, request.query_params)
-
-    @on("get_sets")
-    def ws_get_sets(message=None):
-        WebServer.ws_emit("get_sets", WebServer.actions.get_sets(load_message(message)))
-
-    # Loads info on a match
-    @api.get("/get-match-{setId}")
-    async def get_match(setId: str):
-        return await call(WebServer.actions.get_match, setId)
-
-    @on("get_match")
-    def ws_get_match(message=None):
-        info = load_message(message)
-        WebServer.ws_emit("get_match", WebServer.actions.get_match(info.get("setId")))
-
-    # Get the commentators
-    @api.get("/get-comms")
-    async def get_comms():
-        return await call(WebServer.actions.get_comms)
-
-    @on("get_comms")
-    def ws_get_comms(message=None):
-        WebServer.ws_emit("get_comms", WebServer.actions.get_comms())
-
-    # Loads a set remotely by providing a set ID to pull from the data provider
-    @api.get("/scoreboard{scoreboardNumber:seg}-load-set")
-    async def load_set(scoreboardNumber: str, request: Request):
-        args = request.query_params
-        if args.get("no-mains") is not None:
-            return await call(
-                WebServer.actions.load_set, scoreboardNumber, args.get("set"), no_mains=True
-            )
-        else:
-            return await call(WebServer.actions.load_set, scoreboardNumber, args.get("set"))
-
-    @on("load_set")
-    def ws_load_set(message=None):
-        info = load_message(message)
-        if info.get("no-mains") is not None:
-            WebServer.ws_emit(
-                "load_set",
-                WebServer.actions.load_set(
-                    info.get("scoreboardNumber", "1"), info.get("set"), no_mains=True
-                ),
-            )
-        else:
-            WebServer.ws_emit(
-                "load_set",
-                WebServer.actions.load_set(info.get("scoreboardNumber", "1"), info.get("set")),
-            )
-
-    # Loads a set remotely by providing a set ID to pull from the data provider
-    @api.get("/scoreboard{scoreboardNumber:seg}-get-set")
-    async def get_set(scoreboardNumber: str):
-        return await call(WebServer.actions.get_set, scoreboardNumber)
-
-    @on("get_set")
-    def ws_get_set(message=None):
-        WebServer.ws_emit(
-            "get_set",
-            WebServer.actions.get_set(load_message(message).get("scoreboardNumber", "1")),
-        )
-
-    # =====================================================
-    # PLAYER DATABASE
-    # =====================================================
-    @api.get("/playerdb")
-    async def playerdb():
-        return await call(WebServer.actions.get_playerdb)
-
-    @on("playerdb")
-    def ws_playerdb(message=None):
-        logger.info("Emitting playerdb info.")
-        WebServer.ws_emit("playerdb", WebServer.actions.get_playerdb())
-
-    # =====================================================
-    # BRACKET
-    # =====================================================
-    # Update bracket
-    @api.get("/update-bracket")
-    async def update_bracket():
-        return await call(WebServer.actions.update_bracket)
-
-    @on("update_bracket")
-    def ws_update_bracket(message=None):
-        WebServer.ws_emit("update_bracket", WebServer.actions.update_bracket())
-
-    # Update only the set results of the loaded bracket, keeping its players
-    @api.get("/update-bracket-sets")
-    async def update_bracket_sets():
-        return await call(WebServer.actions.update_bracket_sets)
-
-    @on("update_bracket_sets")
-    def ws_update_bracket_sets(message=None):
-        WebServer.ws_emit("update_bracket_sets", WebServer.actions.update_bracket_sets())
-
-    # =====================================================
-    # STREAM QUEUE
-    # =====================================================
-    # The stream queues, as sent to the layouts
-    @api.get("/stream-queue")
-    async def stream_queue():
-        return await call(WebServer.actions.stream_queue)
-
-    @api.get("/stream-queue/refresh")
-    async def stream_queue_refresh():
-        return await call(WebServer.actions.stream_queue_refresh)
-
-    # Loads a stream's next set into its scoreboard:
-    # /stream-queue/load-next?stream=<name> or ?scoreboard=<number>
-    @api.get("/stream-queue/load-next")
-    async def stream_queue_load_next(request: Request):
-        return await call(
-            WebServer.actions.stream_queue_load_next,
-            request.query_params.get("stream"),
-            request.query_params.get("scoreboard"),
-        )
-
-    # =====================================================
-    # BRACKET FOCUS
-    # =====================================================
-    # What the bracket focus layout zooms to (see docs/layout-data.md):
-    # GET answers what's in focus and what can be picked, POST a focus
-    # request, e.g. {"mode": "sets", "sets": ["m1"]}, or {"move": 1} for the
-    # next round. For a focus channel with ?channel=<name> ("main" without)
-    @api.get("/bracket-focus")
-    async def bracket_focus(request: Request):
-        return await call(WebServer.actions.bracket_focus, request.query_params.get("channel"))
-
-    @api.post("/bracket-focus")
-    async def bracket_focus_set(request: Request):
-        return await call(
-            WebServer.actions.bracket_focus_set,
-            await WebServer.request_body(request),
-            request.query_params.get("channel"),
-        )
-
-    # {"channel": <name>}
-    @on("bracket_focus")
-    def ws_bracket_focus(message=None):
-        WebServer.ws_emit(
-            "bracket_focus",
-            WebServer.actions.bracket_focus(parse_message(message).get("channel")),
-        )
-
-    @on("bracket_focus_set")
-    def ws_bracket_focus_set(message=None):
-        WebServer.ws_emit(
-            "bracket_focus", WebServer.actions.bracket_focus_set(parse_message(message))
-        )
-
-    # =====================================================
-    # DISPLAY CONTROLS
-    # =====================================================
-    # Display Controls, as links for a Stream Deck: /display/state is
-    # everything, /display/all/<action>, /display/folder/<folder>/<action>
-    # and /display/group/<group>/<action>, with show, hide or toggle as the
-    # action (or none, to get whether it's shown)
-    @api.get("/display/state")
-    async def display_state():
-        return await call(WebServer.actions.display, "all")
-
-    @api.get("/display/all/{action}")
-    async def display_all(action: str):
-        return await call(WebServer.actions.display, "all", None, action)
-
-    @api.get("/display/{kind}/{name}")
-    async def display_get(kind: str, name: str):
-        return await call(WebServer.actions.display, kind, name)
-
-    @api.get("/display/{kind}/{name}/{action}")
-    async def display_set(kind: str, name: str, action: str):
-        return await call(WebServer.actions.display, kind, name, action)
-
-    # =====================================================
-    # DISPLAY CONTROLS MESSAGES
-    # =====================================================
-    # {"folder": <name>} or {"group": <name>} or {"all": true}, with
-    # "action": show, hide or toggle (without it, answers whether it's shown)
-    @on("display")
-    def ws_display(message=None):
-        info = parse_message(message)
-        kind = next((k for k in ("folder", "group", "all") if k in info), None)
-        result = WebServer.actions.display(kind, info.get(kind), info.get("action"))
-        if isinstance(result, tuple):
-            result = {"error": result[0]}
-        WebServer.ws_emit("display", result)
-
-    @on("display_state")
-    def ws_display_state(message=None):
-        WebServer.ws_emit("display_state", WebServer.actions.display("all"))
-
-    # Layouts send the groups in their ?display= so they're listed
-    @on("display_register")
-    def ws_display_register(message=None):
-        WebServer.actions.display_register(parse_message(message).get("groups"))
-
-    def ws_broadcast_display_state():
-        """Sends display_state to every client when something is shown or hidden."""
-        loop = WebServer.loop
-        if loop is None or loop.is_closed():
-            return
-        from .DisplayControls import DisplayControls
-
-        if DisplayControls.instance is None:
-            return
-        controls = DisplayControls.instance
-        state = {"kind": "all", "shown": controls.AllShown(), **controls.State()}
-        asyncio.run_coroutine_threadsafe(sio.emit("display_state", state), loop)
-
-    # =====================================================
-    # BRACKET FOCUS LINKS
-    # =====================================================
-    # The same as links, e.g. for a Stream Deck: /bracket-focus/all,
-    # /bracket-focus/next-round, /bracket-focus/previous-round,
-    # /bracket-focus/winners, /bracket-focus/losers (a side),
-    # /bracket-focus/follow?scoreboard=<n>, /bracket-focus/tour?interval=<s>
-    # /bracket-focus/player?id=<player slot> and /bracket-focus/phase?phase=<id>
-    # (a phase of the bracket widget the channel shows), each with
-    # &channel=<name>
-    @api.get("/bracket-focus/{action}")
-    async def bracket_focus_action(action: str, request: Request):
-        args = dict(request.query_params)
-        body = {
-            "all": {"mode": "all"},
-            "next-round": {"move": 1},
-            "previous-round": {"move": -1},
-            "winners": {"mode": "side", "side": "winners"},
-            "losers": {"mode": "side", "side": "losers"},
-            "follow": {"mode": "follow", "scoreboard": args.get("scoreboard", 1)},
-            "tour": {"mode": "tour", "interval": args.get("interval")},
-            "player": {"mode": "player", "player": args.get("id")},
-            "phase": {"phase": args.get("phase", "")},
-        }.get(action)
-        if body is None:
-            return HTMLResponse("Unknown action", status_code=404)
-        return await call(WebServer.actions.bracket_focus_set, body, args.get("channel"))
-
-    # =====================================================
-    # LOADING PLAYERS FROM TAGS
-    # =====================================================
-    # Load player from tag
-    @api.get("/scoreboard{scoreboardNumber:seg}-load-player-from-tag-{team:seg}-{player:seg}")
-    async def load_player_from_tag(scoreboardNumber: str, team: str, player: str, request: Request):
-        args = request.query_params
-        if args.get("tag") is None:
-            return HTMLResponse("No tag provided")
-        no_mains = args.get("no-mains") is not None
-        return await call(
-            WebServer.actions.load_player_from_tag,
-            scoreboardNumber,
-            html.unescape(args.get("tag")),
-            team,
-            player,
-            no_mains,
-        )
-
-    @on("load_player_from_tag")
-    def ws_load_player_from_tag(message=None):
-        args = load_message(message)
-        if args.get("tag") is None:
-            WebServer.ws_emit("load_player_from_tag", "No tag provided")
-            return
-        no_mains = args.get("no-mains") is not None
-        team = args.get("team")
-        player = args.get("player")
-        scoreboardNumber = args.get("scoreboardNumber", "1")
-        WebServer.ws_emit(
-            "load_player_from_tag",
-            WebServer.actions.load_player_from_tag(
-                scoreboardNumber, html.unescape(args.get("tag")), team, player, no_mains
-            ),
-        )
-
-    @api.get("/load-commentator-from-tag-{caster}")
-    async def load_commentator_from_tag(caster: str, request: Request):
-        args = request.query_params
-        if args.get("tag") is None:
-            return HTMLResponse("No tag provided")
-        no_mains = args.get("no-mains") is not None
-        return await call(
-            WebServer.actions.load_commentator_from_tag,
-            caster,
-            html.unescape(args.get("tag")),
-            no_mains,
-        )
-
-    @on("load_commentator_from_tag")
-    def ws_load_commentator_from_tag(message=None):
-        args = load_message(message)
-        if args.get("tag") is None:
-            WebServer.ws_emit("load_commentator_from_tag", "No tag provided")
-            return
-        no_mains = args.get("no-mains") is not None
-        caster = args.get("commentator")
-        WebServer.ws_emit(
-            "load_commentator_from_tag",
-            WebServer.actions.load_commentator_from_tag(
-                caster, html.unescape(args.get("tag")), no_mains
-            ),
-        )
-
-    # =====================================================
-    # TOURNAMENT
-    # =====================================================
-    # Update bracket
-    @api.get("/set-tournament")
-    async def set_tournament(request: Request):
-        return await call(WebServer.actions.load_tournament, request.query_params.get("url"))
-
-    @on("set_tournament")
-    def ws_set_tournament(message=None):
-        info = load_message(message)
-        WebServer.ws_emit("set_tournament", WebServer.actions.load_tournament(info.get("url")))
-
-    # List a tournament's events, to pick one for set-tournament
-    @api.get("/tournament-events")
-    async def tournament_events(request: Request):
-        return await call(WebServer.actions.get_tournament_events, request.query_params.get("url"))
-
-    @on("get_tournament_events")
-    def ws_get_tournament_events(message=None):
-        info = load_message(message)
-        WebServer.ws_emit(
-            "get_tournament_events", WebServer.actions.get_tournament_events(info.get("url"))
-        )
-
-    # =====================================================
-    # STATES AND STAGES
-    # =====================================================
-    @api.get("/states")
-    async def get_states(request: Request):
-        countryCode = request.query_params.get("countryCode", None)
-        if not countryCode:
-            return HTMLResponse("countryCode not specified", status_code=400)
-
-        return await call(WebServer.actions.get_states, countryCode)
-
-    # Answered through the event's acknowledgement callback
-    @on("states")
-    def ws_get_states(message=None):
-        args = load_message(message)
-        return WebServer.actions.get_states(args.get("countryCode", ""))
-
-    # Set the current ingame stage (selectedStage in stage_strike state)
-    @api.post("/scoreboard{scoreboardNumber:seg}-set-current-stage")
-    async def set_current_stage(scoreboardNumber: str, request: Request):
-        data = await WebServer.request_body(request)
-        return await call(
-            WebServer.actions.set_current_stage, scoreboardNumber, data.get("codename")
-        )
-
-    @on("set_current_stage")
-    def ws_set_current_stage(message=None):
-        data = load_message(message)
-        WebServer.ws_emit(
-            "set_current_stage",
-            WebServer.actions.set_current_stage(
-                data.get("scoreboardNumber", "1"), data.get("codename")
-            ),
-        )
-
-    # =====================================================
-    # PAGES AND FILES
-    # =====================================================
-    @api.get("/")
-    @api.get("/scoreboard")
-    @api.get("/stage-strike-app")
-    @api.get("/character-select")
-    @api.get("/bracket-focus-app")
-    @api.get("/commentary-dashboard")
-    async def stage_strike_app():
-        return FileResponse(
-            os.path.join(os.path.abspath("."), "stage_strike_app/build/index.html"),
-            headers={"Cache-Control": "no-cache"},
-        )
-
-    # Browsers ask for it on pages without an icon of their own, and would
-    # keep showing TournamentStreamHelper's from the same address otherwise
-    @api.get("/favicon.ico", include_in_schema=False)
-    async def favicon():
-        return FileResponse(
-            os.path.join(os.path.abspath("."), "assets/icons/icon.ico"),
-            media_type="image/x-icon",
-            headers={"Cache-Control": "no-cache"},
-        )
-
-    # The in-app guide (docs/wiki), for a phone or a second screen
-    @api.get("/wiki", response_class=HTMLResponse)
-    async def wiki_home():
-        content = WebPage(HOME_PAGE)
-        if content is None:
-            return HTMLResponse("The guide wasn't found", status_code=404)
-        return HTMLResponse(content)
-
-    @api.get("/wiki/search", response_class=HTMLResponse)
-    async def wiki_search(q: str = ""):
-        return HTMLResponse(WebSearchPage(q))
-
-    @api.get("/wiki/{page}", response_class=HTMLResponse)
-    async def wiki_page(page: str):
-        content = WebPage(page)
-        if content is None:
-            return HTMLResponse(WebSearchPage(page.replace("-", " ")), status_code=404)
-        return HTMLResponse(content)
-
-    # Registered last by __init__, as it matches every path
-    async def file_request(filename: str):
-        filename = filename or "stage_strike_app/build/index.html"
-        # The settings hold API keys and passwords (e.g. the start.gg
-        # token used to report sets), and web reporting's file the addresses
-        # of the devices that reported, so they're never served
-        normalized = os.path.normcase(os.path.normpath(filename)).replace("\\", "/").lstrip("./")
-        if os.path.basename(normalized).startswith(
-            ("settings.json", "web_reporting.json")
-        ) and normalized.startswith("user_data/"):
-            return HTMLResponse("Not allowed", status_code=403)
-
-        root = os.path.abspath(".")
-        path = os.path.abspath(os.path.join(root, filename))
-        try:
-            inside = os.path.commonpath([root, path]) == root
-        except ValueError:  # another drive on Windows
-            inside = False
-        if not inside or not os.path.isfile(path):
-            logger.error(f"File not found: {filename}")
-            return HTMLResponse("File not found", status_code=404)
-
-        mimetype = mimetypes.guess_type(filename)[0] or "application/octet-stream"
-        if filename.endswith(".js"):
-            mimetype = "text/javascript"
-        if filename.lower().endswith(".png"):
-            mimetype = "image/apng"
-        if filename.lower().endswith(".svg"):
-            mimetype = "image/svg+xml"
-
-        ext = filename.rsplit(".", 1)[-1].lower()
-        if ext in ("html", "js", "css", "json"):
-            cache = "no-cache, max-age=0"
-        else:
-            cache = "public, max-age=86400"
-
-        return FileResponse(
-            path,
-            media_type=mimetype,
-            headers={"Cache-Control": cache},
-            filename=os.path.basename(path) if filename.endswith(".gz") else None,
-        )
+            api.add_api_route("/{filename:path}", file_request, methods=["GET", "POST"])
 
     # =====================================================
     # RUNNING THE SERVER
