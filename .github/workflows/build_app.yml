@@ -4,11 +4,14 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'layout/**'
+    paths:
+      - '**'
+      - '!layout/**'
+      # The web app bundles the layouts' state client
+      - 'layout/include/state_client.*'
       # The Stream Deck plugin has its own workflow, build_streamdeck.yml
-      - 'streamdeck/**'
-      - '.github/workflows/build_streamdeck.yml'
+      - '!streamdeck/**'
+      - '!.github/workflows/build_streamdeck.yml'
   workflow_dispatch:
 
 jobs:
@@ -65,9 +68,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        # layout/include: the web app bundles the state client the layouts
+        # use (stage_strike_app/src/stateClient.ts)
         sparse-checkout: |
           stage_strike_app
           assets
+          layout/include
 
     - name: Node setup
       uses: actions/setup-node@v4
