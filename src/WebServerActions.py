@@ -30,6 +30,12 @@ from .TournamentDataProvider.TournamentEventLookup import (
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
 
+# How long (seconds) a request waits for the GUI thread to run its action,
+# before it's answered with 503. The action may still run afterwards.
+GUI_TIMEOUT = 10
+# How long (seconds) a request waits for a game's assets to load
+GAME_LOAD_TIMEOUT = 120
+
 
 class ScoreboardNotAvailable(Exception):
     """Raised when a scoreboard is requested but not yet initialized."""
@@ -81,9 +87,6 @@ class WebServerActions(QThread):
             raise ScoreboardNotFound(f"Scoreboard {number} not found")
         return sb
 
-    def program_state(self):
-        return {"state": StateManager.state, "delta_index": StateManager.deltaIndex}
-
     def _scoreboard_number(self, number):
         """A scoreboard number for stage striking, scoreboard 1 without one."""
         return self.scoreboard_number(1 if number in (None, "") else number)
@@ -118,7 +121,7 @@ class WebServerActions(QThread):
     # =====================================================
     # STAGE STRIKING
     # =====================================================
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def ruleset(self, scoreboard=1):
         data = {}
 
@@ -241,7 +244,7 @@ class WebServerActions(QThread):
         finally:
             logic.actor = None
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def stage_clicked(self, data, scoreboard=1, team=None):
         if self._not_your_turn(scoreboard, team):
             return "NOT_YOUR_TURN", 409
@@ -249,14 +252,14 @@ class WebServerActions(QThread):
         self._act(scoreboard, team, lambda logic: logic.StageClicked(stage))
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def confirm_clicked(self, scoreboard=1, team=None):
         if self._not_your_turn(scoreboard, team):
             return "NOT_YOUR_TURN", 409
         self._act(scoreboard, team, lambda logic: logic.ConfirmClicked())
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def report_characters(self, data, scoreboard=1, team=None):
         """Characters picked on a stage strike page.
 
@@ -271,7 +274,7 @@ class WebServerActions(QThread):
         )
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def character_select_report(self, data, scoreboard=1, team=None):
         """Characters picked on the character select page. Like
         report_characters, but each team picks once per score: picking again
@@ -306,12 +309,12 @@ class WebServerActions(QThread):
                 )
         logic.ExportState()
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def rps_win(self, winner, scoreboard=1, team=None):
         self._act(scoreboard, team, lambda logic: logic.RpsResult(int(winner)))
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def match_win(self, winner, scoreboard=1, team=None):
         """A game's winner. From a team's page, it waits for the other team
         to report the same winner (-1 takes the report back)."""
@@ -323,7 +326,7 @@ class WebServerActions(QThread):
         self.UpdateScore(scoreboard)
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def set_gentlemans(self, value, scoreboard=1, team=None):
         # It clears the game's strikes, so a team's page can't do it on the
         # other team's turn
@@ -332,7 +335,7 @@ class WebServerActions(QThread):
         self._act(scoreboard, team, lambda logic: logic.SetGentlemans(value))
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def stage_strike_undo(self, scoreboard=1, team=None):
         logic = self._strike_logic(scoreboard)
         if not logic.CanUndo(self._team_number(team)):
@@ -341,7 +344,7 @@ class WebServerActions(QThread):
         self.UpdateScore(scoreboard)
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def stage_strike_redo(self, scoreboard=1, team=None):
         logic = self._strike_logic(scoreboard)
         if not logic.CanRedo(self._team_number(team)):
@@ -350,7 +353,7 @@ class WebServerActions(QThread):
         self.UpdateScore(scoreboard)
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def reset(self, scoreboard=1, team=None):
         # Restarting the whole set is left to the page for both teams
         if self._team_number(team) is not None:
@@ -364,7 +367,7 @@ class WebServerActions(QThread):
     # =====================================================
     # SCOREBOARD SCORE AND TEAMS
     # =====================================================
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def UpdateScore(self, scoreboard=1):
         if not SettingsManager.Get("general.control_score_from_stage_strike", True):
             return
@@ -384,7 +387,7 @@ class WebServerActions(QThread):
             }
         )
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def post_score(self, data):
         score = orjson.loads(data)
         scoreboard = self._get_scoreboard(score.get("scoreboard", 1))
@@ -395,7 +398,7 @@ class WebServerActions(QThread):
         scoreboard.signals.ChangeSetData.emit(score)
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_scoreup(self, scoreboard, team):
         if str(team) == "1":
             self._get_scoreboard(scoreboard).CommandScoreChange(0, 1)
@@ -403,7 +406,7 @@ class WebServerActions(QThread):
             self._get_scoreboard(scoreboard).CommandScoreChange(1, 1)
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_scoredown(self, scoreboard, team):
         if str(team) == "1":
             self._get_scoreboard(scoreboard).CommandScoreChange(0, -1)
@@ -418,7 +421,7 @@ class WebServerActions(QThread):
             self._get_scoreboard(scoreboard).signals.CommandTeamColor.emit(1, color)
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_info(self, scoreboard, team, data):
         # data: {"name"?: str, "losers"?: bool, "color"?: "#rrggbb"}
         if str(team) not in ("1", "2") or not isinstance(data, dict):
@@ -441,7 +444,7 @@ class WebServerActions(QThread):
             return None, ("ERROR : team must be 1 or 2", 400)
         return team, None
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_battle_scoreup(self, team):
         # Stock Pool: the other team's active player loses a stock
         # First To: the team's active player wins a game
@@ -452,7 +455,7 @@ class WebServerActions(QThread):
         (signals.team1_stock_up if team == 1 else signals.team2_stock_up).emit()
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_battle_scoredown(self, team):
         # Undoes team_battle_scoreup
         team, error = self._team_battle_team(team)
@@ -462,7 +465,7 @@ class WebServerActions(QThread):
         (signals.team1_stock_down if team == 1 else signals.team2_stock_down).emit()
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_battle_next_player(self, team):
         team, error = self._team_battle_team(team)
         if error:
@@ -471,7 +474,7 @@ class WebServerActions(QThread):
         (signals.team1_next_active_player if team == 1 else signals.team2_next_active_player).emit()
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_battle_set_active(self, team, player):
         # player: the player's number in the team, from 1
         team, error = self._team_battle_team(team)
@@ -490,12 +493,12 @@ class WebServerActions(QThread):
         )
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_battle_reset_stocks(self):
         self._team_battle().signals.reset_all_stocks.emit()
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def team_battle_reset(self):
         self._team_battle().signals.reset_everything.emit()
         return "OK"
@@ -511,7 +514,7 @@ class WebServerActions(QThread):
         sb_widget: ScoreboardWidget = self._get_scoreboard(scoreboard)
         return StateManager.Get(f"score.{sb_widget.scoreboardNumber}")
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def set_route(
         self,
         scoreboard,
@@ -627,29 +630,30 @@ class WebServerActions(QThread):
     # =====================================================
     # GAMES AND CHARACTERS
     # =====================================================
-    @gui_thread_sync
     def set_game(self, data):
-        # Not actually sure if this needs to be in the GUI thread but the asset manager is complex enough that it seems
-        # worthwhile to dispatch it like this.
+        # Runs in a worker thread: the assets are loaded by the asset
+        # manager's own thread, like when picking a game in the program. The
+        # GUI thread only starts it.
         set_codename = data.get("codename")
-        found_game = False
-        for i, codename in enumerate(GameAssetManager.instance.games.keys()):
-            if codename == set_codename:
-                # GameAssetManager.instance.selectedGame = GameAssetManager.instance.games[codename]
-                # self.parent().SetGame()
-                GameAssetManager.instance.LoadGameAssets(
-                    i + 1,
-                    async_mode=False,
-                    mods_active=data.get("mods_active", False),
-                    mods_reload_mode=True,
-                )
-                found_game = True
-                break
-
-        if not found_game:
+        loader = self._start_game_load(set_codename, data.get("mods_active", False))
+        if loader is None:
             return f"Could not find game {set_codename}"
-
+        if not loader.wait(GAME_LOAD_TIMEOUT * 1000):
+            return "LOADING", 202
         return "OK"
+
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
+    def _start_game_load(self, codename, mods_active):
+        """Starts loading a game's assets and returns the thread doing it, or
+        None if there's no such game."""
+        manager = GameAssetManager.instance
+        games = list(manager.games.keys())
+        if codename not in games:
+            return None
+        manager.LoadGameAssets(
+            games.index(codename) + 1, mods_active=mods_active, mods_reload_mode=True
+        )
+        return manager.assetsLoaderThread
 
     def get_games(self):
         data = {}
@@ -675,7 +679,7 @@ class WebServerActions(QThread):
         response = {"match": LocaleHelper.matchNames, "phase": LocaleHelper.phaseNames}
         return response
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def get_characters(self):
         data = {}
         for row in range(GameAssetManager.instance.characterModel.rowCount()):
@@ -694,7 +698,7 @@ class WebServerActions(QThread):
 
         return data
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def get_variants(self):
         data = {}
         for row in range(GameAssetManager.instance.variantModel.rowCount()):
@@ -725,7 +729,7 @@ class WebServerActions(QThread):
         self._get_scoreboard(scoreboard).signals.StreamSetSelection.emit()
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def load_set(self, scoreboard, set=None, no_mains=False):
         if no_mains is False:
             no_mains = SettingsManager.Get("general.force_no_mains_on_new_set_loads", False)
@@ -762,7 +766,7 @@ class WebServerActions(QThread):
             )
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def stats_history_sets(self, scoreboard, player):
         if str(player) == "1":
             self._get_scoreboard(scoreboard).stats.signals.PlayerHistoryStandingsP1Signal.emit()
@@ -777,7 +781,7 @@ class WebServerActions(QThread):
             )
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def stats_refresh(self, scoreboard):
         """Gets all of the scoreboard's player stats again: the head-to-head,
         each player's last sets and past events, and the upset factor"""
@@ -798,23 +802,23 @@ class WebServerActions(QThread):
     # =====================================================
     # RESETTING
     # =====================================================
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def reset_scores(self, scoreboard):
         self._get_scoreboard(scoreboard).ResetScore()
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def reset_match(self, scoreboard):
         self._get_scoreboard(scoreboard).ClearScore()
         self._get_scoreboard(scoreboard).scoreColumn.findChild(QSpinBox, "best_of").setValue(0)
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def reset_players(self, scoreboard):
         self._get_scoreboard(scoreboard).CommandClearAll()
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def clear_all(self, scoreboard):
         self._get_scoreboard(scoreboard).ClearScore()
         self._get_scoreboard(scoreboard).scoreColumn.findChild(QSpinBox, "best_of").setValue(0)
@@ -860,22 +864,23 @@ class WebServerActions(QThread):
     # =====================================================
     # BRACKET
     # =====================================================
-    @gui_thread_sync
     def update_bracket(self):
+        # Runs in a worker thread: the provider's requests take a while. Only
+        # showing the result (_show_phase_group) is done on the GUI thread.
         phase_name = StateManager.Get("bracket.phase")
         group_name = StateManager.Get("bracket.phaseGroup")
+        provider = TournamentDataManager.instance.provider
 
         if phase_name == None or phase_name == "":
-            group = TournamentDataManager.instance.provider.GetTournamentPhases()[0].get("groups")[
+            group = provider.GetTournamentPhases()[0].get("groups")[
                 0
             ]  # retaining old functionality just in case someone needs it
-            data = self._fetch_phase_group(group)
-            TournamentDataManager.instance.signals.tournament_phasegroup_updated.emit(data)
+            self._show_phase_group(self._fetch_phase_group(provider, group), group)
             return "OK"
 
         # The main channel's phase, when it's one of start.gg's
         selected_phase = None
-        for phase in TournamentDataManager.instance.provider.GetTournamentPhases():
+        for phase in provider.GetTournamentPhases():
             if phase.get("name") == phase_name:
                 selected_phase = phase
                 break
@@ -896,27 +901,31 @@ class WebServerActions(QThread):
         if selected_group is None:
             return "NO_PHASE_GROUP"
 
-        data = self._fetch_phase_group(selected_group, selected_phase)
-        TournamentDataManager.instance.signals.tournament_phasegroup_updated.emit(data)
+        data = self._fetch_phase_group(provider, selected_group)
+        self._show_phase_group(data, selected_group, selected_phase)
         return "OK"
 
-    def _fetch_phase_group(self, group, phase=None):
+    def _fetch_phase_group(self, provider, group):
         phase_group_id = group.get("id")
-        data = TournamentDataManager.instance.provider.GetTournamentPhaseGroup(phase_group_id)
+        data = provider.GetTournamentPhaseGroup(phase_group_id)
         if data:
             # So the bracket widget knows which phase group (its names and
             # bracket type, e.g. round robin) it's loading
             data["phaseGroupId"] = phase_group_id
-            if BracketWidget.instance is not None:
-                groups = (phase or {}).get("groups") or []
-                BracketWidget.instance.phaseGroupInfo[str(phase_group_id)] = {
-                    "phase": (phase or {}).get("name") or "",
-                    "group": (group.get("name") or "") if len(groups) > 1 else "",
-                    "bracketType": group.get("bracketType"),
-                }
         return data
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
+    def _show_phase_group(self, data, group, phase=None):
+        if data and BracketWidget.instance is not None:
+            groups = (phase or {}).get("groups") or []
+            BracketWidget.instance.phaseGroupInfo[str(group.get("id"))] = {
+                "phase": (phase or {}).get("name") or "",
+                "group": (group.get("name") or "") if len(groups) > 1 else "",
+                "bracketType": group.get("bracketType"),
+            }
+        TournamentDataManager.instance.signals.tournament_phasegroup_updated.emit(data)
+
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def update_bracket_sets(self):
         # Only the set results of the bracket loaded in the bracket widget,
         # without reloading its players. The sets are fetched in the
@@ -928,11 +937,11 @@ class WebServerActions(QThread):
     # =====================================================
     # STREAM QUEUE
     # =====================================================
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def stream_queue(self):
         return StateManager.Get("stream_queue") or {}
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def stream_queue_refresh(self):
         from .StreamQueueWidget import StreamQueueWidget
 
@@ -941,7 +950,7 @@ class WebServerActions(QThread):
         StreamQueueWidget.instance.Refresh()
         return "OK"
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def stream_queue_load_next(self, stream=None, scoreboard=None):
         # Loads the next set of a stream's queue into its scoreboard, by
         # stream name or by scoreboard number
@@ -964,7 +973,7 @@ class WebServerActions(QThread):
     # =====================================================
     # BRACKET FOCUS
     # =====================================================
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def bracket_focus(self, channel=None):
         # A focus channel's state, "main" by default
         from .BracketFocus import BracketFocus
@@ -976,7 +985,7 @@ class WebServerActions(QThread):
             return "NO_CHANNEL", 404
         return focus.State(channel or "main")
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def bracket_focus_set(self, request, channel=None):
         # A focus request, {"move": 1} for the next round (-1: previous) or
         # {"phase": <id>} for the phase of the bracket widget it shows, for
@@ -1009,7 +1018,7 @@ class WebServerActions(QThread):
     # =====================================================
     # Display Controls: kind is "folder", "group" or "all", action "show",
     # "hide", "toggle" or None to only answer whether it's shown
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def display(self, kind, name=None, action=None):
         from .DisplayControls import DisplayControls
 
@@ -1029,7 +1038,7 @@ class WebServerActions(QThread):
             return error, 400 if error in ("UNKNOWN_ACTION", "UNKNOWN_KIND") else 404
         return result
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def display_register(self, groups):
         from .DisplayControls import DisplayControls
 
@@ -1039,7 +1048,7 @@ class WebServerActions(QThread):
     # =====================================================
     # LOADING PLAYERS FROM TAGS
     # =====================================================
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def load_player_from_tag(self, scoreboard, tag, team, player, no_mains=False):
         result = self._get_scoreboard(scoreboard).LoadPlayerFromTag(
             str(tag), int(team), int(player), no_mains
@@ -1095,11 +1104,11 @@ class WebServerActions(QThread):
     # =====================================================
     # STATES AND STAGES
     # =====================================================
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def get_states(self, countryCode: str):
         return CountryHelper.GetStates(countryCode)
 
-    @gui_thread_sync
+    @gui_thread_sync(timeout=GUI_TIMEOUT)
     def set_current_stage(self, scoreboard, codename):
         sb = self._get_scoreboard(scoreboard)
         number = sb.scoreboardNumber

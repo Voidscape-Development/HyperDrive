@@ -151,6 +151,22 @@ def keys_room(keys):
     return "state:" + ",".join(sorted(keys))
 
 
+def encode_program_state():
+    """The program_state message as JSON. The state is read and encoded under
+    StateManager's lock, so it can't change meanwhile (the GUI thread changes
+    it in place) and the delta index is the one of that state."""
+    with StateManager.lock:
+        return SocketioJson.dumps(
+            {"state": StateManager.state, "delta_index": StateManager.deltaIndex}
+        ).encode()
+
+
+def program_state_message():
+    """The program_state message, as a copy of the state that's safe to
+    filter and send from another thread."""
+    return orjson.loads(encode_program_state())
+
+
 def filter_state(message, keys):
     """A program_state message with only the keys."""
     state = message["state"]
@@ -204,6 +220,14 @@ async def handle_scoreboard_not_available(request: Request, e: ScoreboardNotAvai
 @api.exception_handler(ScoreboardNotFound)
 async def handle_scoreboard_not_found(request: Request, e: ScoreboardNotFound):
     return HTMLResponse(str(e), status_code=404)
+
+
+# The GUI thread didn't get to a request's action in time (see
+# WebServerActions.GUI_TIMEOUT)
+@api.exception_handler(TimeoutError)
+async def handle_gui_timeout(request: Request, e: TimeoutError):
+    logger.error(f"[HTTP] {request.url.path}: {e}")
+    return HTMLResponse("GUI_BUSY", status_code=503)
 
 
 class PlayerAdmin(ModelView, model=Player):
@@ -305,8 +329,9 @@ class WebServer(QThread):
 
     @api.get("/program-state")
     async def program_state():
-        # orjson encodes the whole state many times faster than json
-        return await call(WebServer.actions.program_state)
+        return Response(
+            await run_in_threadpool(encode_program_state), media_type="application/json"
+        )
 
     # The layout pages and their previews, e.g. for the OBS plugin's layout
     # source (see src/LayoutList.py)
@@ -361,7 +386,7 @@ class WebServer(QThread):
         if keys is not None:
             _subscriptions[sid] = keys
             await sio.enter_room(sid, keys_room(keys))
-        message = await run_in_threadpool(WebServer.actions.program_state)
+        message = await run_in_threadpool(program_state_message)
         await sio.emit(
             "program_state", message if keys is None else filter_state(message, keys), to=sid
         )
@@ -372,7 +397,7 @@ class WebServer(QThread):
 
     @on("program_state")
     def ws_program_state(message=None):
-        WebServer.ws_emit_state("program_state", WebServer.actions.program_state(), filter_state)
+        WebServer.ws_emit_state("program_state", program_state_message(), filter_state)
 
     # =====================================================
     # REQUEST HELPERS
