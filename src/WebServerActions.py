@@ -844,7 +844,8 @@ class WebServerActions(QObject):
     # PLAYER DATABASE
     # =====================================================
     def get_playerdb(self):
-        return PlayerDB.database
+        # A copy: worker threads add players while this is encoded
+        return PlayerDB.Snapshot()
 
     # =====================================================
     # BRACKET

@@ -9,7 +9,7 @@ declare namespace HDStateClient {
   type RemoveAction = "dictionary_item_removed";
   type Action = SetAction | RemoveAction;
 
-  /** One change: the value at path set, or the key at path removed. The server sends more fields (DeepDiff's), unused. */
+  /** One change: the value at path set, or the key at path removed. A removal has no value. */
   interface Delta {
     path: (string | number)[];
     action: Action | (string & {});

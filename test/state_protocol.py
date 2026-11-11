@@ -9,7 +9,7 @@ SET_ACTIONS = ("values_changed", "type_changes", "dictionary_item_added")
 REMOVE_ACTIONS = ("dictionary_item_removed",)
 ACTIONS = SET_ACTIONS + REMOVE_ACTIONS
 
-# DeepDiff's value for a change it has no value of
+# What older servers sent for a change they had no value of
 UNKNOWN_VALUE = "unknown___"
 
 _MISSING = object()

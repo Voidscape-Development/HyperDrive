@@ -18,13 +18,14 @@
 (function (root) {
   "use strict";
 
-  // What StateManager sends (DeepDiff's flat deltas; changes inside lists
-  // come as the whole list, see StateManager.WholeListDeltas)
+  // What StateManager sends (see DiffStates there): a value set or a key
+  // removed, and a changed list as the whole list. type_changes is no
+  // longer sent, and stays known for servers that still do.
   const SET_ACTIONS = ["values_changed", "type_changes", "dictionary_item_added"];
   const REMOVE_ACTIONS = ["dictionary_item_removed"];
   const ACTIONS = SET_ACTIONS.concat(REMOVE_ACTIONS);
 
-  // DeepDiff's value for a change it has no value of (1 becoming true)
+  // What older servers sent for a change they had no value of (1 becoming true)
   const UNKNOWN_VALUE = "unknown___";
 
   const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);

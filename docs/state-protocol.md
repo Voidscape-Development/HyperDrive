@@ -43,11 +43,12 @@ state's root):
 | `values_changed`, `type_changes`, `dictionary_item_added` | The value at `path` is `value` |
 | `dictionary_item_removed` | The key at `path` is removed |
 
-These are DeepDiff's flat deltas, with their other fields (`old_value`,
-`type`...), which clients ignore. Lists whose items were added, removed or
-moved are sent whole, as one `values_changed` of the list
-(`StateManager.WholeListDeltas`); a value changed inside an item that stays
-has the item's index in its path.
+`StateManager.DiffStates` makes them, from the values set and unset since
+the last update. A removal has no `value`. A list that changed is sent
+whole, as one `values_changed` of the list, so paths never go into a list.
+The server sends `values_changed`, `dictionary_item_added` and
+`dictionary_item_removed`; `type_changes` is what older versions sent for a
+value whose type changed, and clients still take it.
 
 ## What a client does
 
@@ -67,7 +68,7 @@ has the item's index in its path.
 
 An update can't be applied when it isn't `{delta_index: <integer>, delta:
 [...]}`, or one of its deltas has an action other than the four above, no
-path, no value to set (or DeepDiff's placeholder `"unknown___"`), or changes
+path, no value to set (or `"unknown___"`, which older versions sent in place of one), or changes
 a list other than by setting an item it has or the one after its last.
 
 Applying leaves the previous state object as it was: the objects and lists

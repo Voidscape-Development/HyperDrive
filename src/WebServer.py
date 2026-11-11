@@ -267,14 +267,15 @@ async def layouts():
     return await run_in_threadpool(ListLayouts)
 
 
-def ws_emit_state(event, message, filter):
+def ws_emit_state(event, message, filter, broadcast=False):
     """Sends a state message: whole to the clients that subscribed to
     nothing, and filter(message, keys) to each set of keys subscribed to.
-    In a socket event handler it answers that client alone."""
+    In a socket event handler it answers that client alone, unless
+    broadcast is set."""
     loop = WebServer.loop
     if loop is None or loop.is_closed():
         return None
-    sid = getattr(_client, "sid", None)
+    sid = None if broadcast else getattr(_client, "sid", None)
 
     async def send():
         if sid is not None:
@@ -295,8 +296,11 @@ def ws_program_state_update(message=None):
 
 
 def on_program_state_update(changes):
+    """StateManager's state_updated, called by the thread that saved (see
+    the connection in WebServer.__init__): always for every client, also
+    when that thread is answering one client's socket event."""
     if len(changes) > 0:
-        future = ws_emit_state("program_state_update", changes, filter_update)
+        future = ws_emit_state("program_state_update", changes, filter_update, broadcast=True)
         if future is not None:
             future.add_done_callback(_check_state_update_sent)
 
@@ -333,6 +337,11 @@ async def ws_disconnect(sid, *args):
 @on("program_state")
 def ws_program_state(message=None):
     ws_emit_state("program_state", program_state_message(), filter_state)
+
+
+def on_program_state_big_change():
+    """StateManager's state_big_change: the whole state, for every client"""
+    ws_emit_state("program_state", program_state_message(), filter_state, broadcast=True)
 
 
 # =====================================================
@@ -630,8 +639,13 @@ class WebServer(QThread):
             commentaryWidget=commentaryWidget,
         )
 
-        StateManager.signals.state_updated.connect(on_program_state_update)
-        StateManager.signals.state_big_change.connect(ws_program_state)
+        # Direct: sent by the thread that saves, as it saves, so the clients
+        # get the updates in the order of their delta_index. Queued, a save
+        # made by a worker thread would be sent after the GUI thread's later
+        # ones, and every client would fetch the whole state again.
+        direct = Qt.ConnectionType.DirectConnection
+        StateManager.signals.state_updated.connect(on_program_state_update, direct)
+        StateManager.signals.state_big_change.connect(on_program_state_big_change, direct)
 
         self.host_name = "0.0.0.0"
         self.port = SettingsManager.Get("general.webserver_port", 5500)
