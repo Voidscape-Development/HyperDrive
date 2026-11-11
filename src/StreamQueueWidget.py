@@ -27,7 +27,6 @@ from .StateManager import StateManager
 from .StreamQueue import *
 from .Theme import ThemedIcon
 from .TournamentDataManager import TournamentDataManager
-from .Workers import Worker
 
 JOB_NAME = "stream_queue"
 DEFAULT_INTERVAL_SECS = 15
@@ -126,9 +125,17 @@ class AddStartggSetDialog(QDialog):
         if provider is None:
             self.status.setText(QApplication.translate("app", "No tournament loaded"))
             return
-        worker = Worker(provider.GetMatches, **{"getFinished": False})
-        worker.signals.result.connect(self.SetsLoaded)
-        threadPool.start(worker)
+
+        def fetch(progress_callback=None, cancel_event=None):
+            return provider.GetMatches(
+                getFinished=False, progress_callback=progress_callback, cancel_event=cancel_event
+            )
+
+        TournamentDataManager.instance.Run(fetch, self.SetsLoaded, self.SetsFailed)
+
+    def SetsFailed(self, error):
+        self.status.setText(QApplication.translate("app", "Couldn't load the sets"))
+        self.status.setToolTip(str(error))
 
     def SetsLoaded(self, sets):
         try:
@@ -548,6 +555,9 @@ class StreamQueueWidget(QDockWidget):
         self.durationsUpdated = 0
         # start.gg's streams and stations, with their ids
         self.streamsStations = {}
+        # Why the last update failed, None when it worked. The queues shown
+        # are then the last ones that loaded.
+        self.lastError = None
 
         contents = QWidget()
         contents.setLayout(QVBoxLayout())
@@ -657,6 +667,7 @@ class StreamQueueWidget(QDockWidget):
         self.durations = {}
         self.durationsUpdated = 0
         self.streamsStations = {}
+        self.lastError = None
         self.LoadStreamsStations()
         provider = TournamentDataManager.instance.provider
         if provider is not None and self.autoRefresh.isChecked():
@@ -715,17 +726,30 @@ class StreamQueueWidget(QDockWidget):
                     logger.error(traceback.format_exc())
             return result
 
-        worker = Worker(Fetch)
-        worker.signals.result.connect(
-            lambda result, provider=provider: self.Fetched(result, provider)
+        # Through the manager: the answer is dropped if another tournament
+        # was loaded meanwhile, or if a later update was started
+        TournamentDataManager.instance.Run(
+            Fetch,
+            lambda result: self.Fetched(result, provider),
+            self.FetchFailed,
+            key="stream_queue",
+            on_finished=done,
         )
-        worker.signals.finished.connect(done)
-        self.threadPool.start(worker)
+
+    def FetchFailed(self, error):
+        """The queues couldn't be fetched: the ones shown are kept, as they
+        were when they were last updated. An empty answer would have removed
+        every set from them."""
+        self.lastError = str(error) or error.__class__.__name__
+        logger.error(f"Stream queue not updated: {self.lastError}")
+        self.UpdateStatus()
+        self.Export()
 
     def Fetched(self, result, provider):
         # Another tournament was loaded meanwhile
         if provider is not TournamentDataManager.instance.provider:
             return
+        self.lastError = None
         try:
             self.model.SetProviderQueues((result or {}).get("queues") or {})
             self.model.SetAddedSetData((result or {}).get("added") or {})
@@ -741,6 +765,9 @@ class StreamQueueWidget(QDockWidget):
         if self.model.lastUpdated:
             ago = int(time.time() - self.model.lastUpdated)
             parts.append(QApplication.translate("app", "Updated {0}s ago").format(ago))
+        if self.lastError:
+            parts.append(QApplication.translate("app", "Couldn't update"))
+        self.statusLabel.setToolTip(self.lastError or "")
         if JOB_NAME in Scheduler.instance.jobs and Scheduler.instance.IsRunning(JOB_NAME):
             parts.append(QApplication.translate("app", "Updating..."))
         self.statusLabel.setText(" · ".join(parts))
@@ -753,11 +780,11 @@ class StreamQueueWidget(QDockWidget):
         provider = TournamentDataManager.instance.provider
         if provider is None:
             return
-        worker = Worker(provider.GetStreamsAndStations)
-        worker.signals.result.connect(
-            lambda result, provider=provider: self.StreamsStationsLoaded(result, provider)
+        TournamentDataManager.instance.Run(
+            provider.GetStreamsAndStations,
+            lambda result: self.StreamsStationsLoaded(result, provider),
+            key="streams_stations",
         )
-        self.threadPool.start(worker)
 
     def StreamsStationsLoaded(self, result, provider):
         if provider is TournamentDataManager.instance.provider:
@@ -975,6 +1002,8 @@ class StreamQueueWidget(QDockWidget):
         try:
             data = self.model.Export(self.OnStream(), self.durations)
             data["currentStream"] = SettingsManager.Get("twitch_username")
+            # The last update failed: the queues are the last ones loaded
+            data["stale"] = bool(self.lastError)
             StateManager.Set("stream_queue", data, replace=True)
         except Exception:
             logger.error(traceback.format_exc())
