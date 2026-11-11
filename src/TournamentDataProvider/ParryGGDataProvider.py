@@ -4,7 +4,6 @@ import traceback
 from collections import deque
 
 import grpc
-import requests
 from loguru import logger
 from parrygg.models.bracket_pb2 import BracketType, MatchState, SlotState
 from parrygg.models.event_pb2 import LocationType
@@ -40,6 +39,14 @@ from ..Helpers import CompletedSetsHelper
 from ..Helpers.CompletedSetsHelper import AddCharacterKey
 from ..Helpers.CountryHelper import CountryHelper
 from ..Helpers.SeedPerformance import EventBracketType
+from .ProviderErrors import (
+    Failed,
+    FromGrpc,
+    NotFoundError,
+    ProviderError,
+    TransientError,
+)
+from .StartGGConvert import TranslateRoundName
 from .StartGGDataProvider import StartGGDataProvider
 from .TournamentDataProvider import (
     LOCATION_HYBRID,
@@ -178,15 +185,14 @@ class ParryGGDataProvider(TournamentDataProvider):
             logger.warning("No API key provided for ParryGG")
             self.metadata = []
 
-        self._get_slugs_and_ids()
+        # Nothing is asked of parry.gg here (the provider is made on the GUI
+        # thread): Connect does, off it
+        self._parse_url()
 
     # =====================================================
     # SETUP
     # =====================================================
-    def _get_slugs_and_ids(self):
-        if self._initialized:
-            return
-
+    def _parse_url(self):
         # Strip the admin "/_manage" path segment so manage URLs like
         # parry.gg/<tournament>/_manage/<event>/main/bracket parse the same as
         # canonical parry.gg/<tournament>/<event>. The dialog/web validators
@@ -196,33 +202,48 @@ class ParryGGDataProvider(TournamentDataProvider):
         self.tournament_slug = segments[0]
         self.event_slug = segments[1] if len(segments) > 1 else ""
 
+    def Connect(self, progress_callback=None, cancel_event=None):
+        self._get_slugs_and_ids()
+        return self.url
+
+    def _get_slugs_and_ids(self):
+        """Asks parry.gg for the tournament, to know its id and the event's.
+        Raises a ProviderError when it can't: the API key was refused, there's
+        no such tournament or event, or parry.gg couldn't be reached (which
+        can be tried again)."""
+        if self._initialized:
+            return
+
         self._setup_service("Tournament")
 
-        try:
-            get_tournament_request = GetTournamentRequest()
-            get_tournament_request.tournament_slug = self.tournament_slug
-            get_tournament_response = self.tournament_service.GetTournament(
-                get_tournament_request, metadata=self.metadata, timeout=self._timeout
+        get_tournament_request = GetTournamentRequest()
+        get_tournament_request.tournament_slug = self.tournament_slug
+        get_tournament_response = self._rpc(
+            self.tournament_service.GetTournament, get_tournament_request
+        )
+
+        event_id = next(
+            (e.id for e in get_tournament_response.tournament.events if e.slug == self.event_slug),
+            None,
+        )
+        if event_id is None:
+            raise NotFoundError(
+                f"parry.gg: {self.tournament_slug} has no event {self.event_slug!r}"
             )
 
-            self._tournament_cache = get_tournament_response.tournament
-            self.tournament_id = get_tournament_response.tournament.id
+        self._tournament_cache = get_tournament_response.tournament
+        self.tournament_id = get_tournament_response.tournament.id
+        self.event_id = event_id
+        self._initialized = True
 
-            for event in get_tournament_response.tournament.events:
-                if event.slug == self.event_slug:
-                    self.event_id = event.id
-                    break
-
-            self._initialized = True
-
+    def _rpc(self, call, request):
+        """Calls parry.gg (call: a service's method) and returns its answer.
+        Raises a ProviderError when it failed, instead of grpc's own error."""
+        try:
+            return call(request, metadata=self.metadata, timeout=self._timeout)
         except grpc.RpcError as e:
-            if e.code() == grpc.StatusCode.UNAUTHENTICATED:
-                # logger.error("ParryGG authentication failed - invalid API key")
-                raise Exception("Invalid API key")
-            elif e.code() == grpc.StatusCode.NOT_FOUND:
-                raise Exception("Tournament or Event not found")
-            else:
-                logger.error(f"ParryGG gRPC error: {e}")
+            name = getattr(call, "__name__", None) or type(request).__name__
+            raise FromGrpc(e, f"parry.gg {name}") from e
 
     def _setup_service(self, service_name):
         if not hasattr(self, "channel") or self.channel is None:
@@ -278,31 +299,37 @@ class ParryGGDataProvider(TournamentDataProvider):
     # =====================================================
     # LOOKUPS
     # =====================================================
-    def _get_phases(self):
+    def _get_phases(self, required=False):
         """The event's phases keyed by phase ID, kept for CACHE_SECS. When
         they can't be loaded: the ones loaded last if any, else {} (not kept,
-        so the next call asks again)."""
+        so the next call asks again), or a ProviderError with required (when
+        the phases are what's being asked for, not a detail of it)."""
         if self._phases_cache is not None and not self._expired(self._phases_cached_at):
             return self._phases_cache
         self._setup_service("Event")
         try:
             req = GetEventRequest()
             req.id = self.event_id
-            resp = self.event_service.GetEvent(req, metadata=self.metadata, timeout=self._timeout)
+            resp = self._rpc(self.event_service.GetEvent, req)
             self._phases_cache = {phase.id: phase for phase in resp.event.phases}
             self._phases_cached_at = time.monotonic()
         except Exception as e:
             logger.error(f"Error loading phases: {e}")
-            return self._phases_cache if self._phases_cache is not None else {}
+            if self._phases_cache is not None:
+                return self._phases_cache
+            if required:
+                raise e if isinstance(e, ProviderError) else TransientError(str(e)) from e
+            return {}
         return self._phases_cache
 
     def _expired(self, cachedAt):
         return time.monotonic() - cachedAt >= self.CACHE_SECS
 
-    def _get_streams(self):
+    def _get_streams(self, required=False):
         """The tournament's streams keyed by stream ID, with resolved URL,
         kept for CACHE_SECS. When they can't be loaded: the ones loaded last
-        if any, else {} (not kept, so the next call asks again)."""
+        if any, else {} (not kept, so the next call asks again), or a
+        ProviderError with required."""
         if self._streams_cache is not None and not self._expired(self._streams_cached_at):
             return self._streams_cache
         self._setup_service("Stream")
@@ -310,9 +337,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         try:
             req = GetTournamentStreamsRequest()
             req.tournament_identifier.tournament_slug = self.tournament_slug
-            resp = self.stream_service.GetTournamentStreams(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
+            resp = self._rpc(self.stream_service.GetTournamentStreams, req)
             logger.info(
                 f"GetTournamentStreams returned {len(resp.streams)} streams for tournament_slug={self.tournament_slug}"
             )
@@ -339,7 +364,11 @@ class ParryGGDataProvider(TournamentDataProvider):
                 )
         except Exception as e:
             logger.error(f"Error loading streams: {traceback.format_exc()}")
-            return self._streams_cache if self._streams_cache is not None else {}
+            if self._streams_cache is not None:
+                return self._streams_cache
+            if required:
+                raise e if isinstance(e, ProviderError) else TransientError(str(e)) from e
+            return {}
         self._streams_cache = cache
         self._streams_cached_at = time.monotonic()
         return cache
@@ -405,7 +434,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         # get locale-translated output. If parry's exact strings ever diverge
         # from start.gg's roundMapping keys, extend that table or add a parry
         # normalization step here.
-        return StartGGDataProvider.TranslateRoundName(label or "")
+        return TranslateRoundName(label or "")
 
     def _resolve_stream(self, match):
         """Return a match's stream from _get_streams() (its "url",
@@ -459,7 +488,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         try:
             req = GetUserRequest()
             req.id = parry_user_id
-            resp = self.user_service.GetUser(req, metadata=self.metadata, timeout=self._timeout)
+            resp = self._rpc(self.user_service.GetUser, req)
             for acct in resp.user.linked_accounts:
                 if (
                     acct.provider == LinkedAccountProvider.LINKED_ACCOUNT_PROVIDER_STARTGG
@@ -494,14 +523,10 @@ class ParryGGDataProvider(TournamentDataProvider):
         sgg = self._get_startgg_subquery()
         result = None
         try:
-            data = sgg.QueryRequests(
-                "https://www.start.gg/api/-/gql",
-                type=requests.post,
-                jsonParams={
-                    "operationName": "UserSetQuery",
-                    "variables": {"userSlug": startgg_slug, "filters": {}},
-                    "query": StartGGDataProvider.UserSetQuery,
-                },
+            data = sgg._Gql(
+                "UserSetQuery",
+                {"userSlug": startgg_slug, "filters": {}},
+                StartGGDataProvider.UserSetQuery,
             )
             if not data or not data.get("data"):
                 # The request failed: not cached, so it's tried again
@@ -583,10 +608,12 @@ class ParryGGDataProvider(TournamentDataProvider):
         try:
             req = GetBracketRequest()
             req.id = bracket_id
-            resp = self.bracket_service.GetBracket(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
+            resp = self._rpc(self.bracket_service.GetBracket, req)
             return resp.bracket
+        except ProviderError:
+            # Not None: the callers would leave the bracket's sets out as
+            # if it had none
+            raise
         except Exception as e:
             logger.error(f"Error fetching bracket {bracket_id}: {traceback.format_exc()}")
             return None
@@ -800,8 +827,8 @@ class ParryGGDataProvider(TournamentDataProvider):
 
         get_tournament_request = GetTournamentRequest()
         get_tournament_request.tournament_slug = self.tournament_slug
-        get_tournament_response = self.tournament_service.GetTournament(
-            get_tournament_request, metadata=self.metadata, timeout=self._timeout
+        get_tournament_response = self._rpc(
+            self.tournament_service.GetTournament, get_tournament_request
         )
 
         for image in get_tournament_response.tournament.images:
@@ -816,18 +843,24 @@ class ParryGGDataProvider(TournamentDataProvider):
     def GetTournamentData(self, progress_callback=None, cancel_event=None):
         self._setup_service("Tournament")
 
-        get_tournament_request = GetTournamentRequest()
-        get_tournament_request.tournament_slug = self.tournament_slug
-        get_tournament_response = self.tournament_service.GetTournament(
-            get_tournament_request, metadata=self.metadata, timeout=self._timeout
-        )
+        try:
+            get_tournament_request = GetTournamentRequest()
+            get_tournament_request.tournament_slug = self.tournament_slug
+            get_tournament_response = self._rpc(
+                self.tournament_service.GetTournament, get_tournament_request
+            )
 
-        tournament_data = get_tournament_response.tournament
+            tournament_data = get_tournament_response.tournament
 
-        for event in tournament_data.events:
-            if event.slug == self.event_slug:
-                event_data = event
-                break
+            event_data = next(
+                (e for e in tournament_data.events if e.slug == self.event_slug), None
+            )
+            if event_data is None:
+                raise NotFoundError(
+                    f"parry.gg: {self.tournament_slug} has no event {self.event_slug!r}"
+                )
+        except ProviderError as e:
+            return Failed(e, {})
 
         tournament_info = {}
 
@@ -890,9 +923,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         try:
             get_event_request = GetEventRequest()
             get_event_request.id = self.event_id
-            get_event_response = self.event_service.GetEvent(
-                get_event_request, metadata=self.metadata, timeout=self._timeout
-            )
+            get_event_response = self._rpc(self.event_service.GetEvent, get_event_request)
 
             for phase in get_event_response.event.phases:
                 logger.info(
@@ -917,6 +948,8 @@ class ParryGGDataProvider(TournamentDataProvider):
 
                 phases.append(phase_info)
 
+        except ProviderError as e:
+            return Failed(e, [])
         except Exception as e:
             logger.error(f"Error getting tournament phases: {e}")
 
@@ -1146,6 +1179,8 @@ class ParryGGDataProvider(TournamentDataProvider):
                 f"{len(final_data['progressionsIn'])} progressions in, {len(final_data['progressionsOut'])} progressions out"
             )
 
+        except ProviderError as e:
+            return Failed(e, {})
         except Exception as e:
             logger.error(f"Error processing phase group: {traceback.format_exc()}")
 
@@ -1159,7 +1194,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         try:
             req = GetMatchRequest()
             req.id = setId
-            resp = self.match_service.GetMatch(req, metadata=self.metadata, timeout=self._timeout)
+            resp = self._rpc(self.match_service.GetMatch, req)
             ctx = resp.match
 
             # Full dump of what MatchService.GetMatch returns for the set the
@@ -1192,6 +1227,8 @@ class ParryGGDataProvider(TournamentDataProvider):
             return self._build_match_info(
                 ctx.match, list(ctx.seeds), phase, bracket, ctx.round.label
             )
+        except ProviderError as e:
+            return Failed(e, {})
         except Exception as e:
             logger.error(f"Error getting match: {traceback.format_exc()}")
             return {}
@@ -1205,10 +1242,10 @@ class ParryGGDataProvider(TournamentDataProvider):
         """
         final_data = []
         with_queue_entry = 0
-        phases = self._get_phases()
-        total_brackets = sum(len(p.brackets) for p in phases.values())
 
         try:
+            phases = self._get_phases(required=True)
+            total_brackets = sum(len(p.brackets) for p in phases.values())
             for phase in phases.values():
                 for bracket_ref in phase.brackets:
                     bracket = self._fetch_bracket(bracket_ref.id)
@@ -1241,6 +1278,8 @@ class ParryGGDataProvider(TournamentDataProvider):
                 f"{with_queue_entry} have stream_queue_entry set"
             )
 
+        except ProviderError as e:
+            return Failed(e, [])
         except Exception as e:
             logger.error(f"Error processing matches: {traceback.format_exc()}")
 
@@ -1255,8 +1294,11 @@ class ParryGGDataProvider(TournamentDataProvider):
         try:
             req = GetMatchRequest()
             req.id = match_id
-            resp = self.match_service.GetMatch(req, metadata=self.metadata, timeout=self._timeout)
+            resp = self._rpc(self.match_service.GetMatch, req)
             return self._process_future_set(resp.match)
+        except ProviderError:
+            # Not None: that's a set that isn't there
+            raise
         except Exception as e:
             logger.error(
                 f"Error fetching match {match_id} for stream queue: {traceback.format_exc()}"
@@ -1335,7 +1377,10 @@ class ParryGGDataProvider(TournamentDataProvider):
         }
 
     def GetFutureMatch(self, matchId, progress_callback=None, cancel_event=None):
-        return self._fetch_future_set(matchId) or {}
+        try:
+            return self._fetch_future_set(matchId) or {}
+        except ProviderError as e:
+            return Failed(e, {})
 
     def GetFutureMatchesList(self, setsId, progress_callback=None, cancel_event=None):
         # Returns {position_str: future_set} keyed by 1-based position in
@@ -1344,7 +1389,13 @@ class ParryGGDataProvider(TournamentDataProvider):
         result = {}
         for position, item in enumerate(setsId or [], start=1):
             match_id = item.get("id") if isinstance(item, dict) else item
-            result[str(position)] = (self._fetch_future_set(match_id) if match_id else None) or None
+            try:
+                result[str(position)] = (
+                    self._fetch_future_set(match_id) if match_id else None
+                ) or None
+            except ProviderError as e:
+                logger.error(f"{e.__class__.__name__}: {e}")
+                result[str(position)] = None
         return result
 
     # =====================================================
@@ -1363,7 +1414,11 @@ class ParryGGDataProvider(TournamentDataProvider):
         # slot. The provider's GetStreamMatchId reads the "slot" key to pick
         # the Nth STREAM_QUEUE_ENTRY_STATUS_ONSTREAM match for that stream.
         rows = []
-        for stream_id, info in self._get_streams().items():
+        try:
+            streams = self._get_streams(required=True)
+        except ProviderError as e:
+            return Failed(e, [])
+        for stream_id, info in streams.items():
             capacity = info.get("capacity", 1)
             for slot in range(capacity):
                 identifier = info["display_name"]
@@ -1386,12 +1441,10 @@ class ParryGGDataProvider(TournamentDataProvider):
         self._setup_service("Match")
         final_data = {}
         try:
-            for stream_id, info in self._get_streams().items():
+            for stream_id, info in self._get_streams(required=True).items():
                 req = GetStreamQueueRequest()
                 req.stream_id = stream_id
-                resp = self.stream_service.GetStreamQueue(
-                    req, metadata=self.metadata, timeout=self._timeout
-                )
+                resp = self._rpc(self.stream_service.GetStreamQueue, req)
                 queue_data = {}
                 for position, entry in enumerate(resp.entries, start=1):
                     if not entry.match_id:
@@ -1401,6 +1454,9 @@ class ParryGGDataProvider(TournamentDataProvider):
                         queue_data[str(position)] = set_data
                 final_data[info["display_name"]] = queue_data
             logger.info(f"GetStreamQueue: returned queues for {len(final_data)} streams")
+        except ProviderError as e:
+            # Not the queues fetched so far: the others would look empty
+            return Failed(e, {})
         except Exception as e:
             logger.error(f"Error processing stream queue: {traceback.format_exc()}")
         return final_data
@@ -1436,9 +1492,7 @@ class ParryGGDataProvider(TournamentDataProvider):
                 return None
             req = GetStreamQueueRequest()
             req.stream_id = stream_id
-            resp = self.stream_service.GetStreamQueue(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
+            resp = self._rpc(self.stream_service.GetStreamQueue, req)
             on_stream_entries = [
                 e
                 for e in resp.entries
@@ -1448,6 +1502,8 @@ class ParryGGDataProvider(TournamentDataProvider):
             if slot >= len(on_stream_entries):
                 return None
             return self._fetch_future_set(on_stream_entries[slot].match_id)
+        except ProviderError as e:
+            return Failed(e, None)
         except Exception as e:
             logger.error(f"Error in GetStreamMatchId: {traceback.format_exc()}")
             return None
@@ -1469,10 +1525,10 @@ class ParryGGDataProvider(TournamentDataProvider):
         try:
             req = GetStreamQueueRequest()
             req.stream_id = stationId
-            resp = self.stream_service.GetStreamQueue(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
+            resp = self._rpc(self.stream_service.GetStreamQueue, req)
             return [{"id": entry.match_id} for entry in resp.entries if entry.match_id]
+        except ProviderError as e:
+            return Failed(e, [])
         except Exception:
             logger.error(
                 f"Error fetching parry stream queue for {stationId}: {traceback.format_exc()}"
@@ -1609,7 +1665,7 @@ class ParryGGDataProvider(TournamentDataProvider):
 
     def _iter_completed_matches(self):
         """Yield (match, seeds_by_id, rounds_by_key, phase, bracket) for every completed match in the event."""
-        for phase in self._get_phases().values():
+        for phase in self._get_phases(required=True).values():
             for bracket_ref in phase.brackets:
                 bracket = self._fetch_bracket(bracket_ref.id)
                 if bracket is None:
@@ -1682,6 +1738,8 @@ class ParryGGDataProvider(TournamentDataProvider):
             sets = sets[:10]
             logger.info(f"GetCompletedSets: -> {len(sets)} sets")
             return CompletedSetsHelper.Finish(sets, self.context)
+        except ProviderError as e:
+            return Failed(e, [])
         except Exception as e:
             logger.error(f"Error in GetCompletedSets: {traceback.format_exc()}")
             return []
@@ -1721,9 +1779,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             try:
                 t_req = GetTournamentsRequest()
                 t_req.filter.user_id = user_id
-                t_resp = self.tournament_service.GetTournaments(
-                    t_req, metadata=self.metadata, timeout=self._timeout
-                )
+                t_resp = self._rpc(self.tournament_service.GetTournaments, t_req)
                 for tournament in t_resp.tournaments:
                     for event in tournament.events:
                         event_lookup[event.id] = (event, tournament)
@@ -1737,9 +1793,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             # Page over ~50 to ensure we have enough singles results after
             # filtering out doubles/3v3 events.
             req.pagination_request.page_size = 50
-            resp = self.user_service.GetUserPlacements(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
+            resp = self._rpc(self.user_service.GetUserPlacements, req)
 
             history = []
             for result in resp.results:
@@ -1818,7 +1872,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             self._setup_service("Match")
             req = GetMatchesRequest()
             req.filter.user_id = user_id_1
-            resp = self.match_service.GetMatches(req, metadata=self.metadata, timeout=self._timeout)
+            resp = self._rpc(self.match_service.GetMatches, req)
 
             recent = []
             online_by_id = None
@@ -1868,9 +1922,7 @@ class ParryGGDataProvider(TournamentDataProvider):
         try:
             req = GetTournamentsRequest()
             req.filter.user_id = user_id
-            resp = self.tournament_service.GetTournaments(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
+            resp = self._rpc(self.tournament_service.GetTournaments, req)
             for tournament in resp.tournaments:
                 if tournament.location_type in LOCATION_TYPES:
                     online[tournament.id] = (
@@ -1977,8 +2029,8 @@ class ParryGGDataProvider(TournamentDataProvider):
                 self.tournament_slug
             )
             get_event_entrants_request.event_identifier.event_slug_path.event_slug = self.event_slug
-            get_event_entrants_response = self.event_service.GetEventEntrants(
-                get_event_entrants_request, metadata=self.metadata, timeout=self._timeout
+            get_event_entrants_response = self._rpc(
+                self.event_service.GetEventEntrants, get_event_entrants_request
             )
 
             logger.info(
@@ -2009,6 +2061,8 @@ class ParryGGDataProvider(TournamentDataProvider):
                             break
 
                     players.append(formatted_entrant)
+        except ProviderError as e:
+            return Failed(e, [])
         except Exception as e:
             logger.error(f"Error processing entrants: {traceback.format_exc()}")
 
@@ -2045,9 +2099,7 @@ class ParryGGDataProvider(TournamentDataProvider):
             self._setup_service("Event")
             req = GetEventPlacementsRequest()
             req.id = self.event_id
-            resp = self.event_service.GetEventPlacements(
-                req, metadata=self.metadata, timeout=self._timeout
-            )
+            resp = self._rpc(self.event_service.GetEventPlacements, req)
 
             placements = sorted(
                 [p for p in resp.placements if p.HasField("event_entrant")],
@@ -2082,6 +2134,8 @@ class ParryGGDataProvider(TournamentDataProvider):
 
             logger.info(f"GetStandings: top {playerNumber} -> {len(teams)} teams")
             return teams
+        except ProviderError as e:
+            return Failed(e, [])
         except Exception as e:
             logger.error(f"Error in GetStandings: {traceback.format_exc()}")
             return []

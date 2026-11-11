@@ -5,7 +5,10 @@ batches, so later loads find them there.
 
 Only for providers with SUPPORTS_MAINS_PREFETCH. The provider fetches and
 caches each player's mains (MainsKey, IsMainsCached, FetchMains); this
-decides when, paces the requests and saves what they find."""
+decides when and saves what they find. The requests are made as background
+ones (provider.BackgroundRequests): start.gg's go through the same rate
+limiter as every other request (StartGGClient.RateLimiter), which spaces
+them out and keeps part of the budget for what the user is waiting for."""
 
 import threading
 import time
@@ -20,8 +23,9 @@ from .PlayerDB import PlayerDB
 
 
 class PlayerMains:
-    # Spacing between requests, keeping well under start.gg's 80
-    # requests/minute so interactive queries still have room
+    # Spacing between requests, for a provider that doesn't pace its
+    # background requests itself (PACES_BACKGROUND_REQUESTS), and how often
+    # the pre-warm checks whether queued players are done
     INTERVAL_SECS = 1.5
     # Players saved to the player database at once
     PREWARM_BATCH = 25
@@ -60,6 +64,14 @@ class PlayerMains:
             "gamerTag": player.get("gamerTag"),
             "mains": {g: [list(m) for m in ms] for g, ms in mains.items()},
         }
+
+    def _Fetch(self, key):
+        with self.provider.BackgroundRequests():
+            return self.provider.FetchMains(key)
+
+    def _Pace(self):
+        if not self.provider.PACES_BACKGROUND_REQUESTS:
+            time.sleep(self.INTERVAL_SECS)
 
     # =====================================================
     # AHEAD OF TIME
@@ -100,14 +112,14 @@ class PlayerMains:
                 if self.provider.IsMainsCached(key):
                     continue
 
-                mains = self.provider.FetchMains(key)
+                mains = self._Fetch(key)
                 if mains:
                     found.append(self._Entry(player, mains))
                 # Save in batches so progress survives a closed app
                 if len(found) >= self.PREWARM_BATCH:
                     PlayerDB.AddPlayers(found)
                     found = []
-                time.sleep(self.INTERVAL_SECS)
+                self._Pace()
 
             if found:
                 PlayerDB.AddPlayers(found)
@@ -154,11 +166,11 @@ class PlayerMains:
 
             try:
                 if not self.provider.IsMainsCached(key):
-                    mains = self.provider.FetchMains(key)
+                    mains = self._Fetch(key)
                     if mains:
                         found.append(self._Entry(player, mains))
                     fetched += 1
-                    time.sleep(self.INTERVAL_SECS)
+                    self._Pace()
             except Exception:
                 logger.error(traceback.format_exc())
             finally:
