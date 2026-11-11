@@ -37,6 +37,12 @@ class ScoreboardNotAvailable(Exception):
     pass
 
 
+class ScoreboardNotFound(Exception):
+    """Raised when a scoreboard number isn't one of the scoreboards."""
+
+    pass
+
+
 class WebServerActions(QThread):
     def __init__(
         self,
@@ -54,25 +60,33 @@ class WebServerActions(QThread):
     # =====================================================
     # SCOREBOARD AND STAGE STRIKE LOOKUPS
     # =====================================================
+    def scoreboard_number(self, number):
+        """The number of an existing scoreboard as an int. Raises
+        ScoreboardNotFound if it isn't one (the numbers are whole, from 1), and
+        ScoreboardNotAvailable while there are no scoreboards yet."""
+        count = len(self.scoreboard.GetScoreboardNumbers())
+        if count < 1:
+            raise ScoreboardNotAvailable("No scoreboard available")
+        if isinstance(number, str) and number.isascii() and number.isdigit():
+            number = int(number)
+        if type(number) is not int or not 1 <= number <= count:
+            raise ScoreboardNotFound(f"Scoreboard {number} not found")
+        return number
+
     def _get_scoreboard(self, number=1):
-        """Get a scoreboard by number, raising ScoreboardNotAvailable if it doesn't exist."""
+        """Get a scoreboard by number, raising ScoreboardNotFound if it doesn't exist."""
+        number = self.scoreboard_number(number)
         sb = self.scoreboard.GetScoreboard(number)
         if sb is None:
-            raise ScoreboardNotAvailable(f"Scoreboard {number} not available")
+            raise ScoreboardNotFound(f"Scoreboard {number} not found")
         return sb
 
     def program_state(self):
         return {"state": StateManager.state, "delta_index": StateManager.deltaIndex}
 
     def _scoreboard_number(self, number):
-        """A scoreboard number for stage striking, raising ScoreboardNotAvailable if it doesn't exist."""
-        try:
-            number = int(number) if number not in (None, "") else 1
-        except (TypeError, ValueError):
-            raise ScoreboardNotAvailable(f"Invalid scoreboard {number}")
-        if number < 1 or number > self.scoreboard.GetTabAmount():
-            raise ScoreboardNotAvailable(f"Scoreboard {number} not available")
-        return number
+        """A scoreboard number for stage striking, scoreboard 1 without one."""
+        return self.scoreboard_number(1 if number in (None, "") else number)
 
     def _strike_logic(self, scoreboard):
         return self.stageWidget.GetLogic(self._scoreboard_number(scoreboard))
@@ -117,7 +131,8 @@ class WebServerActions(QThread):
 
         try:
             n = self._scoreboard_number(scoreboard)
-        except ScoreboardNotAvailable:
+        except ScoreboardNotFound:
+            # The page may still ask for a scoreboard that was removed
             n = 1
 
         data["scoreboard"] = n
@@ -372,21 +387,12 @@ class WebServerActions(QThread):
     @gui_thread_sync
     def post_score(self, data):
         score = orjson.loads(data)
-        scoreboard_number = 1
-
-        if "scoreboard" in score:
-            try:
-                scoreboard_number = int(score["scoreboard"])
-            except ValueError:
-                logger.warning(
-                    f"Couldn't parse scoreboard [${score['scoreboard']}] from /post_data as int, falling back to scoreboard 1"
-                )
-                scoreboard_number = 1
+        scoreboard = self._get_scoreboard(score.get("scoreboard", 1))
 
         # Scores from the web API are in on-screen order (team 1 is the left
         # side), like the score up/down and color endpoints
         score["as_displayed"] = True
-        self._get_scoreboard(scoreboard_number).signals.ChangeSetData.emit(score)
+        scoreboard.signals.ChangeSetData.emit(score)
         return "OK"
 
     @gui_thread_sync
@@ -1095,11 +1101,12 @@ class WebServerActions(QThread):
 
     @gui_thread_sync
     def set_current_stage(self, scoreboard, codename):
+        sb = self._get_scoreboard(scoreboard)
+        number = sb.scoreboardNumber
         stage_data = StateManager.Get(f"game.stages.{codename}") if codename else None
         with StateManager.SaveBlock():
-            StateManager.Set(f"score.{scoreboard}.stage_strike.selectedStage", codename)
-            StateManager.Set(f"score.{scoreboard}.stage_strike.selectedStageData", stage_data)
-        sb = self._get_scoreboard(scoreboard)
+            StateManager.Set(f"score.{number}.stage_strike.selectedStage", codename)
+            StateManager.Set(f"score.{number}.stage_strike.selectedStageData", stage_data)
         curr_game = sb.gameReport.CurrentGameIndex()
         if curr_game < 0:
             curr_game = 0

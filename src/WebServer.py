@@ -30,7 +30,7 @@ from .PlayerDBModels import GetEngine, Player
 from .ScoreboardManager import ScoreboardManager
 from .SettingsManager import SettingsManager
 from .StateManager import StateManager
-from .WebServerActions import ScoreboardNotAvailable, WebServerActions
+from .WebServerActions import ScoreboardNotAvailable, ScoreboardNotFound, WebServerActions
 from .Wiki import HOME_PAGE, WebPage, WebSearchPage
 
 log = logging.getLogger("socketio.server")
@@ -199,6 +199,11 @@ async def log_requests(request: Request, call_next):
 @api.exception_handler(ScoreboardNotAvailable)
 async def handle_scoreboard_not_available(request: Request, e: ScoreboardNotAvailable):
     return HTMLResponse(str(e), status_code=503)
+
+
+@api.exception_handler(ScoreboardNotFound)
+async def handle_scoreboard_not_found(request: Request, e: ScoreboardNotFound):
+    return HTMLResponse(str(e), status_code=404)
 
 
 class PlayerAdmin(ModelView, model=Player):

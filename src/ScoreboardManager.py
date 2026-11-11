@@ -76,18 +76,15 @@ class ScoreboardManager(QDockWidget):
             self.signals.ScoreboardRemoved.emit(removed)
 
     def GetScoreboard(self, number):
-        if int(number) - 1 < len(self.scoreboardholder):
-            return self.scoreboardholder[int(number) - 1]
-        elif len(self.scoreboardholder) > 0:
-            logger.error(
-                f"Scoreboard Manager - Unable to retrieve scoreboard {number}, defaulting to scoreboard 1"
-            )
-            return self.scoreboardholder[0]
-        else:
-            logger.error(
-                f"Scoreboard Manager - Unable to retrieve scoreboard {number}, no scoreboards available"
-            )
-            return None
+        """The scoreboard with that number (from 1), or None if there's none."""
+        try:
+            index = int(number) - 1
+        except (TypeError, ValueError):
+            index = -1
+        if 0 <= index < len(self.scoreboardholder):
+            return self.scoreboardholder[index]
+        logger.error(f"Scoreboard Manager - Unable to retrieve scoreboard {number}")
+        return None
 
     def SetTabName(self, index, name):
         if int(index) - 1 < self.tabs.count():
