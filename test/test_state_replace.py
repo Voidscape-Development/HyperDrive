@@ -1,53 +1,18 @@
-# Checks values set with StateManager.Set(..., replace=True), which skip
-# DeepDiff: the deltas sent to the layouts turn the old state into the new
+# Checks big values set with StateManager.Set(), with and without
+# replace=True (which used to skip a slow diff, and is only kept for its
+# callers): the deltas sent to the layouts turn the old state into the new
 # one, and the exported files end up the same as a fresh export of the state.
 # Run from the repository root: python test/test_state_replace.py
 import copy
 import os
 import sys
-import tempfile
-import types
 
-os.environ.setdefault("QT_API", "PyQt6")
+sys.path.insert(0, os.path.abspath("test"))
+from state_harness import CheckExport, Replica, ResetState, RunTests
 
-sys.path.insert(0, os.path.abspath("."))
-# Import only the modules needed, not the whole application
-package = types.ModuleType("src")
-package.__path__ = [os.path.abspath("src")]
-sys.modules["src"] = package
-
-import src.StateManager as stateManagerModule
 from src.StateManager import StateManager
 
-stateManagerModule.SettingsManager.Get = staticmethod(lambda key, default=None: default)
-
-deltas = []
-StateManager.signals.state_updated.connect(lambda message: deltas.extend(message["delta"]))
-StateManager.signals.state_big_change.connect(lambda: deltas.append("big"))
-
-
-def Apply(data, delta):
-    """applyDeltas() of layout/include/globals.js"""
-    current = data
-    for key in delta["path"][:-1]:
-        current = current.setdefault(key, {})
-    if delta["action"] == "dictionary_item_removed":
-        current.pop(delta["path"][-1], None)
-    else:
-        current[delta["path"][-1]] = delta["value"]
-
-
-def Files(folder):
-    """{path: content} of the exported files"""
-    result = {}
-    for root, _, files in os.walk(folder):
-        for name in files:
-            if name.startswith("program_state.json"):
-                continue
-            path = os.path.join(root, name)
-            with open(path, encoding="utf-8") as file:
-                result[os.path.relpath(path, folder)] = file.read()
-    return result
+replica = Replica()
 
 
 def Stats(side, count):
@@ -63,99 +28,97 @@ def Stats(side, count):
 
 
 def Reset():
-    folder = tempfile.mkdtemp()
-    os.chdir(folder)
-    os.makedirs("out")
-    StateManager.state = {}
-    StateManager.lastSavedState = {}
-    StateManager.changedPaths = []
-    StateManager.replacedPaths = set()
-    deltas.clear()
+    ResetState()
+    replica.Reset()
 
 
-def Check(old):
-    applied = copy.deepcopy(old)
-    for delta in deltas:
-        assert delta != "big", deltas
-        Apply(applied, delta)
-    assert applied == StateManager.state, (applied, StateManager.state)
-    assert StateManager.lastSavedState == StateManager.state
-
-    exported = Files("out")
-    # CreateFilesDict writes to ./out: compare with a folder of its own
-    os.makedirs("fresh/out")
-    os.chdir("fresh")
-    for key, value in StateManager.state.items():
-        StateManager.CreateFilesDict(key, value)
-    fresh = Files("out")
-    assert exported == fresh, (exported, fresh)
+def Check():
+    assert "big" not in replica.messages, replica.messages
+    replica.Check()
+    CheckExport()
 
 
-def Swap(parentToo=False):
+def Paths():
+    return [delta["path"] for message in replica.messages for delta in message]
+
+
+def Swap(replace, parentToo=False, count=5):
     Reset()
     with StateManager.SaveBlock():
-        StateManager.Set("score.1.last_sets.1", Stats(1, 5))
+        StateManager.Set("score.1.last_sets.1", Stats(1, count))
         StateManager.Set("score.1.last_sets.2", Stats(2, 3))
         StateManager.Set("score.1.last_sets.3", {"x": {"y": 1}})
         StateManager.Set("score.1.name", "a")
-    old = copy.deepcopy(StateManager.state)
-    deltas.clear()
+    replica.messages.clear()
 
     with StateManager.SaveBlock():
         stats1 = StateManager.Get("score.1.last_sets.1")
         stats2 = StateManager.Get("score.1.last_sets.2")
-        StateManager.Set("score.1.last_sets.1", stats2, replace=True)
-        StateManager.Set("score.1.last_sets.2", stats1, replace=True)
-        # A dict becoming a value (whose old files the diff's export leaves
-        # behind, so only when replaced), and an unchanged one
+        StateManager.Set("score.1.last_sets.1", stats2, replace=replace)
+        StateManager.Set("score.1.last_sets.2", stats1, replace=replace)
+        # A dict becoming a value (whose old files have to go), and an
+        # unchanged one
         if not parentToo:
-            StateManager.Set("score.1.last_sets.3", {"x": 2}, replace=True)
+            StateManager.Set("score.1.last_sets.3", {"x": 2}, replace=replace)
         StateManager.Set("score.1.unchanged", {"z": 1})
         StateManager.Set("score.1.name", "b")
         if parentToo:
             StateManager.Set("score.1.last_sets", dict(StateManager.Get("score.1.last_sets")))
-    return old
 
 
-def TestReplace():
-    old = Swap()
-    replaced = {tuple(d["path"]) for d in deltas if d["action"] == "values_changed"}
-    assert ("score", "1", "last_sets", "1") in replaced, deltas
-    assert ("score", "1", "last_sets", "2") in replaced, deltas
-    Check(old)
+def TestSwap():
+    for replace in (True, False):
+        Swap(replace)
+        # One message, with only what changed
+        assert len(replica.messages) == 1, replica.messages
+        assert ["score", "1", "last_sets", "1", "1", "round_name"] not in Paths()
+        assert ["score", "1", "last_sets", "1", "1", "player_name"] in Paths()
+        assert ["score", "1", "last_sets", "1", "4"] in Paths()
+        assert ["score", "1", "last_sets", "3", "x"] in Paths()
+        Check()
 
 
-def TestReplaceUnderChangedParent():
-    # The parent was set too: the diff takes the replaced values
-    old = Swap(parentToo=True)
-    Check(old)
+def TestSwapUnderChangedParent():
+    for replace in (True, False):
+        Swap(replace, parentToo=True)
+        assert len(replica.messages) == 1, replica.messages
+        Check()
 
 
-def TestReplaceSmallChange():
-    # Only a little of it changed: the diff sends only that
-    Reset()
-    StateManager.Set("score.1.last_sets.1", Stats(1, 5))
-    old = copy.deepcopy(StateManager.state)
-    deltas.clear()
-    stats = copy.deepcopy(StateManager.Get("score.1.last_sets.1"))
-    stats["3"]["round_name"] = "Grand Final"
-    StateManager.Set("score.1.last_sets.1", stats, replace=True)
-    assert [d["path"] for d in deltas] == [["score", "1", "last_sets", "1", "3", "round_name"]], (
-        deltas
-    )
-    Check(old)
+def TestSwapBig():
+    # Too many changes for a delta: the dicts that hold them are sent whole,
+    # instead of the whole state to every layout
+    for replace in (True, False):
+        Swap(replace, count=200)
+        assert len(replica.messages) == 1, replica.messages
+        assert ["score", "1", "last_sets", "1"] in Paths(), Paths()
+        assert ["score", "1", "last_sets", "2"] in Paths(), Paths()
+        assert ["score", "1", "name"] in Paths(), Paths()
+        Check()
 
 
-def TestReplaceSameValue():
-    Reset()
-    StateManager.Set("score.1.last_sets.1", Stats(1, 2))
-    deltas.clear()
-    StateManager.Set("score.1.last_sets.1", Stats(1, 2), replace=True)
-    assert deltas == [], deltas
+def TestSmallChange():
+    # Only a little of it changed: only that is sent
+    for replace in (True, False):
+        Reset()
+        StateManager.Set("score.1.last_sets.1", Stats(1, 5))
+        replica.messages.clear()
+        stats = copy.deepcopy(StateManager.Get("score.1.last_sets.1"))
+        stats["3"]["round_name"] = "Grand Final"
+        StateManager.Set("score.1.last_sets.1", stats, replace=replace)
+        assert Paths() == [["score", "1", "last_sets", "1", "3", "round_name"]], Paths()
+        Check()
+
+
+def TestSameValue():
+    for replace in (True, False):
+        Reset()
+        StateManager.Set("score.1.last_sets.1", Stats(1, 2))
+        replica.messages.clear()
+        StateManager.Set("score.1.last_sets.1", Stats(1, 2), replace=replace)
+        assert replica.messages == [], replica.messages
+        Check()
 
 
 if __name__ == "__main__":
-    tests = [v for k, v in list(globals().items()) if k.startswith("Test")]
-    for test in tests:
-        test()
-        print(f"{test.__name__}: OK")
+    RunTests(globals())
