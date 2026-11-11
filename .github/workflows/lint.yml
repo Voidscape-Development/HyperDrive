@@ -48,3 +48,26 @@ jobs:
 
       - name: Check formatting
         run: npx prettier --check .
+
+  web-app:
+    name: Web app (TypeScript)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stage_strike_app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: stage_strike_app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Also checks the files it shares with the layouts: the state client
+      # and the state's generated types (layout/include/state*.d.ts)
+      - name: Typecheck
+        run: npm run typecheck

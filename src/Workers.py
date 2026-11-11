@@ -64,8 +64,26 @@ class Worker(QRunnable):
 
     """
 
+    # How many were made outside the GUI thread (a bug, see __init__)
+    offGuiThreadCreations = 0
+
     def __init__(self, fn, *args, **kwargs):
         super().__init__()
+
+        # The signals belong to the thread that makes the worker, and so do
+        # the slots connected there: made in a thread without an event loop
+        # (another worker's), result/error/finished are queued to it and
+        # never arrive. A worker only waited for (wait_for_all) still works.
+        app = QCoreApplication.instance()
+        self.createdOffGuiThread = app is not None and not app.thread().isCurrentThread()
+        if self.createdOffGuiThread:
+            Worker.offGuiThreadCreations += 1
+            logger.error(
+                "Worker created outside the GUI thread: slots connected to its signals "
+                "will NOT be called. Return the data from the running worker and start the "
+                "follow-up on the GUI thread (TournamentDataManager.Run), or fetch inline.\n"
+                + "".join(traceback.format_stack(limit=8))
+            )
 
         # Store constructor arguments (re-used for processing)
         self.fn = fn

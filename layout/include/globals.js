@@ -24,6 +24,7 @@ HD.layouts = {};
     "lodash.min.js",
     "color-thief.min.js",
     "socket.io.min.js",
+    "state_client.js",
     "render.js",
     "characters.js",
   ];
@@ -619,8 +620,13 @@ HD.layouts = {};
       reconnectionDelayMax: 1500,
       auth: stateKeys() ? { state_keys: stateKeys() } : undefined,
     });
-    let deltaIndex = -1;
-    let resyncing = false; // A full state was requested and hasn't come
+    // The protocol (which deltas to apply, when to ask for the whole state)
+    // is state_client.js's, shared with the web app and the Stream Deck plugin
+    const sync = HDStateClient.createSync((reason, index) => {
+      console.log(`Delta ${index} after ${sync.index} (${reason}): resyncing`);
+      // The server answers this layout alone
+      socket.emit("program_state", {});
+    });
 
     socket.on("connect", () => {
       console.log("socket.io connected");
@@ -636,55 +642,22 @@ HD.layouts = {};
 
     socket.on("program_state", (message) => {
       if (devMode) return;
-      resyncing = false;
-      deltaIndex = message.delta_index;
-      receive(message.state);
+      receive(sync.full(message));
     });
 
     socket.on("program_state_update", (message) => {
-      if (devMode || resyncing) return;
-      const index = message.delta_index;
-      // Deltas are numbered one by one: an older one, or a gap, means the
-      // state here is off. Ask for the whole state, once: the server sends
-      // it to every layout.
-      if (index < deltaIndex || (deltaIndex >= 0 && index > deltaIndex + 1)) {
-        console.log(`Delta ${index} after ${deltaIndex}: resyncing`);
-        resyncing = true;
-        socket.emit("program_state", {});
-        return;
-      }
-      deltaIndex = index;
-      // Empty when nothing the layout subscribed to changed
-      if (message.delta.length > 0) receive(applyDeltas(current, message.delta));
+      if (devMode) return;
+      // Applied if it is the next one. An older one or a gap means the state
+      // here is off: sync asks for the whole state, once. Nothing to show
+      // when nothing the layout subscribed to changed ("empty").
+      const result = sync.delta(message, current);
+      if (result.status === "applied") receive(result.state);
     });
   }
 
   // The state with the deltas applied, leaving the state as it was: only
   // the objects on the changed paths are copied, the rest is shared
-  function applyDeltas(state, deltas) {
-    const root = { ...state };
-    const copied = new Set([root]);
-    const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
-    for (const { path, action, value } of deltas) {
-      let node = root;
-      for (const key of path.slice(0, -1)) {
-        let next = node[key];
-        if (!own(node, key) || next === null || typeof next !== "object") {
-          next = {};
-        } else if (!copied.has(next)) {
-          next = Array.isArray(next) ? next.slice() : { ...next };
-        }
-        copied.add(next);
-        node[key] = next;
-        node = next;
-      }
-      const last = path[path.length - 1];
-      if (action === "dictionary_item_removed") delete node[last];
-      else node[last] = value;
-    }
-    return root;
-  }
-  HD.applyDeltas = applyDeltas;
+  HD.applyDeltas = (state, deltas) => HDStateClient.applyDeltas(state, deltas);
 
   // The dev harness (layout/dev.html) sends states to the layout it shows
   window.addEventListener("message", (e) => {

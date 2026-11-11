@@ -5,19 +5,15 @@
 # server can share it.
 import re
 
-import orjson
 import requests
 from loguru import logger
 
-from ..Helpers.DirHelper import ResolvePath
+from .ProviderErrors import ProviderError
+from .StartGGClient import GQL_URL, HEADERS, ReadQuery, StartGGClient
 
-STARTGG_GQL_URL = "https://www.start.gg/api/-/gql"
+STARTGG_GQL_URL = GQL_URL
 STARTGG_URL = "https://www.start.gg/"
-STARTGG_HEADERS = {
-    "client-version": "20",
-    "Content-Type": "application/json",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
-}
+STARTGG_HEADERS = HEADERS
 PARRY_URL = "https://parry.gg/"
 REQUEST_TIMEOUT_SECS = 20
 PARRY_TIMEOUT_SECS = 10
@@ -206,11 +202,6 @@ def FetchTournamentEvents(parsed, parryApiKey=None):
     return result
 
 
-def _ReadQuery(name):
-    with open(ResolvePath(f"src/TournamentDataProvider/StartGG{name}Query.txt")) as f:
-        return f.read()
-
-
 # =====================================================
 # START.GG
 # =====================================================
@@ -235,24 +226,24 @@ def _StartGGShortLinkSlug(shortSlug):
 
 
 def _QueryStartGGTournament(slug):
+    # Through the client every start.gg request goes through: its session,
+    # its rate limiter and its retries
     try:
-        response = requests.post(
-            STARTGG_GQL_URL,
-            headers=STARTGG_HEADERS,
-            json={
+        data = StartGGClient(timeoutSecs=REQUEST_TIMEOUT_SECS).Query(
+            GQL_URL,
+            requests.post,
+            jsonParams={
                 "operationName": "TournamentEventsQuery",
                 "variables": {"slug": slug},
-                "query": _ReadQuery("TournamentEvents"),
+                "query": ReadQuery("TournamentEvents"),
             },
-            timeout=REQUEST_TIMEOUT_SECS,
+            # Someone is waiting for the event picker
+            retries=2,
         )
-        data = orjson.loads(response.text)
-    except (requests.exceptions.RequestException, orjson.JSONDecodeError) as e:
+    except ProviderError as e:
         logger.error(f"start.gg TournamentEventsQuery: {e.__class__.__name__}: {e}")
         return None
-    if isinstance(data, dict) and data.get("errors"):
-        logger.warning(f"start.gg TournamentEventsQuery returned errors: {data.get('errors')}")
-    return ((data or {}).get("data") or {}).get("tournament")
+    return (data.get("data") or {}).get("tournament")
 
 
 def _FetchStartGG(slug, short):

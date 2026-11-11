@@ -1,45 +1,16 @@
 /**
  * HyperDrive's program state (what the layouts get), and what the actions
  * read from it. The web server sends the whole state on connect
- * (`program_state`), then the changes (`program_state_update`): DeepDiff's
- * flat deltas, applied the same way as layout/include/globals.js does.
+ * (`program_state`), then the changes (`program_state_update`): following
+ * them is state-client.ts, the implementation the layouts run too.
  */
+import { applyDeltas, type Delta } from "./state-client.ts";
 
-// The state is plain JSON from HyperDrive
+// The state is plain JSON from HyperDrive (its shape: layout/include/state.d.ts)
 export type State = Record<string, any>;
 
-export type Delta = {
-	path: (string | number)[];
-	action: string;
-	value?: unknown;
-};
-
-export function applyDelta(state: State, delta: Delta): void {
-	const path = delta.path;
-	if (!Array.isArray(path) || path.length === 0) {
-		return;
-	}
-	let node: State = state;
-	for (const key of path.slice(0, -1)) {
-		if (node[key] === null || typeof node[key] !== "object") {
-			node[key] = {};
-		}
-		node = node[key];
-	}
-	const last = path[path.length - 1];
-	if (delta.action === "dictionary_item_removed" || delta.action === "iterable_item_removed") {
-		delete node[last];
-	} else {
-		node[last] = delta.value;
-	}
-}
-
-export function applyDeltas(state: State, deltas: Delta[]): State {
-	for (const delta of deltas) {
-		applyDelta(state, delta);
-	}
-	return state;
-}
+/** The state with the deltas applied. The state given is left as it was. */
+export { applyDeltas, type Delta };
 
 /** The value at a dotted path, e.g. "score.1.team.2.score". */
 export function get<T = unknown>(state: State | undefined, path: string): T | undefined {

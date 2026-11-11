@@ -44,3 +44,19 @@ jobs:
             echo "::endgroup::"
           done
           exit $failed
+
+  state-client:
+    name: State client (Node)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # layout/include/state_client.js, which the layouts load and the web
+      # app and the Stream Deck plugin bundle, against the protocol's
+      # fixture (test/fixtures/state_protocol.json). No dependencies.
+      - name: Run the state protocol's fixture
+        run: node --test test/state_client.test.cjs

@@ -1,43 +1,44 @@
-# Checks that the state deltas sent to the layouts and the web app
-# (StateManager.WholeListDeltas()) turn the old state into the new one when
-# applied the way they apply them: setting or removing keys, never inserting
-# into or removing from lists. Random states with lists in them.
+# Checks that the state deltas sent to the layouts, the web app and the
+# Stream Deck plugin (DiffStates() of src/StateManager.py) turn the old state
+# into the new one when applied the way they apply them: setting or removing
+# keys, never inserting into or removing from lists. Random states with
+# lists in them.
 # Run from the repository root: python test/test_state_deltas.py
 import copy
 import os
 import random
 import sys
-import types
 
-sys.path.insert(0, os.path.abspath("."))
-# Import only the modules needed, not the whole application
-package = types.ModuleType("src")
-package.__path__ = [os.path.abspath("src")]
-sys.modules["src"] = package
+sys.path.insert(0, os.path.abspath("test"))
+from state_harness import CLIENTS, RunTests, Wire
 
-from deepdiff import DeepDiff, Delta
-
-from src.StateManager import StateManager
+from src.StateManager import REMOVED, DiffStates
 
 
-def Apply(data, delta):
-    """applyDelta() of layout/include/globals.js and stateDelta.js."""
-    current = data
-    for key in delta["path"][:-1]:
-        if isinstance(current, dict) and key not in current:
-            current[key] = {}
-        current = current[key]
-    last = delta["path"][-1]
-    if delta["action"] == "dictionary_item_removed":
-        current.pop(last, None)
-    else:
-        current[last] = delta["value"]
+def Deltas(old, new):
+    """The deltas as the clients get them."""
+    deltas = []
+    for path, action, _, value in DiffStates(old, new)[1]:
+        delta = {"path": list(path), "action": action}
+        if action != REMOVED:
+            delta["value"] = value
+        deltas.append(delta)
+    return Wire(deltas)
+
+
+def CheckApplied(old, new):
+    deltas = Deltas(old, new)
+    for apply in CLIENTS:
+        applied = copy.deepcopy(old)
+        for delta in deltas:
+            apply(applied, delta)
+        assert applied == new, (apply.__name__, old, new, deltas)
+    return deltas
 
 
 def RandomScalar():
-    # No booleans: DeepDiff's delta of 1 becoming True has no value, a
-    # quirk of its own that lists have nothing to do with
-    return random.choice(["a", "b", "c", "m1", "m2", 1, 2, 3])
+    # 1, 1.0 and True: DeepDiff's deltas of one becoming another had no value
+    return random.choice(["a", "b", "c", "m1", "m2", 1, 2, 3, 1.0, True, None])
 
 
 def RandomValue(depth=0):
@@ -77,44 +78,20 @@ def TestRandom(iterations=5000, seed=0):
         old = {"bracket": {"focus": RandomValue(), "x": RandomValue()}}
         # The state's top keys stay
         new = {"bracket": {k: Mutate(v) for k, v in copy.deepcopy(old["bracket"]).items()}}
-        diff = DeepDiff(
-            old,
-            new,
-            exclude_types=[type(None)],
-            verbose_level=2,
-            threshold_to_diff_deeper=StateManager.DIFF_DEEPER_THRESHOLD,
-        )
-        # Neither are values changing type: DeepDiff's deltas of some of
-        # them have no value
-        if "type_changes" in diff:
-            continue
-        StateManager.state = new
-        deltas = StateManager.WholeListDeltas(Delta(diff).to_flat_dicts())
-        applied = copy.deepcopy(old)
-        for delta in deltas:
-            Apply(applied, delta)
-        assert applied == new, (old, new, deltas)
+        for delta in CheckApplied(old, new):
+            # Nothing is done inside a list: it's set whole
+            assert all(isinstance(key, str) for key in delta["path"]), delta
 
 
 def TestFocusLists():
     old = {"bracket": {"focus": {"sets": ["m1", "m2", "m3", "m4"], "rounds": ["w:1"]}}}
     new = {"bracket": {"focus": {"sets": ["m1", "m3"], "rounds": []}}}
-    StateManager.state = new
-    deltas = StateManager.WholeListDeltas(
-        Delta(DeepDiff(old, new, verbose_level=2)).to_flat_dicts()
-    )
-    assert {tuple(d["path"]) for d in deltas} == {
-        ("bracket", "focus", "sets"),
-        ("bracket", "focus", "rounds"),
-    }, deltas
-    applied = copy.deepcopy(old)
-    for delta in deltas:
-        Apply(applied, delta)
-    assert applied == new
+    deltas = CheckApplied(old, new)
+    assert deltas == [
+        {"path": ["bracket", "focus", "sets"], "action": "values_changed", "value": ["m1", "m3"]},
+        {"path": ["bracket", "focus", "rounds"], "action": "values_changed", "value": []},
+    ], deltas
 
 
 if __name__ == "__main__":
-    tests = [v for k, v in list(globals().items()) if k.startswith("Test")]
-    for test in tests:
-        test()
-        print(f"{test.__name__}: OK")
+    RunTests(globals())

@@ -941,11 +941,17 @@ class SelectSetWindow(QDialog):
 
         self.SetLoading(False)
         self.sets = data["sets"] or []
-        self.updatedLabel.setText(
-            QApplication.translate("app", "Updated at {0}").format(
-                QLocale().toString(QTime.currentTime(), QLocale.FormatType.ShortFormat)
+        if data.get("error"):
+            # The sets couldn't be loaded, which isn't an event without sets
+            self.updatedLabel.setText(QApplication.translate("app", "Couldn't load the sets"))
+            self.updatedLabel.setToolTip(str(data.get("error")))
+        else:
+            self.updatedLabel.setToolTip("")
+            self.updatedLabel.setText(
+                QApplication.translate("app", "Updated at {0}").format(
+                    QLocale().toString(QTime.currentTime(), QLocale.FormatType.ShortFormat)
+                )
             )
-        )
         streams, stations, phases = FilterOptions(self.sets)
         self.FillFilter(self.streamFilter, streams)
         self.FillFilter(self.stationFilter, stations)

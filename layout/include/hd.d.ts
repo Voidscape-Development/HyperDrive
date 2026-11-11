@@ -6,8 +6,12 @@ declare const HD: HD.Runtime;
 declare const VS: any;
 
 declare namespace HD {
-  /** Program state, as HyperDrive sends it (see docs/layout-data.md) */
-  type State = Record<string, any>;
+  /**
+   * Program state, as HyperDrive sends it (see docs/layout-data.md). Its
+   * types are in state.d.ts, generated from src/state_schema.py. A layout
+   * that subscribes to some of it gets only those keys.
+   */
+  type State = HDState.State;
   type Target = string | JQuery | HTMLElement;
 
   /** HTML from HD.html / HD.raw: inserted as is, everything else is text */
@@ -32,9 +36,9 @@ declare namespace HD {
   /** One side of the scoreboard (.p1 / .p2) */
   interface TeamView {
     n: 1 | 2;
-    team: Record<string, any>;
-    players: Record<string, any>[];
-    player: Record<string, any>;
+    team: HDState.Team;
+    players: HDState.Player[];
+    player: HDState.Player;
     name: string;
     /** "& .x" or ".x" → ".p1 .x"; "&.x" → ".p1.x" */
     sel(selector?: string): string;
@@ -49,7 +53,7 @@ declare namespace HD {
     first: boolean;
     /** Scoreboard number (?scoreboardNumber=, default 1) */
     n: number;
-    score: Record<string, any>;
+    score: HDState.Scoreboard;
     settings: Record<string, any>;
     teams: [TeamView, TeamView];
     isTeams: boolean;
@@ -122,7 +126,8 @@ declare namespace HD {
     imagesLoaded(target: Target): Promise<unknown>;
     every(seconds: number, fn: (s: Scope) => void): number;
     turns(seconds: number, render: (s: Scope) => void): { pick<T>(items: T[]): T | "" };
-    applyDeltas(state: State, deltas: { path: (string | number)[]; action: string; value?: any }[]): State;
+    /** HDStateClient.applyDeltas (state_client.js): the state with the deltas applied, the one given left as it was */
+    applyDeltas(state: State, deltas: HDStateClient.Delta[]): State;
 
     // render.js
     escape(text: unknown): string;
