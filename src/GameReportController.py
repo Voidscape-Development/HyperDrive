@@ -64,8 +64,17 @@ class GameReportController(QObject):
         self.setId = None
         self.entrantIds = None
         self.setState = None
-        # Changed here since start.gg's games were last taken
+        # Changed here since start.gg's games were last taken, and not on
+        # start.gg yet: cleared when start.gg takes the request that sent
+        # them, not when it's queued, so a request given up on doesn't let
+        # start.gg's older games replace the ones here
         self.dirty = False
+        # Counts the changes made here, to tell whether the games start.gg
+        # took are still the ones here
+        self.revision = 0
+        # The request carrying the games, and the revision it has
+        self.sentRequest = None
+        self.sentRevision = None
         self.markedInProgress = set()
         self.lastRequest = None
         self.lastSent = 0
@@ -78,6 +87,9 @@ class GameReportController(QObject):
 
         StartGGReporter.instance.signals.status_changed.connect(self.ReporterStatusChanged)
         StartGGReporter.instance.signals.set_reported.connect(self.ReporterSetReported)
+        finished = getattr(StartGGReporter.instance.signals, "request_finished", None)
+        if finished is not None:
+            finished.connect(self.ReporterRequestFinished)
         GameAssetManager.instance.signals.onLoad.connect(self.signals.gamesChanged.emit)
 
     # =====================================================
@@ -226,6 +238,7 @@ class GameReportController(QObject):
     def Edited(self, fromScoreboard=False):
         """The games were changed here."""
         self.dirty = True
+        self.revision += 1
         self.Export()
         if not fromScoreboard:
             self.signals.scoreChanged.emit(*self.report.Score())
@@ -301,6 +314,8 @@ class GameReportController(QObject):
         self.entrantIds = None
         self.setState = None
         self.dirty = False
+        self.sentRequest = None
+        self.sentRevision = None
         self.lastRequest = None
         self.lastSent = 0
         self.report.Reset()
@@ -388,16 +403,26 @@ class GameReportController(QObject):
         start.gg to show."""
         return HasToken() and self.setId is not None
 
+    def ReporterStatus(self):
+        """The reporter's status for the set loaded here. A request for the
+        set that was here before may still finish after another one was
+        loaded: its status says nothing about this one."""
+        status = StartGGReporter.instance.Status(self.number)
+        setId = status.get("setId")
+        if setId is not None and str(setId) != str(self.setId):
+            return {"state": None, "message": "", "setId": self.setId}
+        return status
+
     def Sending(self):
-        state = StartGGReporter.instance.Status(self.number).get("state")
+        state = self.ReporterStatus().get("state")
         return state in (STATUS_PENDING, STATUS_SENDING, STATUS_RETRYING)
 
     def Reported(self):
-        state = StartGGReporter.instance.Status(self.number).get("state")
+        state = self.ReporterStatus().get("state")
         return state == STATUS_REPORTED or self.setState == 3
 
     def CanRetry(self):
-        state = StartGGReporter.instance.Status(self.number).get("state")
+        state = self.ReporterStatus().get("state")
         return state == STATUS_ERROR and self.lastRequest is not None
 
     def Variables(self, final):
@@ -419,15 +444,20 @@ class GameReportController(QObject):
         ok, _why = self.CanSend()
         if not ok or self.setState == 3:
             return
-        if StartGGReporter.instance.Status(self.number).get("state") == STATUS_REPORTED:
+        if self.ReporterStatus().get("state") == STATUS_REPORTED:
             return
         variables = self.Variables(final=False)
         if not variables["gameData"]:
             return
         self.lastRequest = {"kind": KIND_UPDATE, "setId": self.setId, "variables": variables}
-        StartGGReporter.instance.Submit(self.number, KIND_UPDATE, self.setId, variables)
+        self.Sent(StartGGReporter.instance.Submit(self.number, KIND_UPDATE, self.setId, variables))
+
+    def Sent(self, request):
+        """The games here were queued for start.gg, as request. They stay
+        dirty until start.gg takes it (ReporterRequestFinished)."""
+        self.sentRequest = request
+        self.sentRevision = self.revision
         self.lastSent = time.time()
-        self.dirty = False
 
     def ReportSet(self, parent=None):
         parent = parent or self.scoreboard
@@ -460,9 +490,7 @@ class GameReportController(QObject):
                 return
         self.liveTimer.stop()
         self.lastRequest = {"kind": KIND_REPORT, "setId": self.setId, "variables": variables}
-        StartGGReporter.instance.Submit(self.number, KIND_REPORT, self.setId, variables)
-        self.lastSent = time.time()
-        self.dirty = False
+        self.Sent(StartGGReporter.instance.Submit(self.number, KIND_REPORT, self.setId, variables))
 
     def ResetSet(self, parent=None):
         parent = parent or self.scoreboard
@@ -492,7 +520,9 @@ class GameReportController(QObject):
         if request["kind"] in (KIND_UPDATE, KIND_REPORT):
             # The games may have changed since
             request["variables"] = self.Variables(final=request["kind"] == KIND_REPORT)
-        StartGGReporter.instance.Retry(self.number, request)
+            self.Sent(StartGGReporter.instance.Retry(self.number, request))
+        else:
+            StartGGReporter.instance.Retry(self.number, request)
 
     def CheckToken(self, parent=None):
         parent = parent or self.scoreboard
@@ -534,6 +564,18 @@ class GameReportController(QObject):
             self.Export()
             self.signals.statusChanged.emit()
 
+    def ReporterRequestFinished(self, number, request, ok):
+        """start.gg took a request, or it was given up on."""
+        if number != self.number or request is None or request is not self.sentRequest:
+            return
+        self.sentRequest = None
+        # Still dirty if it failed, or if the games changed since it was sent
+        if ok and self.sentRevision == self.revision:
+            self.dirty = False
+            # start.gg may take a moment to show them
+            self.lastSent = time.time()
+        self.signals.statusChanged.emit()
+
     def ReporterSetReported(self, number, setId):
         if number != self.number or str(setId) != str(self.setId):
             return
@@ -545,7 +587,7 @@ class GameReportController(QObject):
         """What's being sent to start.gg, or why the set can't be reported:
         (text, STATUS_KIND_*)."""
         ok, why = self.CanSend()
-        status = StartGGReporter.instance.Status(self.number)
+        status = self.ReporterStatus()
         state = status.get("state")
         texts = {
             STATUS_PENDING: QApplication.translate("app", "Waiting to send..."),
