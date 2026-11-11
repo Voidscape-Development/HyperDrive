@@ -90,6 +90,8 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       proxy,
+      // src/stateClient.ts imports the layouts' ../layout/include/state_client.js
+      fs: { allow: ['..'] },
     },
   };
 });

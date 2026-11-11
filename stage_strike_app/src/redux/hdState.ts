@@ -1,19 +1,12 @@
-import {Action, createSlice, PayloadAction, WritableDraft} from '@reduxjs/toolkit'
-import {applyDeltas, combineDeltas} from "../stateDelta";
-import websocketConnection from "../websocketConnection";
+import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {
     HDCountryDb,
     HDCharacterDb,
     HDCharacterDbEntry,
     HDPlayerDb,
     HDState,
-    HDGamesDb, Delta
+    HDGamesDb
 } from "../backendDataTypes";
-
-export type ReceivedDeltas = {
-    delta_index: number;
-    delta: Delta[];
-};
 
 export type HDStateMessage = {
     state: HDState;
@@ -41,54 +34,30 @@ export const websocketInfoSlice = createSlice({
 
 export type HdStateReduxState = {
     hdState: HDState;
-    stateDeltas: ReceivedDeltas[];
+    /** Number of the last state message in hdState (-1: none, or unnumbered) */
     maxAppliedDeltaIdx: number;
     initializing: boolean;
 };
 
+/**
+ * The program state. Following the server's messages (which deltas apply,
+ * when to ask for the whole state again) is the state client's job, shared
+ * with the layouts: see ScoreboardPage/websocketInit.ts, which hands the
+ * resulting states to overwrite(). They share what didn't change with the
+ * state before.
+ */
 export const hdStateSlice = createSlice({
     name: 'hdState',
     initialState: {
         hdState: {} as HDState,
-        stateDeltas: [],
         maxAppliedDeltaIdx: -1,
         initializing: true,
     } as HdStateReduxState,
     reducers: {
-        applySavedDeltas(state: WritableDraft<HdStateReduxState>, action: Action) {
-            let sortedDeltas = state.stateDeltas.toSorted((a, b) => a.delta_index - b.delta_index);
-            const staleDeltas = sortedDeltas.filter((d) => d.delta_index < state.maxAppliedDeltaIdx);
-            sortedDeltas = sortedDeltas.filter((d) => d.delta_index >= state.maxAppliedDeltaIdx);
-
-            if (staleDeltas.length > 0) {
-                console.warn("Skipping applying stale deltas...", staleDeltas);
-            }
-
-            if (sortedDeltas.length > 0) {
-                for (let deltaSet of sortedDeltas) {
-                    console.log("Applying deltas: ", combineDeltas(deltaSet.delta));
-                    applyDeltas(state.hdState, deltaSet.delta);
-                }
-                state.maxAppliedDeltaIdx = sortedDeltas[sortedDeltas.length-1].delta_index;
-            }
-
-            state.initializing = false;
-            state.stateDeltas = [];
-        },
-
-        addDeltas(state: HdStateReduxState, action: PayloadAction<ReceivedDeltas>){
-            if (action.payload.delta_index < state.maxAppliedDeltaIdx) {
-                console.warn("Received out of order delta! Requesting new full state.");
-                websocketConnection.instance().emit("program_state", {});
-            }
-
-            state.stateDeltas.push(action.payload);
-        },
-
         overwrite(state: HdStateReduxState, action: PayloadAction<HDStateMessage>) {
             state.hdState = action.payload.state;
-            state.maxAppliedDeltaIdx = Math.max(action.payload.delta_index, state.maxAppliedDeltaIdx);
-            state.stateDeltas = [];
+            // As given, even lower: HyperDrive counts from 0 again when it restarts
+            state.maxAppliedDeltaIdx = action.payload.delta_index;
             state.initializing = false;
         },
 

@@ -11,10 +11,16 @@ on:
             - main
         paths:
             - 'streamdeck/**'
+            # The state client the plugin bundles, and its fixture
+            - 'layout/include/state_client.*'
+            - 'test/fixtures/state_protocol.json'
             - '.github/workflows/build_streamdeck.yml'
     pull_request:
         paths:
             - 'streamdeck/**'
+            # The state client the plugin bundles, and its fixture
+            - 'layout/include/state_client.*'
+            - 'test/fixtures/state_protocol.json'
             - '.github/workflows/build_streamdeck.yml'
     workflow_dispatch:
 

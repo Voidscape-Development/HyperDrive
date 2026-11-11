@@ -77,6 +77,7 @@ export default [
         ...browser,
         ...gsapPlugins,
         HD: "readonly",
+        HDStateClient: "readonly",
         VS: "readonly",
         HDBracket: "readonly",
         TB: "readonly",
