@@ -46,13 +46,8 @@ class PlayerMains:
 
     def _Saved(self, player, gameCodename):
         """The player database already has their mains for the game"""
-        tag = (
-            player.get("prefix") + " " + player.get("gamerTag")
-            if player.get("prefix")
-            else player.get("gamerTag")
-        )
         try:
-            saved = (PlayerDB.database.get(tag) or {}).get("mains") or {}
+            saved = (PlayerDB.GetPlayer(PlayerDB.GetTag(player)) or {}).get("mains") or {}
             if isinstance(saved, str):
                 saved = orjson.loads(saved)
             return bool(gameCodename and saved.get(gameCodename))

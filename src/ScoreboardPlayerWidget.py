@@ -562,11 +562,7 @@ class ScoreboardPlayerWidget(PlayerWidgetMixin, QGroupBox):
 
             # Load player data from DB; will be overwriten by incoming data
             if not dontLoadFromDB and PlayerDB.model is not None:
-                tag = (
-                    data.get("prefix") + " " + data.get("gamerTag")
-                    if data.get("prefix")
-                    else data.get("gamerTag")
-                )
+                tag = PlayerDB.GetTag(data)
 
                 # Looked up by tag instead of converting every row of the
                 # model back to a dict, which took tens of ms with a big DB
