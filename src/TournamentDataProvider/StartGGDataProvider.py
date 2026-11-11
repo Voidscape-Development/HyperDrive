@@ -971,7 +971,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return data
 
-    def GetFutureMatchesList(self, setsId, progress_callback, cancel_event):
+    def GetFutureMatchesList(self, setsId, progress_callback=None, cancel_event=None):
         """The future-set data of each set, {"1": set, "2": ...} in the same
         order, None for a set that couldn't be fetched"""
 
@@ -1114,7 +1114,8 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return {}
 
-    def GetStreamMatchId(self, streamName):
+    def GetStreamMatchId(self, station):
+        streamName = station
         # Accept either a bare identifier string or the station dict produced
         # by GetStations (parry's multi-capacity streams need the dict for slot
         # context; start.gg streams are always capacity 1, so just use the
@@ -1225,7 +1226,9 @@ class StartGGDataProvider(TournamentDataProvider):
     # =====================================================
     # SET HISTORY
     # =====================================================
-    def GetLastSets(self, playerID, playerNumber, callback, progress_callback, cancel_event):
+    def GetLastSets(
+        self, playerID, playerNumber, callback, progress_callback=None, cancel_event=None
+    ):
         try:
             data = self.QueryRequests(
                 "https://www.start.gg/api/-/gql",
@@ -1345,7 +1348,7 @@ class StartGGDataProvider(TournamentDataProvider):
             logger.error(traceback.format_exc())
             callback.emit({"playerNumber": playerNumber, "last_sets": []})
 
-    def GetCompletedSets(self, progress_callback, cancel_event):
+    def GetCompletedSets(self, progress_callback=None, cancel_event=None):
         try:
             data = self.QueryRequests(
                 "https://www.start.gg/api/-/gql",
@@ -1469,7 +1472,7 @@ class StartGGDataProvider(TournamentDataProvider):
             return []
 
     def GetPlayerHistoryStandings(
-        self, playerID, playerNumber, gameType, callback, progress_callback, cancel_event
+        self, playerID, playerNumber, gameType, callback, progress_callback=None, cancel_event=None
     ):
         try:
             data = self.QueryRequests(
@@ -1554,7 +1557,14 @@ class StartGGDataProvider(TournamentDataProvider):
         ]
 
     def GetRecentSets(
-        self, id1, id2, videogame, callback, requestTime, progress_callback, cancel_event
+        self,
+        id1,
+        id2,
+        videogame,
+        callback,
+        requestTime,
+        progress_callback=None,
+        cancel_event=None,
     ):
         try:
             pid1, pid2 = str(id1[0]), str(id2[0])
@@ -1940,7 +1950,7 @@ class StartGGDataProvider(TournamentDataProvider):
     # =====================================================
     # STANDINGS
     # =====================================================
-    def GetStandings(self, playerNumber, progress_callback, cancel_event):
+    def GetStandings(self, playerNumber, progress_callback=None, cancel_event=None):
         try:
             eventSlug = self.url.split("start.gg/")[1]
 

@@ -1219,6 +1219,7 @@ class ParryGGDataProvider(TournamentDataProvider):
     # =====================================================
     def _fetch_future_set(self, match_id):
         """Fetch a single match by ID and convert to HyperDrive future-set format."""
+        self._setup_service("Match")
         try:
             req = GetMatchRequest()
             req.id = match_id
@@ -1301,20 +1302,17 @@ class ParryGGDataProvider(TournamentDataProvider):
             "isCurrentEvent": True,
         }
 
-    def GetFutureMatch(self, matchId, progress_callback, cancel_event):
+    def GetFutureMatch(self, matchId, progress_callback=None, cancel_event=None):
         return self._fetch_future_set(matchId) or {}
 
-    def GetFutureMatchesList(self, setsId, progress_callback, cancel_event):
+    def GetFutureMatchesList(self, setsId, progress_callback=None, cancel_event=None):
         # Returns {position_str: future_set} keyed by 1-based position in
-        # the queue, matching StartGGDataProvider.GetFutureMatchesList shape.
+        # the queue, matching StartGGDataProvider.GetFutureMatchesList shape:
+        # None for a set that couldn't be fetched.
         result = {}
         for position, item in enumerate(setsId or [], start=1):
             match_id = item.get("id") if isinstance(item, dict) else item
-            if not match_id:
-                continue
-            future_set = self._fetch_future_set(match_id)
-            if future_set:
-                result[str(position)] = future_set
+            result[str(position)] = (self._fetch_future_set(match_id) if match_id else None) or None
         return result
 
     # =====================================================
@@ -1761,7 +1759,14 @@ class ParryGGDataProvider(TournamentDataProvider):
             callback.emit({"playerNumber": playerNumber, "history_sets": []})
 
     def GetRecentSets(
-        self, id1, id2, videogame, callback, requestTime, progress_callback=None, cancel_event=None
+        self,
+        id1,
+        id2,
+        videogame,
+        callback,
+        requestTime,
+        progress_callback=None,
+        cancel_event=None,
     ):
         """Head-to-head: list of sets where both players faced each other.
 

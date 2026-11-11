@@ -188,7 +188,8 @@ class TournamentDataProvider(QObject):
         # ignore station["slot"] entirely.
         pass
 
-    def GetStationMatchId(self, stationId):
+    def GetStationMatchId(self, stationId) -> dict | None:
+        """The first of GetStationMatchsId, None if the station has no set"""
         pass
 
     def GetStationMatchsId(self, stationId) -> list[dict]:
@@ -258,24 +259,31 @@ class TournamentDataProvider(QObject):
     # SET HISTORY
     # =====================================================
     def GetRecentSets(
-        self, id1, id2, videogame, callback, requestTime, progress_callback, cancel_event
+        self,
+        id1,
+        id2,
+        videogame,
+        callback,
+        requestTime,
+        progress_callback=None,
+        cancel_event=None,
     ) -> None:
         """Emits the sets the two players (ids as in Player.id) played
         against each other: a RecentSets"""
         pass
 
     def GetLastSets(
-        self, playerID, playerNumber, callback, progress_callback, cancel_event
+        self, playerID, playerNumber, callback, progress_callback=None, cancel_event=None
     ) -> None:
         """Emits the player's last sets in the event: a LastSets"""
         pass
 
-    def GetCompletedSets(self, progress_callback, cancel_event) -> list[CompletedSet]:
+    def GetCompletedSets(self, progress_callback=None, cancel_event=None) -> list[CompletedSet]:
         """The event's last completed sets, most recent first"""
         pass
 
     def GetPlayerHistoryStandings(
-        self, playerID, playerNumber, gameType, callback, progress_callback, cancel_event
+        self, playerID, playerNumber, gameType, callback, progress_callback=None, cancel_event=None
     ) -> None:
         """Emits the player's placements in past events: a HistorySets"""
         pass
@@ -323,6 +331,8 @@ class TournamentDataProvider(QObject):
     # =====================================================
     # STANDINGS
     # =====================================================
-    def GetStandings(self, playerNumber, progress_callback, cancel_event) -> list[Standing]:
+    def GetStandings(
+        self, playerNumber, progress_callback=None, cancel_event=None
+    ) -> list[Standing]:
         """The event's top playerNumber, in placement order"""
         pass
