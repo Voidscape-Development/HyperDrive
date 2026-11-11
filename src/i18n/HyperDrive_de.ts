@@ -587,7 +587,7 @@
     </message>
     <message>
         <location filename="../BracketWidget.py" line="756"/>
-        <location filename="../ScoreboardWidget.py" line="188"/>
+        <location filename="../ScoreboardWidget.py" line="189"/>
         <location filename="../PlayerListWidget.py" line="87"/>
         <location filename="../CommentaryWidget.py" line="58"/>
         <source>Characters per player</source>
@@ -998,11 +998,11 @@
     <message>
         <location filename="../BracketFocusBar.py" line="211"/>
         <location filename="../ScoreboardManager.py" line="59"/>
-        <location filename="../ScoreboardManager.py" line="98"/>
-        <location filename="../ScoreboardManager.py" line="111"/>
+        <location filename="../ScoreboardManager.py" line="95"/>
+        <location filename="../ScoreboardManager.py" line="108"/>
         <location filename="../HyperDrive.py" line="1583"/>
-        <location filename="../StreamQueueWidget.py" line="173"/>
-        <location filename="../StreamQueueWidget.py" line="449"/>
+        <location filename="../StreamQueueWidget.py" line="180"/>
+        <location filename="../StreamQueueWidget.py" line="456"/>
         <source>Scoreboard</source>
         <translation></translation>
     </message>
@@ -1023,7 +1023,7 @@
     <message>
         <location filename="../HyperDrive.py" line="597"/>
         <location filename="../HyperDrive.py" line="605"/>
-        <location filename="../TournamentDataProvider/StartGGDataProvider.py" line="40"/>
+        <location filename="../TournamentDataProvider/StartGGDataProvider.py" line="41"/>
         <source>Pull Latest Completed Sets from StartGG</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1137,7 +1137,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="127"/>
+        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="135"/>
         <source>Pull Latest Completed Sets from ParryGG</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1181,14 +1181,14 @@
         <location filename="../SelectSetWindow.py" line="823"/>
         <location filename="../SelectStationWindow.py" line="745"/>
         <location filename="../HyperDrive.py" line="1504"/>
-        <location filename="../TournamentDataManager.py" line="238"/>
+        <location filename="../TournamentDataManager.py" line="460"/>
         <location filename="../Helpers/DownloadHelper.py" line="217"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../HyperDrive.py" line="447"/>
-        <location filename="../StreamQueueWidget.py" line="538"/>
+        <location filename="../StreamQueueWidget.py" line="545"/>
         <source>Stream Queue</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1826,17 +1826,17 @@
         <translation>{0} wird heruntergeladen...</translation>
     </message>
     <message>
-        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="121"/>
+        <location filename="../TournamentDataProvider/ParryGGDataProvider.py" line="129"/>
         <source>Parry.gg API key has not been set. Please configure it in Settings &gt; API Keys.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="136"/>
+        <location filename="../TournamentDataManager.py" line="275"/>
         <source>API keys can be created at: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="179"/>
+        <location filename="../TournamentDataManager.py" line="401"/>
         <source>Paste the tournament URL.</source>
         <translation>URL des Turniers einfügen.</translation>
     </message>
@@ -1845,33 +1845,63 @@
         <translation>Wird StartGG verwendet, so muss der Link den Teil mit /event/ beinhalten</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="186"/>
+        <location filename="../TournamentDataManager.py" line="408"/>
         <source>Supported providers:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="181"/>
+        <location filename="../TournamentDataManager.py" line="403"/>
         <source>A tournament link, start.gg short link or tournament slug lets you pick one of its events. Its other events are listed in the tournament&apos;s menu in the top bar, to switch to one later.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="193"/>
-        <location filename="../TournamentDataManager.py" line="239"/>
+        <location filename="../TournamentDataManager.py" line="334"/>
+        <source>The {0} API key was refused. Check it in Settings &gt; API Keys.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentDataManager.py" line="338"/>
+        <source>{0} refused the request.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentDataManager.py" line="340"/>
+        <source>This event wasn&apos;t found on {0}. Check its link.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentDataManager.py" line="342"/>
+        <source>{0} is getting too many requests. Try again in a moment.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentDataManager.py" line="346"/>
+        <source>{0} couldn&apos;t be reached. Check your connection and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentDataManager.py" line="371"/>
+        <source>The tournament couldn&apos;t be loaded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../TournamentDataManager.py" line="415"/>
+        <location filename="../TournamentDataManager.py" line="461"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="206"/>
+        <location filename="../TournamentDataManager.py" line="428"/>
         <source>Set tournament URL</source>
         <translation>Turnier-URL einstellen</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="236"/>
+        <location filename="../TournamentDataManager.py" line="458"/>
         <source>Set Twitch username</source>
         <translation>Twitch-Usernamen einstellen</translation>
     </message>
     <message>
-        <location filename="../TournamentDataManager.py" line="237"/>
+        <location filename="../TournamentDataManager.py" line="459"/>
         <source>Twitch Username:</source>
         <translation>Twitch-Username:</translation>
     </message>
@@ -1898,7 +1928,7 @@
     </message>
     <message>
         <location filename="../SelectSetWindow.py" line="443"/>
-        <location filename="../SelectSetWindow.py" line="988"/>
+        <location filename="../SelectSetWindow.py" line="994"/>
         <source>vs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1972,34 +2002,40 @@
     </message>
     <message>
         <location filename="../SelectSetWindow.py" line="930"/>
-        <location filename="../SelectSetWindow.py" line="1026"/>
+        <location filename="../SelectSetWindow.py" line="1032"/>
         <source>Fetching sets...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="945"/>
+        <location filename="../SelectSetWindow.py" line="946"/>
+        <location filename="../StreamQueueWidget.py" line="137"/>
+        <source>Couldn&apos;t load the sets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SelectSetWindow.py" line="951"/>
         <source>Updated at {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="1008"/>
+        <location filename="../SelectSetWindow.py" line="1014"/>
         <source>Showing {0} of {1} sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="1028"/>
+        <location filename="../SelectSetWindow.py" line="1034"/>
         <source>There are no sets to show.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SelectSetWindow.py" line="1031"/>
+        <location filename="../SelectSetWindow.py" line="1037"/>
         <source>No sets match the search and filters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../SelectSetWindow.py" line="575"/>
         <location filename="../SelectSetWindow.py" line="750"/>
-        <location filename="../StreamQueueWidget.py" line="96"/>
+        <location filename="../StreamQueueWidget.py" line="95"/>
         <source>Stream</source>
         <translation></translation>
     </message>
@@ -2007,7 +2043,7 @@
         <location filename="../SelectSetWindow.py" line="576"/>
         <location filename="../SelectSetWindow.py" line="751"/>
         <location filename="../SelectStationWindow.py" line="528"/>
-        <location filename="../StreamQueueWidget.py" line="196"/>
+        <location filename="../StreamQueueWidget.py" line="203"/>
         <source>Station</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2022,16 +2058,16 @@
         <location filename="../SelectSetWindow.py" line="574"/>
         <location filename="../SelectSetWindow.py" line="752"/>
         <location filename="../TeamBattleWidget.py" line="217"/>
-        <location filename="../StreamQueueWidget.py" line="93"/>
+        <location filename="../StreamQueueWidget.py" line="92"/>
         <source>Phase</source>
         <translation>Turnierphase</translation>
     </message>
     <message>
         <location filename="../SelectSetWindow.py" line="503"/>
         <location filename="../TeamBattleWidget.py" line="218"/>
-        <location filename="../StreamQueueWidget.py" line="94"/>
-        <location filename="../StreamQueueWidget.py" line="194"/>
-        <location filename="../StreamQueueWidget.py" line="415"/>
+        <location filename="../StreamQueueWidget.py" line="93"/>
+        <location filename="../StreamQueueWidget.py" line="201"/>
+        <location filename="../StreamQueueWidget.py" line="422"/>
         <source>Match</source>
         <translation></translation>
     </message>
@@ -2181,9 +2217,9 @@
         <location filename="../SelectSetWindow.py" line="457"/>
         <location filename="../SelectSetWindow.py" line="650"/>
         <location filename="../SelectStationWindow.py" line="78"/>
-        <location filename="../StreamQueueWidget.py" line="52"/>
-        <location filename="../StreamQueueWidget.py" line="139"/>
-        <location filename="../StreamQueueWidget.py" line="140"/>
+        <location filename="../StreamQueueWidget.py" line="51"/>
+        <location filename="../StreamQueueWidget.py" line="146"/>
+        <location filename="../StreamQueueWidget.py" line="147"/>
         <source>TBD</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2261,7 +2297,7 @@
     </message>
     <message>
         <location filename="../BracketView.py" line="368"/>
-        <location filename="../StreamQueueWidget.py" line="63"/>
+        <location filename="../StreamQueueWidget.py" line="62"/>
         <source>Finished</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2523,8 +2559,8 @@
         <location filename="../TeamBattleWidget.py" line="177"/>
         <location filename="../TeamBattleWidget.py" line="246"/>
         <location filename="../PlayerDBWindow.py" line="929"/>
-        <location filename="../StreamQueueWidget.py" line="95"/>
-        <location filename="../StreamQueueWidget.py" line="195"/>
+        <location filename="../StreamQueueWidget.py" line="94"/>
+        <location filename="../StreamQueueWidget.py" line="202"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2570,7 +2606,7 @@
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="100"/>
-        <location filename="../ScoreboardWidget.py" line="235"/>
+        <location filename="../ScoreboardWidget.py" line="236"/>
         <location filename="../DisplayOptions.py" line="30"/>
         <location filename="../CommentaryWidget.py" line="91"/>
         <source>Additional information</source>
@@ -2578,7 +2614,7 @@
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="121"/>
-        <location filename="../ScoreboardPlayerWidget.py" line="829"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="825"/>
         <source>Save new player</source>
         <translation>Neuen Spieler speichern</translation>
     </message>
@@ -2618,7 +2654,7 @@
         <translation>Zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../ScoreboardPlayerWidget.py" line="827"/>
+        <location filename="../ScoreboardPlayerWidget.py" line="823"/>
         <source>Update player</source>
         <translation>Spielereintrag aktualisieren</translation>
     </message>
@@ -2645,7 +2681,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="195"/>
+        <location filename="../ScoreboardWidget.py" line="196"/>
         <source>Players per team</source>
         <translation>Spieler pro Team</translation>
     </message>
@@ -2654,7 +2690,7 @@
         <translation>Thumbnail erstellen</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="219"/>
+        <location filename="../ScoreboardWidget.py" line="220"/>
         <location filename="../DisplayOptions.py" line="14"/>
         <location filename="../CommentaryWidget.py" line="75"/>
         <location filename="../PlayerDBWindow.py" line="218"/>
@@ -2671,7 +2707,7 @@
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="83"/>
         <location filename="../BracketWidget.py" line="1457"/>
-        <location filename="../ScoreboardWidget.py" line="225"/>
+        <location filename="../ScoreboardWidget.py" line="226"/>
         <location filename="../PlayerListWidget.py" line="298"/>
         <location filename="../DisplayOptions.py" line="20"/>
         <location filename="../CommentaryWidget.py" line="81"/>
@@ -2681,7 +2717,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="226"/>
+        <location filename="../ScoreboardWidget.py" line="227"/>
         <location filename="../DisplayOptions.py" line="21"/>
         <location filename="../CommentaryWidget.py" line="82"/>
         <source>Birthday</source>
@@ -2690,7 +2726,7 @@
     <message>
         <location filename="../TeamPlayerWidget.py" line="65"/>
         <location filename="../ScoreboardPlayerWidget.py" line="88"/>
-        <location filename="../ScoreboardWidget.py" line="228"/>
+        <location filename="../ScoreboardWidget.py" line="229"/>
         <location filename="../DisplayOptions.py" line="23"/>
         <location filename="../TeamBattleWidget.py" line="255"/>
         <location filename="../CommentaryWidget.py" line="84"/>
@@ -2700,7 +2736,7 @@
     </message>
     <message>
         <location filename="../SocialsWidget.py" line="36"/>
-        <location filename="../ScoreboardWidget.py" line="221"/>
+        <location filename="../ScoreboardWidget.py" line="222"/>
         <location filename="../DisplayOptions.py" line="16"/>
         <location filename="../TeamBattleWidget.py" line="250"/>
         <location filename="../CommentaryWidget.py" line="77"/>
@@ -2709,7 +2745,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="232"/>
+        <location filename="../ScoreboardWidget.py" line="233"/>
         <location filename="../PlayerListWidget.py" line="300"/>
         <location filename="../DisplayOptions.py" line="27"/>
         <location filename="../TeamBattleWidget.py" line="178"/>
@@ -2719,7 +2755,7 @@
         <translation>Charaktere</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="233"/>
+        <location filename="../ScoreboardWidget.py" line="234"/>
         <location filename="../PlayerListWidget.py" line="303"/>
         <location filename="../DisplayOptions.py" line="28"/>
         <location filename="../TeamBattleWidget.py" line="260"/>
@@ -2744,8 +2780,8 @@
         <translation>aktuelles Stream-Set laden</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="326"/>
-        <location filename="../ScoreboardWidget.py" line="392"/>
+        <location filename="../ScoreboardWidget.py" line="327"/>
+        <location filename="../ScoreboardWidget.py" line="393"/>
         <source>TEAM {0}</source>
         <translation>TEAM {0}</translation>
     </message>
@@ -2758,7 +2794,7 @@
         <translation>ACHTUNG</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="307"/>
+        <location filename="../ScoreboardWidget.py" line="308"/>
         <source>Open {0} in a browser to edit the scoreboard remotely.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2774,7 +2810,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="256"/>
+        <location filename="../GameReportController.py" line="269"/>
         <location filename="../GamesPopup.py" line="799"/>
         <source>Clear games</source>
         <translation type="unfinished"></translation>
@@ -2882,7 +2918,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="191"/>
+        <location filename="../GameReportController.py" line="203"/>
         <location filename="../GamesTracker.py" line="207"/>
         <location filename="../GamesTracker.py" line="208"/>
         <location filename="../GamesPopup.py" line="757"/>
@@ -2900,13 +2936,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="193"/>
+        <location filename="../GameReportController.py" line="205"/>
         <location filename="../GamesTracker.py" line="209"/>
         <source>Draw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="195"/>
+        <location filename="../GameReportController.py" line="207"/>
         <location filename="../GamesTracker.py" line="210"/>
         <source>Not played</source>
         <translation type="unfinished"></translation>
@@ -2917,160 +2953,160 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="199"/>
+        <location filename="../GameReportController.py" line="211"/>
         <source>Stage: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="207"/>
+        <location filename="../GameReportController.py" line="219"/>
         <source>Click to edit, right-click to set the winner</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="370"/>
-        <location filename="../GameReportController.py" line="503"/>
+        <location filename="../GameReportController.py" line="385"/>
+        <location filename="../GameReportController.py" line="533"/>
         <source>Set a start.gg API token in Settings &gt; API Keys to report sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="374"/>
+        <location filename="../GameReportController.py" line="389"/>
         <source>Load a set from start.gg to report it</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="376"/>
+        <location filename="../GameReportController.py" line="391"/>
         <source>This set&apos;s bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="380"/>
+        <location filename="../GameReportController.py" line="395"/>
         <source>Waiting for the set&apos;s players from start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="436"/>
-        <location filename="../GameReportController.py" line="442"/>
-        <location filename="../GameReportController.py" line="450"/>
+        <location filename="../GameReportController.py" line="466"/>
+        <location filename="../GameReportController.py" line="472"/>
+        <location filename="../GameReportController.py" line="480"/>
         <source>Report set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="443"/>
+        <location filename="../GameReportController.py" line="473"/>
         <source>The set has no winner yet: the score is tied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="451"/>
+        <location filename="../GameReportController.py" line="481"/>
         <source>Report {0} {1} - {2} {3} to start.gg?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="455"/>
+        <location filename="../GameReportController.py" line="485"/>
         <source>{0} game(s) with their characters and stages will be sent.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="471"/>
-        <location filename="../GameReportController.py" line="475"/>
+        <location filename="../GameReportController.py" line="499"/>
+        <location filename="../GameReportController.py" line="503"/>
         <source>Reset set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="476"/>
+        <location filename="../GameReportController.py" line="504"/>
         <source>Reset this set on start.gg? Its result and games there are cleared (sets that depend on it too). The games here are kept.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="502"/>
-        <location filename="../GameReportController.py" line="513"/>
-        <location filename="../GameReportController.py" line="526"/>
+        <location filename="../GameReportController.py" line="532"/>
+        <location filename="../GameReportController.py" line="543"/>
+        <location filename="../GameReportController.py" line="556"/>
         <source>start.gg API token</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="514"/>
+        <location filename="../GameReportController.py" line="544"/>
         <source>The token works. It belongs to {0}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="518"/>
+        <location filename="../GameReportController.py" line="548"/>
         <source>Sets can only be reported if this account is an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="527"/>
+        <location filename="../GameReportController.py" line="557"/>
         <source>The token doesn&apos;t work: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="577"/>
+        <location filename="../GameReportController.py" line="619"/>
         <source>Live on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="257"/>
+        <location filename="../GameReportController.py" line="270"/>
         <source>Clear the results, stages and characters of every game?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="551"/>
+        <location filename="../GameReportController.py" line="593"/>
         <source>Waiting to send...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="552"/>
+        <location filename="../GameReportController.py" line="594"/>
         <source>Sending to start.gg...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="553"/>
+        <location filename="../GameReportController.py" line="595"/>
         <source>Games sent to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="554"/>
+        <location filename="../GameReportController.py" line="596"/>
         <location filename="../GamesPopup.py" line="120"/>
         <source>Reported to start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="555"/>
+        <location filename="../GameReportController.py" line="597"/>
         <source>Couldn&apos;t reach start.gg.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="556"/>
+        <location filename="../GameReportController.py" line="598"/>
         <source>start.gg error:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="570"/>
+        <location filename="../GameReportController.py" line="612"/>
         <source>This set is finished on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="573"/>
+        <location filename="../GameReportController.py" line="615"/>
         <source>Games are sent when the set is reported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="253"/>
+        <location filename="../ScoreboardWidget.py" line="254"/>
         <location filename="../CommentaryWidget.py" line="109"/>
         <source>Compact player cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="294"/>
+        <location filename="../ScoreboardWidget.py" line="295"/>
         <source>Load a set...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="301"/>
+        <location filename="../ScoreboardWidget.py" line="302"/>
         <source>Track a stream or station...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="575"/>
+        <location filename="../ScoreboardWidget.py" line="576"/>
         <source>Clear the players, scores, phase and match, and unlink the loaded set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3084,22 +3120,22 @@
         <translation type="obsolete">Teamname</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="487"/>
+        <location filename="../ScoreboardWidget.py" line="488"/>
         <source>Who won each game of the set and with which characters, and reporting it</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="640"/>
+        <location filename="../ScoreboardWidget.py" line="641"/>
         <source>Load set from {0}</source>
         <translation>Set von {0} laden</translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="974"/>
+        <location filename="../ScoreboardWidget.py" line="975"/>
         <source>Clear All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ScoreboardWidget.py" line="975"/>
+        <location filename="../ScoreboardWidget.py" line="976"/>
         <source>Clear the players, scores, phase and match of this scoreboard, and unlink the loaded set?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3131,7 +3167,7 @@
         <translation>Später erinnern</translation>
     </message>
     <message>
-        <location filename="../GameReportController.py" line="107"/>
+        <location filename="../GameReportController.py" line="119"/>
         <location filename="../GamesTracker.py" line="34"/>
         <source>Team {0}</source>
         <translation></translation>
@@ -3165,7 +3201,8 @@
     <message>
         <location filename="../TournamentInfoWidget.py" line="1181"/>
         <location filename="../TournamentInfoWidget.py" line="1182"/>
-        <location filename="../TournamentDataManager.py" line="131"/>
+        <location filename="../TournamentDataManager.py" line="270"/>
+        <location filename="../TournamentDataManager.py" line="370"/>
         <location filename="../Settings/TournamentTermsSettings.py" line="214"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
@@ -3548,7 +3585,7 @@
         <location filename="../SelectEventWindow.py" line="109"/>
         <location filename="../SelectSetWindow.py" line="67"/>
         <location filename="../SelectSetWindow.py" line="731"/>
-        <location filename="../StreamQueueWidget.py" line="59"/>
+        <location filename="../StreamQueueWidget.py" line="58"/>
         <source>In progress</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3765,8 +3802,8 @@
     <message>
         <location filename="../PlayerMediaTabs.py" line="214"/>
         <location filename="../BracketWidget.py" line="590"/>
-        <location filename="../StreamQueueWidget.py" line="235"/>
-        <location filename="../StreamQueueWidget.py" line="476"/>
+        <location filename="../StreamQueueWidget.py" line="242"/>
+        <location filename="../StreamQueueWidget.py" line="483"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4002,15 +4039,15 @@
     </message>
     <message>
         <location filename="../BracketWidget.py" line="1898"/>
-        <location filename="../StreamQueueWidget.py" line="781"/>
-        <location filename="../StreamQueueWidget.py" line="796"/>
+        <location filename="../StreamQueueWidget.py" line="808"/>
+        <location filename="../StreamQueueWidget.py" line="823"/>
         <source>start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../AssetDownloaderWindow.py" line="891"/>
         <location filename="../BracketWidget.py" line="1463"/>
-        <location filename="../ScoreboardWidget.py" line="484"/>
+        <location filename="../ScoreboardWidget.py" line="485"/>
         <location filename="../GamesPopup.py" line="576"/>
         <source>Games</source>
         <translation type="unfinished"></translation>
@@ -4051,8 +4088,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="53"/>
-        <location filename="../StreamQueueWidget.py" line="138"/>
+        <location filename="../StreamQueueWidget.py" line="52"/>
+        <location filename="../StreamQueueWidget.py" line="145"/>
         <source>{0} vs {1}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4060,7 +4097,7 @@
         <location filename="../SelectSetWindow.py" line="68"/>
         <location filename="../SelectStationWindow.py" line="159"/>
         <location filename="../SelectStationWindow.py" line="1083"/>
-        <location filename="../StreamQueueWidget.py" line="61"/>
+        <location filename="../StreamQueueWidget.py" line="60"/>
         <source>Called</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4069,336 +4106,341 @@
         <location filename="../SelectStationWindow.py" line="1071"/>
         <location filename="../SelectStationWindow.py" line="1082"/>
         <location filename="../TrackingBar.py" line="102"/>
-        <location filename="../StreamQueueWidget.py" line="71"/>
+        <location filename="../StreamQueueWidget.py" line="70"/>
         <source>Now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="72"/>
+        <location filename="../StreamQueueWidget.py" line="71"/>
         <source>~{0} min ({1})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="82"/>
+        <location filename="../StreamQueueWidget.py" line="81"/>
         <source>Add a set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../DisplayControls.py" line="194"/>
-        <location filename="../StreamQueueWidget.py" line="87"/>
+        <location filename="../StreamQueueWidget.py" line="86"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="115"/>
+        <location filename="../StreamQueueWidget.py" line="114"/>
         <source>Loading sets...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../BracketWidget.py" line="945"/>
         <location filename="../TournamentInfoWidget.py" line="813"/>
-        <location filename="../StreamQueueWidget.py" line="127"/>
+        <location filename="../StreamQueueWidget.py" line="126"/>
         <source>No tournament loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../BracketFocusBar.py" line="522"/>
-        <location filename="../StreamQueueWidget.py" line="151"/>
+        <location filename="../StreamQueueWidget.py" line="158"/>
         <source>{0} sets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="176"/>
+        <location filename="../StreamQueueWidget.py" line="183"/>
         <source>The scoreboard showing this stream&apos;s sets. It gets the next set of the queue once its set is over, depending on the &quot;after a set&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="183"/>
+        <location filename="../StreamQueueWidget.py" line="190"/>
         <source>Load next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../SelectSetWindow.py" line="506"/>
         <location filename="../SelectSetWindow.py" line="577"/>
-        <location filename="../StreamQueueWidget.py" line="197"/>
+        <location filename="../StreamQueueWidget.py" line="204"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="198"/>
+        <location filename="../StreamQueueWidget.py" line="205"/>
         <source>Starts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="203"/>
+        <location filename="../StreamQueueWidget.py" line="210"/>
         <source>When the set should start, with sets taking as long as the event&apos;s last sets did</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="224"/>
-        <location filename="../StreamQueueWidget.py" line="448"/>
-        <location filename="../StreamQueueWidget.py" line="468"/>
+        <location filename="../StreamQueueWidget.py" line="231"/>
+        <location filename="../StreamQueueWidget.py" line="455"/>
+        <location filename="../StreamQueueWidget.py" line="475"/>
         <source>Load into scoreboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="228"/>
+        <location filename="../StreamQueueWidget.py" line="235"/>
         <source>Move up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="232"/>
+        <location filename="../StreamQueueWidget.py" line="239"/>
         <source>Move down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="237"/>
+        <location filename="../StreamQueueWidget.py" line="244"/>
         <source>Takes the set out of this queue. start.gg&apos;s queue isn&apos;t changed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="244"/>
+        <location filename="../StreamQueueWidget.py" line="251"/>
         <source>Add set...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="247"/>
+        <location filename="../StreamQueueWidget.py" line="254"/>
         <source>Add custom...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="249"/>
+        <location filename="../StreamQueueWidget.py" line="256"/>
         <source>A set that isn&apos;t on start.gg, e.g. an exhibition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="253"/>
+        <location filename="../StreamQueueWidget.py" line="260"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="255"/>
+        <location filename="../StreamQueueWidget.py" line="262"/>
         <source>Back to start.gg&apos;s queue, undoing the changes made here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../CharacterPicker.py" line="494"/>
         <location filename="../CharacterPicker.py" line="533"/>
-        <location filename="../StreamQueueWidget.py" line="292"/>
+        <location filename="../StreamQueueWidget.py" line="299"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="323"/>
+        <location filename="../StreamQueueWidget.py" line="330"/>
         <source>Added here, not in start.gg&apos;s queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../TournamentInfoWidget.py" line="577"/>
-        <location filename="../StreamQueueWidget.py" line="329"/>
+        <location filename="../StreamQueueWidget.py" line="336"/>
         <source>On stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="385"/>
+        <location filename="../StreamQueueWidget.py" line="392"/>
         <source>Reset queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="386"/>
+        <location filename="../StreamQueueWidget.py" line="393"/>
         <source>Undo the changes made to {0}&apos;s queue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="407"/>
+        <location filename="../StreamQueueWidget.py" line="414"/>
         <source>Add custom set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="413"/>
+        <location filename="../StreamQueueWidget.py" line="420"/>
         <source>Player/Team 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="414"/>
+        <location filename="../StreamQueueWidget.py" line="421"/>
         <source>Player/Team 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="470"/>
+        <location filename="../StreamQueueWidget.py" line="477"/>
         <source>Move to the top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="488"/>
+        <location filename="../StreamQueueWidget.py" line="495"/>
         <source>On start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="492"/>
+        <location filename="../StreamQueueWidget.py" line="499"/>
         <source>Its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="497"/>
+        <location filename="../StreamQueueWidget.py" line="504"/>
         <source>Call the set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="502"/>
+        <location filename="../StreamQueueWidget.py" line="509"/>
         <source>Assign to {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="510"/>
+        <location filename="../StreamQueueWidget.py" line="517"/>
         <source>start.gg has no stream named {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="512"/>
+        <location filename="../StreamQueueWidget.py" line="519"/>
         <source>Assign to station</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../StreamQueueWidget.py" line="769"/>
+        <source>Couldn&apos;t update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../SelectStationWindow.py" line="534"/>
-        <location filename="../StreamQueueWidget.py" line="514"/>
+        <location filename="../StreamQueueWidget.py" line="521"/>
         <source>Station {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="527"/>
+        <location filename="../StreamQueueWidget.py" line="534"/>
         <source>Update the streams and stations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="560"/>
+        <location filename="../StreamQueueWidget.py" line="570"/>
         <source>Update the queues now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="563"/>
+        <location filename="../StreamQueueWidget.py" line="573"/>
         <source>Update every</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../BracketFocusBar.py" line="226"/>
-        <location filename="../StreamQueueWidget.py" line="569"/>
+        <location filename="../StreamQueueWidget.py" line="579"/>
         <source> s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="579"/>
+        <location filename="../StreamQueueWidget.py" line="589"/>
         <source>After a set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="581"/>
+        <location filename="../StreamQueueWidget.py" line="591"/>
         <source>Do nothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="583"/>
+        <location filename="../StreamQueueWidget.py" line="593"/>
         <source>Ask to load the next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="586"/>
+        <location filename="../StreamQueueWidget.py" line="596"/>
         <source>Load the next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="589"/>
+        <location filename="../StreamQueueWidget.py" line="599"/>
         <source>What happens when the set on a stream&apos;s scoreboard is over (reported, or finished on start.gg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="603"/>
+        <location filename="../StreamQueueWidget.py" line="613"/>
         <source>Add start.gg&apos;s streams automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="608"/>
+        <location filename="../StreamQueueWidget.py" line="618"/>
         <source>Add stream...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="619"/>
+        <location filename="../StreamQueueWidget.py" line="629"/>
         <source>Add a stream by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="625"/>
+        <location filename="../StreamQueueWidget.py" line="635"/>
         <source>No streams yet. Streams in start.gg&apos;s stream queue show up here, or add one with +.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="743"/>
+        <location filename="../StreamQueueWidget.py" line="767"/>
         <source>Updated {0}s ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../BracketWidget.py" line="2031"/>
-        <location filename="../StreamQueueWidget.py" line="745"/>
+        <location filename="../StreamQueueWidget.py" line="772"/>
         <source>Updating...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="782"/>
+        <location filename="../StreamQueueWidget.py" line="809"/>
         <source>Set a start.gg API token in Settings &gt; API Keys first, from an account that&apos;s an admin of the tournament.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="797"/>
+        <location filename="../StreamQueueWidget.py" line="824"/>
         <source>start.gg refused it: {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="848"/>
+        <location filename="../StreamQueueWidget.py" line="875"/>
         <source>Remove stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="849"/>
+        <location filename="../StreamQueueWidget.py" line="876"/>
         <source>Remove {0}? start.gg&apos;s streams can be added back with +.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="862"/>
+        <location filename="../StreamQueueWidget.py" line="889"/>
         <source>Add stream</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="863"/>
+        <location filename="../StreamQueueWidget.py" line="890"/>
         <source>Stream name (e.g. the Twitch channel). A stream in start.gg&apos;s stream queue gets its queue.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="941"/>
+        <location filename="../StreamQueueWidget.py" line="968"/>
         <source>Next set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StreamQueueWidget.py" line="942"/>
+        <location filename="../StreamQueueWidget.py" line="969"/>
         <source>Load {0} into {1}?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="176"/>
+        <location filename="../StartGGReporter.py" line="181"/>
         <source>This set can&apos;t be reported: its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="243"/>
+        <location filename="../StartGGReporter.py" line="249"/>
         <source>Set reset on start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="260"/>
+        <location filename="../StartGGReporter.py" line="267"/>
         <source>{0} Retrying in {1}s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../StartGGReporter.py" line="296"/>
+        <location filename="../StartGGReporter.py" line="307"/>
         <source>This set can&apos;t be changed: its bracket hasn&apos;t started on start.gg yet</source>
         <translation type="unfinished"></translation>
     </message>
