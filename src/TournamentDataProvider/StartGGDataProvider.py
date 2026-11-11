@@ -72,8 +72,6 @@ class StartGGDataProvider(TournamentDataProvider):
     UserProfileQuery = None
     _request_timeout_secs = 20.0
 
-    player_seeds = {}
-
     # Head-to-head: the 100 most recent sets between two players, 20 a
     # request, keeping each under start.gg's complexity cap of 1000 objects
     # (a best of 5 costs ~30)
@@ -87,6 +85,10 @@ class StartGGDataProvider(TournamentDataProvider):
     def __init__(self, url, threadpool, dataManager, api_key=None, context=None) -> None:
         super().__init__(url, threadpool, dataManager, context=context)
         self.client = StartGGClient()
+        # {start.gg player id: seed} of the event's entrants (FetchEntrants).
+        # Its own: shared by every provider, an event's seeds showed up in
+        # the next event loaded.
+        self.player_seeds = {}
         # {MainsKey: mains}, see FetchMains
         self._mains_cache = {}
         # {start.gg user id: profile fields}, for players looked up because

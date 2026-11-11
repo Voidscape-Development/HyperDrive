@@ -1,4 +1,5 @@
 import math
+import time
 import traceback
 from collections import deque
 
@@ -150,12 +151,18 @@ class ParryGGDataProvider(TournamentDataProvider):
     _timeout = 10
     metadata = None
 
-    # Caches populated lazily; cleared on tournament change via cleanup()
+    # Seconds the event's phases and the tournament's streams are kept before
+    # they're asked for again (they change while the event runs)
+    CACHE_SECS = 60
+
+    # Caches populated lazily. Only what parry.gg (or start.gg) answered is
+    # kept: a failed request is tried again the next time it's needed.
     _tournament_cache = None  # parrygg.models.Tournament
-    _phases_cache = None  # dict[phase_id -> Phase]
-    _streams_cache = (
-        None  # dict[stream_id -> {"channel": str, "platform": int, "display_name": str}]
-    )
+    _phases_cache = None  # dict[phase_id -> Phase], for CACHE_SECS
+    _phases_cached_at = 0
+    # dict[stream_id -> {"channel": str, "platform": int, "display_name": str}], for CACHE_SECS
+    _streams_cache = None
+    _streams_cached_at = 0
     _linked_startgg_cache = None  # dict[parry_user_id -> {"slug", "user_id"} or None]
     _startgg_pid_cache = None  # dict[startgg_user_slug -> startgg_player_id_str or None]
     _startgg_mains_cache = None  # dict[parry_user_id -> mains dict or {}]
@@ -272,8 +279,10 @@ class ParryGGDataProvider(TournamentDataProvider):
     # LOOKUPS
     # =====================================================
     def _get_phases(self):
-        """Lazy-load and cache event phases keyed by phase ID."""
-        if self._phases_cache is not None:
+        """The event's phases keyed by phase ID, kept for CACHE_SECS. When
+        they can't be loaded: the ones loaded last if any, else {} (not kept,
+        so the next call asks again)."""
+        if self._phases_cache is not None and not self._expired(self._phases_cached_at):
             return self._phases_cache
         self._setup_service("Event")
         try:
@@ -281,14 +290,20 @@ class ParryGGDataProvider(TournamentDataProvider):
             req.id = self.event_id
             resp = self.event_service.GetEvent(req, metadata=self.metadata, timeout=self._timeout)
             self._phases_cache = {phase.id: phase for phase in resp.event.phases}
+            self._phases_cached_at = time.monotonic()
         except Exception as e:
             logger.error(f"Error loading phases: {e}")
-            self._phases_cache = {}
+            return self._phases_cache if self._phases_cache is not None else {}
         return self._phases_cache
 
+    def _expired(self, cachedAt):
+        return time.monotonic() - cachedAt >= self.CACHE_SECS
+
     def _get_streams(self):
-        """Lazy-load and cache tournament streams keyed by stream ID, with resolved URL."""
-        if self._streams_cache is not None:
+        """The tournament's streams keyed by stream ID, with resolved URL,
+        kept for CACHE_SECS. When they can't be loaded: the ones loaded last
+        if any, else {} (not kept, so the next call asks again)."""
+        if self._streams_cache is not None and not self._expired(self._streams_cached_at):
             return self._streams_cache
         self._setup_service("Stream")
         cache = {}
@@ -324,7 +339,9 @@ class ParryGGDataProvider(TournamentDataProvider):
                 )
         except Exception as e:
             logger.error(f"Error loading streams: {traceback.format_exc()}")
+            return self._streams_cache if self._streams_cache is not None else {}
         self._streams_cache = cache
+        self._streams_cached_at = time.monotonic()
         return cache
 
     def _is_online(self):
@@ -428,7 +445,9 @@ class ParryGGDataProvider(TournamentDataProvider):
 
     def _get_linked_startgg_account(self, parry_user_id):
         """Return {'slug', 'user_id'} for a parry user's linked start.gg
-        account, or None if not linked. Cached per provider lifetime.
+        account, or None if not linked or if parry.gg couldn't be asked.
+        What parry.gg answered is cached per provider lifetime; a failed
+        request isn't, see _linked_startgg_known.
         """
         if self._linked_startgg_cache is None:
             self._linked_startgg_cache = {}
@@ -452,9 +471,15 @@ class ParryGGDataProvider(TournamentDataProvider):
             logger.error(
                 f"Error fetching linked accounts for parry user {parry_user_id}: {traceback.format_exc()}"
             )
+            return None
 
         self._linked_startgg_cache[parry_user_id] = result
         return result
+
+    def _linked_startgg_known(self, parry_user_id):
+        """Whether parry.gg said what the user's linked start.gg account is
+        (or that there's none)"""
+        return parry_user_id in (self._linked_startgg_cache or {})
 
     def _resolve_startgg_player_id(self, startgg_slug):
         """Resolve a start.gg user slug to its player.id by running UserSetQuery.
@@ -478,17 +503,18 @@ class ParryGGDataProvider(TournamentDataProvider):
                     "query": StartGGDataProvider.UserSetQuery,
                 },
             )
-            pid = (
-                (data.get("data", {}) or {}).get("user", {}).get("player", {}).get("id")
-                if data
-                else None
-            )
+            if not data or not data.get("data"):
+                # The request failed: not cached, so it's tried again
+                logger.error(f"start.gg didn't say who {startgg_slug} is: {data}")
+                return None
+            pid = ((data["data"].get("user") or {}).get("player") or {}).get("id")
             if pid:
                 result = str(pid)
         except Exception:
             logger.error(
                 f"Error resolving start.gg player_id for slug {startgg_slug}: {traceback.format_exc()}"
             )
+            return None
 
         self._startgg_pid_cache[startgg_slug] = result
         return result
@@ -532,13 +558,19 @@ class ParryGGDataProvider(TournamentDataProvider):
 
         link = self._get_linked_startgg_account(parry_user_id)
         if not link:
-            self._startgg_mains_cache[parry_user_id] = {}
+            # Only when parry.gg said there's no linked account: a failed
+            # request is tried again next time
+            if self._linked_startgg_known(parry_user_id):
+                self._startgg_mains_cache[parry_user_id] = {}
             return {}
         selected = self.context.games.selectedGame or {}
         videogame_id = selected.get("smashgg_game_id")
         if not videogame_id:
             return {}  # don't cache — game may change
-        mains = self._get_startgg_subquery().GetUserMains(link["slug"], videogame_id)
+        # None when start.gg couldn't be asked: not cached either
+        mains = self._get_startgg_subquery()._FetchUserMains(link["slug"], videogame_id)
+        if mains is None:
+            return {}
         self._startgg_mains_cache[parry_user_id] = mains
         return mains
 
@@ -1789,12 +1821,21 @@ class ParryGGDataProvider(TournamentDataProvider):
             resp = self.match_service.GetMatches(req, metadata=self.metadata, timeout=self._timeout)
 
             recent = []
+            online_by_id = None
             for match_context in resp.matches:
                 match = match_context.match
                 seeds = list(match_context.seeds)
                 if len(seeds) < 2 or match.state != MatchState.MATCH_STATE_COMPLETED:
                     continue
                 set_data = self._build_h2h_set(match_context, user_id_1, user_id_2)
+                if set_data is not None and set_data["online"] is None:
+                    # A set of another tournament: asked once, for them all
+                    if online_by_id is None:
+                        online_by_id = self._online_by_id(user_id_1)
+                    set_data["online"] = self._h2h_online(match_context.hierarchy, online_by_id)
+                if set_data is not None:
+                    # Not known counts as offline, like start.gg's sets
+                    set_data["online"] = bool(set_data["online"])
                 if set_data is not None:
                     recent.append(set_data)
 
@@ -1818,6 +1859,46 @@ class ParryGGDataProvider(TournamentDataProvider):
         except Exception as e:
             logger.error(f"Error in GetRecentSets: {traceback.format_exc()}")
             callback.emit({"sets": [], "request_time": requestTime})
+
+    def _online_by_id(self, user_id):
+        """{tournament or event id: whether it's online} of the tournaments
+        the user is registered in, {} if they can't be listed"""
+        online = {}
+        self._setup_service("Tournament")
+        try:
+            req = GetTournamentsRequest()
+            req.filter.user_id = user_id
+            resp = self.tournament_service.GetTournaments(
+                req, metadata=self.metadata, timeout=self._timeout
+            )
+            for tournament in resp.tournaments:
+                if tournament.location_type in LOCATION_TYPES:
+                    online[tournament.id] = (
+                        tournament.location_type == LocationType.LOCATION_TYPE_ONLINE
+                    )
+                for event in tournament.events:
+                    if event.location_type in LOCATION_TYPES:
+                        online[event.id] = event.location_type == LocationType.LOCATION_TYPE_ONLINE
+        except Exception:
+            logger.error(f"Error listing the tournaments of {user_id}: {traceback.format_exc()}")
+        return online
+
+    def _h2h_online(self, hierarchy, online_by_id):
+        """Whether the set's own event (else its tournament) was online, None
+        when it isn't known. The event loaded now says nothing about a set
+        played at another tournament."""
+        ids = {path.type: path.id for path in hierarchy.paths}
+        event_id = ids.get(PathType.PATH_TYPE_EVENT)
+        tournament_id = ids.get(PathType.PATH_TYPE_TOURNAMENT)
+        if online_by_id:
+            for id in (event_id, tournament_id):
+                if id and id in online_by_id:
+                    return online_by_id[id]
+        if (event_id and event_id == self.event_id) or (
+            tournament_id and tournament_id == self.tournament_id
+        ):
+            return self._is_online()
+        return None
 
     def _build_h2h_set(self, match_context, target_user_id, opponent_user_id):
         """Build a set dict in the shape `recent_sets` / `recent_sets_full` layouts expect:
@@ -1871,7 +1952,9 @@ class ParryGGDataProvider(TournamentDataProvider):
             "id": match.id,
             "tournament": tournament_name,
             "event": event_name,
-            "online": self._is_online(),
+            # None for a set of another tournament, until GetRecentSets
+            # finds out
+            "online": self._h2h_online(hierarchy, None),
             "score": [target_score, opponent_score],
             "timestamp": match.ended_at.seconds,
             "winner": 0 if target_score >= opponent_score else 1,
