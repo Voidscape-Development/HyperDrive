@@ -14,6 +14,9 @@
 // For testing how smooth a move is (see the detail, below):
 //   no_redraw_steps  the bracket isn't drawn again while the camera moves,
 //                    only once it has stopped: softer during a zoom in
+//   focus_after_move  the sets in focus are only lit and outlined, and the
+//                     rest dimmed, once the camera has stopped, at once:
+//                     nothing changes layer while it moves
 // no_title.html has no title bar: the bracket takes the whole page.
 
 // ---------------------------------------------------------------------
@@ -786,13 +789,23 @@ function applyFocus(s, data, animate) {
     if (f && glows(focus)) outlined.add(`round:${el.dataset.round}`);
   }
 
-  dim(focused, hasFocus, animate);
-  glow(outlined, animate);
-  if (animate) {
-    // Once the camera is still: moving elements has them laid out again
-    settling = gsap.delayedCall(Math.max(cameraTime(), FADE_TIME) + 0.1, settle);
-  } else {
+  if (animate && HD.settings.focus_after_move) {
+    // Testing: the camera moves over the bracket as it was
     settle();
+    settling = gsap.delayedCall(cameraTime() + 0.05, () => {
+      dim(focused, hasFocus, false);
+      glow(outlined, false);
+      settle();
+    });
+  } else {
+    dim(focused, hasFocus, animate);
+    glow(outlined, animate);
+    if (animate) {
+      // Once the camera is still: moving elements has them laid out again
+      settling = gsap.delayedCall(Math.max(cameraTime(), FADE_TIME) + 0.1, settle);
+    } else {
+      settle();
+    }
   }
   for (const [el, f] of focused) if (el.classList.contains("focused") != f) el.classList.toggle("focused", f);
 
