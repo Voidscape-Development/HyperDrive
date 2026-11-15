@@ -11,6 +11,9 @@
 //   ignore_focus  always the whole bracket
 //   max_zoom      the most a set is enlarged, in % (default: the layout
 //                 theme's, 200)
+// For testing how smooth a move is (see the detail, below):
+//   no_redraw_steps  the bracket isn't drawn again while the camera moves,
+//                    only once it has stopped: softer during a zoom in
 // no_title.html has no title bar: the bracket takes the whole page.
 
 // ---------------------------------------------------------------------
@@ -541,7 +544,7 @@ function moveFrame() {
   if (!move) return;
   const t = (now() - move.start) / move.duration;
   if (t >= 1) return placeView(move.to);
-  if (setDetail(detailFor(Math.max(0, t)))) animateMove();
+  if (!HD.settings.no_redraw_steps && setDetail(detailFor(Math.max(0, t)))) animateMove();
   move.frame = requestAnimationFrame(moveFrame);
 }
 
