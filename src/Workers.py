@@ -89,7 +89,18 @@ class Worker(QRunnable):
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
-        self.signals = WorkerSignals()
+        if self.createdOffGuiThread:
+            self.signals = WorkerSignals()
+        else:
+            # Owned by the application, not by this Python object: the worker
+            # is deleted in the pool's thread once it ran (or by the garbage
+            # collector, in any thread), and its signals with it, while the
+            # GUI thread may be calling the slots of what it just emitted.
+            # That crashes the program. They're deleted on the GUI thread
+            # instead, after "finished" was delivered there (connected first,
+            # but deleteLater only acts once the slots queued with it ran).
+            self.signals = WorkerSignals(app)
+            self.signals.finished.connect(self.signals.deleteLater)
 
         # ORIGINAL METHOD
         # Add the callback to our kwargs
