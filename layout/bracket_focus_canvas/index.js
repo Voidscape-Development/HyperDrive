@@ -264,16 +264,20 @@ const QUIET_TIME = 180;
 // With more elements than this changed in a sheet, the whole sheet is
 // photographed at once instead of each one
 const MANY = 12;
+// A set photographed again fades from its old picture to the new one, in ms
+const CHANGE_TIME = 400;
 // The sets' entrance: each in ENTER_TIME, all started within STAGGER_TIME
 const ENTER_TIME = 400;
 const STAGGER_TIME = 1500;
 
 // What's drawn from a photograph: sets ("set:<id>"), round names
 // ("round:<key>"), byes ("bye:<key>") and the pool standings ("standings"):
-// {key, kind, id, box, el, sheet, cell, image, dirty, alpha, glow, enter}
+// {key, kind, id, box, el, sheet, cell, image, dirty, alpha, glow, enter,
+// change}
 // box is where it goes, in world pixels; cell where it is in its sheet,
 // with SHOT_MARGIN around it; image its own photograph, once it was taken
-// again by itself.
+// again by itself. change is its fade from the picture it had: {old, sharp,
+// blend, start, time}.
 let items = {};
 // {el, items, width, height, scale, image, levels}
 let sheets = [];
@@ -501,6 +505,7 @@ async function shootSheet(sheet) {
   sheet.levels = levels;
   for (const item of sheet.items) {
     item.image = null;
+    item.change = null;
     if (item.dirty <= started) item.dirty = 0;
   }
   stats.shots += 1;
@@ -513,6 +518,23 @@ async function shootItem(item) {
   const { sheet, cell } = item;
   const image = await photograph([{ el: item.el, x: SHOT_MARGIN, y: SHOT_MARGIN }], cell.w, cell.h, sheet.scale);
   if (!image || !sheets.includes(sheet) || !sheet.levels) return;
+  // The picture it had, to fade from
+  const old = document.createElement("canvas");
+  old.width = Math.max(1, Math.round(cell.w * sheet.scale));
+  old.height = Math.max(1, Math.round(cell.h * sheet.scale));
+  old
+    .getContext("2d")
+    .drawImage(
+      sheet.levels[0],
+      cell.x * sheet.scale,
+      cell.y * sheet.scale,
+      cell.w * sheet.scale,
+      cell.h * sheet.scale,
+      0,
+      0,
+      old.width,
+      old.height,
+    );
   sheet.levels.forEach((copy, level) => {
     const k = sheet.scale / 2 ** level;
     const c = copy.getContext("2d");
@@ -523,8 +545,22 @@ async function shootItem(item) {
     c.clearRect(x, y, w, h);
     c.drawImage(image, cell.x * k, cell.y * k, cell.w * k, cell.h * k);
   });
+  // And the photograph it was in, for the fade when the camera is still
+  const [sw, sh] = [cell.w * sheet.scale, cell.h * sheet.scale];
+  const sharp = item.image
+    ? [item.image, 0, 0, sw, sh]
+    : [sheet.image, cell.x * sheet.scale, cell.y * sheet.scale, sw, sh];
   item.image = image;
   if (item.dirty <= started) item.dirty = 0;
+  if (entered) {
+    item.change = {
+      old,
+      sharp,
+      blend: document.createElement("canvas"),
+      start: performance.now(),
+      time: CHANGE_TIME / (gsap.globalTimeline.timeScale() || 1),
+    };
+  }
   stats.shots += 1;
   stats.shotTime = Math.round(performance.now() - started);
 }
@@ -539,14 +575,14 @@ async function pump() {
   try {
     for (;;) {
       const t = performance.now();
-      if (busy(t)) break;
+      if (moving(t)) break;
       const quiet = (item) => t - item.dirty > QUIET_TIME;
       let job = null;
       for (const sheet of sheets) {
         const dirty = sheet.items.filter((item) => item.dirty);
         if (dirty.length === 0) continue;
         if (!sheet.levels || dirty.length > MANY) {
-          if (dirty.every(quiet)) job = () => shootSheet(sheet);
+          if (dirty.every(quiet)) job = () => shootSheet(sheet).then(() => true);
         } else {
           const item = dirty.find(quiet);
           if (item) job = () => shootItem(item);
@@ -554,9 +590,11 @@ async function pump() {
         if (job) break;
       }
       if (!job) break;
-      await job();
-      enter();
-      redraw();
+      const whole = await job();
+      if (!entered) enter();
+      // One element: only its part of the picture, fading
+      if (whole || !sharp) redraw();
+      else if (frame == null) frame = requestAnimationFrame(tick);
     }
   } finally {
     pumping = false;
@@ -671,6 +709,7 @@ function pack(things, scale) {
       alpha: still(1),
       glow: still(0),
       enter: null,
+      change: null,
     };
     items[item.key] = item;
     sheet.items.push(item);
@@ -773,6 +812,7 @@ function updateStandings(data) {
       alpha: still(document.body.classList.contains("has_focus") ? look.dim : 1),
       glow: still(0),
       enter: null,
+      change: null,
     };
     sheet.items.push(item);
     sheets.push(sheet);
@@ -844,6 +884,8 @@ let context = null;
 let view = null;
 let move = null;
 let frame = null;
+// The picture on the canvas is the sharp one, whole, for the view as it is
+let sharp = false;
 const stats = { shots: 0, shotTime: 0, frames: 0, worst: 0, slow: 0, last: 0, sharpTime: 0, failed: "" };
 
 // A value going from one number to another: {from, to, start, time}
@@ -905,21 +947,60 @@ function resize() {
   canvas.height = Math.max(1, Math.round(viewport.clientHeight));
 }
 
+// An element halfway from the picture it had to its new one, k times the
+// world's size: the two added up, so much of each, which is what a
+// cross-fade is. Pasted one over the other, a dimmed set would get more
+// solid during the fade. Each picture is [what it's taken from, x, y, width,
+// height].
+function blended(item, k, t, before, after) {
+  const { change, cell } = item;
+  const mix = Math.min(1, Math.max(0, (t - change.start) / change.time));
+  const [w, h] = [Math.max(1, Math.round(cell.w * k)), Math.max(1, Math.round(cell.h * k))];
+  const blend = change.blend;
+  if (blend.width != w || blend.height != h) {
+    blend.width = w;
+    blend.height = h;
+  }
+  const c = blend.getContext("2d");
+  c.imageSmoothingQuality = "high";
+  c.globalCompositeOperation = "copy";
+  c.globalAlpha = 1 - mix;
+  c.drawImage(...before, 0, 0, w, h);
+  c.globalCompositeOperation = "lighter";
+  c.globalAlpha = mix;
+  c.drawImage(...after, 0, 0, w, h);
+  return blend;
+}
+
 // One picture of the bracket for a view. Moving, the sets are pasted from
 // the photographs' copies; still (crisp), from the photographs themselves,
-// drawn at the size they're shown.
-function draw(v, t, crisp) {
+// drawn at the size they're shown. With a region ({x, y, w, h}, world
+// pixels), only that part of the picture is drawn again.
+function draw(v, t, crisp, region) {
   const c = context;
   c.setTransform(1, 0, 0, 1, 0, 0);
-  c.clearRect(0, 0, canvas.width, canvas.height);
-  if (!v || !placed) return;
+  if (!v || !placed) return c.clearRect(0, 0, canvas.width, canvas.height);
   const corner = cornerOf(v);
+  // The part drawn, in whole pixels of the canvas
+  let [px, py, pw, ph] = [0, 0, canvas.width, canvas.height];
+  if (region) {
+    px = Math.max(0, Math.floor(region.x * v.scale + corner.x));
+    py = Math.max(0, Math.floor(region.y * v.scale + corner.y));
+    pw = Math.min(canvas.width, Math.ceil((region.x + region.w) * v.scale + corner.x)) - px;
+    ph = Math.min(canvas.height, Math.ceil((region.y + region.h) * v.scale + corner.y)) - py;
+    if (pw <= 0 || ph <= 0) return;
+  }
+  c.save();
+  c.beginPath();
+  c.rect(px, py, pw, ph);
+  c.clip();
+  c.clearRect(px, py, pw, ph);
   c.setTransform(v.scale, 0, 0, v.scale, corner.x, corner.y);
-  // What's in view, in world pixels
-  const left = -corner.x / v.scale;
-  const top = -corner.y / v.scale;
-  const right = left + canvas.width / v.scale;
-  const bottom = top + canvas.height / v.scale;
+  // The same, in world pixels
+  const left = (px - corner.x) / v.scale;
+  const top = (py - corner.y) / v.scale;
+  const right = left + pw / v.scale;
+  const bottom = top + ph / v.scale;
   const inView = (b, room) =>
     b.x + b.w + room > left && b.x - room < right && b.y + (b.h || 0) + room > top && b.y - room < bottom;
 
@@ -958,17 +1039,33 @@ function draw(v, t, crisp) {
     // enlarged. Crisp, the photograph itself (its own, if it has one).
     let level = 0;
     while (level + 1 < LEVELS && sheet.scale / 2 ** (level + 1) >= v.scale) level += 1;
-    const own = crisp && item.image;
-    const source = own || (crisp ? sheet.image : sheet.levels[level]);
-    const k = crisp ? sheet.scale : sheet.scale / 2 ** level;
     const cell = item.cell;
+    const own = crisp && item.image;
+    let source = own || (crisp ? sheet.image : sheet.levels[level]);
+    const k = crisp ? sheet.scale : sheet.scale / 2 ** level;
+    let whole = !!own;
+    if (item.change) {
+      // Crisp, both pictures from the photographs themselves, at the size
+      // they're shown: what didn't change stays exactly as it was
+      const old = item.change.old;
+      source = crisp
+        ? blended(item, v.scale, t, item.change.sharp, [item.image, 0, 0, cell.w * k, cell.h * k])
+        : blended(
+            item,
+            k,
+            t,
+            [old, 0, 0, old.width, old.height],
+            [sheet.levels[level], cell.x * k, cell.y * k, cell.w * k, cell.h * k],
+          );
+      whole = true;
+    }
     c.globalAlpha = valueAt(item.alpha, t) * came;
     c.drawImage(
       source,
-      own ? 0 : cell.x * k,
-      own ? 0 : cell.y * k,
-      cell.w * k,
-      cell.h * k,
+      whole ? 0 : cell.x * k,
+      whole ? 0 : cell.y * k,
+      item.change ? source.width : cell.w * k,
+      item.change ? source.height : cell.h * k,
       // A set slides in from its left
       item.box.x - SHOT_MARGIN - (item.kind == "set" ? 40 * (1 - came) : 0),
       item.box.y - SHOT_MARGIN,
@@ -997,10 +1094,12 @@ function draw(v, t, crisp) {
       c.fillRect(item.box.x, item.box.y + item.box.h - 4, item.box.w, 4);
     }
   }
-  c.globalAlpha = 1;
+  c.restore();
 }
 
-function busy(t) {
+// The camera is moving, the focus fading or the bracket coming in: no
+// photograph is taken meanwhile
+function moving(t) {
   if (move) return true;
   if (linesEnter && t < linesEnter.start + linesEnter.time) return true;
   for (const item of Object.values(items)) {
@@ -1011,6 +1110,30 @@ function busy(t) {
   return false;
 }
 
+// The elements fading from the picture they had, and those that just got
+// there (their fades end here)
+function fading(t) {
+  const found = { going: [], done: [] };
+  for (const item of Object.values(items)) {
+    if (!item.change) continue;
+    if (t < item.change.start + item.change.time) {
+      found.going.push(item);
+    } else {
+      item.change = null;
+      found.done.push(item);
+    }
+  }
+  return found;
+}
+
+// Where an element is drawn, with its outline's glow
+const regionOf = (item) => ({
+  x: item.box.x - RING_ROOM,
+  y: item.box.y - RING_ROOM,
+  w: item.box.w + RING_ROOM * 2,
+  h: item.box.h + RING_ROOM * 2,
+});
+
 function tick(t) {
   frame = null;
   if (stats.last) {
@@ -1020,21 +1143,29 @@ function tick(t) {
     if (gap > 25) stats.slow += 1;
   }
   const v = viewAt(t);
-  if (busy(t)) {
+  const { going, done } = fading(t);
+  if (moving(t)) {
     draw(v, t, false);
+    sharp = false;
     stats.last = t;
     frame = requestAnimationFrame(tick);
   } else {
-    // Still: the sharp picture, once
+    // Still: the sharp picture, once, and after that only the elements
+    // fading from the picture they had. The rest stays as sharp as it was.
     const started = performance.now();
-    draw(v, t, true);
-    stats.sharpTime = Math.round(performance.now() - started);
+    if (!sharp) draw(v, t, true);
+    else for (const item of [...going, ...done]) draw(v, t, true, regionOf(item));
+    if (!sharp) stats.sharpTime = Math.round(performance.now() - started);
+    sharp = true;
     stats.last = 0;
+    if (going.length) frame = requestAnimationFrame(tick);
   }
   showStats();
 }
 
+// The picture is to be drawn again, whole
 function redraw() {
+  sharp = false;
   if (frame == null) frame = requestAnimationFrame(tick);
 }
 

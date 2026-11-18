@@ -103,5 +103,4 @@ Standings.
 `bracket_focus_canvas` follows the same focus as `bracket_focus` and takes the same options,
 but draws the bracket on a canvas, which keeps the camera smooth on big brackets. It's there
 to be compared with `bracket_focus` before replacing it. The sets appear a moment after the
-page opens, and a change to a set (a score, a name) shows at once instead of fading in. Add
-`?hud=1` to its URL for a line of numbers about its drawing.
+page opens. Add `?hud=1` to its URL for a line of numbers about its drawing.
