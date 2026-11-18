@@ -4,6 +4,7 @@
   },
   "pages": {
     "layout/completed_sets/upset_alert.html": { "query": "show_latest=true" },
-    "layout/bracket_focus/canvas_test.html": { "skip": true }
+    "layout/bracket_focus_canvas/index.html": { "wait": 8000 },
+    "layout/bracket_focus_canvas/no_title.html": { "wait": 8000 }
   }
 }

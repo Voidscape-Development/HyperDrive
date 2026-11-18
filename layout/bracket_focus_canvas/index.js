@@ -1,24 +1,28 @@
-// A proof page, not a layout to use on stream: the same bracket, focus and
-// camera as index.js, drawn another way, to see whether it stays smooth in
-// OBS and looks the same.
+// bracket_focus drawn another way, kept next to it until the two have been
+// compared side by side: the same bracket, focus and camera (see
+// ../bracket_focus/index.js), on one canvas.
 //
-// index.js has the browser move and fade the bracket's elements, and the
-// frames it drops come from the browser drawing or re-layering them while
-// the camera moves. Here every set and round name is drawn by the browser
-// once, off screen, and photographed into pictures (sheets). A move is then
-// one canvas: each frame pastes the pictures in view at the camera's place
-// and scale, more or less transparent for the dimming. Nothing is drawn
-// again or changes layer while the camera moves. Still, the sets in view
-// are pasted from the photograph itself (a vector), sharp at any scale.
+// bracket_focus has the browser move and fade the bracket's elements, and
+// the frames it drops come from the browser drawing or re-layering them
+// while the camera moves. Here every set and round name is drawn by the
+// browser once, off screen, with bracket_focus's CSS, and photographed into
+// pictures (sheets). A move is then one canvas: each frame pastes the
+// pictures in view at the camera's place and scale, more or less transparent
+// for the dimming. Nothing is drawn again or changes layer while the camera
+// moves. Still, the sets in view are pasted from the photograph itself (a
+// vector), sharp at any scale.
 //
-// Not done here: pool standings, byes, the player whose run is in focus,
-// the sets' entrance. Options: channel, ignore_focus and max_zoom, as
-// index.js.
+// Not done yet: pool standings, byes, the player whose run is in focus,
+// the sets' entrance.
+// Options, page or URL, as bracket_focus: channel, ignore_focus, max_zoom.
+// And hud=1: a line of numbers at the bottom (pictures made, how long the
+// last photograph took, the frames of the last move and how many were slow).
+// no_title.html has no title bar: the bracket takes the whole page.
 
 /* global XMLHttpRequest, FileReader, XMLSerializer, Blob, Path2D */
 
 // ---------------------------------------------------------------------
-// Sizes, placing and the camera's path: as index.js
+// Sizes, placing and the camera's path: as ../bracket_focus/index.js
 const PLAYER_H = 40;
 const SET_GAP = 2;
 const SET_W = 380;
@@ -471,7 +475,7 @@ function checkSheets() {
 }
 
 // The outline of a set in focus, drawn once: a ring and its glow, as
-// index.css's .bf_ring
+// bracket_focus's .bf_ring
 function makeRing() {
   const scale = 2;
   const canvas = document.createElement("canvas");

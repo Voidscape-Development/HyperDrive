@@ -5,34 +5,8 @@
     <script src="../include/globals.js"></script>
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="../include/bracket.css" />
+    <link rel="stylesheet" href="../bracket_focus/index.css" />
     <link rel="stylesheet" href="./index.css" />
-    <style>
-      /* A proof page (see canvas_test.js): the bracket on one canvas */
-      .bf_canvas {
-        position: absolute;
-        left: 0;
-        top: 0;
-      }
-
-      /* The sets as the browser draws them, off screen, to be photographed */
-      .stage {
-        position: absolute;
-        left: -100000px;
-        top: 0;
-      }
-
-      .hud {
-        display: none;
-        position: absolute;
-        left: 8px;
-        bottom: 4px;
-        font: 14px monospace;
-        letter-spacing: 0;
-        color: #fff;
-        background: rgba(0, 0, 0, 0.7);
-        padding: 2px 6px;
-      }
-    </style>
   </head>
   <body>
     <div class="title">
@@ -55,6 +29,6 @@
     <div class="focus_label"><div class="container"><div class="label"></div></div></div>
     <div class="hud"></div>
     <script src="../include/bracket.js"></script>
-    <script src="canvas_test.js"></script>
+    <script src="index.js"></script>
   </body>
 </html>
