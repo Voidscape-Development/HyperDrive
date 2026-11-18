@@ -756,6 +756,43 @@ function glow(keys, animate) {
   if (coming) fades.push(fade("glow_in", 0, 1));
 }
 
+// Where a set, round name or line is, in world pixels: its element, or its
+// outline's key (see glowOf)
+function boxOf(thing) {
+  let key = thing;
+  if (typeof thing != "string") {
+    const { set, round, from, to } = thing.dataset;
+    if (thing.tagName == "path") key = `line:${from}>${to == null ? "" : to}`;
+    else key = set != null ? `set:${set}` : `round:${round}`;
+  }
+  const [kind, id] = [key.slice(0, key.indexOf(":")), key.slice(key.indexOf(":") + 1)];
+  if (kind == "set") return placed.sets[id];
+  if (kind == "round") return placed.headers[id];
+  // A line: around the sets it joins
+  const [from, to] = id.split(">").map((set) => placed.sets[set]);
+  if (!from || !to) return from || to;
+  const [x, y] = [Math.min(from.x, to.x), Math.min(from.y, to.y)];
+  return {
+    x,
+    y,
+    w: Math.max(from.x + from.w, to.x + to.w) - x,
+    h: Math.max(from.y + from.h, to.y + to.h) - y,
+  };
+}
+
+// Whether a box (world pixels) is on screen where the camera is now, even
+// in part. Everything is, before the camera is placed.
+function onScreen() {
+  const v = viewNow();
+  const viewport = $(".viewport");
+  const [vw, vh] = [viewport.width(), viewport.height()];
+  if (!v || !vw || !vh) return () => true;
+  const corner = cornerOf(v);
+  const [left, top] = [-corner.x / v.scale, -corner.y / v.scale];
+  const [right, bottom] = [left + vw / v.scale, top + vh / v.scale];
+  return (b) => !b || (b.x + b.w > left && b.x < right && b.y + (b.h || 0) > top && b.y < bottom);
+}
+
 function applyFocus(s, data, animate) {
   const focus = focusOf(s, data);
   const inFocus = new Set((focus.sets || []).filter((id) => placed.sets[id]));
@@ -797,14 +834,48 @@ function applyFocus(s, data, animate) {
       glow(outlined, false);
       settle();
     });
+  } else if (!animate) {
+    dim(focused, hasFocus, false);
+    glow(outlined, false);
+    settle();
   } else {
-    dim(focused, hasFocus, animate);
-    glow(outlined, animate);
-    if (animate) {
-      // Once the camera is still: moving elements has them laid out again
-      settling = gsap.delayedCall(Math.max(cameraTime(), FADE_TIME) + 0.1, settle);
+    // What's on screen changes layer now: the browser draws the layers it
+    // changes before showing them, in one go. What's off screen would be
+    // drawn as the camera gets to it, halfway through the move, and that
+    // drops frames: it changes once the camera is still and it's on
+    // screen. All that comes into focus together, and all that leaves it
+    // together: a side isn't lit in two halves.
+    const seen = onScreen();
+    const isLit = (el) => ["lit", "to_lit"].includes(layerOf.get(el));
+    const coming = [...focused].filter(([el, f]) => f && !isLit(el)).map(([el]) => el);
+    const going = [...focused].filter(([el, f]) => !f && isLit(el)).map(([el]) => el);
+    const comingGlows = [...outlined].filter((key) => !glowOf.has(key));
+    const goingGlows = [...glowOf.keys()].filter((key) => !outlined.has(key));
+    const allSeen = (things) => things.every((thing) => seen(boxOf(thing)));
+    const comeNow = allSeen(coming) && allSeen(comingGlows);
+    const goNow = allSeen(going) && allSeen(goingGlows);
+    const later = !comeNow || !goNow;
+
+    const now = new Map(focused);
+    if (!comeNow) for (const el of coming) now.set(el, false);
+    if (!goNow) for (const el of going) now.set(el, true);
+    const outlinedNow = new Set(outlined);
+    if (!comeNow) for (const key of comingGlows) outlinedNow.delete(key);
+    if (!goNow) for (const key of goingGlows) outlinedNow.add(key);
+
+    dim(now, hasFocus, true);
+    glow(outlinedNow, true);
+    // Once the camera is still and the fades are over
+    const still = Math.max(cameraTime(), FADE_TIME);
+    if (later) {
+      settling = gsap.delayedCall(still + 0.05, () => {
+        dim(focused, hasFocus, true);
+        glow(outlined, true);
+        settling = gsap.delayedCall(FADE_TIME + 0.1, settle);
+      });
     } else {
-      settle();
+      // Moving elements has them laid out again
+      settling = gsap.delayedCall(still + 0.1, settle);
     }
   }
   for (const [el, f] of focused) if (el.classList.contains("focused") != f) el.classList.toggle("focused", f);
