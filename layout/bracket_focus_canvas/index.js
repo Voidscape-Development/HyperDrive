@@ -400,10 +400,35 @@ function defaultStyle(el) {
   return defaults.get(key);
 }
 
-// Writes each element's style, as the page has it, on its copy
+// Whether an element has nothing to show and takes no room, so its copy can
+// be left out: it isn't displayed, or it's out of the flow (placed by
+// itself) with no content and nothing drawn of its box. An empty element in
+// the flow stays: it can still push its neighbours (its size, its margins,
+// a gap).
+function leftOut(el, style) {
+  if (style.getPropertyValue("display") == "none") return true;
+  if (el.children.length || el.textContent.trim() !== "") return false;
+  if (!["absolute", "fixed"].includes(style.getPropertyValue("position"))) return false;
+  if (["img", "canvas", "svg", "video", "iframe"].includes(el.localName)) return false;
+  const clear = (property, value) => style.getPropertyValue(property) == value;
+  return (
+    clear("background-image", "none") &&
+    clear("background-color", "rgba(0, 0, 0, 0)") &&
+    clear("box-shadow", "none") &&
+    clear("outline-style", "none") &&
+    ["top", "right", "bottom", "left"].every((side) => clear(`border-${side}-style`, "none"))
+  );
+}
+
+// Writes each element's style, as the page has it, on its copy. Returns
+// false for an element whose copy is to be left out instead (with what's
+// inside it): writing styles down is most of what a photograph costs, and
+// some of a set's elements are never shown (an avatar it doesn't have, its
+// identifier with the theme's off).
 function copyStyles(source, target, urls) {
-  const base = defaultStyle(source);
   const style = getComputedStyle(source);
+  if (leftOut(source, style)) return false;
+  const base = defaultStyle(source);
   let css = "";
   for (let i = 0; i < properties.length; i++) {
     const value = style.getPropertyValue(properties[i]);
@@ -415,7 +440,12 @@ function copyStyles(source, target, urls) {
     target.setAttribute("src", source.currentSrc);
     urls.add(source.currentSrc);
   }
-  for (let i = 0; i < source.children.length; i++) copyStyles(source.children[i], target.children[i], urls);
+  // The copies, before any is taken out
+  const copies = [...target.children];
+  for (let i = 0; i < source.children.length; i++) {
+    if (!copyStyles(source.children[i], copies[i], urls)) copies[i].remove();
+  }
+  return true;
 }
 
 // A picture of elements as the browser draws them: copies of them with
@@ -427,7 +457,8 @@ async function photograph(elements, width, height, scale) {
   const urls = new Set();
   for (const { el, x, y } of elements) {
     const copy = el.cloneNode(true);
-    copyStyles(el, copy, urls);
+    // Not shown at all (the byes of a round without any)
+    if (!copyStyles(el, copy, urls)) continue;
     copy.setAttribute("style", `${copy.getAttribute("style")}left:${x}px;top:${y}px;margin:0;`);
     root.appendChild(copy);
   }
