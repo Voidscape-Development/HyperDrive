@@ -883,6 +883,10 @@ class GameAssetManager(QObject):
                 except:
                     logger.error(traceback.format_exc())
 
+                if skin_name:
+                    assetData["skin_name"] = skin_name
+                    assetData["en_skin_name"] = skin_name_en or skin_name
+
                 if skinNameData.get(skinIndex, {}).get("is_different_character", False):
                     assetData["name"] = skin_name
                     assetData["en_name"] = skin_name_en
