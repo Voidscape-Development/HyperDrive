@@ -550,6 +550,42 @@ declare namespace HDState {
     [key: string]: any;
   }
 
+  interface PlacedBox {
+    x?: number | null;
+    y?: number | null;
+    w?: number | null;
+    /** Not for byes and standings, whose height is their text's */
+    h?: number | null;
+    [key: string]: any;
+  }
+
+  interface PlacedLine {
+    /** The set the winner goes to; none for an arrow out of the phase */
+    to?: string | null;
+    /** `[[x, y]...]`, a line through them */
+    points?: number[][] | null;
+    /** An arrow head at the last point */
+    arrow?: boolean | null;
+    [key: string]: any;
+  }
+
+  /** Where the bracket focus layouts place the bracket, in world pixels. */
+  interface BracketPlacement {
+    /** By set id */
+    sets?: Record<string, PlacedBox> | null;
+    /** Round names, by column key */
+    headers?: Record<string, PlacedBox> | null;
+    /** Pools: who sits out each round, by column key */
+    byes?: Record<string, PlacedBox> | null;
+    /** Pools: the standings table */
+    standings?: PlacedBox | null;
+    /** From each set (`from`) to where its winner goes */
+    lines?: PlacedLine[] | null;
+    width?: number | null;
+    height?: number | null;
+    [key: string]: any;
+  }
+
   interface BracketChannel {
     bracket?: Bracket | null;
     phase?: string | null;
@@ -557,6 +593,8 @@ declare namespace HDState {
     phaseId?: string | null;
     /** Where its player list is in the state */
     playersPath?: string | null;
+    /** Where the bracket focus layouts place it */
+    placement?: BracketPlacement | null;
     [key: string]: any;
   }
 

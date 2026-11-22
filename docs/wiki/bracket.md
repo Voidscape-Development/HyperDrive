@@ -104,3 +104,9 @@ Standings.
 but draws the bracket on a canvas, which keeps the camera smooth on big brackets. It's there
 to be compared with `bracket_focus` before replacing it. The sets appear a moment after the
 page opens. Add `?hud=1` to its URL for a line of numbers about its drawing.
+
+With [HyperDrive Companion](https://github.com/Voidscape-Development/HyperDrive-Companion), the
+OBS plugin, a **HyperDrive Bracket Focus** source shows the same bracket and focus drawn by OBS
+itself, without a browser, for the smoothest camera. HyperDrive places the bracket for it
+(`bracket.channels.<channel>.placement`, see
+[docs/layout-data.md](https://github.com/Voidscape-Development/HyperDrive/blob/main/docs/layout-data.md)).
