@@ -2,9 +2,9 @@
 # ExportBracket(), see docs/layout-data.md), in world pixels before zooming:
 # each set, round name and pool round's byes, the lines from each set to
 # where its winner goes, and the world's size. Exported with each channel
-# (bracket.channels.<channel>.placement) for layout/bracket_focus,
-# layout/bracket_focus_canvas and the OBS plugin's native bracket focus
-# source. No Qt here, so it can be tested on its own.
+# (bracket.channels.<channel>.placement) for layout/bracket_focus and the
+# OBS plugin's native bracket focus source. No Qt here, so it can be tested
+# on its own.
 
 PLAYER_H = 40
 SET_GAP = 2

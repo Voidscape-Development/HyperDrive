@@ -95,15 +95,9 @@ The focus can also be driven from a phone at `/bracket-focus-app` (see
 | `bracket/round_robin.html`, `standings.html` | Round robin and swiss |
 | `bracket_ultimate/` | A bracket with character art |
 | `bracket_focus/` | The zooming bracket |
-| `bracket_focus_canvas/` | The zooming bracket, drawn another way (below) |
 
 The bracket's colors and options are in [Layout themes](layout-themes.md), under Bracket and
 Standings.
-
-`bracket_focus_canvas` follows the same focus as `bracket_focus` and takes the same options,
-but draws the bracket on a canvas, which keeps the camera smooth on big brackets. It's there
-to be compared with `bracket_focus` before replacing it. The sets appear a moment after the
-page opens. Add `?hud=1` to its URL for a line of numbers about its drawing.
 
 With [HyperDrive Companion](https://github.com/Voidscape-Development/HyperDrive-Companion), the
 OBS plugin, a **HyperDrive Bracket Focus** source shows the same bracket and focus drawn by OBS

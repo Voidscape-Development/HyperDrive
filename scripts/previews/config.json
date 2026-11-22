@@ -3,8 +3,6 @@
     "ssbu": ["base_files", "full", "stage_icon"]
   },
   "pages": {
-    "layout/completed_sets/upset_alert.html": { "query": "show_latest=true" },
-    "layout/bracket_focus_canvas/index.html": { "wait": 8000 },
-    "layout/bracket_focus_canvas/no_title.html": { "wait": 8000 }
+    "layout/completed_sets/upset_alert.html": { "query": "show_latest=true" }
   }
 }

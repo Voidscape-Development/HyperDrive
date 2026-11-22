@@ -50,9 +50,8 @@ channel's bracket in place of `bracket.bracket`, `bracket.players`,
 `bracket.placement`), so a layout can show any channel.
 `layout/bracket_focus` and the `layout/bracket` pages take `?channel=<name>`.
 
-`placement` is the bracket laid out as the bracket focus layouts
-(`layout/bracket_focus`, `layout/bracket_focus_canvas`) and the OBS plugin's
-native bracket focus source draw it, in world pixels before zooming: `sets` and `headers` (round names, by
+`placement` is the bracket laid out as `layout/bracket_focus` and the OBS
+plugin's native bracket focus source draw it, in world pixels before zooming: `sets` and `headers` (round names, by
 column key) as `{x, y, w, h}`, `byes` (pools: who sits out each round) and
 `standings` (pools: the standings table) as `{x, y, w}`, `lines` from each
 set to where its winner goes (`{from, to, points: [[x, y]...]}`, or `{from,
