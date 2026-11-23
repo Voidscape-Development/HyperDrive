@@ -14,6 +14,15 @@ query TournamentPhaseGroupSetsQuery($id: ID!, $page: Int!, $perPage: Int!, $sort
 				entrant2Score
 				winnerId
 				state
+				winnerProgressionSeed {
+					phaseGroup {
+						displayIdentifier
+						phase {
+							name
+							groupCount
+						}
+					}
+				}
 				slots {
 					prereqType
 					prereqId

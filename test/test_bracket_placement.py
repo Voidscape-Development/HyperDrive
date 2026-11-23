@@ -74,6 +74,16 @@ def TestArrows():
     assert {line["from"] for line in arrows} >= set(last)
     for line in arrows:
         assert line["to"] is None and line["points"][1][0] - line["points"][0][0] == 45
+        assert line["label"] == ""
+
+    # Where they go, after the arrows: the world is wide enough for it
+    for i in last:
+        bracket["sets"][i]["progressesTo"] = "R2 Pools - B2"
+    placed = Place(bracket)
+    labeled = [line for line in placed["lines"] if line.get("label")]
+    assert {line["from"] for line in labeled} == set(last)
+    end = max(line["points"][-1][0] for line in labeled)
+    assert placed["width"] >= end + LABEL_GAP + len("R2 Pools - B2") * 12 + 24 + MARGIN
 
 
 def TestPool():

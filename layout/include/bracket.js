@@ -60,15 +60,14 @@ var HDBracket = {
   },
 
   // A placement's lines (bracket.channels.<channel>.placement.lines) as SVG
-  // paths: [{from, to (null for an arrow out of the phase), d}]
+  // paths: [{from, to (null for an arrow out of the phase), d, and for an
+  // arrow, label (where it goes) and end (its tip)}]
   Lines(placement) {
     return ((placement && placement.lines) || []).map((line) => {
       let d = `M${line.points.map((p) => p.join(" ")).join(" L")}`;
-      if (line.arrow) {
-        const [x, y] = line.points[line.points.length - 1];
-        d += ` M${x - 10} ${y - 8} L${x} ${y} L${x - 10} ${y + 8}`;
-      }
-      return { from: line.from, to: line.to, d };
+      const end = line.points[line.points.length - 1];
+      if (line.arrow) d += ` M${end[0] - 10} ${end[1] - 8} L${end[0]} ${end[1]} L${end[0] - 10} ${end[1] + 8}`;
+      return { from: line.from, to: line.to, d, label: line.label || "", end };
     });
   },
 
@@ -105,7 +104,7 @@ var HDBracket = {
       bracket.progressionsOut,
       bracket.limitExportNumber,
       _.mapValues(bracket.sides || {}, (columns) => columns.map((c) => [c.key, c.sets])),
-      Object.values(bracket.sets || {}).map((s) => [s.id, s.resetNeeded]),
+      Object.values(bracket.sets || {}).map((s) => [s.id, s.resetNeeded, s.progressesTo]),
       Object.keys(_.get(data, "bracket.players.slot", {})).length,
       _.get(data, "bracket.phase"),
       _.get(data, "bracket.phaseGroup"),

@@ -261,6 +261,21 @@ def TestLists():
     assert [p["gamerTag"] for p in players] == ["Ash"], players
 
 
+def TestProgressionName():
+    # The phase a set's winner goes on to, and its group when it has several
+    def Set(name, groups, group):
+        phase = {"name": name, "groupCount": groups}
+        return {
+            "winnerProgressionSeed": {"phaseGroup": {"displayIdentifier": group, "phase": phase}}
+        }
+
+    assert StartGGConvert.ProgressionName(Set("R2 Pools", 16, "B2")) == "R2 Pools - B2"
+    assert StartGGConvert.ProgressionName(Set("Top 64", 1, "1")) == "Top 64"
+    assert StartGGConvert.ProgressionName(Set("Top 64", None, None)) == "Top 64"
+    assert StartGGConvert.ProgressionName({"winnerProgressionSeed": None}) == ""
+    assert StartGGConvert.ProgressionName({}) == ""
+
+
 def TestEntrantData():
     assert StartGGConvert.ProcessEntrantData(None)["id"] == [None, 0]
     data = StartGGConvert.ProcessEntrantData(

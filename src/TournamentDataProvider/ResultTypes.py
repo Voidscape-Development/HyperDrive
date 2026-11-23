@@ -154,7 +154,12 @@ class PhaseGroupEntrant(TypedDict):
     players: list[Player]
 
 
-class PhaseGroup(TypedDict):
+class _PhaseGroupOptional(TypedDict, total=False):
+    # start.gg's: {set id: the phase (and group) its winner goes on to}
+    progressions: dict
+
+
+class PhaseGroup(_PhaseGroupOptional):
     entrants: list[PhaseGroupEntrant]
     entrantIds: list
     sets: list[BracketSet]

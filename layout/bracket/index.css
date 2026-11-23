@@ -361,6 +361,18 @@ body {
   stroke-width: 5;
 }
 
+/* Where the players going on go, after their arrows out of the phase */
+.progression_label {
+  position: absolute;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 20px;
+  padding: 2px 8px;
+  color: var(--text-color);
+  border-radius: calc(var(--border-radius) / 2);
+  background-color: var(--bg-color);
+}
+
 .lines {
   width: 100vw;
   height: 100vh;
