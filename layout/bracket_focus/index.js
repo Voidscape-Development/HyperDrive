@@ -22,15 +22,9 @@
 // ---------------------------------------------------------------------
 // Sizes
 
-// Sizes in world pixels, before zooming
-const PLAYER_H = 40;
-const SET_GAP = 2;
-const SET_W = 380;
-const SET_H = PLAYER_H * 2 + SET_GAP;
-const COLUMN_GAP = 100;
-const ROW_GAP = 24;
-const HEADER_H = 56;
-const SECTION_GAP = 90;
+// Sizes in world pixels, before zooming. HyperDrive places the bracket
+// (bracket.channels.<channel>.placement, src/Helpers/BracketPlacement.py),
+// with this margin around it.
 const MARGIN = 40;
 // Room left around what's in focus, in screen pixels, and under it for the
 // caption saying what it is
@@ -82,8 +76,8 @@ const DETAIL_AHEAD = 1.6;
 let setIndex = {};
 // Set id: its element, as build() made it
 let setElements = {};
-// What build() placed: {sets: {id: {x, y, w, h}}, headers, byes, areas,
-// standings, width, height}
+// Where HyperDrive placed the bracket: {sets: {id: {x, y, w, h}}, headers,
+// byes, standings, lines, width, height}
 let placed = null;
 let lastSignature = null;
 let lastFocus = null;
@@ -115,172 +109,8 @@ let settling = null;
 const setElement = (id) => setElements[id] || $();
 const box = (b) => `left: ${b.x}px; top: ${b.y}px; width: ${b.w}px;${b.h ? ` height: ${b.h}px;` : ""}`;
 
-// Every set is shown, waiting ones with where their players come from, but
-// a grand final reset only when it's needed
-const isShown = (set) => set && HDBracket.SetState(set, true) != "hidden";
-
-// ---------------------------------------------------------------------
-// Placing the bracket
-
-// Places the columns of one part of the bracket from `top`, each set level
-// with the sets that feed it, like the bracket widget does. Returns the
-// part's bottom.
-function placeArea(columns, sets, top, result) {
-  let bottom = top;
-  let lastX = MARGIN;
-  const thirdPlace = [];
-  const area = new Set(columns.flatMap((column) => column.sets));
-  // Set id: the sets of the area whose winner goes to it
-  const feedersOf = {};
-  for (const id of area) {
-    const next = sets[id] && sets[id].nextWin;
-    if (next) (feedersOf[next.set] = feedersOf[next.set] || []).push(id);
-  }
-
-  const shown = [];
-  for (const column of columns) {
-    if (column.side == "third_place") {
-      thirdPlace.push(column);
-      continue;
-    }
-    const ids = column.sets.filter((id) => isShown(sets[id]));
-    if (ids.length === 0) continue;
-    lastX = MARGIN + shown.length * (SET_W + COLUMN_GAP);
-    shown.push({ column, ids, x: lastX });
-  }
-
-  // Play-in rounds (fewer sets than the round after them) are placed last,
-  // each set level with the slot its winner goes to
-  let playIns = 0;
-  while (
-    playIns + 1 < shown.length &&
-    shown[playIns].column.side == shown[playIns + 1].column.side &&
-    shown[playIns].ids.length < shown[playIns + 1].ids.length
-  ) {
-    playIns += 1;
-  }
-  const order = shown.slice(playIns).concat(shown.slice(0, playIns).reverse());
-
-  order.forEach(({ column, ids, x }, i) => {
-    const playIn = i >= shown.length - playIns;
-    let cursor = top + HEADER_H;
-    let firstY = null;
-    for (const id of ids) {
-      const feeders = (feedersOf[id] || []).filter((f) => result.sets[f]);
-      const next = sets[id].nextWin;
-      const target = playIn && next ? result.sets[next.set] : null;
-      let y = cursor;
-      if (target) {
-        // Centered on the slot's row, the top or bottom half of the set
-        y = Math.max(cursor, target.y + (((next.slot || 0) * 2 - 1) * SET_H) / 4);
-      } else if (feeders.length) {
-        y = Math.max(cursor, _.mean(feeders.map((f) => result.sets[f].y)));
-      } else if (column.side == "grand_final" && result.lastGrandFinal != null) {
-        // The reset, level with the grand final
-        y = Math.max(cursor, result.lastGrandFinal);
-      }
-      if (column.side == "grand_final") result.lastGrandFinal = y;
-      if (firstY == null) firstY = y;
-      result.sets[id] = { x, y, w: SET_W, h: SET_H };
-      cursor = y + SET_H + ROW_GAP;
-      bottom = Math.max(bottom, cursor);
-    }
-    // Grand finals have their name just above them
-    result.headers[column.key] = {
-      x,
-      y: column.side == "grand_final" ? firstY - HEADER_H : top,
-      w: SET_W,
-      h: HEADER_H - 12,
-    };
-  });
-
-  // The 3rd place match under the last column
-  for (const column of thirdPlace) {
-    const ids = column.sets.filter((id) => isShown(sets[id]));
-    if (ids.length === 0) continue;
-    let y = bottom + ROW_GAP;
-    result.headers[column.key] = { x: lastX, y, w: SET_W, h: HEADER_H - 12 };
-    y += HEADER_H;
-    for (const id of ids) {
-      result.sets[id] = { x: lastX, y, w: SET_W, h: SET_H };
-      y += SET_H + ROW_GAP;
-    }
-    bottom = y;
-  }
-  return bottom;
-}
-
-// Round robin and swiss: a column per round, sets one under the other, the
-// standings after them
-function placePool(bracket, result) {
-  const sets = bracket.sets || {};
-  let bottom = MARGIN;
-  let x = MARGIN;
-  for (const column of HDBracket.Columns(bracket, "pool")) {
-    result.headers[column.key] = { x, y: MARGIN, w: SET_W, h: HEADER_H - 12 };
-    let y = MARGIN + HEADER_H;
-    for (const id of column.sets) {
-      if (!sets[id]) continue;
-      result.sets[id] = { x, y, w: SET_W, h: SET_H };
-      y += SET_H + ROW_GAP;
-    }
-    result.byes[column.key] = { x, y, w: SET_W };
-    bottom = Math.max(bottom, y + 40);
-    x += SET_W + COLUMN_GAP;
-  }
-  result.standings = { x, y: MARGIN, w: 800 };
-  return bottom;
-}
-
-function place(bracket) {
-  const result = { sets: {}, headers: {}, byes: {}, areas: [], standings: null };
-  let bottom;
-  if (HDBracket.IsPool(bracket)) {
-    bottom = placePool(bracket, result);
-  } else {
-    const { upper, lower } = HDBracket.Areas(bracket);
-    bottom = placeArea(upper, bracket.sets || {}, MARGIN, result);
-    if (lower.length) bottom = placeArea(lower, bracket.sets || {}, bottom + SECTION_GAP, result);
-    result.areas = [upper, lower];
-  }
-  const boxes = Object.values(result.sets).concat(Object.values(result.headers));
-  result.width = Math.max(0, ...boxes.map((b) => b.x + b.w)) + MARGIN;
-  result.height = Math.max(bottom, ...boxes.map((b) => b.y + (b.h || 0))) + MARGIN;
-  return result;
-}
-
 // ---------------------------------------------------------------------
 // Drawing
-
-// Lines from each set to where its winner goes, within one part of the
-// bracket, and arrows out of it for players going on to another phase:
-// [{from, to (none for an arrow), d}]
-function lines(bracket) {
-  const sets = bracket.sets || {};
-  const path = (points) => `M${points.map((p) => p.join(" ")).join(" L")}`;
-  return placed.areas.flatMap((columns) => {
-    const inArea = new Set(columns.flatMap((c) => c.sets));
-    return [...inArea].flatMap((id) => {
-      const set = sets[id];
-      const from = placed.sets[id];
-      if (!set || !from) return [];
-      const a = [from.x + from.w, from.y + from.h / 2];
-      const to = set.nextWin && inArea.has(set.nextWin.set) && placed.sets[set.nextWin.set];
-      if (to) {
-        if (to.x <= from.x) return [];
-        // To the middle of the set, so the two sets feeding it share one line into it
-        const b = [to.x, to.y + to.h / 2];
-        const mid = a[0] + (b[0] - a[0]) / 2;
-        return [{ from: id, to: set.nextWin.set, d: path([a, [mid, a[1]], [mid, b[1]], b]) }];
-      }
-      if (!set.nextWin && bracket.progressionsOut > 0 && ["winners", "losers"].includes(set.side)) {
-        const [x, y] = [a[0] + 45, a[1]];
-        return [{ from: id, d: `${path([a, [x, y]])} M${x - 10} ${y - 8} L${x} ${y} L${x - 10} ${y + 8}` }];
-      }
-      return [];
-    });
-  });
-}
 
 // The lines, or their shadows (a copy under each, see index.css)
 const lineKey = (p) => `${p.from}>${p.to == null ? "" : p.to}`;
@@ -294,12 +124,12 @@ function build(data) {
   const bracket = data.bracket.bracket;
   const sets = bracket.sets || {};
   setIndex = {};
-  placed = place(bracket);
+  placed = data.bracket.placement;
   settle();
   stopMove();
 
   // Everything starts in the base; applyFocus() lifts what's in focus
-  const paths = lines(bracket);
+  const paths = HDBracket.Lines(placed);
   linePaths = _.keyBy(paths, lineKey);
   const size = HD.raw(`width="${placed.width}" height="${placed.height}"`);
   HD.render(".world", [
@@ -944,7 +774,7 @@ HD.layout({
     const data = HDBracket.ForChannel(s.data, channel);
     const old = HDBracket.ForChannel(s.old, channel) || {};
 
-    if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides) {
+    if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides || !data.bracket.placement) {
       settle();
       stopMove();
       layers = {};

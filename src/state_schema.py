@@ -501,12 +501,38 @@ class PlayerList(StateModel):
     slot: dict[str, PlayerListSlot] | None = F("By slot number")
 
 
+class PlacedBox(StateModel):
+    x: float | None = None
+    y: float | None = None
+    w: float | None = None
+    h: float | None = F("Not for byes and standings, whose height is their text's")
+
+
+class PlacedLine(StateModel):
+    to: str | None = F("The set the winner goes to; none for an arrow out of the phase")
+    points: list[list[float]] | None = F("`[[x, y]...]`, a line through them")
+    arrow: bool | None = F("An arrow head at the last point")
+
+
+class BracketPlacement(StateModel):
+    """Where the bracket focus layouts place the bracket, in world pixels."""
+
+    sets: dict[str, PlacedBox] | None = F("By set id")
+    headers: dict[str, PlacedBox] | None = F("Round names, by column key")
+    byes: dict[str, PlacedBox] | None = F("Pools: who sits out each round, by column key")
+    standings: PlacedBox | None = F("Pools: the standings table")
+    lines: list[PlacedLine] | None = F("From each set (`from`) to where its winner goes")
+    width: float | None = None
+    height: float | None = None
+
+
 class BracketChannel(StateModel):
     bracket: Bracket | None = None
     phase: str | None = None
     phaseGroup: str | None = None
     phaseId: str | None = None
     playersPath: str | None = F("Where its player list is in the state")
+    placement: BracketPlacement | None = F("Where the bracket focus layouts place it")
 
 
 class BracketFocus(StateModel):

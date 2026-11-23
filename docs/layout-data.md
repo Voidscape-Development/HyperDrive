@@ -42,11 +42,21 @@ Each channel's bracket, by name: `{"main": {...}, "TV 1": {...}}`.
 | `phase`, `phaseGroup` | The start.gg phase and phase group names, or the phase's name and `""` for a phase built in the widget |
 | `phaseId` | The phase's id in `bracket.phases` |
 | `playersPath` | Where its player list is in the state (`bracket.rosters.<key>`) |
+| `placement` | Where the bracket focus layouts place its bracket (below), or `null` |
 
 `HDBracket.ForChannel(data, channel)` in `layout/include/bracket.js` puts a
 channel's bracket in place of `bracket.bracket`, `bracket.players`,
-`bracket.phase` and `bracket.phaseGroup`, so a layout can show any channel.
+`bracket.phase` and `bracket.phaseGroup` (and its placement in
+`bracket.placement`), so a layout can show any channel.
 `layout/bracket_focus` and the `layout/bracket` pages take `?channel=<name>`.
+
+`placement` is the bracket laid out as `layout/bracket_focus` and the OBS
+plugin's native bracket focus source draw it, in world pixels before zooming: `sets` and `headers` (round names, by
+column key) as `{x, y, w, h}`, `byes` (pools: who sits out each round) and
+`standings` (pools: the standings table) as `{x, y, w}`, `lines` from each
+set to where its winner goes (`{from, to, points: [[x, y]...]}`, or `{from,
+to: null, points, arrow: true}` for players going on to another phase), and
+the world's `width` and `height`. Made by `src/Helpers/BracketPlacement.py`.
 
 ### `bracket.rosters`
 
@@ -113,6 +123,7 @@ for `HDBracket`:
 | `StandingsHtml(data)` | A pool's standings, or an elimination bracket's results, as a table |
 | `GridHtml(data)` | A pool as a round robin grid of who played who, players in seed order |
 | `RenderPool(container, data)` | Draws a pool's rounds, for layouts without a pool view of their own |
+| `Lines(placement)` | A placement's lines as SVG paths: `[{from, to, d}]` |
 | `PlayerSlotHtml(slot)`, `UpdateSet(s, element, set, data)` | A set's two player rows, and filling them in (names, flags, avatars, characters) |
 | `ToRounds(bracket, players)` | The bracket in the older `rounds` shape (`{"1": {name, sets: {"0": {playerId, score, nextWin...}}}}`, losers rounds negative), with byes filled in, for layouts drawn around it |
 

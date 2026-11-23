@@ -29,16 +29,21 @@ var HDBracket = {
   // phase it shows, with its top N) in place of the main channel's:
   // bracket.bracket, bracket.players, bracket.phase and bracket.phaseGroup.
   // bracket.playersPath is where its players are in the state, for
-  // CharacterDisplay's source. A channel that isn't there shows nothing.
+  // CharacterDisplay's source, and bracket.placement where the bracket focus
+  // layouts place it (null without one). A channel that isn't there shows
+  // nothing.
   ForChannel(data, channel) {
     if (!data || !data.bracket) return data;
     const exported = _.get(data, ["bracket", "channels", channel]);
     if (!exported) {
       if (channel != "main" || data.bracket.channels) {
-        return { ...data, bracket: { ...data.bracket, bracket: {}, players: {}, playersPath: "bracket.players" } };
+        return {
+          ...data,
+          bracket: { ...data.bracket, bracket: {}, players: {}, playersPath: "bracket.players", placement: null },
+        };
       }
       // Sent before channels existed
-      return { ...data, bracket: { ...data.bracket, playersPath: "bracket.players" } };
+      return { ...data, bracket: { ...data.bracket, playersPath: "bracket.players", placement: null } };
     }
     return {
       ...data,
@@ -49,8 +54,22 @@ var HDBracket = {
         phase: exported.phase || "",
         phaseGroup: exported.phaseGroup || "",
         playersPath: exported.playersPath,
+        placement: exported.placement || null,
       },
     };
+  },
+
+  // A placement's lines (bracket.channels.<channel>.placement.lines) as SVG
+  // paths: [{from, to (null for an arrow out of the phase), d}]
+  Lines(placement) {
+    return ((placement && placement.lines) || []).map((line) => {
+      let d = `M${line.points.map((p) => p.join(" ")).join(" L")}`;
+      if (line.arrow) {
+        const [x, y] = line.points[line.points.length - 1];
+        d += ` M${x - 10} ${y - 8} L${x} ${y} L${x - 10} ${y + 8}`;
+      }
+      return { from: line.from, to: line.to, d };
+    });
   },
 
   // -------------------------------------------------------------------

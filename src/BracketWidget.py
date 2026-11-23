@@ -29,6 +29,7 @@ from .BracketView import BracketView
 from .DisplayOptions import DisplayOptionsButton
 from .GameAssetManager import GameAssetManager
 from .Helpers.BracketFocusHelper import MAIN_CHANNEL
+from .Helpers.BracketPlacement import Place
 from .PlayerList import PlayerList
 from .Scheduler import (
     BRACKET_AUTO_UPDATE_DEFAULT_INTERVAL_SECS,
@@ -1732,21 +1733,22 @@ class BracketWidget(QDockWidget):
                 "phaseGroup": "",
                 "phaseId": None,
                 "playersPath": RosterPath(),
+                "placement": None,
             }
         path = RosterPath(self.RosterKey(phase))
         key = (phase.id, limit)
         if key not in cache:
-            cache[key] = (
-                ExportBracket(phase.bracket, phase.name, limit, path) if phase.bracket else {}
-            )
+            bracket = ExportBracket(phase.bracket, phase.name, limit, path) if phase.bracket else {}
+            cache[key] = (bracket, Place(bracket))
         provider = phase.providerPhaseGroupId is not None
         info = phase.providerInfo or {}
         return {
-            "bracket": cache[key],
+            "bracket": cache[key][0],
             "phase": (info.get("phase") or phase.name) if provider else phase.name,
             "phaseGroup": (info.get("group") or "") if provider else "",
             "phaseId": phase.id,
             "playersPath": path,
+            "placement": cache[key][1],
         }
 
     def ExportBracketState(self):
