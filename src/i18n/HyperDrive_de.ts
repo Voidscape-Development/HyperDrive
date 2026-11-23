@@ -2706,7 +2706,7 @@
     </message>
     <message>
         <location filename="../ScoreboardPlayerWidget.py" line="83"/>
-        <location filename="../BracketWidget.py" line="1458"/>
+        <location filename="../BracketWidget.py" line="1467"/>
         <location filename="../ScoreboardWidget.py" line="226"/>
         <location filename="../PlayerDBWindow.py" line="713"/>
         <location filename="../PlayerDBWindow.py" line="802"/>
@@ -3667,14 +3667,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1457"/>
+        <location filename="../BracketWidget.py" line="1466"/>
         <source>Rank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ScoreboardStageWidget.py" line="197"/>
         <location filename="../BracketWidget.py" line="602"/>
-        <location filename="../BracketWidget.py" line="1459"/>
+        <location filename="../BracketWidget.py" line="1468"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3874,7 +3874,7 @@
     </message>
     <message>
         <location filename="../BracketWidget.py" line="707"/>
-        <location filename="../BracketWidget.py" line="1374"/>
+        <location filename="../BracketWidget.py" line="1383"/>
         <source>Rebuild bracket</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3930,18 +3930,18 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1514"/>
+        <location filename="../BracketWidget.py" line="1523"/>
         <source>Layouts show this channel with ?channel={0} in their URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1518"/>
+        <location filename="../BracketWidget.py" line="1527"/>
         <source>Layouts without ?channel= in their URL show this channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1911"/>
-        <location filename="../BracketWidget.py" line="2147"/>
+        <location filename="../BracketWidget.py" line="1927"/>
+        <location filename="../BracketWidget.py" line="2163"/>
         <source>{0}: its players, from start.gg</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3951,7 +3951,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1147"/>
+        <location filename="../BracketWidget.py" line="1156"/>
         <location filename="../BracketView.py" line="170"/>
         <location filename="../BracketView.py" line="331"/>
         <location filename="../BracketView.py" line="336"/>
@@ -3959,93 +3959,93 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1166"/>
+        <location filename="../BracketWidget.py" line="1175"/>
         <source>{0}: going on {1}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1170"/>
+        <location filename="../BracketWidget.py" line="1179"/>
         <source>{0}: {1}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1195"/>
+        <location filename="../BracketWidget.py" line="1204"/>
         <source>L{0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1258"/>
-        <location filename="../BracketWidget.py" line="1264"/>
+        <location filename="../BracketWidget.py" line="1267"/>
+        <location filename="../BracketWidget.py" line="1273"/>
         <source>Take from phases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1259"/>
+        <location filename="../BracketWidget.py" line="1268"/>
         <source>Add other phases (e.g. pools) first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1267"/>
+        <location filename="../BracketWidget.py" line="1276"/>
         <source>Phases to take players from:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1276"/>
+        <location filename="../BracketWidget.py" line="1285"/>
         <source>Players from each phase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1283"/>
+        <location filename="../BracketWidget.py" line="1292"/>
         <source>Players after the first place of each phase start in losers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1375"/>
+        <location filename="../BracketWidget.py" line="1384"/>
         <source>This builds {0} again and clears its results. Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1460"/>
+        <location filename="../BracketWidget.py" line="1469"/>
         <location filename="../BracketView.py" line="201"/>
         <source>W</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1461"/>
+        <location filename="../BracketWidget.py" line="1470"/>
         <location filename="../BracketView.py" line="203"/>
         <source>L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1462"/>
+        <location filename="../BracketWidget.py" line="1471"/>
         <source>D</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1463"/>
+        <location filename="../BracketWidget.py" line="1472"/>
         <source>Points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="2030"/>
+        <location filename="../BracketWidget.py" line="2046"/>
         <source>Waiting for a loaded bracket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../BracketWidget.py" line="470"/>
-        <location filename="../BracketWidget.py" line="2038"/>
+        <location filename="../BracketWidget.py" line="2054"/>
         <source>Next update in {0}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1900"/>
+        <location filename="../BracketWidget.py" line="1916"/>
         <location filename="../StreamQueueWidget.py" line="808"/>
         <location filename="../StreamQueueWidget.py" line="823"/>
         <source>start.gg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1464"/>
+        <location filename="../BracketWidget.py" line="1473"/>
         <location filename="../GamesPopup.py" line="576"/>
         <location filename="../ScoreboardWidget.py" line="485"/>
         <location filename="../AssetDownloaderWindow.py" line="891"/>
@@ -4073,12 +4073,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1465"/>
+        <location filename="../BracketWidget.py" line="1474"/>
         <source>Game diff.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1468"/>
+        <location filename="../BracketWidget.py" line="1477"/>
         <source>Buchholz</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4379,7 +4379,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="2033"/>
+        <location filename="../BracketWidget.py" line="2049"/>
         <location filename="../StreamQueueWidget.py" line="772"/>
         <source>Updating...</source>
         <translation type="unfinished"></translation>
@@ -4451,17 +4451,17 @@
     </message>
     <message>
         <location filename="../BracketWidget.py" line="907"/>
-        <location filename="../BracketWidget.py" line="1540"/>
+        <location filename="../BracketWidget.py" line="1549"/>
         <source>New channel...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1542"/>
+        <location filename="../BracketWidget.py" line="1551"/>
         <source>Rename channel...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../BracketWidget.py" line="1545"/>
+        <location filename="../BracketWidget.py" line="1554"/>
         <location filename="../BracketFocusBar.py" line="362"/>
         <source>Remove channel</source>
         <translation type="unfinished"></translation>
