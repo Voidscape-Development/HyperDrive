@@ -39,9 +39,10 @@ def PlayerExport(bracket, m, slot, teamName):
     }
 
 
-def ExportBracket(bracket, name, limit=None, players=None):
+def ExportBracket(bracket, name, limit=None, players=None, progressions=None):
     """The bracket's export. limit: only its top N (elimination); players:
-    where its player list is in the state."""
+    where its player list is in the state; progressions: {place: where the
+    player going on in that place goes}."""
 
     players = players or RosterPath()
 
@@ -90,6 +91,11 @@ def ExportBracket(bracket, name, limit=None, players=None):
             "resetNeeded": not m.notNeeded,
             "startggId": m.providerId,
         }
+
+    # Where each set's winner goes on to, out of the phase
+    for place, m in enumerate(bracket.ProgressionMatches(), 1):
+        if m.id in sets:
+            sets[m.id]["progressesTo"] = (progressions or {}).get(place) or ""
 
     sides = {}
     for side in SIDES:

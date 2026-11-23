@@ -127,6 +127,13 @@ def TestProgressions():
     view.SetBracket(GenerateBracket(TYPE_SINGLE_ELIMINATION, list(range(1, 9)), progressionsOut=4))
     assert Labels(view) == ["Goes on"] * 3 + ["To Top 8"], Labels(view)
 
+    # The layouts get where each one goes with its set
+    from src.BracketExport import ExportBracket
+
+    data = ExportBracket(view.bracket, "Pools", progressions={4: "Top 8"})
+    going = [data["sets"][m.id]["progressesTo"] for m in view.bracket.ProgressionMatches()]
+    assert going == ["", "", "", "Top 8"], going
+
     # Without progressions out, nothing goes on
     view.SetBracket(GenerateBracket(TYPE_DOUBLE_ELIMINATION, list(range(1, 9))))
     assert Labels(view) == [] and view.bracket.ProgressionMatches() == []

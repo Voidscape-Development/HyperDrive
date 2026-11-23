@@ -149,6 +149,12 @@ function build(data) {
                 Object.entries(placed.headers).map(
                   ([key, h]) => HD.html`<div class="bf_round_name" data-round="${key}" style="${box(h)}"></div>`,
                 ),
+                paths
+                  .filter((p) => p.label)
+                  .map(
+                    (p) =>
+                      HD.html`<div class="progression_label" data-from="${p.from}" style="left: ${p.end[0] + 10}px; top: ${p.end[1]}px">${p.label}</div>`,
+                  ),
                 Object.entries(placed.sets).map(([id, at]) => {
                   setIndex[id] = Object.keys(setIndex).length + 1;
                   return HD.html`
@@ -646,6 +652,8 @@ function applyFocus(s, data, animate) {
     focused.set(el, f);
     if (f && outline) outlined.add(`line:${from}>${to == null ? "" : to}`);
   }
+  for (const el of document.querySelectorAll(".bf_sets .progression_label"))
+    focused.set(el, inFocus.has(el.dataset.from));
   // A round is highlighted when it's in focus, and not dimmed while any of
   // its sets is
   const columns = _.keyBy(Object.values(_.get(data, "bracket.bracket.sides", {})).flat(), "key");

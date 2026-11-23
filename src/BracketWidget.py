@@ -1130,17 +1130,26 @@ class BracketWidget(QDockWidget):
         """The name of the phase taking the shown phase's player going on in
         that place, or None"""
         phase = self.CurrentPhase()
-        if phase is None:
-            return None
+        return self.ProgressionTargets(phase).get(place) if phase else None
+
+    def ProgressionTargets(self, phase):
+        """{place: the name of the phase (and group) taking the phase's player
+        going on in that place}"""
+        targets = {}
         for other in self.tournament.phases:
             for source in other.seedSources:
                 if (
                     (source or {}).get("type") == "result"
                     and source.get("phase") == phase.id
-                    and int(source.get("place") or 0) == place
+                    and other.name
                 ):
-                    return other.name or None
-        return None
+                    targets.setdefault(int(source.get("place") or 0), other.name)
+        # start.gg's phase groups: where each set's winner goes, by set
+        names = (phase.providerInfo or {}).get("progressions") or {}
+        if names and phase.bracket is not None:
+            for place, m in enumerate(phase.bracket.ProgressionMatches(), 1):
+                targets.setdefault(place, names.get(str(m.providerId)))
+        return {place: name for place, name in targets.items() if name}
 
     def SeedSourceOptions(self, phase):
         """(label, source) for every seed source this phase can take."""
@@ -1738,7 +1747,13 @@ class BracketWidget(QDockWidget):
         path = RosterPath(self.RosterKey(phase))
         key = (phase.id, limit)
         if key not in cache:
-            bracket = ExportBracket(phase.bracket, phase.name, limit, path) if phase.bracket else {}
+            bracket = (
+                ExportBracket(
+                    phase.bracket, phase.name, limit, path, self.ProgressionTargets(phase)
+                )
+                if phase.bracket
+                else {}
+            )
             cache[key] = (bracket, Place(bracket))
         provider = phase.providerPhaseGroupId is not None
         info = phase.providerInfo or {}
@@ -1858,6 +1873,7 @@ class BracketWidget(QDockWidget):
         existing = self.ProviderPhase(id)
         info = dict(existing.providerInfo if existing else {})
         info.update(self.phaseGroupInfo.get(id, {}))
+        info["progressions"] = data.get("progressions") or {}
         try:
             bracket = FromProviderSets(
                 info.get("bracketType") or (existing.type if existing else TYPE_DOUBLE_ELIMINATION),

@@ -15,6 +15,8 @@ ROW_GAP = 24
 HEADER_H = 56
 SECTION_GAP = 90
 MARGIN = 40
+# Between an arrow out of the phase and where it goes
+LABEL_GAP = 10
 STANDINGS_W = 800
 POOL_TYPES = ("ROUND_ROBIN", "SWISS")
 
@@ -164,7 +166,10 @@ def _Lines(bracket, areas, placed):
                 and set_.get("side") in ("winners", "losers")
             ):
                 points = [start, [start[0] + 45, start[1]]]
-                lines.append({"from": i, "to": None, "points": points, "arrow": True})
+                label = set_.get("progressesTo") or ""
+                lines.append(
+                    {"from": i, "to": None, "points": points, "arrow": True, "label": label}
+                )
     return lines
 
 
@@ -185,6 +190,13 @@ def Place(bracket):
             bottom = _PlaceArea(areas[1], sets, bottom + SECTION_GAP, result)
     boxes = list(result["sets"].values()) + list(result["headers"].values())
     result["lines"] = _Lines(bracket, areas, result["sets"])
-    result["width"] = max([0] + [b["x"] + b["w"] for b in boxes]) + MARGIN
+    # Room for where the players going on go, after their arrows (20px
+    # text, about 12px a letter, in a chip)
+    labels = [
+        l["points"][-1][0] + LABEL_GAP + len(l["label"]) * 12 + 24
+        for l in result["lines"]
+        if l.get("label")
+    ]
+    result["width"] = max([0] + [b["x"] + b["w"] for b in boxes] + labels) + MARGIN
     result["height"] = max([bottom] + [b["y"] + b["h"] for b in boxes]) + MARGIN
     return result

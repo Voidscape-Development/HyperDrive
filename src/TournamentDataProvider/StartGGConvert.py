@@ -439,6 +439,16 @@ def BuildGraphSets(seeds, sets):
     return graphSets
 
 
+def ProgressionName(s):
+    """Where a set's winner goes on to, out of its phase group: the phase,
+    and its group when it has several ("Top 64", "R2 Pools - B2")"""
+    group = deep_get(s, "winnerProgressionSeed.phaseGroup") or {}
+    name = deep_get(group, "phase.name") or ""
+    if name and (deep_get(group, "phase.groupCount") or 1) > 1 and group.get("displayIdentifier"):
+        name += f" - {group['displayIdentifier']}"
+    return name
+
+
 def RecentSetPlayer1Slot(_set, pid1, pid2):
     # The slot player 1 is in if the set is the two players facing each
     # other one on one, otherwise None

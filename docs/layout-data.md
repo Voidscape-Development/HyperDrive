@@ -55,7 +55,7 @@ plugin's native bracket focus source draw it, in world pixels before zooming: `s
 column key) as `{x, y, w, h}`, `byes` (pools: who sits out each round) and
 `standings` (pools: the standings table) as `{x, y, w}`, `lines` from each
 set to where its winner goes (`{from, to, points: [[x, y]...]}`, or `{from,
-to: null, points, arrow: true}` for players going on to another phase), and
+to: null, points, arrow: true, label}` for players going on to another phase, label saying where), and
 the world's `width` and `height`. Made by `src/Helpers/BracketPlacement.py`.
 
 ### `bracket.rosters`
@@ -107,6 +107,7 @@ Each set in `sets`:
 | `loserPlacement` | Placement the loser gets if they lose their next set |
 | `isGrandFinal`, `isReset`, `resetNeeded` | Grand final sets. A reset that isn't needed has `resetNeeded: false`. |
 | `startggId` | The set's start.gg id, when loaded from start.gg |
+| `progressesTo` | With progressions out, on the sets whose winner goes on: the phase (and phase group) they go to, `""` when unknown |
 
 ### Helpers for layouts: `layout/include/bracket.js`
 

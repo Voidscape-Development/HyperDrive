@@ -533,6 +533,12 @@ class StartGGDataProvider(TournamentDataProvider):
                 [s for s in seeds if deep_get(s, "progressionSource.originPhaseGroup.id")]
             )
             finalData["progressionsOut"] = len(progressionsOut or [])
+            # {set id: where its winner goes on to}
+            finalData["progressions"] = {
+                str(s.get("id")): StartGGConvert.ProgressionName(s)
+                for s in sets
+                if StartGGConvert.ProgressionName(s)
+            }
         except ProviderError as e:
             return Failed(e, {})
         except:

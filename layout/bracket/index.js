@@ -88,7 +88,8 @@ function columnsHtml(columns, sets) {
 
 // Lines from each set to where its winner goes, within one part of the
 // bracket, and arrows out of it for players going on to another phase
-function linesHtml(bracket, areas) {
+// labels: filled with where the players going on go, after their arrows
+function linesHtml(bracket, areas, labels) {
   const sets = bracket.sets || {};
   const point = (el, side) => [
     side == "right" ? el.offset().left + el.outerWidth() : el.offset().left,
@@ -118,6 +119,10 @@ function linesHtml(bracket, areas) {
         lines.push(
           HD.html`<path class="line line_out_${setIndex[id]}" d="${path([a, [x, y]])} M${x - 10} ${y - 8} L${x} ${y} L${x - 10} ${y + 8}" fill="none" />`,
         );
+        if (set.progressesTo)
+          labels.push(
+            HD.html`<div class="progression_label label_out_${setIndex[id]}" style="left: ${x + 10}px; top: ${y}px">${set.progressesTo}</div>`,
+          );
       }
     }
   }
@@ -181,13 +186,18 @@ function build(s, data) {
     if (s.settings.winners_only) lower = [];
     if (s.settings.losers_only) upper = [];
     $("body").toggleClass("no_lower", lower.length === 0);
+    // Room after the arrows for where the players going on go (20px text, in a chip)
+    const label = Math.max(0, ...Object.values(sets).map((set) => (set.progressesTo || "").length));
+    $(".winners_container, .losers_container").css("padding-right", label ? 160 + label * 12 : "");
     HD.render(".winners_container", columnsHtml(upper, sets));
     HD.render(".losers_container", columnsHtml(lower, sets));
     resize([upper, lower], [$(".winners_container"), $(".losers_container")]);
     alignPlayIns();
     areas = [upper, lower];
   }
-  HD.render(".lines", pool ? "" : linesHtml(bracket, areas));
+  const labels = [];
+  HD.render(".lines", pool ? "" : linesHtml(bracket, areas, labels));
+  HD.render(".progression_labels", labels);
 
   // Each set slides in, then its lines draw; the timeline stops at the
   // set's state (hidden, displayed or done)
@@ -200,6 +210,8 @@ function build(s, data) {
         const anim = gsap.timeline({ paused: true });
         anim.addLabel("hidden").from(setElement(id), { x: -50, autoAlpha: 0, duration: 0.4 }, 0).addLabel("displayed");
         anim.add(animateLine($(`.line_${setIndex[id]}`)), 0.4).add(animateLine($(`.line_out_${setIndex[id]}`)), 0.4);
+        const label = $(`.label_out_${setIndex[id]}`);
+        if (label.length) anim.from(label, { autoAlpha: 0, duration: 0.3 }, 0.6);
         anim.addLabel("done");
         animations[id] = anim;
         entryAnim.add(showSet(s, id, sets[id], pool), c * 0.4 + i * 0.02);
@@ -271,7 +283,10 @@ HD.layout({
       data = { ...data, bracket: { ...data.bracket, playersPath: "bracket.players" } };
 
     if (!data.bracket || !data.bracket.bracket || !data.bracket.bracket.sides) {
-      HD.render(".winners_container, .losers_container, .pool_container, .grid_container, .lines", "");
+      HD.render(
+        ".winners_container, .losers_container, .pool_container, .grid_container, .lines, .progression_labels",
+        "",
+      );
       $(".grid_container").removeData("hd-build");
       lastSignature = null;
       return;
