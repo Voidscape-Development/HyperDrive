@@ -968,7 +968,8 @@ class WebServerActions(QObject):
 
     def bracket_focus_set(self, request, channel=None):
         # A focus request, {"move": 1} for the next round (-1: previous) or
-        # {"phase": <id>} for the phase of the bracket widget it shows, for
+        # {"phase": <id>} for the phase of the bracket widget it shows,
+        # {"projected": true, false or "toggle"} for projected winners, for
         # a channel ("channel" in the request, "main" by default)
         from .BracketFocus import BracketFocus
 
@@ -984,6 +985,12 @@ class WebServerActions(QObject):
             if not focus.HasPhase(request.get("phase")):
                 return "NO_PHASE", 404
             target.SetPhase(request.get("phase"))
+        elif "projected" in request:
+            on = request.get("projected")
+            toggle = on in (None, "", "toggle")
+            target.SetProjected(
+                not target.projected if toggle else str(on).lower() in ("1", "true", "on")
+            )
         elif "move" in request:
             try:
                 target.MoveRound(1 if int(request.get("move")) >= 0 else -1)

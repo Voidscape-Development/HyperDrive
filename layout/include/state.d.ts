@@ -621,6 +621,8 @@ declare namespace HDState {
     steps?: number | null;
     /** Id of the phase the channel shows */
     phase?: string | null;
+    /** The channel shows projected winners */
+    projected?: boolean | null;
     [key: string]: any;
   }
 

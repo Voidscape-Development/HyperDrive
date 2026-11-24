@@ -241,6 +241,8 @@ export type BracketFocus = {
 	steps?: number;
 	/** Id of the phase shown, one of bracket.phases */
 	phase?: string | null;
+	/** The channel shows projected winners */
+	projected?: boolean;
 };
 
 export function bracketFocus(state: State, channel: string): BracketFocus | undefined {

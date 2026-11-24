@@ -552,6 +552,7 @@ class BracketFocus(StateModel):
     step: int | None = None
     steps: int | None = None
     phase: str | None = F("Id of the phase the channel shows")
+    projected: bool | None = F("The channel shows projected winners")
 
 
 class BracketPhase(StateModel):

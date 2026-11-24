@@ -327,6 +327,7 @@ const FOCUS: Record<FocusMode, { icon: IconName; label: string }> = {
 	tour: { icon: "play", label: "tour" },
 	player: { icon: "user", label: "playerRun" },
 	phase: { icon: "layers", label: "showPhase" },
+	projected: { icon: "trophy", label: "projected" },
 };
 
 export function focusKey(t: Translate, s: FocusSettings, state: State): Look {
@@ -345,6 +346,8 @@ export function focusKey(t: Translate, s: FocusSettings, state: State): Look {
 		active = focus.mode === "player" && String(focus.player) === String(s.player);
 	} else if (focus && mode === "phase") {
 		active = !!s.phase && focus.phase === s.phase;
+	} else if (focus && mode === "projected") {
+		active = !!focus.projected;
 	}
 	return {
 		icon,

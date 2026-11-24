@@ -497,6 +497,8 @@ def TestHandWrittenRequests():
     assert client.get("/bracket-focus/next-round?channel=side").status_code == 200
     assert actions.calls[0][:2] == ("bracket_focus_set", ({"move": 1}, "side"))
     assert client.get("/bracket-focus/nope").status_code == 404
+    assert client.get("/bracket-focus/projected").status_code == 200
+    assert actions.calls[1][:2] == ("bracket_focus_set", ({"projected": "toggle"}, None))
 
     actions = Setup()
     WebServerModule._client.sid = None

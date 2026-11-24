@@ -121,6 +121,12 @@ describe("views", () => {
 		expect(views.focusKey(t, { mode: "phase" }, pinned)).toMatchObject({ bottom: "Pick a phase", state: undefined });
 	});
 
+	it("lights the projected winners toggle while they're shown", () => {
+		const on: State = { bracket: { focus: { main: { mode: "all", projected: true } } } };
+		expect(views.focusKey(t, { mode: "projected" }, on)).toMatchObject({ icon: "trophy", bottom: "Projected", state: "on" });
+		expect(views.focusKey(t, { mode: "projected" }, { bracket: { focus: { main: { mode: "all" } } } })).toMatchObject({ state: undefined });
+	});
+
 	it("has every translation it uses", () => {
 		const all: views.Translate = (key, values) => t(key, values);
 		for (const kind of ["scores", "match", "players", "all"] as const) views.resetKey(all, { kind });

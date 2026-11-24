@@ -203,6 +203,7 @@ class FocusChannel(QObject):
         if focus.get("mode") == MODE_TOUR:
             self.step = focus.get("step", 0)
         focus["phase"] = self.phase
+        focus["projected"] = self.projected
         if force or focus != self.focus:
             self.focus = focus
             StateManager.Set(f"bracket.focus.{self.name}", focus)
@@ -368,6 +369,7 @@ class BracketFocus(QObject):
             "channel": channel.name,
             "channels": list(self.channels.keys()),
             "phase": channel.phase,
+            "projected": channel.projected,
             # The pool: [{value, label, section}], section "local" or "startgg"
             "phases": [
                 {
