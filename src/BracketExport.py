@@ -55,7 +55,8 @@ def ExportBracket(bracket, name, limit=None, players=None, progressions=None, pr
     if projected and not bracket.IsPool():
         bracket.Resolve(project=True)
         projection = {
-            id: (list(m.players), m.projected, m.notNeeded) for id, m in bracket.matches.items()
+            id: (list(m.players), m.projected, m.notNeeded, m.winnerSlot)
+            for id, m in bracket.matches.items()
         }
         bracket.Resolve()
 
@@ -79,7 +80,7 @@ def ExportBracket(bracket, name, limit=None, players=None, progressions=None, pr
         elif m.IsDraw():
             winner = "draw"
 
-        shown = projection.get(m.id, ([None, None], False, False))
+        shown = projection.get(m.id, ([None, None], False, False, None))
 
         def Next(link):
             if link is None or link[0] not in included:
@@ -100,6 +101,8 @@ def ExportBracket(bracket, name, limit=None, players=None, progressions=None, pr
             "completed": bool(m.finished),
             # Undecided, its winner projected by seed
             "projected": shown[1],
+            # Its projected winner's slot, 0 or 1
+            "projectedWinner": shown[3] if shown[1] else None,
             # 0 or 1 for the slot that won, "draw" or None
             "winner": winner,
             "nextWin": Next(m.nextWin),

@@ -103,6 +103,7 @@ Each set in `sets`:
 | `score` | `[a, b]`; `-1` is a DQ |
 | `completed` | |
 | `projected` | Not played yet, its winner projected by seed (channels showing projected winners) |
+| `projectedWinner` | `0` or `1` for the slot projected to win, or `null`. Layouts show a ✓ in its score until the set has a score, and dim the other slot like a loser. |
 | `winner` | `0` or `1` for the slot that won, `"draw"`, or `null` |
 | `nextWin`, `nextLose` | Where the winner and the loser go: `{set, slot}`, or `null` |
 | `loserPlacement` | Placement the loser gets if they lose their next set |

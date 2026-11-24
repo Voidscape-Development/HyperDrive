@@ -17,6 +17,7 @@ interface ExportSet {
     players?: ({name?: string; bye?: boolean; projected?: boolean} | null)[];
     score?: (number | null)[];
     winner?: number | null;
+    projectedWinner?: number | null;
     completed?: boolean;
 }
 
@@ -44,7 +45,7 @@ function SetBox({set, focused}: {set: ExportSet; focused: boolean}) {
         return (
             <span className={cn("flex justify-between gap-2 px-2.5 py-1.5", i === 0 && "border-b", won ? "font-bold" : "text-muted-foreground", won && "text-foreground", player?.projected && "italic opacity-60")}>
                 <span className="truncate">{player?.bye ? "Bye" : player?.name || "—"}</span>
-                <span className="tabular-nums">{set.score?.[i] ?? ""}</span>
+                <span className="tabular-nums">{set.projectedWinner === i && !set.score?.some(Boolean) ? "✓" : set.score?.[i] ?? ""}</span>
             </span>
         );
     };

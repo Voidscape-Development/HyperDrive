@@ -495,6 +495,8 @@ declare namespace HDState {
     completed?: boolean | null;
     /** Not played yet, its winner projected by seed */
     projected?: boolean | null;
+    /** `0` or `1` for the slot projected to win, or `null` */
+    projectedWinner?: number | null;
     /** `0` or `1` for the slot that won, `"draw"`, or `null` */
     winner?: number | string | null;
     nextWin?: BracketNext | null;

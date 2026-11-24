@@ -166,7 +166,7 @@ body.hd-bracket-hide-pending .pending_source {
   display: none !important;
 }
 
-body:not(.hd-bracket-no-dim-losers) .player.lost {
+body:not(.hd-bracket-no-dim-losers) .player:is(.lost, .projected-lost) {
   filter: brightness(0.6);
 }
 

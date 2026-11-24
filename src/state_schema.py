@@ -456,6 +456,7 @@ class BracketSet(StateModel):
     score: list[int] | None = F("`[a, b]`; `-1` is a DQ")
     completed: bool | None = None
     projected: bool | None = F("Not played yet, its winner projected by seed")
+    projectedWinner: int | None = F("`0` or `1` for the slot projected to win, or `null`")
     winner: int | str | None = F('`0` or `1` for the slot that won, `"draw"`, or `null`')
     nextWin: BracketNext | None = None
     nextLose: BracketNext | None = None
