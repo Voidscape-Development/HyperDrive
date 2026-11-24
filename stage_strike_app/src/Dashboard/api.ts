@@ -140,7 +140,7 @@ export interface TeamBattleOptions {
 }
 
 export interface BracketOptions {
-    channels: {name: string; phase: string | null; limit: number | null}[];
+    channels: {name: string; phase: string | null; limit: number | null; projected?: boolean}[];
     phases: {id: string; name: string; type: string; fromProvider: boolean}[];
     sources: {index: number; name: string; groups: {index: number; name: string; bracketType: string}[]}[];
     loaded: boolean;
@@ -240,7 +240,7 @@ export const dashboard = {
 
     bracket: {
         options: () => get<BracketOptions>(d("/bracket/options")),
-        setChannel: (name: string, data: {phase?: string; limit?: number | null}) => post(d(`/bracket/channels/${seg(name)}`), data),
+        setChannel: (name: string, data: {phase?: string; limit?: number | null; projected?: boolean}) => post(d(`/bracket/channels/${seg(name)}`), data),
         updateSets: () => post(d("/bracket/update-sets")),
         autoUpdate: (enabled: boolean) => post(d("/bracket/auto-update"), {enabled}),
         load: (phase: number, group: number) => post(d("/bracket/load"), {phase, group}),

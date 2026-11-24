@@ -271,18 +271,25 @@ var HDBracket = {
   UpdateSet(s, element, set, data) {
     const players = _.get(data, "bracket.players.slot", {});
     const winner = HDBracket.Winner(set);
+    const projected = set.projectedWinner;
     HD.set(element.find(".set_identifier"), set.identifier);
 
     [0, 1].forEach((n) => {
       const row = element.find(`.slot_p_${n}`);
       const slot = set.players[n];
       const team = slot && slot.id ? players[slot.id] : null;
-      HD.set(row.find(".score"), HDBracket.ScoreText(set, n));
+      // Projected winner: a check, like start.gg, until the set has a score
+      HD.set(row.find(".score"), HDBracket.ScoreText(set, n) || (projected === n ? "✓" : ""));
       row
         .toggleClass("won", winner === n)
         .toggleClass("lost", winner === 1 - n)
-        .toggleClass("draw", winner === "draw");
-      row.toggleClass("pending", !!(slot && slot.pending)).toggleClass("empty", !team);
+        .toggleClass("draw", winner === "draw")
+        .toggleClass("projected-won", projected === n)
+        .toggleClass("projected-lost", projected === 1 - n);
+      row
+        .toggleClass("pending", !!(slot && slot.pending))
+        .toggleClass("projected", !!(slot && slot.projected))
+        .toggleClass("empty", !team);
 
       const singles = team && _.size(team.player) === 1;
       const player = (singles && team.player[1]) || {};

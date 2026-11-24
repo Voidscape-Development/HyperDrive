@@ -492,8 +492,9 @@ def ws_broadcast_display_state():
 # /bracket-focus/next-round, /bracket-focus/previous-round,
 # /bracket-focus/winners, /bracket-focus/losers (a side),
 # /bracket-focus/follow?scoreboard=<n>, /bracket-focus/tour?interval=<s>
-# /bracket-focus/player?id=<player slot> and /bracket-focus/phase?phase=<id>
-# (a phase of the bracket widget the channel shows), each with
+# /bracket-focus/player?id=<player slot>, /bracket-focus/phase?phase=<id>
+# (a phase of the bracket widget the channel shows) and
+# /bracket-focus/projected?on=<1|0> (projected winners, toggled without on), each with
 # &channel=<name>
 @api.get("/bracket-focus/{action}")
 async def bracket_focus_action(action: str, request: Request):
@@ -508,6 +509,7 @@ async def bracket_focus_action(action: str, request: Request):
         "tour": {"mode": "tour", "interval": args.get("interval")},
         "player": {"mode": "player", "player": args.get("id")},
         "phase": {"phase": args.get("phase", "")},
+        "projected": {"projected": args.get("on", "toggle")},
     }.get(action)
     if body is None:
         return HTMLResponse("Unknown action", status_code=404)

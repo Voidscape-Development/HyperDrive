@@ -431,6 +431,14 @@ class BracketWidget(QDockWidget):
         self.limitExportNumber.setMaximumWidth(72)
         self.limitExportNumber.valueChanged.connect(self.ExportOptionsChanged)
         self.limitExportNumber.setToolTip(self.limitExport.toolTip())
+        self.projectedExport = QCheckBox(QApplication.translate("app", "Projected"))
+        self.projectedExport.setToolTip(
+            QApplication.translate(
+                "app",
+                "Sets not played yet show the players projected by seeding, like start.gg's projected bracket",
+            )
+        )
+        self.projectedExport.toggled.connect(lambda on: self.Ch().SetProjected(on))
 
         BracketFocus.instance.signals.channelsChanged.connect(self.ChannelsChanged)
         BracketFocus.instance.signals.settingsChanged.connect(self.ChannelSettingsChanged)
@@ -439,7 +447,7 @@ class BracketWidget(QDockWidget):
         onStreamLayout = QVBoxLayout(self.onStream)
         onStreamLayout.setContentsMargins(8, 6, 8, 6)
         self.focusBar = BracketFocusBar(
-            self.view, leading=[(self.limitExport, self.limitExportNumber)]
+            self.view, leading=[(self.limitExport, self.limitExportNumber), (self.projectedExport,)]
         )
         onStreamLayout.addWidget(self.focusBar)
         contents.layout().addWidget(self.onStream)
@@ -1455,6 +1463,7 @@ class BracketWidget(QDockWidget):
         pool = bracket is not None and bracket.IsPool()
         self.standingsTable.setVisible(pool)
         self.limitExport.setEnabled(not pool)
+        self.projectedExport.setEnabled(not pool)
         self.limitExportNumber.setEnabled(not pool)
         if pool:
             self.UpdateStandingsTable(bracket)
@@ -1635,12 +1644,14 @@ class BracketWidget(QDockWidget):
 
     def UpdateLimitControls(self):
         limit = self.Ch().limit
-        for widget in (self.limitExport, self.limitExportNumber):
+        widgets = (self.limitExport, self.limitExportNumber, self.projectedExport)
+        for widget in widgets:
             widget.blockSignals(True)
+        self.projectedExport.setChecked(self.Ch().projected)
         self.limitExport.setChecked(limit is not None)
         if limit is not None:
             self.limitExportNumber.setValue(limit)
-        for widget in (self.limitExport, self.limitExportNumber):
+        for widget in widgets:
             widget.blockSignals(False)
 
     # =====================================================
@@ -1734,7 +1745,7 @@ class BracketWidget(QDockWidget):
     # EXPORTS
     # =====================================================
     # Exporting to the layouts
-    def ChannelExport(self, phase, limit, cache):
+    def ChannelExport(self, phase, limit, cache, projected=False):
         if phase is None:
             return {
                 "bracket": {},
@@ -1745,11 +1756,16 @@ class BracketWidget(QDockWidget):
                 "placement": None,
             }
         path = RosterPath(self.RosterKey(phase))
-        key = (phase.id, limit)
+        key = (phase.id, limit, projected)
         if key not in cache:
             bracket = (
                 ExportBracket(
-                    phase.bracket, phase.name, limit, path, self.ProgressionTargets(phase)
+                    phase.bracket,
+                    phase.name,
+                    limit,
+                    path,
+                    self.ProgressionTargets(phase),
+                    projected,
                 )
                 if phase.bracket
                 else {}
@@ -1789,7 +1805,7 @@ class BracketWidget(QDockWidget):
         cache = {}
         channels = {
             name: self.ChannelExport(
-                self.tournament.GetPhase(c.phase) if c.phase else None, c.limit, cache
+                self.tournament.GetPhase(c.phase) if c.phase else None, c.limit, cache, c.projected
             )
             for name, c in focus.channels.items()
         }

@@ -107,6 +107,7 @@
 		"tourStep": "Tour {step}/{steps}",
 		"playerRun": "Player's run",
 		"showPhase": "Show phase",
+		"projected": "Projected",
 		"pickPhase": "Pick a phase",
 		"phasesLocal": "Built in HyperDrive",
 		"phasesStartgg": "start.gg",

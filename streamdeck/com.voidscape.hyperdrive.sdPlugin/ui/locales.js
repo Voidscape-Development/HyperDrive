@@ -56,6 +56,7 @@ SDPIComponents.i18n.locales = {
 		tour: "Tour the bracket",
 		playerRun: "A player's run",
 		showPhase: "Show a phase",
+		projectedToggle: "Projected winners (on/off)",
 		phase: "Phase",
 		interval: "Seconds per step",
 		dialScore: "Dial: turn to change the score, push to swap the teams, touch to add (or take) a point.",

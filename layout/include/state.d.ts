@@ -468,6 +468,8 @@ declare namespace HDState {
     source?: string | null;
     /** Put there by hand */
     manual?: boolean | null;
+    /** Not decided yet: the player the seeding projects there */
+    projected?: boolean | null;
     [key: string]: any;
   }
 
@@ -491,6 +493,10 @@ declare namespace HDState {
     /** `[a, b]`; `-1` is a DQ */
     score?: number[] | null;
     completed?: boolean | null;
+    /** Not played yet, its winner projected by seed */
+    projected?: boolean | null;
+    /** `0` or `1` for the slot projected to win, or `null` */
+    projectedWinner?: number | null;
     /** `0` or `1` for the slot that won, `"draw"`, or `null` */
     winner?: number | string | null;
     nextWin?: BracketNext | null;
@@ -615,6 +621,8 @@ declare namespace HDState {
     steps?: number | null;
     /** Id of the phase the channel shows */
     phase?: string | null;
+    /** The channel shows projected winners */
+    projected?: boolean | null;
     [key: string]: any;
   }
 

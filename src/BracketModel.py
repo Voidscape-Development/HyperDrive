@@ -137,6 +137,8 @@ class BracketMatch:
         self.isBye = False
         # Grand final reset that isn't needed
         self.notNeeded = False
+        # Undecided, its winner projected by seed (Resolve(project=True))
+        self.projected = False
         # Where its winner and loser go: (match id, slot)
         self.nextWin = None
         self.nextLose = None
@@ -415,8 +417,11 @@ class Bracket:
             return m.players[int(source.get("slot") or 0)]
         return PENDING
 
-    def Resolve(self):
-        """Places players and works out every match's result."""
+    def Resolve(self, project=False):
+        """Places players and works out every match's result. project: like
+        start.gg's projected bracket, undecided matches go to the better
+        seed (elimination only)."""
+        project = project and not self.IsPool()
         for m in self.order:
             players = []
             for slot in range(2):
@@ -426,6 +431,7 @@ class Bracket:
                     players.append(self._SourcePlayer(m.sources[slot]))
             m.players = players
             m.notNeeded = False
+            m.projected = False
             p1, p2 = players
 
             m.isBye = BYE in players
@@ -450,6 +456,9 @@ class Bracket:
                         m.notNeeded = True
 
                 winner = self.DecideWinner(m) if p1 > 0 and p2 > 0 else None
+                if winner is None and project and p1 > 0 and p2 > 0 and not m.notNeeded:
+                    m.projected = True
+                    winner = 0 if self.SeedOf(p1) <= self.SeedOf(p2) else 1
                 if winner is None or m.notNeeded:
                     m.winner, m.loser = PENDING, PENDING
                 else:
