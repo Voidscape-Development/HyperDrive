@@ -14,7 +14,7 @@ import {cn} from "@/lib/utils";
 
 interface ExportSet {
     id: string;
-    players?: ({name?: string; bye?: boolean} | null)[];
+    players?: ({name?: string; bye?: boolean; projected?: boolean} | null)[];
     score?: (number | null)[];
     winner?: number | null;
     completed?: boolean;
@@ -42,7 +42,7 @@ function SetBox({set, focused}: {set: ExportSet; focused: boolean}) {
         const player = set.players?.[i];
         const won = set.completed && set.winner === i;
         return (
-            <span className={cn("flex justify-between gap-2 px-2.5 py-1.5", i === 0 && "border-b", won ? "font-bold" : "text-muted-foreground", won && "text-foreground")}>
+            <span className={cn("flex justify-between gap-2 px-2.5 py-1.5", i === 0 && "border-b", won ? "font-bold" : "text-muted-foreground", won && "text-foreground", player?.projected && "italic opacity-60")}>
                 <span className="truncate">{player?.bye ? "Bye" : player?.name || "—"}</span>
                 <span className="tabular-nums">{set.score?.[i] ?? ""}</span>
             </span>
@@ -154,9 +154,9 @@ export default function BracketPage() {
         return () => clearInterval(id);
     }, [reload]);
 
-    const channels = options?.channels ?? [{name: "main", phase: null, limit: null}];
+    const channels = options?.channels ?? [{name: "main", phase: null, limit: null, projected: false}];
     const current = channels.find((c) => c.name === channel) ?? channels[0];
-    const setChannelOption = (data: {phase?: string; limit?: number | null}) =>
+    const setChannelOption = (data: {phase?: string; limit?: number | null; projected?: boolean}) =>
         dashboard.bracket.setChannel(current.name, data).then(reload).catch(failed("change the channel"));
 
     return (
@@ -203,6 +203,10 @@ export default function BracketPage() {
                         </SelectContent>
                     </Select>
                 </span>
+                <label className="flex items-center gap-2">
+                    <Switch checked={!!current.projected} onCheckedChange={(projected) => setChannelOption({projected})}/>
+                    Projected
+                </label>
             </div>
 
             <Panel bodyClassName="overflow-x-auto p-5">

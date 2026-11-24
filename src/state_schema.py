@@ -437,6 +437,7 @@ class BracketSetPlayer(StateModel):
     pending: bool | None = None
     source: str | None = F('What a pending slot waits for: "Winner of C"')
     manual: bool | None = F("Put there by hand")
+    projected: bool | None = F("Not decided yet: the player the seeding projects there")
 
 
 class BracketNext(StateModel):
@@ -454,6 +455,7 @@ class BracketSet(StateModel):
     players: list[BracketSetPlayer] | None = F("Its two slots")
     score: list[int] | None = F("`[a, b]`; `-1` is a DQ")
     completed: bool | None = None
+    projected: bool | None = F("Not played yet, its winner projected by seed")
     winner: int | str | None = F('`0` or `1` for the slot that won, `"draw"`, or `null`')
     nextWin: BracketNext | None = None
     nextLose: BracketNext | None = None

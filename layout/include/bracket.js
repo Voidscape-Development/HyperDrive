@@ -282,7 +282,10 @@ var HDBracket = {
         .toggleClass("won", winner === n)
         .toggleClass("lost", winner === 1 - n)
         .toggleClass("draw", winner === "draw");
-      row.toggleClass("pending", !!(slot && slot.pending)).toggleClass("empty", !team);
+      row
+        .toggleClass("pending", !!(slot && slot.pending))
+        .toggleClass("projected", !!(slot && slot.projected))
+        .toggleClass("empty", !team);
 
       const singles = team && _.size(team.player) === 1;
       const player = (singles && team.player[1]) || {};

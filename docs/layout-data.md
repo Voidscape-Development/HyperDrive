@@ -38,7 +38,7 @@ Each channel's bracket, by name: `{"main": {...}, "TV 1": {...}}`.
 
 | Key | |
 | - | - |
-| `bracket` | Its phase's bracket, with its top N: as `bracket.bracket` below |
+| `bracket` | Its phase's bracket, with its top N and, when the channel has "Projected" on, projected winners: as `bracket.bracket` below |
 | `phase`, `phaseGroup` | The start.gg phase and phase group names, or the phase's name and `""` for a phase built in the widget |
 | `phaseId` | The phase's id in `bracket.phases` |
 | `playersPath` | Where its player list is in the state (`bracket.rosters.<key>`) |
@@ -99,9 +99,10 @@ Each set in `sets`:
 | `id`, `identifier` | The set's id and its letter (A, B...) |
 | `side`, `column`, `row` | Where it is |
 | `roundName` | Its round's name |
-| `players` | Its two slots: `{id, seed, name, bye, pending, source, manual}`. `id` is the player's slot in `bracket.players.slot`. `source` says what a pending slot waits for, e.g. "Winner of C". `manual` is set when the player was put there by hand. |
+| `players` | Its two slots: `{id, seed, name, bye, pending, source, manual, projected}`. `id` is the player's slot in `bracket.players.slot`. `source` says what a pending slot waits for, e.g. "Winner of C". `manual` is set when the player was put there by hand. `projected` is set when the channel shows projected winners and the slot isn't decided yet: the player is the one the seeding projects there (the better seed wins, like start.gg's projected bracket). |
 | `score` | `[a, b]`; `-1` is a DQ |
 | `completed` | |
+| `projected` | Not played yet, its winner projected by seed (channels showing projected winners) |
 | `winner` | `0` or `1` for the slot that won, `"draw"`, or `null` |
 | `nextWin`, `nextLose` | Where the winner and the loser go: `{set, slot}`, or `null` |
 | `loserPlacement` | Placement the loser gets if they lose their next set |

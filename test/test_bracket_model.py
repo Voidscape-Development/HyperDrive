@@ -458,6 +458,24 @@ def TestLinkedPhases():
     assert top.seedSources[0] is None
 
 
+def TestProjected():
+    # Like start.gg's projected bracket: the better seed wins what's not played
+    bracket = GenerateBracket(TYPE_DOUBLE_ELIMINATION, list(range(1, 9)))
+    first = next(m for m in bracket.order if set(m.players) == {1, 8})
+    bracket.SetWinner(first.id, first.players.index(8))
+    bracket.Resolve(project=True)
+    final = bracket.MainFinal()
+    gf = bracket._ResetGrandFinal(final)
+    # 1 loses to 8, comes back through the losers side and wins both finals
+    assert gf.projected and gf.players == [2, 1] and gf.winner == 1, gf.players
+    assert final.projected and not final.notNeeded and bracket.Champion() == 1
+    assert not first.projected and first.winner == 8
+    # Back to the real results
+    bracket.Resolve()
+    assert not any(m.projected for m in bracket.matches.values())
+    assert bracket.Champion() == PENDING and gf.players == [PENDING, PENDING]
+
+
 if __name__ == "__main__":
     tests = [v for k, v in list(globals().items()) if k.startswith("Test")]
     for test in tests:

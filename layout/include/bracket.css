@@ -170,6 +170,11 @@ body:not(.hd-bracket-no-dim-losers) .player.lost {
   filter: brightness(0.6);
 }
 
+/* Projected by seed, not decided yet */
+.player.projected {
+  opacity: 0.55;
+}
+
 /* Pools drawn by HDBracket.RenderPool() */
 .pool_round {
   position: relative;

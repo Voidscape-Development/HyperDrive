@@ -44,6 +44,8 @@ class FocusChannel(QObject):
         # Id of the phase shown (None: none yet)
         self.phase = str(phase) if phase not in (None, "") else None
         self.limit = NormalizeLimit(limit)
+        # Pending slots show who the seeding projects there
+        self.projected = False
         # The bracket widget's view of it: zoom, scroll and selection.
         # Not saved.
         self.viewState = None
@@ -81,6 +83,11 @@ class FocusChannel(QObject):
         limit = NormalizeLimit(limit)
         if limit != self.limit:
             self.limit = limit
+            self._SettingsChanged()
+
+    def SetProjected(self, projected):
+        if bool(projected) != self.projected:
+            self.projected = bool(projected)
             self._SettingsChanged()
 
     def _SettingsChanged(self):
@@ -227,7 +234,9 @@ class BracketFocus(QObject):
             name = NormalizeChannelName(name)
             data = data if isinstance(data, dict) else {}
             if name and name not in self.channels:
-                self._Add(name, data, data.get("phase"), data.get("limit"))
+                self._Add(name, data, data.get("phase"), data.get("limit")).projected = bool(
+                    data.get("projected")
+                )
         if MAIN_CHANNEL not in self.channels:
             self.channels = {MAIN_CHANNEL: self._Make(MAIN_CHANNEL), **self.channels}
         current = SettingsManager.Get("bracket_focus_current", MAIN_CHANNEL)
@@ -331,7 +340,7 @@ class BracketFocus(QObject):
         SettingsManager.Set(
             "bracket_focus_channels",
             {
-                name: dict(c.request, phase=c.phase, limit=c.limit)
+                name: dict(c.request, phase=c.phase, limit=c.limit, projected=c.projected)
                 for name, c in self.channels.items()
             },
         )

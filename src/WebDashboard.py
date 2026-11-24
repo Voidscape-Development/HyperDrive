@@ -712,7 +712,12 @@ class DashboardActions:
             )
         return {
             "channels": [
-                {"name": name, "phase": channel.phase, "limit": channel.limit}
+                {
+                    "name": name,
+                    "phase": channel.phase,
+                    "limit": channel.limit,
+                    "projected": channel.projected,
+                }
                 for name, channel in focus.channels.items()
             ],
             "phases": [
@@ -750,6 +755,8 @@ class DashboardActions:
         if "limit" in data:
             limit = Number(data["limit"])
             channel.SetLimit(limit if limit and limit > 0 else None)
+        if "projected" in data:
+            channel.SetProjected(data["projected"])
         return "OK"
 
     @gui_thread_sync

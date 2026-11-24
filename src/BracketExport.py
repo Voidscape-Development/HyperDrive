@@ -25,8 +25,11 @@ def TeamName(playerId, players=None):
     )
 
 
-def PlayerExport(bracket, m, slot, teamName):
+def PlayerExport(bracket, m, slot, teamName, projected=None):
+    """projected: the player projected into the slot while it's pending"""
     player = m.players[slot]
+    projected = projected if player == PENDING and projected and projected > 0 else None
+    player = projected or player
     return {
         "id": player if player > 0 else None,
         "seed": bracket.SeedOf(player) if player > 0 and bracket.SeedOf(player) != 9999 else None,
@@ -36,15 +39,25 @@ def PlayerExport(bracket, m, slot, teamName):
         # What the slot waits for, e.g. "Winner of C"
         "source": SourceText(bracket, m.sources[slot]) if player == PENDING else "",
         "manual": m.override[slot] is not None,
+        "projected": projected is not None,
     }
 
 
-def ExportBracket(bracket, name, limit=None, players=None, progressions=None):
+def ExportBracket(bracket, name, limit=None, players=None, progressions=None, projected=False):
     """The bracket's export. limit: only its top N (elimination); players:
     where its player list is in the state; progressions: {place: where the
-    player going on in that place goes}."""
+    player going on in that place goes}; projected: pending slots show who
+    the seeding projects there, like start.gg's projected bracket."""
 
     players = players or RosterPath()
+    # Projected players by match, then the real results back
+    projection = {}
+    if projected and not bracket.IsPool():
+        bracket.Resolve(project=True)
+        projection = {
+            id: (list(m.players), m.projected, m.notNeeded) for id, m in bracket.matches.items()
+        }
+        bracket.Resolve()
 
     def teamName(p):
         return TeamName(p, players)
@@ -66,6 +79,8 @@ def ExportBracket(bracket, name, limit=None, players=None, progressions=None):
         elif m.IsDraw():
             winner = "draw"
 
+        shown = projection.get(m.id, ([None, None], False, False))
+
         def Next(link):
             if link is None or link[0] not in included:
                 return None
@@ -78,9 +93,13 @@ def ExportBracket(bracket, name, limit=None, players=None, progressions=None):
             "column": m.column,
             "row": m.row,
             "roundName": bracket.RoundName(m.side, m.column),
-            "players": [PlayerExport(bracket, m, slot, teamName) for slot in range(2)],
+            "players": [
+                PlayerExport(bracket, m, slot, teamName, shown[0][slot]) for slot in range(2)
+            ],
             "score": list(m.score),
             "completed": bool(m.finished),
+            # Undecided, its winner projected by seed
+            "projected": shown[1],
             # 0 or 1 for the slot that won, "draw" or None
             "winner": winner,
             "nextWin": Next(m.nextWin),
@@ -88,7 +107,7 @@ def ExportBracket(bracket, name, limit=None, players=None, progressions=None):
             "loserPlacement": bracket.LoserPlacementOf(m) if not bracket.IsPool() else None,
             "isGrandFinal": m.isGrandFinal,
             "isReset": m.isReset,
-            "resetNeeded": not m.notNeeded,
+            "resetNeeded": not (m.notNeeded or shown[2]),
             "startggId": m.providerId,
         }
 
