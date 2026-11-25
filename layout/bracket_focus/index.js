@@ -30,6 +30,8 @@ const MARGIN = 40;
 // caption saying what it is
 const PADDING = 60;
 const LABEL_ROOM = 90;
+// A round name's room above its sets (BracketPlacement.py's HEADER_H)
+const HEADER_ROOM = 56;
 // The camera's move, in seconds: the layout theme's "Bracket focus zoom time"
 const cameraTime = () => HD.theme("bracket", "focus_time", 1000) / 1000;
 const FADE_TIME = 0.6;
@@ -96,9 +98,11 @@ let labelTween = null;
 let layers = {};
 // Each set, round name and line: the name of its layer
 let layerOf = new Map();
-// What's outlined ("set:<id>", "line:<from>><to>", "round:<key>"): its
-// outline's element and layer, {el, layer}
+// What's outlined ("set:<id>", "line:<from>><to>", "round:<key>") or
+// pinned ("pin:<y>:<key>", see pinHeaders): its element and layer, {el, layer}
 let glowOf = new Map();
+// "<y>:<round key>": where a round name is pinned, {x, y, w, h, round, name}
+let pins = {};
 // "<from>><to>": the line's path
 let linePaths = {};
 // The layers' fades under way (animations), and putting what they faded
@@ -556,11 +560,15 @@ function glowElement(key) {
     path.setAttribute("d", linePaths[id].d);
     return path;
   }
-  const at = kind == "set" ? placed.sets[id] : placed.headers[id];
+  const at = kind == "set" ? placed.sets[id] : kind == "pin" ? pins[id] : placed.headers[id];
   if (!at) return null;
   const el = document.createElement("div");
-  el.className = kind == "set" ? "bf_ring" : "bf_bar";
+  el.className = kind == "set" ? "bf_ring" : kind == "pin" ? "bf_round_name bf_pin" : "bf_bar";
   el.style.cssText = box(at);
+  if (kind == "pin") {
+    el.dataset.round = at.round;
+    HD.set(el, at.name, { duration: 0 });
+  }
   return el;
 }
 
@@ -604,6 +612,7 @@ function boxOf(thing) {
   const [kind, id] = [key.slice(0, key.indexOf(":")), key.slice(key.indexOf(":") + 1)];
   if (kind == "set") return placed.sets[id];
   if (kind == "round") return placed.headers[id];
+  if (kind == "pin") return pins[id];
   // A line: around the sets it joins
   const [from, to] = id.split(">").map((set) => placed.sets[set]);
   if (!from || !to) return from || to;
@@ -657,12 +666,14 @@ function applyFocus(s, data, animate) {
   // A round is highlighted when it's in focus, and not dimmed while any of
   // its sets is
   const columns = _.keyBy(Object.values(_.get(data, "bracket.bracket.sides", {})).flat(), "key");
-  for (const el of document.querySelectorAll(".bf_round_name")) {
+  for (const el of document.querySelectorAll(".bf_sets .bf_round_name")) {
     const column = columns[el.dataset.round];
     const f = rounds.has(el.dataset.round) || !!(column && column.sets.some((id) => inFocus.has(id)));
     focused.set(el, f);
     if (f && glows(focus)) outlined.add(`round:${el.dataset.round}`);
   }
+  const target = pinHeaders(columns, inFocus, focusBox({ sets: [...inFocus], rounds: hasFocus ? [...rounds] : [] }));
+  for (const key of Object.keys(pins)) outlined.add(`pin:${key}`);
 
   if (animate && HD.settings.focus_after_move) {
     // Testing: the camera moves over the bracket as it was
@@ -731,7 +742,25 @@ function applyFocus(s, data, animate) {
 
   showLabel(hasFocus ? focus.label || "" : "", animate);
 
-  moveCamera(s, focusBox({ sets: [...inFocus], rounds: hasFocus ? [...rounds] : [] }), animate);
+  moveCamera(s, target, animate);
+}
+
+// The round names of the sets in focus that are above what's in focus (the
+// winners side's, in a run through losers) are shown just above it: their
+// own if near enough, else a copy pinned there (pins). Returns the box the
+// camera shows, with them.
+function pinHeaders(columns, inFocus, target) {
+  pins = {};
+  if (!inFocus.size || $("body").hasClass("hd-bracket-hide-round-names")) return target;
+  const top = target.y - HEADER_ROOM;
+  let above = false;
+  for (const column of Object.values(columns)) {
+    const h = placed.headers[column.key];
+    if (!h || h.y >= target.y || !column.sets.some((id) => inFocus.has(id))) continue;
+    above = true;
+    if (h.y < top) pins[`${top}:${column.key}`] = { ...h, y: top, round: column.key, name: column.name };
+  }
+  return above ? { ...target, y: top, h: target.h + HEADER_ROOM } : target;
 }
 
 // ---------------------------------------------------------------------

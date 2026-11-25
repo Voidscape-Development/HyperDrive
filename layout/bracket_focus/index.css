@@ -414,6 +414,11 @@ body.has_focus .bf_layer.bf_base {
   box-shadow: inset 0 -4px 0 var(--focus-color);
 }
 
+/* A round name pinned above what's in focus (see pinHeaders) */
+body:not(.no_focus_glow) .bf_pin {
+  box-shadow: inset 0 -4px 0 var(--focus-color), var(--bf-shadow);
+}
+
 body.hd-bracket-hide-round-names .bf_bar {
   display: none;
 }
