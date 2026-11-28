@@ -752,15 +752,18 @@ function applyFocus(s, data, animate) {
 function pinHeaders(columns, inFocus, target) {
   pins = {};
   if (!inFocus.size || $("body").hasClass("hd-bracket-hide-round-names")) return target;
-  const top = target.y - HEADER_ROOM;
-  let above = false;
-  for (const column of Object.values(columns)) {
+  const above = Object.values(columns).filter((column) => {
     const h = placed.headers[column.key];
-    if (!h || h.y >= target.y || !column.sets.some((id) => inFocus.has(id))) continue;
-    above = true;
-    if (h.y < top) pins[`${top}:${column.key}`] = { ...h, y: top, round: column.key, name: column.name };
-  }
-  return above ? { ...target, y: top, h: target.h + HEADER_ROOM } : target;
+    return h && h.y < target.y && column.sets.some((id) => inFocus.has(id));
+  });
+  if (!above.length) return target;
+  // Those within two round names of it show in place (a pin would sit just
+  // under them, doubled), the camera reaching up to them
+  const near = (column) => placed.headers[column.key].y >= target.y - 2 * HEADER_ROOM;
+  const top = Math.min(target.y - HEADER_ROOM, ...above.filter(near).map((c) => placed.headers[c.key].y));
+  for (const column of above.filter((c) => !near(c)))
+    pins[`${top}:${column.key}`] = { ...placed.headers[column.key], y: top, round: column.key, name: column.name };
+  return { ...target, y: top, h: target.h + target.y - top };
 }
 
 // ---------------------------------------------------------------------
