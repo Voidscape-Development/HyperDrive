@@ -4,10 +4,7 @@
   <style>
     @font-face { font-family: "Saira HD Condensed"; font-weight: 800; font-style: italic;
       src: url("../../layout/fonts/Saira/Saira_Condensed-ExtraBoldItalic.ttf"); }
-    @font-face { font-family: "Saira HD"; font-weight: 500;
-      src: url("../../layout/fonts/Saira/Saira-Medium.ttf"); }
     .word { font-family: "Saira HD Condensed"; font-weight: 800; font-style: italic; font-size: 54px; letter-spacing: 1px; }
-    .tag { font-family: "Saira HD"; font-weight: 500; font-size: 10px; letter-spacing: 0.4px; }
   </style>
 
   <rect width="540" height="220" fill="#111214"/>
@@ -22,8 +19,7 @@
     </g>
   </svg>
 
-  <text x="200" y="122" class="word" fill="#F4F4F2">HYPERDRIVE</text>
-  <text x="201" y="141" class="tag" fill="#9A9BA3">Stream helper for fighting game tournaments</text>
+  <text x="200" y="129" class="word" fill="#F4F4F2">HYPERDRIVE</text>
 
   <rect y="218" width="540" height="2" fill="#FFB800"/>
 </svg>
